@@ -1,0 +1,238 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  phone         String?  @unique  // for M-Pesa
+  name          String
+  avatar        String?
+  role          Role     @default(STUDENT)
+  educationLevel EduLevel // HIGH_SCHOOL or UNIVERSITY
+  formYear      Int?     // 1-4 for HS, 1-6 for Uni
+  county        String   // one of 47 Kenyan counties
+  points        Int      @default(0)
+  tier          Tier     @default(BRONZE) // BRONZE/SILVER/GOLD/PLATINUM/LEGEND
+  streakDays    Int      @default(0)
+  lastActiveAt  DateTime?
+  isUnder18     Boolean  @default(false)
+  strikes       Int      @default(0)
+  bio           String?
+  settings      Json     @default("{\"theme\":\"system\",\"accentColor\":\"#8b5cf6\",\"fontSize\":\"medium\"}")
+  createdAt     DateTime @default(now())
+
+  studentProfile StudentProfile?
+  tutorProfile   TutorProfile?
+  sessionsAsStudent Session[] @relation("StudentSessions")
+  sessionsAsTutor   Session[] @relation("TutorSessions")
+  messages      Message[]
+  notifications Notification[]
+  reviewsGiven  Review[] @relation("Reviewer")
+  reviewsRecv   Review[] @relation("Reviewee")
+  challenges    DailyChallengeAttempt[]
+}
+
+model StudentProfile {
+  userId       String @id
+  user         User   @relation(fields: [userId], references: [id])
+  subjects     String[]    // e.g. ["Mathematics","Biology"]
+  weakTopics   String[]    // e.g. ["Quadratic Equations"]
+  studyStyle   String      // visual/auditory/group/solo
+  preferredTimes Json      // weekly availability
+  goals        String[]    // KCSE prep, homework, revision
+}
+
+model TutorProfile {
+  userId          String @id
+  user            User   @relation(fields: [userId], references: [id])
+  subjects        String[]
+  levelsTaught    String[]   // Form 1-4, Year 1-6
+  verificationPath VerifPath  // POINTS or GRADES
+  gradesProof     String?     // file URL
+  hourlyRate      Int         // KSh
+  bio             String
+  isVerified      Boolean    @default(false)
+  verifiedAt      DateTime?
+  rating          Float      @default(0)
+  totalSessions   Int        @default(0)
+  mpesaNumber     String?
+  availability    Json
+}
+
+model MatchRequest {
+  id          String   @id @default(cuid())
+  studentId   String
+  subject     String
+  topic       String?
+  tier1Tried  Boolean  @default(false)
+  tier2Tried  Boolean  @default(false)
+  resolvedAs  MatchTier? // TUTOR, PEER, MASH
+  sessionId   String?
+  createdAt   DateTime @default(now())
+  resolvedAt  DateTime?
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  studentId    String
+  student      User     @relation("StudentSessions", fields: [studentId], references: [id])
+  partnerId    String?  // tutor or peer
+  partner      User?    @relation("TutorSessions", fields: [partnerId], references: [id])
+  tier         MatchTier // TUTOR | PEER | MASH
+  subject      String
+  topic        String?
+  status       SessionStatus // PENDING, ACTIVE, COMPLETED, CANCELLED
+  roomId       String   @unique // for live room
+  startedAt    DateTime?
+  endedAt      DateTime?
+  durationMin  Int?
+  pointsAwarded Int @default(0)
+  priceKsh     Int @default(0)
+  paymentStatus PayStatus @default(NONE) // NONE, HELD, RELEASED, REFUNDED
+  mpesaRef     String?
+  messages     Message[]
+  review       Review?
+}
+
+model Message {
+  id        String @id @default(cuid())
+  sessionId String
+  session   Session @relation(fields: [sessionId], references: [id])
+  senderId  String?
+  sender    User?   @relation(fields: [senderId], references: [id])
+  content   String
+  isMash    Boolean @default(false)
+  flagged   Boolean @default(false) // AI moderation
+  createdAt DateTime @default(now())
+}
+
+model Review {
+  id         String @id @default(cuid())
+  sessionId  String @unique
+  session    Session @relation(fields: [sessionId], references: [id])
+  reviewerId String
+  reviewer   User @relation("Reviewer", fields: [reviewerId], references: [id])
+  revieweeId String
+  reviewee   User @relation("Reviewee", fields: [revieweeId], references: [id])
+  rating     Int    // 1-5
+  comment    String?
+  createdAt  DateTime @default(now())
+}
+
+model DailyChallenge {
+  id        String @id @default(cuid())
+  subject   String
+  level     EduLevel
+  formYear  Int?
+  question  String
+  options   String[]
+  answer    String
+  explanation String
+  date      DateTime
+  attempts  DailyChallengeAttempt[]
+}
+
+model DailyChallengeAttempt {
+  id          String @id @default(cuid())
+  userId      String
+  user        User @relation(fields: [userId], references: [id])
+  challengeId String
+  challenge   DailyChallenge @relation(fields: [challengeId], references: [id])
+  correct     Boolean
+  pointsEarned Int
+  createdAt   DateTime @default(now())
+  @@unique([userId, challengeId])
+}
+
+model StruggleGroup {
+  id        String @id @default(cuid())
+  subject   String
+  topic     String
+  level     EduLevel
+  members   String[] // userIds
+  tutorId   String?
+  status    String   // FORMING, ACTIVE, COMPLETED
+  createdAt DateTime @default(now())
+}
+
+model TutorApplication {
+  id        String @id @default(cuid())
+  userId    String @unique
+  path      VerifPath // POINTS or GRADES
+  gradesUrl String?
+  subjects  String[]
+  status    AppStatus @default(PENDING) // PENDING, APPROVED, REJECTED
+  reviewedBy String?
+  reviewedAt DateTime?
+  notes     String?
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String @id @default(cuid())
+  userId    String
+  user      User @relation(fields: [userId], references: [id])
+  type      String // MATCH_FOUND, SESSION_REMINDER, POINTS_EARNED, TUTOR_APPROVED, etc
+  title     String
+  body      String
+  actionUrl String?
+  read      Boolean @default(false)
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  STUDENT
+  TUTOR
+  ADMIN
+}
+
+enum EduLevel {
+  HIGH_SCHOOL
+  UNIVERSITY
+}
+
+enum Tier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+  LEGEND
+}
+
+enum VerifPath {
+  POINTS
+  GRADES
+}
+
+enum MatchTier {
+  TUTOR
+  PEER
+  MASH
+}
+
+enum SessionStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum PayStatus {
+  NONE
+  HELD
+  RELEASED
+  REFUNDED
+}
+
+enum AppStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
