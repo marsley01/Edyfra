@@ -16,19 +16,21 @@ export default function RoleChoicePage() {
 
   const selectRole = async (role: "STUDENT" | "TUTOR") => {
     setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (user) {
-      // Update metadata so middleware knows where to send them
-      await supabase.auth.updateUser({
-        data: { role: role }
-      });
-
-      if (role === "TUTOR") {
-        router.push("/onboarding/tutor");
-      } else {
-        router.push("/onboarding/student");
+    try {
+      const { updateUserRole } = await import("@/app/actions/user");
+      const result = await updateUserRole(role);
+      
+      if (result.success) {
+        if (role === "TUTOR") {
+          router.push("/onboarding/tutor");
+        } else {
+          router.push("/onboarding/student");
+        }
       }
+    } catch (error) {
+      console.error("Selection failed:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
