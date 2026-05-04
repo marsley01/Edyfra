@@ -135,8 +135,30 @@ export default function StudyRoomPage() {
       isMash: false,
     });
 
-    if (error) toast.error("Failed to send message");
-    else setInput("");
+    if (error) {
+      toast.error("Failed to send message");
+    } else {
+      const currentInput = input;
+      setInput("");
+      
+      // If it's an AI session (no partner), trigger AI response
+      if (!session?.partnerId) {
+        try {
+          await fetch("/api/ai/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sessionId,
+              message: currentInput,
+              subject: session?.subject,
+              topic: session?.topic
+            }),
+          });
+        } catch (e) {
+          console.error("Failed to trigger AI:", e);
+        }
+      }
+    }
   };
 
   const handleEndSession = async () => {
