@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   Monitor, Calendar, User, 
-  MessageSquare, Star, Clock,
-  MoreVertical, ExternalLink, Play
+  MessageSquare, Clock,
+  Play, History
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 

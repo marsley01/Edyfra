@@ -5,17 +5,24 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { 
-  Users, Star, Wallet, MessageSquare, 
-  Clock, Zap, Activity, ChevronRight,
+  Users, Star, Wallet, 
+  Clock, ChevronRight,
   CheckCircle2, AlertCircle, Loader2
 } from "lucide-react";
 import { getTutorProfile, toggleTutorStatus } from "@/app/actions/tutor";
 import { toast } from "sonner";
 
+interface TutorProfileData {
+  user: { name: string };
+  totalSessions: number;
+  hourlyRate: number;
+  rating: string | number;
+  availability: { isOnline?: boolean };
+}
+
 export default function TutorDashboard() {
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<TutorProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isOnline, setIsOnline] = useState(false);
   const [toggling, setToggling] = useState(false);
@@ -27,7 +34,7 @@ export default function TutorDashboard() {
   const loadProfile = async () => {
     const data = await getTutorProfile();
     if (data) {
-      setProfile(data);
+      setProfile(data as any);
       setIsOnline((data.availability as any)?.isOnline || false);
     }
     setLoading(false);
@@ -39,7 +46,7 @@ export default function TutorDashboard() {
       await toggleTutorStatus(checked);
       setIsOnline(checked);
       toast.success(checked ? "You are now LIVE. Students can discover you!" : "You are now OFFLINE.");
-    } catch (error) {
+    } catch {
       toast.error("Failed to update status.");
     } finally {
       setToggling(false);
@@ -116,7 +123,7 @@ export default function TutorDashboard() {
           <CardContent className="p-0">
              <div className="divide-y divide-slate-100 dark:divide-slate-800">
                 {[
-                  { student: "Mercy W.", subject: "Physics", topic: "Newton's Laws", time: "Just now" },
+                  { student: "Mercy W.", subject: "Physics", topic: "Newton&apos;s Laws", time: "Just now" },
                   { student: "Kelvin O.", subject: "Mathematics", topic: "Calculus I", time: "4m ago" },
                 ].map((req) => (
                   <div key={req.student} className="p-6 flex items-center justify-between hover:bg-teal-50/30 transition-colors group">
@@ -166,7 +173,7 @@ export default function TutorDashboard() {
               </Button>
               <div className="pt-4 flex items-center gap-2 text-[10px] font-bold text-teal-100 uppercase tracking-widest leading-relaxed">
                  <AlertCircle className="h-3 w-3" />
-                 Students can book sessions during these times even when you're offline.
+                 Students can book sessions during these times even when you&apos;re offline.
               </div>
            </CardContent>
         </Card>

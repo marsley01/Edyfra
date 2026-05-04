@@ -1,85 +1,70 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
+import { motion } from "framer-motion";
+import { GraduationCap, ArrowRight, Github, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import Link from "next/link";
-import { Loader2 } from "lucide-react";
 
 export default function LoginPage() {
-  const router = useRouter();
-  const supabase = createClient();
-  
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-    } else {
-      router.push("/dashboard");
-    }
-  };
-
   return (
-    <div className="flex min-h-screen items-center justify-center p-4 bg-slate-50">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
-          <CardDescription>Enter your email and password to login to your account</CardDescription>
-        </CardHeader>
-        <form onSubmit={handleLogin}>
-          <CardContent className="space-y-4">
-            {error && <div className="p-3 text-sm text-red-500 bg-red-50 rounded-md">{error}</div>}
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Email</label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="m.doe@example.com" 
-                required 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Password</label>
-              <Input 
-                id="password" 
-                type="password" 
-                required 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
-              />
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Sign in"}
-            </Button>
-            <div className="text-sm text-center text-slate-500">
-              Don&apos;t have an account? <Link href="/signup" className="text-primary hover:underline">Sign up</Link>
-            </div>
-          </CardFooter>
-        </form>
-      </Card>
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 pt-0">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-[440px] space-y-12"
+      >
+        {/* Logo */}
+        <div className="flex flex-col items-center gap-4 text-center">
+           <Link href="/" className="flex items-center gap-2 group mb-4">
+             <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-xl shadow-primary/20">
+               <GraduationCap className="h-7 w-7" />
+             </div>
+           </Link>
+           <h1 className="text-4xl font-black tracking-tightest">Synchronize.</h1>
+           <p className="text-muted-foreground font-medium">Log in to your academic ecosystem.</p>
+        </div>
+
+        {/* Form */}
+        <div className="space-y-6">
+           <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest ml-4">Email Address</label>
+              <Input placeholder="mash@edyfra.com" className="h-14 rounded-2xl px-6 border-border bg-secondary" />
+           </div>
+           <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest ml-4">Password</label>
+              <Input type="password" placeholder="••••••••" className="h-14 rounded-2xl px-6 border-border bg-secondary" />
+           </div>
+           <Button className="w-full h-14 rounded-full bg-foreground text-background font-black text-xs tracking-widest uppercase shadow-xl transition-all active:scale-95">
+              Initialize Access <ArrowRight className="ml-2 h-4 w-4" />
+           </Button>
+        </div>
+
+        {/* Divider */}
+        <div className="relative">
+           <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border"></div></div>
+           <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
+              <span className="bg-background px-4 text-muted-foreground">Or continue with</span>
+           </div>
+        </div>
+
+        {/* Social */}
+        <div className="grid grid-cols-2 gap-4">
+           <Button variant="outline" className="h-14 rounded-2xl border-border hover:bg-secondary transition-all gap-2 font-bold">
+              <Github className="h-4 w-4" /> Github
+           </Button>
+           <Button variant="outline" className="h-14 rounded-2xl border-border hover:bg-secondary transition-all gap-2 font-bold">
+              <Mail className="h-4 w-4" /> Google
+           </Button>
+        </div>
+
+        {/* Footer */}
+        <p className="text-center text-sm font-medium text-muted-foreground">
+           Don&apos;t have an account?{" "}
+           <Link href="/signup" className="text-primary font-black uppercase text-xs tracking-widest hover:underline">Sign up free</Link>
+        </p>
+      </motion.div>
     </div>
   );
 }

@@ -132,3 +132,17 @@ export async function getTutorStats() {
     totalEarnings: totalEarnings._sum.priceKsh || 0
   };
 }
+
+export async function getVerifiedTutors() {
+  return await prisma.user.findMany({
+    where: {
+      role: "TUTOR",
+      tutorProfile: {
+        isVerified: true
+      }
+    },
+    include: {
+      tutorProfile: true
+    }
+  });
+}

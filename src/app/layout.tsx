@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   description: "Connect with tutors and peers in Kenya. Study smarter with AI-powered matching, live sessions, and personalized learning.",
 };
 
+import { Navigation } from "@/components/navigation";
+import { Footer } from "@/components/footer";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,7 +30,11 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ThemeColorManager />
-          {children}
+          <Navigation />
+          <main className="min-h-screen pt-20">
+            {children}
+          </main>
+          <Footer />
           <Toaster richColors position="top-right" />
         </ThemeProvider>
       </body>

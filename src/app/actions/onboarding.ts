@@ -45,60 +45,111 @@ export async function completeOnboarding(data: OnboardingData) {
   const { role, educationLevel, formYear, county, subjects, weakTopics, studyStyle, bio, verificationPath, hourlyRate } = data;
 
   // 1. Update Supabase Auth Metadata (for middleware)
+  // Even if they apply as a tutor, we keep them as a student role in metadata
+  // until an admin activates their tutor dashboard.
   await supabase.auth.updateUser({
     data: { 
-      role: role,
-      onboarding_completed: true 
+      role: "STUDENT", 
+      onboarding_completed: true,
+      pending_tutor_application: role === "TUTOR"
     }
   });
 
   const isHS = educationLevel === "HIGH_SCHOOL";
 
-  // 2. Create User in Prisma
-  await prisma.user.create({
-    data: {
-      id: user.id,
-      email: user.email!,
+  // 2. Upsert User in Prisma
+  await prisma.user.upsert({
+    where: { id: user.id },
+    update: {
       name: user.user_metadata.full_name || "New User",
-      role: role === "TUTOR" ? Role.TUTOR : Role.STUDENT,
+      role: Role.STUDENT, // Everyone starts as a student
       educationLevel: isHS ? EduLevel.HIGH_SCHOOL : EduLevel.UNIVERSITY,
       formYear: parseInt(formYear),
       county,
-      tier: Tier.BRONZE,
       isUnder18: isHS,
       
-      ...(role === "STUDENT" ? {
-        studentProfile: {
+      studentProfile: {
+        upsert: {
           create: {
             subjects: subjects || [],
             weakTopics: weakTopics || [],
             studyStyle: studyStyle || "solo",
             preferredTimes: {},
             goals: []
-          }
-        }
-      } : {
-        tutorProfile: {
-          create: {
+          },
+          update: {
             subjects: subjects || [],
-            levelsTaught: [],
-            verificationPath: verificationPath === "GRADES" ? VerifPath.GRADES : VerifPath.POINTS,
-            hourlyRate: parseInt(hourlyRate!) || 0,
-            bio: bio || "",
-            availability: {}
+            weakTopics: weakTopics || [],
+            studyStyle: studyStyle || "solo",
           }
         }
-      })
+      }
+    },
+    create: {
+      id: user.id,
+      email: user.email!,
+      name: user.user_metadata.full_name || "New User",
+      role: Role.STUDENT,
+      educationLevel: isHS ? EduLevel.HIGH_SCHOOL : EduLevel.UNIVERSITY,
+      formYear: parseInt(formYear),
+      county,
+      tier: Tier.BRONZE,
+      isUnder18: isHS,
+      
+      studentProfile: {
+        create: {
+          subjects: subjects || [],
+          weakTopics: weakTopics || [],
+          studyStyle: studyStyle || "solo",
+          preferredTimes: {},
+          goals: []
+        }
+      }
     }
   });
 
+  // 3. If applying as TUTOR, create the application record
+  if (role === "TUTOR") {
+    await prisma.tutorApplication.upsert({
+      where: { userId: user.id },
+      create: {
+        userId: user.id,
+        subjects: subjects || [],
+        path: verificationPath === "GRADES" ? VerifPath.GRADES : VerifPath.POINTS,
+        notes: bio || "",
+      },
+      update: {
+        subjects: subjects || [],
+        path: verificationPath === "GRADES" ? VerifPath.GRADES : VerifPath.POINTS,
+        notes: bio || "",
+        status: "PENDING"
+      }
+    });
+
+    // Notify Admins (find all admins or just create a generic admin notification)
+    const admins = await prisma.user.findMany({ where: { role: "ADMIN" } });
+    for (const admin of admins) {
+      await prisma.notification.create({
+        data: {
+          userId: admin.id,
+          type: "NEW_TUTOR_APPLICATION",
+          title: "New Tutor Application",
+          body: `${user.user_metadata.full_name} has applied to be a tutor.`,
+          actionUrl: "/admin/tutors"
+        }
+      });
+    }
+  }
+
   revalidatePath("/");
   revalidatePath("/dashboard");
-  revalidatePath("/tutor");
+  revalidatePath("/admin/tutors");
 
-  // 3. Send Professional Welcome Email
+  // 4. Send Emails
   if (role === "TUTOR") {
-    await sendTutorWelcomeEmail(user.email!, user.user_metadata.full_name || "Expert");
+    // Custom email for application received
+    // await sendTutorApplicationEmail(user.email!, user.user_metadata.full_name || "Expert");
+    await sendWelcomeEmail(user.email!, user.user_metadata.full_name || "Scholar");
   } else {
     await sendWelcomeEmail(user.email!, user.user_metadata.full_name || "Scholar");
   }

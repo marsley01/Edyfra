@@ -113,26 +113,27 @@ export default function StudyPage() {
       )
       .subscribe();
 
-    // 2. Start the timer and cascade
+    // 2. Start the timer
     timerRef.current = setInterval(() => {
-      setTimer((prev) => {
-        if (prev <= 0) return 0;
-        const newTime = prev - 1;
-        // Cascade logic
-        if (newTime === 20) setMatchStep(2); 
-        if (newTime === 10) {
-          if (timerRef.current) clearInterval(timerRef.current);
-          handleAIFallback();
-        }
-        return newTime;
-      });
+      setTimer((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       supabase.removeChannel(channel);
     };
-  }, [currentRequestId, router, supabase, handleAIFallback]);
+  }, [currentRequestId, router, supabase]);
+
+  // 3. Handle Cascade Logic based on Timer
+  useEffect(() => {
+    if (!isMatching || timer === 0) return;
+
+    if (timer === 20) setMatchStep(2); // Peer search
+    if (timer === 10) {
+      if (timerRef.current) clearInterval(timerRef.current);
+      handleAIFallback();
+    }
+  }, [timer, isMatching, handleAIFallback]);
 
   // Remove the old timer === 0 check as we now trigger at 10
 

@@ -1,21 +1,27 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
 import { 
-  Users, Search, Filter, BookOpen, 
-  MapPin, Clock, MessageSquare, ArrowRight,
-  Loader2, Zap
+  Users,
+  Clock, ArrowRight,
+  Loader2, Zap, Filter
 } from "lucide-react";
-import { createClient } from "@/utils/supabase/client";
-import { toast } from "sonner";
+
+interface MatchRequest {
+  id: string;
+  subject: string;
+  topic?: string;
+  createdAt: string;
+  sessionId?: string | null;
+}
 
 export default function TutorRequestsPage() {
   const supabase = createClient();
-  const [requests, setRequests] = useState<any[]>([]);
+  const [requests, setRequests] = useState<MatchRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const router = useRouter();
@@ -23,14 +29,13 @@ export default function TutorRequestsPage() {
   useEffect(() => {
     fetchRequests();
     
-    // Subscribe to new match requests
     const channel = supabase
       .channel("new-requests")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "MatchRequest" },
         (payload) => {
-          setRequests((prev) => [payload.new, ...prev]);
+          setRequests((prev) => [payload.new as MatchRequest, ...prev]);
           toast.info("New study request detected!");
         }
       )
@@ -39,7 +44,7 @@ export default function TutorRequestsPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [supabase]);
 
   const fetchRequests = async () => {
     setLoading(true);
@@ -109,7 +114,7 @@ export default function TutorRequestsPage() {
                       </span>
                     </div>
                     <h3 className="text-xl font-bold">{req.topic || "General Revision"}</h3>
-                    <p className="text-sm text-muted-foreground font-medium italic">"Seeking assistance with structured problem solving and exam techniques."</p>
+                    <p className="text-sm text-muted-foreground font-medium italic">&quot;Seeking assistance with structured problem solving and exam techniques.&quot;</p>
                   </div>
                 </div>
 
@@ -140,7 +145,7 @@ export default function TutorRequestsPage() {
              </div>
              <div>
                 <h3 className="text-2xl font-black text-teal-600">Feed is Quiet</h3>
-                <p className="text-muted-foreground max-w-sm mx-auto font-medium italic">No live requests at the moment. Ensure your status is set to 'Online' to be discovered by students.</p>
+                <p className="text-muted-foreground max-w-sm mx-auto font-medium italic">No live requests at the moment. Ensure your status is set to &apos;Online&apos; to be discovered by students.</p>
              </div>
           </div>
         )}

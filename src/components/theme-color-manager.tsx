@@ -7,7 +7,8 @@ export function ThemeColorManager() {
   useEffect(() => {
     const applyColor = async () => {
       const userData = await getUserData();
-      const accentColor = userData?.settings?.accentColor;
+      const settings = userData?.settings as Record<string, unknown> | undefined;
+      const accentColor = settings?.accentColor as string | undefined;
       
       if (accentColor) {
         document.documentElement.style.setProperty("--primary", accentColor);
@@ -20,14 +21,15 @@ export function ThemeColorManager() {
 
     applyColor();
     
-    // Listen for custom events if we want real-time updates without refresh
-    window.addEventListener("accent-color-changed", (e: any) => {
-      const color = e.detail;
+    const handleColorChange = (e: Event) => {
+      const color = (e as CustomEvent).detail;
       document.documentElement.style.setProperty("--primary", color);
       document.documentElement.style.setProperty("--ring", color);
-    });
+    };
 
-    return () => window.removeEventListener("accent-color-changed", () => {});
+    window.addEventListener("accent-color-changed", handleColorChange);
+
+    return () => window.removeEventListener("accent-color-changed", handleColorChange);
   }, []);
 
   return null;

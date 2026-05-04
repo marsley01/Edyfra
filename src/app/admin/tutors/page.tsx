@@ -7,35 +7,50 @@ import { Badge } from "@/components/ui/badge";
 import { 
   ShieldCheck, ShieldAlert, GraduationCap, 
   MapPin, Clock, Star, ExternalLink,
-  CheckCircle2, XCircle, Search, Loader2
+  CheckCircle2, XCircle, Search, Loader2,
+  FileText, Mail, Info
 } from "lucide-react";
-import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { getTutorApplications, approveTutorApplication, rejectTutorApplication } from "@/app/actions/admin";
 
 export default function AdminTutorsPage() {
-  const supabase = createClient();
-  const [tutors, setTutors] = useState<any[]>([]);
+  const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
-    fetchTutors();
+    fetchApplications();
   }, []);
 
-  const fetchTutors = async () => {
+  const fetchApplications = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("User")
-      .select("*, tutorProfile:tutorProfileId(*)")
-      .eq("role", "TUTOR");
-    
-    if (data) setTutors(data);
-    setLoading(false);
+    try {
+      const data = await getTutorApplications();
+      setApplications(data);
+    } catch (err) {
+      toast.error("Failed to load applications.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleApprove = async (id: string) => {
-    toast.success("Tutor approved and notified.");
-    // In a real app, update DB status
+    try {
+      const result = await approveTutorApplication(id);
+      if (result.success) {
+        toast.success("Expert dashboard activated successfully!");
+        fetchApplications();
+      }
+    } catch (err) {
+      toast.error("Approval failed.");
+    }
   };
+
+  const filteredApps = applications.filter(app => 
+    app.user?.name.toLowerCase().includes(search.toLowerCase()) ||
+    app.subjects.some((s: string) => s.toLowerCase().includes(search.toLowerCase()))
+  );
 
   return (
     <div className="space-y-10 animate-in fade-in duration-500">
@@ -48,6 +63,8 @@ export default function AdminTutorsPage() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input 
             placeholder="Search by name or subject..." 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-white/5 border border-white/5 rounded-2xl py-5 pl-12 pr-4 text-sm font-bold focus:outline-none focus:border-primary/50"
           />
         </div>
@@ -55,63 +72,84 @@ export default function AdminTutorsPage() {
 
       <div className="grid grid-cols-1 gap-6">
         {loading ? (
-          <div className="flex items-center justify-center py-24">
+          <div className="flex flex-col items-center justify-center py-24 gap-4">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            <p className="text-xs font-black tracking-widest uppercase text-muted-foreground">Syncing Applications...</p>
           </div>
-        ) : tutors.map((tutor) => (
-          <Card key={tutor.id} className="border-white/5 bg-white/[0.02] backdrop-blur-xl rounded-[2rem] overflow-hidden hover:border-primary/20 transition-all group">
+        ) : filteredApps.length === 0 ? (
+          <div className="text-center py-24 bg-white/[0.02] border border-dashed border-white/10 rounded-[2rem]">
+            <Info className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-xl font-bold">No Pending Applications</h3>
+            <p className="text-muted-foreground text-sm">When tutors apply, they will appear here for review.</p>
+          </div>
+        ) : filteredApps.map((app) => (
+          <Card key={app.id} className={cn(
+            "border-white/5 bg-white/[0.02] backdrop-blur-xl rounded-[2rem] overflow-hidden hover:border-primary/20 transition-all group",
+            app.status === "APPROVED" && "opacity-60 grayscale-[0.5]"
+          )}>
             <CardContent className="p-0">
               <div className="flex flex-col lg:flex-row lg:items-center">
                  {/* Profile Section */}
                  <div className="p-8 flex items-center gap-6 lg:border-r border-white/5 lg:min-w-[400px]">
                     <div className="w-20 h-20 rounded-3xl bg-primary/10 text-primary flex items-center justify-center font-black text-2xl border border-primary/20 shadow-2xl shadow-primary/20">
-                       {tutor.name[0]}
+                       {app.user?.name[0]}
                     </div>
                     <div>
-                       <h3 className="text-2xl font-black tracking-tight">{tutor.name}</h3>
+                       <h3 className="text-2xl font-black tracking-tight">{app.user?.name}</h3>
                        <div className="flex items-center gap-2 mt-1">
                           <Badge className="bg-primary/10 text-primary border-none text-[9px] font-black tracking-widest uppercase">
-                            {tutor.educationLevel?.replace("_", " ")}
+                            {app.user?.educationLevel?.replace("_", " ")}
                           </Badge>
-                          <span className="text-xs font-bold text-muted-foreground">Joined {new Date(tutor.createdAt).toLocaleDateString()}</span>
+                          <span className="text-xs font-bold text-muted-foreground">Applied {new Date(app.createdAt).toLocaleDateString()}</span>
                        </div>
                     </div>
                  </div>
 
-                 {/* Credentials */}
+                 {/* Application Details */}
                  <div className="flex-1 p-8 grid grid-cols-2 md:grid-cols-3 gap-6">
                     <div>
                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Subjects</p>
                        <div className="flex flex-wrap gap-2">
-                          {tutor.tutorProfile?.subjects?.map((s: string) => (
+                          {app.subjects?.map((s: string) => (
                              <Badge key={s} variant="outline" className="border-white/10 text-[9px] font-black tracking-widest">{s}</Badge>
                           ))}
                        </div>
                     </div>
                     <div>
-                       <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Rate</p>
-                       <p className="text-lg font-black text-primary">Ksh {tutor.tutorProfile?.hourlyRate}/hr</p>
+                       <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Verification Path</p>
+                       <Badge variant="secondary" className="bg-blue-500/10 text-blue-500 border-none text-[9px] font-black tracking-widest uppercase px-3">
+                         {app.path}
+                       </Badge>
                     </div>
                     <div className="hidden md:block">
-                       <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Bio Preview</p>
-                       <p className="text-xs text-muted-foreground italic line-clamp-2">"{tutor.tutorProfile?.bio || "No biography provided yet."}"</p>
+                       <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Applicant Notes</p>
+                       <p className="text-xs text-muted-foreground italic line-clamp-2">"{app.notes || "No additional notes provided."}"</p>
                     </div>
                  </div>
 
                  {/* Actions */}
                  <div className="p-8 bg-white/[0.01] flex items-center gap-3 lg:border-l border-white/5">
-                    <Button 
-                      onClick={() => handleApprove(tutor.id)}
-                      className="rounded-xl font-black text-xs tracking-widest gap-2 bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition-all px-6 py-6"
-                    >
-                       <CheckCircle2 className="h-4 w-4" /> APPROVE
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      className="rounded-xl font-black text-xs tracking-widest gap-2 border-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all px-6 py-6"
-                    >
-                       <XCircle className="h-4 w-4" /> REJECT
-                    </Button>
+                    {app.status === "PENDING" ? (
+                      <>
+                        <Button 
+                          onClick={() => handleApprove(app.id)}
+                          className="rounded-xl font-black text-xs tracking-widest gap-2 bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition-all px-6 py-6"
+                        >
+                           <CheckCircle2 className="h-4 w-4" /> ACTIVATE DASHBOARD
+                        </Button>
+                        <Button 
+                          variant="outline"
+                          onClick={() => toast.info("Rejection logic pending...")}
+                          className="rounded-xl font-black text-xs tracking-widest gap-2 border-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all px-6 py-6"
+                        >
+                           <XCircle className="h-4 w-4" /> REJECT
+                        </Button>
+                      </>
+                    ) : (
+                      <div className="flex items-center gap-2 text-green-500 font-black text-xs tracking-widest px-6 py-6">
+                        <ShieldCheck className="h-4 w-4" /> APPROVED & ACTIVATED
+                      </div>
+                    )}
                     <Button variant="ghost" size="icon" className="rounded-xl h-12 w-12 hover:bg-white/5">
                        <ExternalLink className="h-5 w-5 text-muted-foreground" />
                     </Button>

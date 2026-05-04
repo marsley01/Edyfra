@@ -4,11 +4,8 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  Clock, Calendar, Sparkles, 
-  Plus, Trash2, ShieldCheck,
-  AlertCircle, Loader2
+  Clock, Plus, ShieldCheck, Sparkles
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 

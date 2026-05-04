@@ -12,8 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { getSubjectsByLevel } from "@/utils/subjects";
 import { getUserData } from "@/app/actions/user";
 
+import { getVerifiedTutors } from "@/app/actions/tutor";
+
 export default function TutorsPage() {
-  const supabase = createClient();
   const [tutors, setTutors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<any>(null);
@@ -23,29 +24,25 @@ export default function TutorsPage() {
   useEffect(() => {
     getUserData().then(setUserData);
     fetchTutors();
-  }, [subject]);
+  }, []);
 
   const fetchTutors = async () => {
     setLoading(true);
-    let query = supabase
-      .from("User")
-      .select(`
-        *,
-        tutorProfile:tutorProfileId(*)
-      `)
-      .eq("role", "TUTOR");
-
-    const { data, error } = await query;
-    if (data) setTutors(data);
-    setLoading(false);
+    try {
+      const data = await getVerifiedTutors();
+      setTutors(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const subjects = getSubjectsByLevel(userData?.educationLevel);
 
   const filteredTutors = tutors.filter(t => 
     t.name.toLowerCase().includes(search.toLowerCase()) &&
-    (subject === "all" || t.tutorProfile?.subjects?.includes(subject)) &&
-    t.educationLevel === userData?.educationLevel
+    (subject === "all" || t.tutorProfile?.subjects?.includes(subject))
   );
 
   return (

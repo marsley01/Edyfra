@@ -3,6 +3,7 @@
 import { PrismaClient, Role } from "@prisma/client";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import { sendTutorWelcomeEmail } from "@/lib/email";
 
 const prisma = new PrismaClient();
 
@@ -48,5 +49,36 @@ export async function updateUserRole(role: "STUDENT" | "TUTOR") {
 
   revalidatePath("/");
   revalidatePath("/onboarding");
+  return { success: true };
+}
+
+export async function updateProfile(data: { name: string; bio: string }) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      name: data.name,
+      bio: data.bio,
+    }
+  });
+
+  revalidatePath("/dashboard/settings");
+  return { success: true };
+}
+
+export async function updateUserSettings(settings: any) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { settings }
+  });
+
+  revalidatePath("/dashboard/settings");
   return { success: true };
 }

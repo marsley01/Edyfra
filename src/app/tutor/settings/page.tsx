@@ -1,21 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { 
-  User, BookOpen, Wallet, 
-  Sparkles, Loader2, Save,
-  CheckCircle2, AlertCircle
+  User, BookOpen, Loader2, Save,
+  AlertCircle
 } from "lucide-react";
 import { getUserData } from "@/app/actions/user";
 import { toast } from "sonner";
 
 export default function TutorSettingsPage() {
-  const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
@@ -32,7 +30,6 @@ export default function TutorSettingsPage() {
   const loadProfile = async () => {
     const user = await getUserData();
     if (user && user.tutorProfile) {
-      setProfile(user);
       setFormData({
         name: user.name || "",
         bio: user.tutorProfile.bio || "",
@@ -148,7 +145,7 @@ export default function TutorSettingsPage() {
   );
 }
 
-function Badge({ children, className, variant }: { children: React.ReactNode, className?: string, variant?: string }) {
+function Badge({ children, className }: { children: React.ReactNode, className?: string }) {
   return (
     <span className={className}>
       {children}
