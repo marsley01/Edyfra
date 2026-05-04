@@ -94,62 +94,8 @@ export async function updateTutorAvailability(schedule: any) {
   }
 }
 
-export async function acceptMatchRequest(requestId: string) {
-  try {
-    const user = await getUserData();
-    if (!user) throw new Error("Unauthorized");
-
-    const matchRequest = await prisma.matchRequest.findUnique({
-      where: { id: requestId }
-    });
-
-    if (!matchRequest || matchRequest.sessionId) {
-      throw new Error("Match request already resolved or not found.");
-    }
-
-    const roomId = `room-${Math.random().toString(36).substring(2, 9)}`;
-    
-    const session = await prisma.session.create({
-      data: {
-        studentId: matchRequest.studentId,
-        partnerId: user.id,
-        tier: "TUTOR",
-        subject: matchRequest.subject,
-        topic: matchRequest.topic,
-        status: "ACTIVE",
-        roomId: roomId,
-        startedAt: new Date(),
-      }
-    });
-
-    await prisma.matchRequest.update({
-      where: { id: requestId },
-      data: {
-        sessionId: session.id,
-        resolvedAs: "TUTOR",
-        resolvedAt: new Date(),
-      }
-    });
-
-    await prisma.notification.create({
-      data: {
-        userId: matchRequest.studentId,
-        type: "MATCH_FOUND",
-        title: "Match Found!",
-        body: "A verified expert has accepted your request. Join the room now!",
-        actionUrl: `/study-room/${session.id}`,
-      }
-    });
-
-    revalidatePath("/tutor/requests");
-    revalidatePath("/dashboard/study");
-    
-    return { success: true, sessionId: session.id };
-  } catch (error) {
-    console.error("Error in acceptMatchRequest:", error);
-    throw error;
-  }
-}
+import { acceptMatchRequest } from "./match";
+export { acceptMatchRequest };
 
 export async function getTutorStats() {
   try {
@@ -207,6 +153,11 @@ export async function searchTutors(query: string) {
         OR: [
           { name: { contains: query, mode: "insensitive" } },
           { bio: { contains: query, mode: "insensitive" } },
+          {
+            tutorProfile: {
+              subjects: { has: query }
+            }
+          }
         ],
         tutorProfile: { isNot: null }
       },
@@ -217,6 +168,34 @@ export async function searchTutors(query: string) {
     });
   } catch (error) {
     console.error("Error in searchTutors:", error);
+    return [];
+  }
+}
+
+export async function getTutorSessions(status: "ACTIVE" | "COMPLETED" = "ACTIVE") {
+  try {
+    const user = await getUserData();
+    if (!user) return [];
+
+    return await prisma.session.findMany({
+      where: {
+        partnerId: user.id,
+        status: status
+      },
+      include: {
+        student: {
+          select: {
+            name: true,
+            avatar: true
+          }
+        }
+      },
+      orderBy: {
+        startedAt: "desc"
+      }
+    });
+  } catch (error) {
+    console.error("Error in getTutorSessions:", error);
     return [];
   }
 }
