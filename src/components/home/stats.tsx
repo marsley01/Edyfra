@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { motion, useInView, useSpring, useTransform } from "framer-motion";
 
 interface Stat {
@@ -16,16 +16,19 @@ interface CounterProps {
 function Counter({ value, label }: CounterProps) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true });
-  const spring = useSpring(0, { stiffness: 50, damping: 20 });
+  const springConfig = useMemo(() => ({ stiffness: 50, damping: 20 }), []);
+  const spring = useSpring(0, springConfig);
   const display = useTransform(spring, (v) => {
     const val = Math.floor(v);
-    if (val === 0 && label !== "Uptime %") return "Join";
+    if (val === 0 && label !== "Uptime %") return "JOIN";
     return val.toLocaleString() + (value > 1000 ? "+" : value === 99 ? "%" : "");
   });
 
   useEffect(() => {
-    if (inView) spring.set(value || (label === "Uptime %" ? 99 : 0));
-  }, [inView, value, spring, label]);
+    if (inView) {
+      spring.set(value || (label === "Uptime %" ? 99 : 0));
+    }
+  }, [inView, value, label, spring]);
 
   return (
     <div ref={ref} className="text-center space-y-4">

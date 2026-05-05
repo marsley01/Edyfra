@@ -42,21 +42,21 @@ export function AdminDashboardClient({
       label: "Database", 
       status: stats[0]?.value !== undefined ? "Connected" : "Checking...", 
       color: stats[0]?.value !== undefined ? "bg-emerald-500" : "bg-yellow-500",
-      detail: `${stats[0]?.value || 0} users`,
+      detail: `${stats[0]?.value || 0} registered users`,
       pct: stats[0]?.value !== undefined ? 100 : 0
     },
     { 
-      label: "Active Sessions", 
-      status: stats[2]?.value > 0 ? `${stats[2].value} Live` : "Idle", 
+      label: "Active sessions", 
+      status: stats[2]?.value > 0 ? `${stats[2].value} happening now` : "None right now", 
       color: stats[2]?.value > 0 ? "bg-primary" : "bg-muted-foreground",
-      detail: `${completedSessions || 0} completed total`,
+      detail: `${completedSessions || 0} completed so far`,
       pct: stats[2]?.value > 0 ? Math.min((stats[2].value / Math.max(stats[0]?.value || 1, 1)) * 100, 100) : 0
     },
     { 
-      label: "Tutor Apps", 
-      status: pendingApplications.length > 0 ? `${pendingApplications.length} Pending` : "Clear", 
+      label: "Tutor applications", 
+      status: pendingApplications.length > 0 ? `${pendingApplications.length} pending` : "Nothing pending", 
       color: pendingApplications.length > 0 ? "bg-amber-500" : "bg-emerald-500",
-      detail: pendingApplications.length > 0 ? "Action required" : "No pending reviews",
+      detail: pendingApplications.length > 0 ? "Needs your attention" : "Everything is up to date",
       pct: pendingApplications.length > 0 ? Math.min(pendingApplications.length * 10, 100) : 0
     },
   ];
@@ -88,17 +88,17 @@ export function AdminDashboardClient({
             <span>{stats[2]?.value || 0} Active</span>
          </div>
          <div className="flex-1" />
-         <div className="text-primary pr-2 sm:pr-4 flex-shrink-0">EDYFRA_OS</div>
+         <div className="text-primary pr-2 sm:pr-4 flex-shrink-0">Edyfra Admin</div>
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
         <div className="space-y-1">
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tighter">Command Overview</h1>
-          <p className="text-muted-foreground text-xs sm:text-sm font-bold tracking-widest uppercase">Live Platform Intelligence</p>
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tighter">Platform Overview</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm font-bold tracking-widest uppercase">Here&apos;s how everything is running</p>
         </div>
         <div className="flex gap-3 sm:gap-4">
            <Button onClick={() => { router.push("/admin/sessions"); }} className="rounded-2xl font-bold px-4 sm:px-8 h-12 sm:h-14 text-xs border-border hover:bg-secondary bg-secondary">
-             <Activity className="h-4 w-4 mr-2" /> Live Rooms
+             <Activity className="h-4 w-4 mr-2" /> Active Sessions
            </Button>
            <Button onClick={() => router.refresh()} className="rounded-2xl font-black px-4 sm:px-8 h-12 sm:h-14 text-xs bg-primary text-white shadow-xl shadow-primary/20">
               <Clock className="h-4 w-4 mr-2" /> Refresh
@@ -141,8 +141,8 @@ export function AdminDashboardClient({
         <Card className="lg:col-span-2 rounded-[3rem] overflow-hidden border-border bg-card shadow-sm">
           <CardHeader className="p-6 sm:p-10 border-b flex flex-row items-center justify-between bg-secondary/10">
             <div>
-              <CardTitle className="text-xl sm:text-2xl font-black tracking-tight">Application Queue</CardTitle>
-              <CardDescription className="font-medium text-muted-foreground text-xs sm:text-sm">Verification protocols awaiting approval.</CardDescription>
+              <CardTitle className="text-xl sm:text-2xl font-black tracking-tight">Tutor Applications</CardTitle>
+              <CardDescription className="font-medium text-muted-foreground text-xs sm:text-sm">People waiting to join as tutors.</CardDescription>
             </div>
             <Link href="/admin/tutors">
                <Button variant="ghost" className="rounded-xl font-bold text-xs uppercase tracking-widest">View All</Button>
@@ -154,8 +154,8 @@ export function AdminDashboardClient({
                 <div className="w-16 h-16 sm:w-20 sm:h-20 bg-secondary rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
                    <CheckCircle2 className="h-8 w-8 sm:h-10 sm:w-10 text-emerald-500/40" />
                 </div>
-                <p className="text-muted-foreground font-black uppercase tracking-widest text-xs">Clear Workspace</p>
-                <p className="text-muted-foreground/60 text-sm font-medium">No pending applications detected.</p>
+                <p className="text-muted-foreground font-black uppercase tracking-widest text-xs">All caught up</p>
+                <p className="text-muted-foreground/60 text-sm font-medium">No one is waiting for approval right now.</p>
               </div>
             ) : (
               <div className="divide-y divide-border">
@@ -186,9 +186,9 @@ export function AdminDashboardClient({
         <Card className="rounded-[3rem] overflow-hidden bg-slate-900 border-white/5 text-white">
           <CardHeader className="p-6 sm:p-10">
             <CardTitle className="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-3">
-               <Cpu className="h-5 w-5 sm:h-6 sm:w-6 text-primary" /> System Health
+               <Activity className="h-5 w-5 sm:h-6 sm:w-6 text-primary" /> Platform Health
             </CardTitle>
-            <CardDescription className="text-white/40 text-xs sm:text-sm">Real database and platform metrics.</CardDescription>
+            <CardDescription className="text-white/40 text-xs sm:text-sm">What&apos;s happening right now.</CardDescription>
           </CardHeader>
           <CardContent className="px-6 sm:px-10 space-y-6 sm:space-y-10 pb-6 sm:pb-12">
              {healthChecks.map(v => (
@@ -210,7 +210,7 @@ export function AdminDashboardClient({
              ))}
              
             <div className="pt-6 sm:pt-10 border-t border-white/5 space-y-4 sm:space-y-6">
-               <p className="text-[9px] sm:text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Recent Users</p>
+               <p className="text-[9px] sm:text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Recently Joined</p>
                {recentUsers.length > 0 ? (
                  <div className="space-y-3 sm:space-y-4">
                     {recentUsers.map((u: any) => (
@@ -239,13 +239,13 @@ export function AdminDashboardClient({
                   <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
                </div>
                <div>
-                 <CardTitle className="text-xl sm:text-3xl font-black text-white tracking-tighter">Ecosystem Telemetry</CardTitle>
-                 <CardDescription className="text-white/40 font-medium text-sm sm:text-lg">Platform engagement metrics from database.</CardDescription>
+                 <CardTitle className="text-xl sm:text-3xl font-black text-white tracking-tighter">Platform Numbers</CardTitle>
+                 <CardDescription className="text-white/40 font-medium text-sm sm:text-lg">Where things stand right now.</CardDescription>
                </div>
              </div>
              <div className="flex gap-3 sm:gap-4">
                 <Button onClick={() => { router.push("/admin/users"); }} variant="outline" className="rounded-2xl border-white/10 bg-white/5 text-white font-black text-[9px] sm:text-[10px] uppercase tracking-widest h-12 sm:h-14 px-4 sm:px-8 hover:bg-white/10">
-                   User Directory
+                   See All Users
                 </Button>
              </div>
            </CardHeader>
@@ -307,7 +307,7 @@ export function AdminDashboardClient({
               )}
           </CardContent>
            <div className="bg-white/5 p-4 sm:p-6 text-center">
-              <p className="text-[8px] sm:text-[10px] font-black text-white/20 uppercase tracking-[0.3em] sm:tracking-[0.5em]">Live data from PostgreSQL &bull; Last sync: {new Date().toLocaleTimeString()}</p>
+              <p className="text-[8px] sm:text-[10px] font-black text-white/20 uppercase tracking-[0.3em] sm:tracking-[0.5em]">Live data &bull; Updated {new Date().toLocaleTimeString()}</p>
            </div>
          </Card>
        </div>

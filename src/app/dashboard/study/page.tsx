@@ -115,8 +115,8 @@ export default function StudyPage() {
           table: "MatchRequest",
           filter: `id=eq.${currentRequestId}`,
         },
-        (payload) => {
-          if (payload.new.sessionId) {
+        (payload: any) => {
+          if (payload.new?.sessionId) {
             toast.success("Match found! Redirecting...");
             router.push(`/study-room/${payload.new.sessionId}`);
           }
@@ -161,12 +161,12 @@ export default function StudyPage() {
   return (
     <div className="p-4 md:p-12 max-w-5xl mx-auto space-y-12 animate-in fade-in duration-700 font-sans">
       <div className="space-y-4 text-center md:text-left">
-        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Neural Network Match</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Find your study partner</p>
         <h1 className="text-5xl md:text-7xl font-black tracking-tightest leading-[0.9]">
-          Connect <br /> <span className="text-muted-foreground">Instantly.</span>
+          Let&apos;s find you <br /> <span className="text-muted-foreground">some help.</span>
         </h1>
         <p className="text-muted-foreground text-lg md:text-xl font-medium max-w-2xl leading-relaxed">
-          Initialize a study session with a verified expert, a brilliant peer, or Mash AI in under 30 seconds.
+          Pick a subject and we&apos;ll connect you with a tutor, a study partner, or Mash AI — whoever&apos;s available first.
         </p>
       </div>
 
@@ -176,10 +176,10 @@ export default function StudyPage() {
           <CardContent className="p-8 md:p-16 space-y-12">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               <div className="space-y-4">
-                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">Academic Discipline</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">What subject?</label>
                 <Select onValueChange={(v: string | null) => v && setFormData({ ...formData, subject: v })}>
                   <SelectTrigger className="h-20 rounded-[2rem] border-border bg-background font-black px-8 text-2xl focus:ring-primary">
-                    <SelectValue placeholder="Select Discipline" />
+                    <SelectValue placeholder="Pick a subject" />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl border-border max-h-[300px]">
                     {subjects.map((s) => (
@@ -189,7 +189,7 @@ export default function StudyPage() {
                 </Select>
               </div>
               <div className="space-y-4">
-                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">Session Objective (Optional)</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">What are you working on? (optional)</label>
                 <Input
                   placeholder="e.g. Calculus Integration"
                   className="h-20 rounded-[2rem] border-border bg-background font-bold px-8 text-xl focus-visible:ring-primary"
@@ -204,7 +204,7 @@ export default function StudyPage() {
               className="w-full h-24 rounded-[2.5rem] bg-foreground text-background hover:bg-primary hover:text-white font-black text-xl tracking-[0.2em] uppercase shadow-2xl transition-all duration-500 active:scale-95 group"
             >
               <Zap className="h-8 w-8 mr-4 fill-primary text-primary group-hover:fill-white group-hover:text-white transition-colors" />
-              Initialize Match-Me Protocol
+              Find Me a Study Partner
             </Button>
           </CardContent>
         </Card>
@@ -228,10 +228,10 @@ export default function StudyPage() {
                    </div>
                 </div>
                 <div className="space-y-4">
-                  <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Checking Expert Tier.</h2>
-                  <p className="text-muted-foreground text-lg font-medium">Scanning for verified educators specializing in {formData.subject}.</p>
+                  <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Looking for a tutor.</h2>
+                  <p className="text-muted-foreground text-lg font-medium">Checking if a verified tutor for {formData.subject} is available.</p>
                   <div className="pt-6">
-                     <span className="px-6 py-2 rounded-full bg-primary/10 text-primary font-black text-xs tracking-widest uppercase">{timer}s Protocol Remaining</span>
+                     <span className="px-6 py-2 rounded-full bg-primary/10 text-primary font-black text-xs tracking-widest uppercase">{timer}s left</span>
                   </div>
                 </div>
               </motion.div>
@@ -252,10 +252,10 @@ export default function StudyPage() {
                    </div>
                 </div>
                 <div className="space-y-4">
-                  <h2 className="text-4xl md:text-5xl font-black tracking-tightest text-blue-500">Expanding Search.</h2>
-                  <p className="text-muted-foreground text-lg font-medium">Connecting with elite scholars studying {formData.subject}.</p>
+                  <h2 className="text-4xl md:text-5xl font-black tracking-tightest text-blue-500">Expanding to peers.</h2>
+                  <p className="text-muted-foreground text-lg font-medium">No tutor around — looking for a student who&apos;s great at {formData.subject}.</p>
                   <div className="pt-6">
-                     <span className="px-6 py-2 rounded-full bg-blue-500/10 text-blue-500 font-black text-xs tracking-widest uppercase">{timer}s Protocol Remaining</span>
+                     <span className="px-6 py-2 rounded-full bg-blue-500/10 text-blue-500 font-black text-xs tracking-widest uppercase">{timer}s left</span>
                   </div>
                 </div>
               </motion.div>
@@ -276,8 +276,8 @@ export default function StudyPage() {
                    </div>
                 </div>
                 <div className="space-y-4">
-                  <h2 className="text-4xl md:text-5xl font-black tracking-tightest text-emerald-500">Initializing Mash AI.</h2>
-                  <p className="text-muted-foreground text-lg font-medium">Instant deployment — your scholarly sanctuary is being prepared.</p>
+                  <h2 className="text-4xl md:text-5xl font-black tracking-tightest text-emerald-500">Connecting you to Mash AI.</h2>
+                  <p className="text-muted-foreground text-lg font-medium">No human available right now, but our AI tutor is ready to help.</p>
                   <div className="pt-6 flex justify-center gap-2">
                      <Loader2 className="h-4 w-4 animate-spin text-emerald-500" />
                      <span className="text-emerald-500 font-black text-xs tracking-widest uppercase">Connecting...</span>
@@ -287,16 +287,16 @@ export default function StudyPage() {
             )}
           </AnimatePresence>
 
-          <Button
-            variant="ghost"
-            onClick={() => {
-              setIsMatching(false);
-              setCurrentRequestId(null);
-            }}
-            className="mt-16 text-muted-foreground hover:text-red-500 font-black text-[10px] tracking-widest uppercase transition-colors"
-          >
-            Abort Protocol
-          </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setIsMatching(false);
+                setCurrentRequestId(null);
+              }}
+              className="mt-16 text-muted-foreground hover:text-red-500 font-black text-[10px] tracking-widest uppercase transition-colors"
+            >
+              Cancel
+            </Button>
         </Card>
       )}
     </div>

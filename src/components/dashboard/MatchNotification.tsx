@@ -26,9 +26,9 @@ export default function MatchNotification() {
   useEffect(() => {
     const channel = supabase
       .channel('global-matches')
-      .on('broadcast', { event: 'new-request' }, ({ payload }) => {
+      .on('broadcast', { event: 'new-request' }, ({ payload }: { payload: any }) => {
         // Only show requests that aren't from the current user
-        supabase.auth.getUser().then(({ data: { user } }) => {
+        supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
           if (user && payload.studentId !== user.id) {
             setRequests((prev) => [...prev, payload]);
             toast.info(`New help request: ${payload.studentName} needs ${payload.subject}!`);
@@ -40,7 +40,7 @@ export default function MatchNotification() {
           }
         });
       })
-      .subscribe((status) => {
+      .subscribe((status: any) => {
         if (status === 'SUBSCRIBED') {
           console.log('Match notification channel subscribed');
         }

@@ -229,9 +229,9 @@ export default function StudyRoomPage() {
                 <AvatarPremium seed={session.partner.name} size="sm" className="border-2 border-background" />
               )}
            </div>
-           <Button onClick={handleEndSession} variant="ghost" className="h-10 px-6 rounded-xl border border-border/50 font-black text-[10px] tracking-widest uppercase hover:bg-red-500/10 hover:text-red-500 transition-all">
-              Leave Session
-           </Button>
+            <Button onClick={handleEndSession} variant="ghost" className="h-10 px-6 rounded-xl border border-border/50 font-black text-[10px] tracking-widest uppercase hover:bg-red-500/10 hover:text-red-500 transition-all">
+               End Session
+            </Button>
         </div>
       </header>
 
@@ -243,19 +243,19 @@ export default function StudyRoomPage() {
               <div className="space-y-3">
                  <div className="p-4 rounded-2xl bg-background border border-border/50 space-y-2">
                     <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary">
-                       <Zap className="h-3 w-3" /> Connection
+                       <Zap className="h-3 w-3" /> {session.partner ? "Studying Together" : "Waiting for a partner"}
                     </div>
                     <p className="text-xs font-medium text-muted-foreground leading-relaxed">
                       {session.partner 
-                        ? `Studying with ${session.partner.name}` 
-                        : "Waiting for a partner to join..."}
+                        ? `You're studying with ${session.partner.name}` 
+                        : "Hang tight — we're finding someone to join you."}
                     </p>
                  </div>
                  <div className="p-4 rounded-2xl bg-background border border-border/50 space-y-2">
                     <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-500">
-                       <ShieldCheck className="h-3 w-3" /> Secure
+                       <ShieldCheck className="h-3 w-3" /> Private Session
                     </div>
-                    <p className="text-xs font-medium text-muted-foreground leading-relaxed">Your session is private and encrypted.</p>
+                    <p className="text-xs font-medium text-muted-foreground leading-relaxed">Your conversation stays between you and your study partner.</p>
                  </div>
               </div>
            </div>
@@ -275,12 +275,12 @@ export default function StudyRoomPage() {
                  <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center text-muted-foreground/30">
                     <GraduationCap className="h-8 w-8" />
                  </div>
-                 <div className="space-y-1">
-                    <h3 className="text-xl font-black tracking-tight">Session Started.</h3>
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                      {session.subject} • {session.topic || "General"} • {new Date().toLocaleDateString()}
-                    </p>
-                 </div>
+                  <div className="space-y-1">
+                     <h3 className="text-xl font-black tracking-tight">You&apos;re all set.</h3>
+                     <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                       {session.subject} • {session.topic || "General"} • {new Date().toLocaleDateString()}
+                     </p>
+                  </div>
               </div>
 
               <div className="max-w-4xl mx-auto space-y-8">

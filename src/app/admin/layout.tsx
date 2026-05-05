@@ -54,13 +54,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navItems = [
     { href: "/admin", label: "Overview", icon: LayoutDashboard },
-    { href: "/admin/users", label: "Scholars", icon: Users },
-    { href: "/admin/tutors", label: "Verifications", icon: ShieldCheck },
-    { href: "/admin/sessions", label: "Live Rooms", icon: Zap },
+    { href: "/admin/users", label: "Users", icon: Users },
+    { href: "/admin/tutors", label: "Tutor Approvals", icon: ShieldCheck },
+    { href: "/admin/sessions", label: "Sessions", icon: Zap },
     { href: "/admin/notifications", label: "Notifications", icon: Bell },
     { href: "/admin/reviews", label: "Reviews", icon: MessageSquare },
-    { href: "/admin/content", label: "Challenge CMS", icon: Award },
-    { href: "/admin/settings", label: "System Config", icon: Settings },
+    { href: "/admin/content", label: "Challenges", icon: Award },
+    { href: "/admin/settings", label: "Settings", icon: Settings },
   ];
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -72,20 +72,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
          <div className="flex items-center gap-4 overflow-hidden">
             <div className="flex items-center gap-2 flex-shrink-0">
                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-               <span className="text-emerald-500">Live</span>
+               <span className="text-emerald-500">Online</span>
             </div>
             <div className="flex items-center gap-2 text-white/40 hidden sm:flex flex-shrink-0">
                <Activity className="h-3 w-3" />
-               <span>Mem: 4.2GB</span>
+               <span>Active</span>
             </div>
             <div className="flex items-center gap-2 text-white/40 hidden md:flex flex-shrink-0">
                <Globe className="h-3 w-3" />
-               <span>12 Nodes</span>
+               <span>Kenya</span>
             </div>
          </div>
          <div className="flex items-center gap-2 text-white/40 flex-shrink-0">
-            <span className="hidden sm:inline">AES-256</span>
-            <span className="text-primary">v2.4</span>
+            <span className="hidden sm:inline">Secure</span>
+            <span className="text-primary">Admin</span>
          </div>
       </div>
 
@@ -162,11 +162,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <div className="flex items-center gap-4 xl:gap-8">
                  <div className="flex items-center gap-2 text-muted-foreground text-xs font-bold">
                     <Globe className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-                    <span className="truncate">East-Africa-1</span>
+                    <span className="truncate">East Africa</span>
                  </div>
                  <div className="flex items-center gap-2 text-muted-foreground text-xs font-bold">
                     <Activity className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-                    <span>99.98%</span>
+                    <span>Running</span>
                  </div>
               </div>
               
@@ -212,8 +212,8 @@ function AdminSidebarContent({ pathname, navItems, adminUser, supabase, router, 
             <Terminal className="text-white h-6 w-6" />
           </div>
           <div>
-            <span className="text-2xl font-black text-primary tracking-tighter block">EDYFRA</span>
-            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Core OS v2.1</span>
+            <span className="text-2xl font-black text-primary tracking-tighter block">Edyfra</span>
+            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Admin Panel</span>
           </div>
         </Link>
       </div>

@@ -37,7 +37,7 @@ export default function TutorRequestsPage() {
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "MatchRequest" },
-        (payload) => {
+        (payload: any) => {
           const newReq = payload.new as MatchRequest;
           setRequests((prev) => {
             if (prev.find(r => r.id === newReq.id)) return prev;
@@ -50,7 +50,7 @@ export default function TutorRequestsPage() {
 
     const broadcastChannel = supabase
       .channel('global-matches')
-      .on('broadcast', { event: 'new-request' }, (payload) => {
+      .on('broadcast', { event: 'new-request' }, (payload: any) => {
         const newReq = {
           id: payload.payload.requestId,
           subject: payload.payload.subject,
@@ -104,8 +104,8 @@ export default function TutorRequestsPage() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-1">
-          <h1 className="text-3xl font-black tracking-tight">Match Feed</h1>
-          <p className="text-muted-foreground font-medium italic">Discover students currently seeking your expertise.</p>
+           <h1 className="text-3xl font-black tracking-tight">Student Requests</h1>
+           <p className="text-muted-foreground font-medium">Students nearby who could use your help right now.</p>
         </div>
         <div className="flex gap-3">
            <Button variant="outline" className="rounded-xl font-bold gap-2">
@@ -139,8 +139,7 @@ export default function TutorRequestsPage() {
                         <Clock className="h-3 w-3" /> 2m ago
                       </span>
                     </div>
-                    <h3 className="text-xl font-bold">{req.topic || "General Revision"}</h3>
-                    <p className="text-sm text-muted-foreground font-medium italic">&quot;Seeking assistance with structured problem solving and exam techniques.&quot;</p>
+                     <h3 className="text-xl font-bold">{req.topic || "General Help"}</h3>
                   </div>
                 </div>
 
@@ -169,10 +168,10 @@ export default function TutorRequestsPage() {
              <div className="w-20 h-20 bg-teal-600/5 rounded-full flex items-center justify-center mx-auto border-2 border-teal-600/5">
                 <Users className="h-10 w-10 text-teal-600/30" />
              </div>
-             <div>
-                <h3 className="text-2xl font-black text-teal-600">Feed is Quiet</h3>
-                <p className="text-muted-foreground max-w-sm mx-auto font-medium italic">No live requests at the moment. Ensure your status is set to &apos;Online&apos; to be discovered by students.</p>
-             </div>
+              <div>
+                 <h3 className="text-2xl font-black text-teal-600">All caught up</h3>
+                 <p className="text-muted-foreground max-w-sm mx-auto font-medium">No students waiting right now. Stay online — someone will reach out soon.</p>
+              </div>
           </div>
         )}
       </div>

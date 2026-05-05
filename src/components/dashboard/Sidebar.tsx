@@ -18,11 +18,11 @@ import { getUserData } from "@/app/actions/user";
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/feed", label: "Community", icon: Share2 },
-  { href: "/dashboard/search", label: "Find Partners", icon: UserSearch },
-  { href: "/dashboard/study", label: "Start Study", icon: Zap },
+  { href: "/dashboard/search", label: "Study Partners", icon: UserSearch },
+  { href: "/dashboard/study", label: "Start a Session", icon: Zap },
   { href: "/dashboard/sessions", label: "My Sessions", icon: BookOpen },
-  { href: "/dashboard/tutors", label: "Find Tutors", icon: GraduationCap },
-  { href: "/dashboard/challenges", label: "Quests", icon: Flame },
+  { href: "/dashboard/tutors", label: "Find a Tutor", icon: GraduationCap },
+  { href: "/dashboard/challenges", label: "Daily Quests", icon: Flame },
   { href: "/dashboard/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/dashboard/achievements", label: "Achievements", icon: Sparkles },
 ];
@@ -101,16 +101,16 @@ export default function DashboardSidebar({ user, onClose }: { user: User; onClos
            <Badge variant="outline" className="w-full justify-center py-1 bg-secondary border-border text-[10px] text-muted-foreground font-black uppercase tracking-widest">
               {user.user_metadata?.role || "STUDENT"}
            </Badge>
-           {user.user_metadata?.role === "TUTOR" && (
-             <Link href="/tutor" className="flex items-center gap-2 justify-center w-full py-2 rounded-xl bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/20 hover:bg-primary hover:text-white transition-all">
-                <GraduationCap className="h-3 w-3" /> Teacher Mode
-             </Link>
-           )}
-           {user.user_metadata?.role === "ADMIN" && (
-             <Link href="/admin" className="flex items-center gap-2 justify-center w-full py-2 rounded-xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest border border-slate-800 hover:bg-black transition-all">
-                <Terminal className="h-3 w-3" /> Admin Portal
-             </Link>
-           )}
+            {user.user_metadata?.role === "TUTOR" && (
+              <Link href="/tutor" className="flex items-center gap-2 justify-center w-full py-2 rounded-xl bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/20 hover:bg-primary hover:text-white transition-all">
+                 <GraduationCap className="h-3 w-3" /> Tutor Dashboard
+              </Link>
+            )}
+            {user.user_metadata?.role === "ADMIN" && (
+              <Link href="/admin" className="flex items-center gap-2 justify-center w-full py-2 rounded-xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest border border-slate-800 hover:bg-black transition-all">
+                 <Terminal className="h-3 w-3" /> Admin Panel
+              </Link>
+            )}
            <div className="flex items-center gap-2 justify-center w-full py-2.5 rounded-xl bg-yellow-500/10 text-yellow-600 text-[10px] font-black uppercase tracking-widest border border-yellow-500/20 shadow-sm">
               <Trophy className="h-3 w-3 fill-current" /> {points?.toLocaleString() || "0"} Points
            </div>

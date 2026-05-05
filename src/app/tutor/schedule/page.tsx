@@ -65,28 +65,20 @@ export default function TutorSchedulePage() {
                   <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-6 shadow-lg shadow-primary/10">
                      <Sparkles className="h-7 w-7" />
                   </div>
-                  <CardTitle className="text-3xl font-black tracking-tightest">Smart Matching</CardTitle>
-                  <CardDescription className="text-muted-foreground font-medium text-lg mt-3 leading-relaxed">
-                     Our system matches you with students who are active during your preferred times.
-                  </CardDescription>
+                   <CardTitle className="text-3xl font-black tracking-tightest">How Matching Works</CardTitle>
+                   <CardDescription className="text-muted-foreground font-medium text-lg mt-3 leading-relaxed">
+                      Students see you when they need help during your available times.
+                   </CardDescription>
                </CardHeader>
                <CardContent className="p-10 pt-0 space-y-8 relative z-10">
-                  <div className="space-y-4">
-                     <div className="flex items-center justify-between p-5 rounded-[1.5rem] bg-secondary/50 border border-border">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Match Priority</span>
-                        <Badge className="bg-emerald-500/10 text-emerald-500 border-none font-black text-[10px] tracking-widest px-3">ULTRA</Badge>
-                     </div>
-                     <div className="flex items-center justify-between p-5 rounded-[1.5rem] bg-secondary/50 border border-border">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Discovery Rate</span>
-                        <span className="text-sm font-black text-primary tracking-tightest">98.4%</span>
-                     </div>
-                  </div>
-                  <div className="flex items-start gap-4 p-8 rounded-[2rem] bg-primary/5 border border-primary/20">
-                     <ShieldCheck className="h-6 w-6 text-primary mt-1 shrink-0" />
-                     <p className="text-sm font-bold text-foreground leading-relaxed">
-                        Consistency is key. Tutors with a fixed weekly schedule receive <span className="text-primary underline underline-offset-4 decoration-2">3x more session requests</span>.
-                     </p>
-                  </div>
+                   <div className="space-y-4">
+                      <div className="flex items-start gap-4 p-8 rounded-[2rem] bg-primary/5 border border-primary/20">
+                         <ShieldCheck className="h-6 w-6 text-primary mt-1 shrink-0" />
+                         <p className="text-sm font-bold text-foreground leading-relaxed">
+                            Consistency is key. Tutors with a regular weekly schedule get <span className="text-primary underline underline-offset-4 decoration-2">more session requests</span> because students know when to find them.
+                         </p>
+                      </div>
+                   </div>
                </CardContent>
             </Card>
          </div>

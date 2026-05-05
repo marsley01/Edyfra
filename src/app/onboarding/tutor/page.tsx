@@ -111,18 +111,18 @@ export default function TutorOnboardingPage() {
                 <ShieldCheck className="h-8 w-8" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-3xl font-black tracking-tightest">Expert Network.</h3>
+                <h3 className="text-3xl font-black tracking-tightest">Help others succeed.</h3>
                 <p className="text-primary-foreground/70 font-medium text-sm leading-relaxed">
-                  You are joining a high-performance community of educators across Kenya.
+                  We&apos;ll set up your tutor profile so students can find and book you.
                 </p>
               </div>
             </div>
 
             <div className="space-y-8">
                {[
-                 { icon: CheckCircle2, text: "Verified Badge" },
-                 { icon: Wallet, text: "Weekly Payouts" },
-                 { icon: Sparkles, text: "Top Tier Tools" }
+                 { icon: CheckCircle2, text: "Get a verified badge" },
+                 { icon: Wallet, text: "Get paid weekly" },
+                 { icon: Sparkles, text: "Powerful tutor tools" }
                ].map((item, i) => (
                  <div key={i} className="flex items-center gap-4">
                    <item.icon className="h-5 w-5 text-primary-foreground/40" />

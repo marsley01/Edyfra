@@ -45,9 +45,11 @@ export default function FeedPage() {
   const supabase = createClient();
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setCurrentUserId(user.id);
-    });
+    async function init() {
+      const { data } = await supabase.auth.getUser();
+      if (data?.user) setCurrentUserId(data.user.id);
+    }
+    init();
     loadPosts();
     fetchTechNews();
   }, [filter]);

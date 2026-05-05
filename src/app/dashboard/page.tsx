@@ -43,11 +43,10 @@ export default function DashboardPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-8 pb-8 md:pb-12 border-b border-border">
          <div className="space-y-3 md:space-y-4">
             <h1 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tightest leading-none">
-              Welcome back, <br />
-              <span className="text-primary">{userData?.name?.split(" ")[0] || "there"}.</span>
+              Hey, <span className="text-primary">{userData?.name?.split(" ")[0] || "there"}.</span>
             </h1>
             <p className="text-muted-foreground text-base sm:text-lg md:text-xl font-medium max-w-xl">
-              Your study space is ready. What would you like to learn today?
+              Ready for today&apos;s session? Your study space is all set up.
             </p>
          </div>
          <Link href="/dashboard/study">
@@ -79,14 +78,14 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 p-6 sm:p-10 md:p-16 rounded-[2rem] sm:rounded-[3rem] bg-secondary border border-border/50 space-y-6 sm:space-y-8 relative overflow-hidden group">
            <div className="relative z-10 space-y-2">
               <h3 className="text-2xl sm:text-3xl font-black tracking-tightest">Your Activity</h3>
-              <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Keep track of your study progress and sessions</p>
+              <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Your study sessions and progress will show up here</p>
            </div>
            <div className="relative z-10 min-h-[200px] sm:min-h-[300px] flex flex-col items-center justify-center text-center p-8 sm:p-12 space-y-4 sm:space-y-6 bg-background rounded-[1.5rem] sm:rounded-[2rem] border border-border/50">
               <div className="bg-secondary p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm">
                  <BookOpen className="h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground/20" />
               </div>
               <p className="text-muted-foreground font-medium text-base sm:text-lg max-w-sm">
-                No recent activity found. Start a session to see your progress here.
+                You haven&apos;t had any sessions yet. Start one and track your progress here.
               </p>
            </div>
            {/* Background Decoration */}
@@ -100,11 +99,11 @@ export default function DashboardPage() {
                 Daily Goal
                 <Flame className="h-6 w-6 sm:h-8 sm:w-8 text-primary animate-pulse" />
               </h3>
-              <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Keep your streak alive</p>
+              <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Keep your streak going</p>
            </div>
            <div className="relative z-10 p-6 sm:p-8 bg-white/5 rounded-[1.5rem] sm:rounded-[2rem] border border-white/10 space-y-6 sm:space-y-8">
               <p className="text-base sm:text-lg font-medium leading-relaxed opacity-80">
-                Complete a session today to keep your streak going and earn a bonus +50 points.
+                Complete a study session today to keep your streak alive and earn +50 bonus points.
               </p>
               <Link href="/dashboard/challenges" className="block w-full">
                 <Button className="w-full h-12 sm:h-14 bg-primary hover:bg-primary/90 text-white font-black text-xs tracking-widest uppercase rounded-full shadow-2xl transition-all active:scale-95">
@@ -124,10 +123,10 @@ export default function DashboardPage() {
          <div className="flex-1 space-y-3 sm:space-y-4 text-center md:text-left">
             <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.4em] text-primary">Find a Mentor</p>
             <h1 className="text-3xl sm:text-5xl md:text-7xl font-black tracking-tightest leading-none">
-              Get <br /> <span className="text-muted-foreground">Connected.</span>
+              Don&apos;t study <br /> <span className="text-muted-foreground">alone.</span>
             </h1>
             <p className="text-muted-foreground font-medium text-base sm:text-lg md:text-xl">
-               Work directly with expert tutors who can help you clear up any confusion and master your subjects.
+               Connect with tutors and study partners who can help you push through the tough topics.
             </p>
          </div>
          <Link href="/dashboard/tutors" className="w-full md:w-auto">

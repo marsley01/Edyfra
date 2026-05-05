@@ -42,7 +42,7 @@ export default function LoginPage() {
               </div>
            </Link>
            <h1 className="text-4xl font-black tracking-tightest">Welcome back.</h1>
-           <p className="text-muted-foreground font-medium text-lg">Log in to your account to continue.</p>
+           <p className="text-muted-foreground font-medium text-lg">We&apos;re glad you&apos;re here. Sign in to pick up where you left off.</p>
         </div>
 
         {/* Form */}

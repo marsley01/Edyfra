@@ -52,8 +52,8 @@ export default function TutorDashboard() {
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "MatchRequest" },
-        (payload) => {
-          if (!payload.new.sessionId) {
+        (payload: any) => {
+          if (!payload.new?.sessionId) {
             setPendingRequests((prev) => [payload.new as PendingRequest, ...prev]);
             toast.info("New student request nearby!");
           }
@@ -127,10 +127,10 @@ export default function TutorDashboard() {
   }
 
   const stats = [
-    { label: "Active Jobs", value: pendingRequests.length, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
+    { label: "Requests", value: pendingRequests.length, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
     { label: "Sessions", value: profile?.totalSessions || 0, icon: Sparkles, color: "text-emerald-500", bg: "bg-emerald-500/10" },
     { label: "Earnings", value: `KSH ${(profile?.totalSessions || 0) * (profile?.hourlyRate || 0)}`, icon: Wallet, color: "text-primary", bg: "bg-primary/10" },
-    { label: "Rating", value: profile?.rating ? profile.rating.toFixed(1) : "New", icon: Star, color: "text-yellow-500", bg: "bg-yellow-500/10" },
+    { label: "Rating", value: profile?.rating ? profile.rating.toFixed(1) : "No ratings yet", icon: Star, color: "text-yellow-500", bg: "bg-yellow-500/10" },
   ];
 
   return (
@@ -138,10 +138,8 @@ export default function TutorDashboard() {
       {/* Premium Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
         <div className="space-y-2">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tightest">Your Dashboard.</h1>
-          <p className="text-muted-foreground text-lg font-medium">
-            Good to see you, <span className="text-foreground font-black underline decoration-primary decoration-4 underline-offset-4">{profile?.user?.name?.split(" ")[0] || "Tutor"}</span>.
-          </p>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tightest">Welcome back, {profile?.user?.name?.split(" ")[0] || "Tutor"}.</h1>
+          <p className="text-muted-foreground text-lg font-medium">Here&apos;s what&apos;s happening with your students right now.</p>
         </div>
 
         <div className={`flex items-center gap-6 px-8 py-5 rounded-[2rem] border-2 transition-all duration-500 shadow-xl ${isOnline ? "border-primary bg-primary/5 shadow-primary/5" : "border-border bg-secondary"}`}>
@@ -194,10 +192,10 @@ export default function TutorDashboard() {
             ) : pendingRequests.length === 0 ? (
               <div className="p-20 flex flex-col items-center justify-center text-center space-y-6 bg-secondary/30 rounded-[3rem] border border-dashed border-border">
                 <BookOpen className="h-12 w-12 text-muted-foreground/20" />
-                <div className="space-y-2">
-                   <p className="text-xl font-black tracking-tightest">It&apos;s quiet for now.</p>
-                   <p className="text-muted-foreground font-medium max-w-xs mx-auto">New requests will appear here in real-time as students seek help.</p>
-                </div>
+               <div className="space-y-2">
+                  <p className="text-xl font-black tracking-tightest">No students waiting right now.</p>
+                  <p className="text-muted-foreground font-medium max-w-xs mx-auto">Stay online — a request will pop up as soon as someone needs your help.</p>
+               </div>
               </div>
             ) : (
               pendingRequests.map((req) => (

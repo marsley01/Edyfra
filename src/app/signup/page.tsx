@@ -41,8 +41,8 @@ export default function SignupPage() {
                 <GraduationCap className="h-7 w-7" />
               </div>
            </Link>
-           <h1 className="text-4xl font-black tracking-tightest">Get Started.</h1>
-           <p className="text-muted-foreground font-medium text-lg">Join the community of students and mentors.</p>
+           <h1 className="text-4xl font-black tracking-tightest">Let&apos;s get you started.</h1>
+           <p className="text-muted-foreground font-medium text-lg">Create your account and join a community that&apos;s here to help you succeed.</p>
         </div>
 
         {/* Form */}

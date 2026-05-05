@@ -9,16 +9,16 @@ import {
 } from "lucide-react";
 
 const allFeatures = [
-  { title: "AI Discovery Engine", description: "Our proprietary algorithms synchronize you with the ideal tutors and study peers based on your unique academic trajectory.", icon: Target },
-  { title: "Knowledge Desk", description: "A high-fidelity social feed designed specifically for academic collaboration and scholarly discovery.", icon: MessageSquare },
-  { title: "Mission Analytics", description: "Visualize your growth with institutional-grade dashboards that measure your potential across the network.", icon: BarChart3 },
-  { title: "Expert Verification", description: "Every mentor is hand-audited through a rigorous institutional validation protocol.", icon: ShieldCheck },
-  { title: "Global Sync", description: "Connect with scholars from across Kenya and beyond, breaking down geographical learning barriers.", icon: Globe },
-  { title: "Resource Forge", description: "Access a curated library of learning protocols, guides, and mission-critical resources.", icon: BookOpen },
-  { title: "Live Research Labs", description: "Engage in high-definition study sessions with real-time collaborative tools and AI-assisted insights.", icon: Zap },
-  { title: "Honors System", description: "Earn institutional points and unlock legendary badges as you dominate your academic field.", icon: Sparkles },
-  { title: "Peer Matching", description: "Find study partners at your exact academic level — matched by subject, topic, and learning style.", icon: Users },
-  { title: "Daily Challenges", description: "Stay sharp with mission-critical daily problems that build streak-based momentum and reward mastery.", icon: Brain },
+  { title: "Smart Matching", description: "We connect you with the right tutors and study partners based on what you're learning and how you like to study.", icon: Target },
+  { title: "Knowledge Feed", description: "A space built just for students to ask questions, share notes, and learn from each other.", icon: MessageSquare },
+  { title: "Progress Tracking", description: "See how far you've come with clear, simple dashboards that show your growth over time.", icon: BarChart3 },
+  { title: "Verified Tutors", description: "Every tutor on Edyfra has been checked and approved so you know you're in good hands.", icon: ShieldCheck },
+  { title: "Connect Anywhere", description: "Study with people across Kenya — no matter where you are.", icon: Globe },
+  { title: "Study Resources", description: "Access helpful guides, notes, and materials curated by tutors and students.", icon: BookOpen },
+  { title: "Live Study Rooms", description: "Jump into real-time study sessions with chat, AI help, and collaborative tools.", icon: Zap },
+  { title: "Rewards & Badges", description: "Earn points as you study and unlock badges that celebrate your progress.", icon: Sparkles },
+  { title: "Peer Matching", description: "Find study partners at your level — matched by subject, topic, and learning style.", icon: Users },
+  { title: "Daily Challenges", description: "Keep your skills sharp with daily problems that build streaks and reward consistency.", icon: Brain },
 ];
 
 export default function FeaturesPage() {
@@ -27,12 +27,12 @@ export default function FeaturesPage() {
       <div className="container-max space-y-32">
         {/* Header */}
         <div className="max-w-3xl space-y-6">
-          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Capabilities</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">What you get</p>
           <h1 className="text-6xl md:text-8xl font-black tracking-tightest leading-none">
-            Engineered for <br /><span className="text-muted-foreground">Mastery.</span>
+            Everything you need <br /><span className="text-muted-foreground">to learn better.</span>
           </h1>
           <p className="text-lg md:text-2xl text-muted-foreground font-medium leading-relaxed">
-            We built the tools. You define the trajectory. Edyfra is the operating system for the modern scholar.
+            Simple tools that make studying easier, more fun, and actually something you look forward to.
           </p>
         </div>
 
@@ -63,19 +63,19 @@ export default function FeaturesPage() {
           <div className="absolute inset-0 bg-primary/5 blur-[120px]" />
           <div className="relative z-10 max-w-2xl mx-auto space-y-6">
             <h2 className="text-4xl md:text-6xl font-black tracking-tightest text-white leading-none">
-              Zero Friction Learning.
+              Just you and your studies.
             </h2>
             <p className="text-white/60 font-medium text-lg">
-              We stripped away the legacy bloat to focus on what matters: your growth.
+              We kept it simple so you can focus on what matters — learning.
             </p>
           </div>
           {/* Branded stat grid instead of stock photo */}
           <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
             {[
-              { value: "30s", label: "Match Speed" },
-              { value: "99%", label: "AI Accuracy" },
-              { value: "0", label: "Friction" },
-              { value: "∞", label: "Knowledge" },
+              { value: "30s", label: "Avg Match" },
+              { value: "24/7", label: "Available" },
+              { value: "0", label: "Hassle" },
+              { value: "100%", label: "Yours" },
             ].map(s => (
               <div key={s.label} className="p-6 rounded-2xl bg-white/5 border border-white/10 text-center space-y-2">
                 <p className="text-4xl font-black text-white">{s.value}</p>

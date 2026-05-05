@@ -49,14 +49,14 @@ export default function RoleChoicePage() {
         >
           <div className="flex justify-center">
              <Badge className="bg-primary/10 text-primary border-primary/20 px-6 py-2 text-[10px] font-black uppercase tracking-[0.4em] backdrop-blur-md">
-               Initialize Protocol
+               Choose your path
              </Badge>
           </div>
           <h1 className="text-6xl md:text-8xl font-black tracking-tightest leading-[0.9]">
-            Select Your <span className="text-primary">Domain.</span>
+            What brings you <span className="text-primary">here?</span>
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
-            Choose your specialization within the Edyfra ecosystem to unlock customized tools and resources.
+            Whether you&apos;re looking for help or ready to give it — we&apos;ll tailor Edyfra to fit your needs.
           </p>
         </motion.div>
 
@@ -79,17 +79,17 @@ export default function RoleChoicePage() {
                 </div>
                 
                 <div className="space-y-4">
-                  <h3 className="text-4xl md:text-5xl font-black tracking-tightest text-white">Scholar.</h3>
+                  <h3 className="text-4xl md:text-5xl font-black tracking-tightest text-white">I want to learn.</h3>
                   <p className="text-muted-foreground font-medium text-lg leading-relaxed">
-                    Access elite mentorship, collaborative study rooms, and institutional knowledge feeds.
+                    Get matched with mentors who can help you understand tough topics and stay on track.
                   </p>
                 </div>
 
                 <div className="space-y-4 border-t border-border/50 pt-10">
                   {[
-                    "AI-Driven Partner Matching",
-                    "Infinite Knowledge Repository",
-                    "Peer Certification Tracks"
+                    "Study partners who match your needs",
+                    "Notes, past papers & study guides",
+                    "Track your progress over time"
                   ].map((feat, i) => (
                     <div key={i} className="flex items-center gap-4">
                       <div className="w-2 h-2 rounded-full bg-primary" />
@@ -99,7 +99,7 @@ export default function RoleChoicePage() {
                 </div>
 
                 <Button className="w-full h-20 rounded-[2rem] font-black text-xs tracking-[0.3em] bg-white text-black hover:bg-primary hover:text-white transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-primary/30 uppercase">
-                   Enter Scholar Domain <ArrowRight className="h-4 w-4 ml-3" />
+                   Continue as a Student <ArrowRight className="h-4 w-4 ml-3" />
                 </Button>
               </CardContent>
             </Card>
@@ -124,19 +124,19 @@ export default function RoleChoicePage() {
 
                 <div className="space-y-4">
                    <div className="flex items-center gap-3">
-                     <h3 className="text-4xl md:text-5xl font-black tracking-tightest text-white">Expert.</h3>
-                     <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-3 py-1 text-[8px] font-black uppercase tracking-widest">Premium Tier</Badge>
+                     <h3 className="text-4xl md:text-5xl font-black tracking-tightest text-white">I want to teach.</h3>
+                     <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-3 py-1 text-[8px] font-black uppercase tracking-widest">Earn while helping</Badge>
                    </div>
                   <p className="text-muted-foreground font-medium text-lg leading-relaxed">
-                    Monetize your expertise, build a professional educator profile, and lead the network.
+                    Share what you know, build your reputation, and earn from every session you lead.
                   </p>
                 </div>
 
                 <div className="space-y-4 border-t border-border/50 pt-10">
                   {[
-                    "Verified Educator Badge",
-                    "Autonomous Session Logic",
-                    "Weekly Fiscal Settlement"
+                    "Get verified and stand out",
+                    "Set your own schedule & rates",
+                    "Get paid weekly via M-Pesa"
                   ].map((feat, i) => (
                     <div key={i} className="flex items-center gap-4">
                       <div className="w-2 h-2 rounded-full bg-emerald-500" />
@@ -146,7 +146,7 @@ export default function RoleChoicePage() {
                 </div>
 
                 <Button className="w-full h-20 rounded-[2rem] font-black text-xs tracking-[0.3em] bg-emerald-600 hover:bg-emerald-700 text-white shadow-xl shadow-emerald-600/20 transition-all duration-500 uppercase">
-                   Apply for Expert Access <ArrowRight className="h-4 w-4 ml-3" />
+                   Apply to Tutor <ArrowRight className="h-4 w-4 ml-3" />
                 </Button>
               </CardContent>
             </Card>

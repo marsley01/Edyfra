@@ -79,15 +79,15 @@ export default function CommunityPage() {
                 Community of Scholars
               </div>
               
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tightest leading-none">
-                Learn <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/60">Together.</span>
-              </h1>
-              
-              <p className="text-lg md:text-2xl text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed">
-                Connect with elite scholars from across Kenya. 
-                Find study partners, share discoveries, and grow together.
-              </p>
+               <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tightest leading-none">
+                 Learn <br />
+                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/60">Together.</span>
+               </h1>
+               
+               <p className="text-lg md:text-2xl text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed">
+                 Connect with students from across Kenya. 
+                 Find study partners, share what you&apos;re learning, and grow together.
+               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
                 <Link href="/signup">
@@ -111,10 +111,10 @@ export default function CommunityPage() {
         <div className="container-max py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: "Live Scholars", value: "2,400+", icon: Users },
-              { label: "Total Points", value: "1.2M+", icon: Trophy },
-              { label: "Study Sessions", value: "18,500+", icon: Zap },
-              { label: "Counties Reached", value: "47", icon: Globe },
+              { label: "Students", value: "Growing", icon: Users },
+              { label: "Points Earned", value: "Daily", icon: Trophy },
+              { label: "Sessions", value: "Ongoing", icon: Zap },
+              { label: "Counties", value: "Nationwide", icon: Globe },
             ].map((stat, i) => (
               <motion.div
                 key={stat.label}
@@ -143,12 +143,12 @@ export default function CommunityPage() {
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <Crown className="h-8 w-8 text-primary" />
-                <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Elite Scholars.</h2>
-              </div>
-              <p className="text-lg text-muted-foreground font-medium max-w-xl">
-                The highest-ranked students leading the ecosystem this month.
-              </p>
+                 <Crown className="h-8 w-8 text-primary" />
+                 <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Top Students.</h2>
+               </div>
+               <p className="text-lg text-muted-foreground font-medium max-w-xl">
+                 Students who are putting in the work and leading the way.
+               </p>
             </div>
             <Link href="/dashboard/leaderboard">
               <Button variant="ghost" className="font-black text-[10px] tracking-widest uppercase text-primary hover:text-primary group">
@@ -208,17 +208,17 @@ export default function CommunityPage() {
             </div>
           ) : (
             <div className="py-20 text-center space-y-6 bg-secondary/20 rounded-[2rem] border border-border/50">
-              <UserCheck className="h-12 w-12 text-muted-foreground/20 mx-auto" />
-              <div className="space-y-2">
-                <p className="text-xl font-black tracking-tightest">No scholars ranked yet</p>
-                <p className="text-muted-foreground">Be the first to earn points and claim the top spot!</p>
-              </div>
-              <Link href="/signup">
-                <Button className="rounded-full bg-primary">
-                  Get Started <Zap className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
+               <UserCheck className="h-12 w-12 text-muted-foreground/20 mx-auto" />
+               <div className="space-y-2">
+                 <p className="text-xl font-black tracking-tightest">No rankings yet</p>
+                 <p className="text-muted-foreground">Be the first to earn points and claim the top spot!</p>
+               </div>
+               <Link href="/signup">
+                 <Button className="rounded-full bg-primary">
+                   Get Started <Zap className="ml-2 h-4 w-4" />
+                 </Button>
+               </Link>
+             </div>
           )}
         </div>
       </div>
@@ -230,10 +230,10 @@ export default function CommunityPage() {
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <Sparkles className="h-8 w-8 text-primary" />
-                <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Knowledge Feed.</h2>
+                <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Community Feed.</h2>
               </div>
               <p className="text-lg text-muted-foreground font-medium max-w-xl">
-                See what other scholars are discovering right now.
+                See what other students are sharing and learning right now.
               </p>
             </div>
             <Link href="/dashboard/feed">
@@ -275,10 +275,10 @@ export default function CommunityPage() {
               className="relative z-10 space-y-8"
             >
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tightest">
-                Ready to join the elite?
+                Ready to get started?
               </h2>
               <p className="text-xl md:text-2xl font-medium opacity-90 max-w-2xl mx-auto">
-                Create your institutional identity and sync with Kenya&apos;s brightest scholars.
+                Join thousands of students across Kenya who are learning together every day.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link href="/signup">
