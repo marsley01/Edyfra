@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   LayoutDashboard, Users, GraduationCap, 
   Settings, LogOut, Zap, Calendar, Wallet, Trophy,
-  Menu, X
+  Menu, X, ChevronLeft
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -29,22 +29,28 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
   }, []);
 
   const checkTutor = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+
+      // Role check - case insensitive
+      if ((user.user_metadata?.role || "").toUpperCase() !== "TUTOR") {
+        router.push("/dashboard");
+        return;
+      }
+
+      setUser(user);
+      const data = await getUserData();
+      if (data) setPoints(data.points);
+    } catch (error) {
+      console.error("Tutor auth check failed:", error);
       router.push("/login");
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    // Role check
-    if (user.user_metadata?.role !== "TUTOR") {
-      router.push("/dashboard");
-      return;
-    }
-
-    setUser(user);
-    const data = await getUserData();
-    if (data) setPoints(data.points);
-    setLoading(false);
   };
 
   if (loading) return (
@@ -64,16 +70,39 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isMobileMenuOpen]);
+
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-background font-sans">
       {/* Mobile Header */}
       <header className="lg:hidden h-20 bg-card border-b border-border px-6 flex items-center justify-between sticky top-0 z-40">
-        <Link href="/tutor" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-            <GraduationCap className="text-white h-5 w-5" />
-          </div>
-          <span className="text-xl font-black text-foreground tracking-tighter">Edyfra</span>
-        </Link>
+        <div className="flex items-center gap-2">
+          {pathname !== "/tutor" && (
+            <button
+              onClick={() => router.back()}
+              className="p-2 text-foreground hover:bg-primary/5 rounded-xl transition-colors"
+              aria-label="Go back"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+          )}
+          <Link href="/tutor" className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+              <GraduationCap className="text-white h-5 w-5" />
+            </div>
+            <span className="text-xl font-black text-foreground tracking-tighter">Edyfra</span>
+          </Link>
+        </div>
         <button 
           onClick={() => setIsMobileMenuOpen(true)}
           className="p-2 rounded-xl bg-secondary hover:bg-primary/5 transition-all"
@@ -90,7 +119,6 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setIsMobileMenuOpen(false)}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] lg:hidden"
             />
             <motion.div
@@ -98,7 +126,7 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 w-80 bg-card z-[70] shadow-2xl overflow-y-auto lg:hidden"
+              className="fixed inset-y-0 left-0 w-80 bg-card z-[70] shadow-2xl overflow-y-auto overscroll-y-contain lg:hidden"
             >
               <div className="absolute top-6 right-6 z-50">
                 <button 

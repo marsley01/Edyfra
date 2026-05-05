@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Users, GraduationCap, 
   Settings, Award, MessageSquare, BarChart3, 
   ShieldCheck, LogOut, Bell, Search,
-  Activity, Globe, Terminal, Zap, Menu, X
+  Activity, Globe, Terminal, Zap, Menu, X, ChevronLeft
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -31,19 +31,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       return;
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+
+      if ((user.user_metadata?.role || "").toUpperCase() !== "ADMIN") {
+        router.push("/dashboard");
+        return;
+      }
+
+      setAdminUser(user);
+    } catch (error) {
+      console.error("Admin auth check failed:", error);
+      // On error, redirect to login to be safe
       router.push("/login");
       return;
+    } finally {
+      setLoading(false);
     }
-
-    if (user.user_metadata?.role !== "ADMIN") {
-      router.push("/dashboard");
-      return;
-    }
-
-    setAdminUser(user);
-    setLoading(false);
   };
 
   if (loading) return null;
@@ -64,6 +72,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   ];
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isMobileMenuOpen]);
 
   return (
     <div className="flex flex-col min-h-screen bg-[#050505] text-white selection:bg-primary/30">
@@ -91,12 +111,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Mobile Header */}
       <header className="lg:hidden h-20 bg-black/40 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-6 sticky top-8 z-40">
-        <Link href="/admin" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-2xl">
-            <Terminal className="text-white h-5 w-5" />
-          </div>
-          <span className="text-xl font-black text-primary tracking-tighter">Edyfra Admin</span>
-        </Link>
+        <div className="flex items-center gap-3">
+          {pathname !== "/admin" && (
+            <button 
+              onClick={() => router.back()}
+              className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+              aria-label="Go back"
+            >
+              <ChevronLeft className="h-5 w-5 text-slate-300" />
+            </button>
+          )}
+          <Link href="/admin" className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-2xl">
+              <Terminal className="text-white h-5 w-5" />
+            </div>
+            <span className="text-xl font-black text-primary tracking-tighter">Edyfra Admin</span>
+          </Link>
+        </div>
         <button 
           onClick={() => setIsMobileMenuOpen(true)}
           className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
@@ -105,24 +136,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </button>
       </header>
 
-      {/* Mobile Drawer Overlay */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] lg:hidden"
-            />
-            <motion.div
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 w-80 bg-[#050505] z-[70] shadow-2xl border-r border-white/5 overflow-y-auto lg:hidden"
-            >
+       {/* Mobile Drawer Overlay */}
+       <AnimatePresence>
+         {isMobileMenuOpen && (
+           <>
+             <motion.div
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               exit={{ opacity: 0 }}
+               className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] lg:hidden"
+             />
+             <motion.div
+               initial={{ x: "-100%" }}
+               animate={{ x: 0 }}
+               exit={{ x: "-100%" }}
+               transition={{ type: "spring", damping: 25, stiffness: 200 }}
+               className="fixed inset-y-0 left-0 w-80 bg-[#050505] z-[70] shadow-2xl border-r border-white/5 overflow-y-auto overscroll-y-contain lg:hidden"
+             >
               <div className="absolute top-6 right-6 z-50">
                 <button 
                   onClick={() => setIsMobileMenuOpen(false)}

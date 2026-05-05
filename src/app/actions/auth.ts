@@ -29,6 +29,8 @@ export async function login(formData: FormData) {
   
   if (role === "TUTOR") {
     redirect("/tutor");
+  } else if (role === "ADMIN") {
+    redirect("/admin");
   } else {
     redirect("/dashboard");
   }

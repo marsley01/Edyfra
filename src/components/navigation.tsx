@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, GraduationCap, ChevronRight } from "lucide-react";
+import { Menu, X, GraduationCap, ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
@@ -21,6 +21,7 @@ const navLinks = [
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
@@ -28,6 +29,8 @@ export function Navigation() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const showBackButton = pathname !== "/" && !isOpen;
 
   return (
     <nav
@@ -79,7 +82,16 @@ export function Navigation() {
         </div>
 
         {/* Mobile Toggle */}
-        <div className="flex lg:hidden items-center gap-4">
+        <div className="flex lg:hidden items-center gap-2 sm:gap-4">
+          {showBackButton && (
+            <button
+              onClick={() => router.back()}
+              className="p-2 text-foreground hover:bg-primary/5 rounded-xl transition-colors"
+              aria-label="Go back"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+          )}
           <ThemeToggle />
           <button
             onClick={() => setIsOpen(!isOpen)}
@@ -98,7 +110,7 @@ export function Navigation() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed inset-0 top-0 left-0 w-full bg-background z-[60] p-4 sm:p-6 flex flex-col lg:hidden overflow-y-auto"
+            className="fixed inset-0 top-0 left-0 w-full bg-background z-[60] p-4 sm:p-6 flex flex-col lg:hidden overflow-y-auto overscroll-y-contain"
           >
             <div className="flex items-center justify-between mb-8 sm:mb-12">
               <Link href="/" onClick={() => setIsOpen(false)} className="flex items-center gap-2">

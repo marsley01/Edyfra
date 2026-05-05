@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
 import { Badge } from "@/components/ui/badge";
-import { Send, LogOut, MessageSquare, Cpu, Loader2, Sparkles, Zap, ShieldCheck } from "lucide-react";
+import { Send, LogOut, MessageSquare, Cpu, Loader2, Sparkles, Zap, ShieldCheck, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { getSession as fetchSessionAction, sendMessage } from "@/app/actions/match";
@@ -148,7 +148,7 @@ export default function StudyRoomPage() {
       return;
     }
 
-    // Trigger Mash AI response for MASH tier or when no partner
+    // Trigger Mash AI response when no human partner or MASH tier
     if (session?.tier === 'MASH' || !session?.partnerId) {
       try {
         const response = await fetch("/api/ai/chat", {
@@ -162,10 +162,15 @@ export default function StudyRoomPage() {
           }),
         });
 
+        const result = await response.json().catch(() => ({}));
+
         if (!response.ok) {
-          const err = await response.json().catch(() => ({}));
-          console.error("AI API Error:", err);
-          toast.error("Mash AI is currently unavailable. Your message was sent, but AI assistance may be delayed.");
+          console.error("AI API Error:", result);
+          if (response.status === 500) {
+            toast.error("AI is not set up yet. Add your Google AI key in Admin Settings.");
+          } else {
+            toast.error("Mash AI is temporarily unavailable. Your message was sent.");
+          }
         }
       } catch (e) {
         console.error("Failed to call AI:", e);
@@ -204,6 +209,14 @@ export default function StudyRoomPage() {
       {/* Header */}
       <header className="h-20 border-b border-border/50 px-8 flex items-center justify-between bg-background/80 backdrop-blur-2xl z-50">
         <div className="flex items-center gap-6">
+          {/* Mobile back button */}
+          <button
+            onClick={() => router.back()}
+            className="lg:hidden p-2 -ml-2 text-foreground hover:bg-primary/5 rounded-xl transition-colors"
+            aria-label="Go back"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
           <div className="flex items-center gap-3">
              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
                 <Sparkles className="h-5 w-5" />

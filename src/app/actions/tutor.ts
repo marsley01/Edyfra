@@ -57,7 +57,6 @@ export async function toggleTutorStatus(isOnline: boolean) {
       },
       update: {
         availability: { isOnline },
-        // Healing logic for legacy records
         bio: user.bio || "",
         subjects: [],
         levelsTaught: [],
@@ -121,12 +120,13 @@ export async function getTutorStats() {
     return null;
   }
 }
+
 export async function getVerifiedTutors(level?: Role | string) {
   try {
     const whereClause: any = {
       role: Role.TUTOR,
       tutorProfile: {
-        isVerified: true
+        isNot: null
       }
     };
 
@@ -151,12 +151,14 @@ export async function searchTutors(query: string) {
   try {
     if (!query || query.length < 2) return [];
 
-    // Normalize query for subject matching
     const normalizedQuery = query.trim();
 
     return await prisma.user.findMany({
       where: {
         role: Role.TUTOR,
+        tutorProfile: {
+          isNot: null,
+        },
         OR: [
           { name: { contains: normalizedQuery, mode: "insensitive" } },
           { bio: { contains: normalizedQuery, mode: "insensitive" } },
@@ -167,14 +169,7 @@ export async function searchTutors(query: string) {
               }
             }
           },
-          // Partial matching for subjects isn't directly supported on string arrays in Prisma
-          // but we can search in the bio which often contains subject names
         ],
-        tutorProfile: {
-          isNot: null,
-          // We can also add a check for isVerified if we only want verified results
-          // isVerified: true 
-        }
       },
       include: {
         tutorProfile: true

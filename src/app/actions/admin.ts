@@ -126,11 +126,16 @@ export async function getTutorApplications() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user || user.user_metadata?.role !== "ADMIN") throw new Error("Unauthorized");
 
-  return await (prisma.tutorApplication as any).findMany({
-    where: { status: "PENDING" },
-    include: { user: true },
-    orderBy: { createdAt: "desc" }
-  });
+  try {
+    return await (prisma.tutorApplication as any).findMany({
+      where: { status: "PENDING" },
+      include: { user: true },
+      orderBy: { createdAt: "desc" }
+    });
+  } catch (error) {
+    console.error("Failed to fetch tutor applications:", error);
+    return [];
+  }
 }
 
 export async function approveTutorApplication(applicationId: string) {
@@ -244,60 +249,83 @@ export async function getAdminDashboardMetrics() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user || user.user_metadata?.role !== "ADMIN") throw new Error("Unauthorized");
 
-  const [
-    totalUsers, 
-    studentCount, 
-    tutorCount, 
-    activeSessions, 
-    completedSessions,
-    pendingApps,
-    totalPoints,
-    recentUsers
-  ] = await Promise.all([
-    prisma.user.count(),
-    prisma.user.count({ where: { role: Role.STUDENT } }),
-    prisma.user.count({ where: { role: Role.TUTOR } }),
-    prisma.session.count({ where: { status: "ACTIVE" } }),
-    prisma.session.count({ where: { status: "COMPLETED" } }),
-    (prisma.tutorApplication as any).count({ where: { status: "PENDING" } }).catch(() => 0),
-    prisma.user.aggregate({ _sum: { points: true } }),
-    prisma.user.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 5,
-      select: { id: true, name: true, role: true, createdAt: true }
-    })
-  ]);
+  try {
+    const [
+      totalUsers, 
+      studentCount, 
+      tutorCount, 
+      activeSessions, 
+      completedSessions,
+      pendingApps,
+      totalPoints,
+      recentUsers
+    ] = await Promise.all([
+      prisma.user.count().catch(() => 0),
+      prisma.user.count({ where: { role: Role.STUDENT } }).catch(() => 0),
+      prisma.user.count({ where: { role: Role.TUTOR } }).catch(() => 0),
+      prisma.session.count({ where: { status: "ACTIVE" } }).catch(() => 0),
+      prisma.session.count({ where: { status: "COMPLETED" } }).catch(() => 0),
+      (prisma.tutorApplication as any).count({ where: { status: "PENDING" } }).catch(() => 0),
+      prisma.user.aggregate({ _sum: { points: true } }).catch(() => ({ _sum: { points: 0 } })),
+      prisma.user.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 5,
+        select: { id: true, name: true, role: true, createdAt: true }
+      }).catch(() => [])
+    ]);
 
-  // Generate growth telemetry
-  const telemetry = [
-    { label: "Live Scholars", value: studentCount, trend: "SYNCED" },
-    { label: "Expert Velocity", value: tutorCount > 0 ? (completedSessions / tutorCount).toFixed(1) : 0, trend: "ACTIVE" },
-    { label: "Global Uptime", value: "99.98%", trend: "OPTIMAL" },
-    { label: "Sync Latency", value: "14ms", trend: "FAST" }
-  ];
+    // Generate growth telemetry
+    const telemetry = [
+      { label: "Live Scholars", value: studentCount, trend: "SYNCED" },
+      { label: "Expert Velocity", value: tutorCount > 0 ? (completedSessions / tutorCount).toFixed(1) : 0, trend: "ACTIVE" },
+      { label: "Global Uptime", value: "99.98%", trend: "OPTIMAL" },
+      { label: "Sync Latency", value: "14ms", trend: "FAST" }
+    ];
 
-  const totalActivePoints = totalPoints._sum.points || 0;
-  const avgPointsPerUser = totalUsers > 0 ? Math.round(totalActivePoints / totalUsers) : 0;
-  const completionRate = (activeSessions + completedSessions) > 0 
-    ? Math.round((completedSessions / (activeSessions + completedSessions)) * 100) 
-    : 0;
+    const totalActivePoints = totalPoints._sum?.points || 0;
+    const avgPointsPerUser = totalUsers > 0 ? Math.round(totalActivePoints / totalUsers) : 0;
+    const completionRate = (activeSessions + completedSessions) > 0 
+      ? Math.round((completedSessions / (activeSessions + completedSessions)) * 100) 
+      : 0;
 
-  return {
-    mainStats: [
-      { label: "Total Scholars", value: studentCount, trend: "LIVE" },
-      { label: "Active Mentors", value: tutorCount, trend: "LIVE" },
-      { label: "Syncing Rooms", value: activeSessions, trend: "ACTIVE" },
-      { label: "Knowledge Points", value: totalActivePoints, trend: "CIRCULATING" },
-    ],
-    telemetry: [
-      { label: "Students", value: studentCount, trend: "REGISTERED" },
-      { label: "Tutors", value: tutorCount, trend: "ACTIVE" },
-      { label: "Completion %", value: completionRate, trend: completionRate > 50 ? "HEALTHY" : "LOW" },
-      { label: "Avg Points", value: avgPointsPerUser, trend: "TRACKING" }
-    ],
-    pendingAppsCount: pendingApps,
-    completedSessions,
-    recentUsers,
-    systemLoad: activeSessions > 0 ? Math.min(Math.round((activeSessions / Math.max(studentCount, 1)) * 100), 100) : 0,
-  };
+    return {
+      mainStats: [
+        { label: "Total Scholars", value: studentCount, trend: "LIVE" },
+        { label: "Active Mentors", value: tutorCount, trend: "LIVE" },
+        { label: "Syncing Rooms", value: activeSessions, trend: "ACTIVE" },
+        { label: "Knowledge Points", value: totalActivePoints, trend: "CIRCULATING" },
+      ],
+      telemetry: [
+        { label: "Students", value: studentCount, trend: "REGISTERED" },
+        { label: "Tutors", value: tutorCount, trend: "ACTIVE" },
+        { label: "Completion %", value: completionRate, trend: completionRate > 50 ? "HEALTHY" : "LOW" },
+        { label: "Avg Points", value: avgPointsPerUser, trend: "TRACKING" }
+      ],
+      pendingAppsCount: pendingApps,
+      completedSessions,
+      recentUsers,
+      systemLoad: activeSessions > 0 ? Math.min(Math.round((activeSessions / Math.max(studentCount, 1)) * 100), 100) : 0,
+    };
+  } catch (error) {
+    console.error("Failed to load admin metrics:", error);
+    // Return safe fallback data to keep dashboard functional
+    return {
+      mainStats: [
+        { label: "Total Scholars", value: 0, trend: "N/A" },
+        { label: "Active Mentors", value: 0, trend: "N/A" },
+        { label: "Syncing Rooms", value: 0, trend: "N/A" },
+        { label: "Knowledge Points", value: 0, trend: "N/A" },
+      ],
+      telemetry: [
+        { label: "Students", value: 0, trend: "UNAVAILABLE" },
+        { label: "Tutors", value: 0, trend: "UNAVAILABLE" },
+        { label: "Completion %", value: 0, trend: "UNAVAILABLE" },
+        { label: "Avg Points", value: 0, trend: "UNAVAILABLE" }
+      ],
+      pendingAppsCount: 0,
+      completedSessions: 0,
+      recentUsers: [],
+      systemLoad: 0,
+    };
+  }
 }
