@@ -20,6 +20,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const supabase = createClient();
   const [loading, setLoading] = useState(true);
   const [adminUser, setAdminUser] = useState<any>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     checkAdmin();
@@ -46,13 +47,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       setAdminUser(user);
     } catch (error) {
       console.error("Admin auth check failed:", error);
-      // On error, redirect to login to be safe
       router.push("/login");
       return;
     } finally {
       setLoading(false);
     }
   };
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isMobileMenuOpen]);
 
   if (loading) return null;
 
@@ -70,20 +82,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin/content", label: "Challenges", icon: Award },
     { href: "/admin/settings", label: "Settings", icon: Settings },
   ];
-
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  // Lock body scroll when mobile menu is open
-  useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isMobileMenuOpen]);
 
   return (
     <div className="flex flex-col min-h-screen bg-[#050505] text-white selection:bg-primary/30">
@@ -151,7 +149,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                animate={{ x: 0 }}
                exit={{ x: "-100%" }}
                transition={{ type: "spring", damping: 25, stiffness: 200 }}
-               className="fixed inset-y-0 left-0 w-80 bg-[#050505] z-[70] shadow-2xl border-r border-white/5 overflow-y-auto overscroll-y-contain lg:hidden"
+               className="fixed inset-y-0 left-0 w-80 bg-[#050505] z-[70] shadow-2xl border-r border-white/5 overflow-y-auto"
              >
               <div className="absolute top-6 right-6 z-50">
                 <button 
