@@ -40,32 +40,33 @@ export function HomeHero() {
               Get Started Free
             </Button>
           </Link>
-          <Button variant="ghost" className="h-16 px-12 rounded-full font-black text-xs tracking-widest uppercase group transition-all">
-            Watch Demo <Play className="ml-2 h-4 w-4 fill-current group-hover:translate-x-1 transition-transform" />
-          </Button>
         </motion.div>
 
         {/* Trust badge removed as per request to clear demo data */}
       </div>
 
-      {/* Floating Product Mockup */}
+      {/* Floating Animation Mockup */}
       <motion.div
         initial={{ opacity: 0, y: 100 }}
         animate={{ opacity: 1, y: 40 }}
         transition={{ duration: 1.2, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="relative mt-24 w-full max-w-6xl mx-auto px-4"
+        className="relative mt-24 w-full max-w-4xl mx-auto px-4"
       >
-        <div className="relative aspect-[16/9] rounded-[2.5rem] bg-secondary border-8 border-background shadow-[0_40px_100px_-20px_rgba(0,0,0,0.2)] overflow-hidden group">
+        <div className="relative aspect-[16/9] rounded-[2.5rem] bg-secondary border-8 border-background shadow-[0_40px_100px_-20px_rgba(0,0,0,0.2)] overflow-hidden flex items-center justify-center group">
            <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-primary/5" />
-           <img 
-             src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop" 
-             alt="Edyfra Premium Dashboard" 
-             className="w-full h-full object-cover group-hover:scale-105 transition-all duration-1000"
-           />
-           <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-24 h-24 bg-white/20 backdrop-blur-2xl rounded-full flex items-center justify-center border border-white/30 shadow-2xl scale-0 group-hover:scale-100 transition-transform duration-500">
-                 <Play className="h-8 w-8 text-white fill-current" />
+           
+           {/* 
+             TODO: To use a Lottie JSON here:
+             1. Add your JSON file (e.g., hero-animation.json) to the project.
+             2. Import the component: import { LottieAnimation } from "@/components/lottie-animation";
+             3. Import the data: import animationData from "@/hero-animation.json";
+             4. Replace this div with: <LottieAnimation animationData={animationData} className="w-full h-full object-cover" />
+           */}
+           <div className="text-center space-y-4 relative z-10 p-8">
+              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto animate-pulse">
+                 <Play className="h-8 w-8 text-primary" />
               </div>
+              <p className="text-muted-foreground font-medium text-sm">Interactive JSON Animation Goes Here</p>
            </div>
         </div>
       </motion.div>
