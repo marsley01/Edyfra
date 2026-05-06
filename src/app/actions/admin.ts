@@ -261,7 +261,7 @@ export async function getTutorApplications() {
       return [];
     }
 
-    return await (prisma.tutorApplication as any).findMany({
+    return await prisma.tutorApplication.findMany({
       where: { status: "PENDING" },
       include: { user: true },
       orderBy: { createdAt: "desc" }
@@ -295,7 +295,7 @@ export async function approveTutorApplication(applicationId: string) {
       update: { isVerified: true, verifiedAt: new Date() }
     });
 
-    await (prisma.tutorApplication as any).update({ where: { id: applicationId }, data: { status: "APPROVED" } });
+    await prisma.tutorApplication.update({ where: { id: applicationId }, data: { status: "APPROVED" } });
 
     // Update Supabase auth user metadata to reflect TUTOR role
     try {
@@ -317,7 +317,7 @@ export async function approveTutorApplication(applicationId: string) {
 
     // Add Notification
     try {
-      await (prisma.notification as any).create({
+      await prisma.notification.create({
         data: {
           userId: app.userId,
           type: "TUTOR_APPROVED",
@@ -472,7 +472,7 @@ export async function getAdminDashboardMetrics() {
       prisma.user.count({ where: { role: Role.TUTOR } }).catch(() => 0),
       prisma.session.count({ where: { status: "ACTIVE" } }).catch(() => 0),
       prisma.session.count({ where: { status: "COMPLETED" } }).catch(() => 0),
-      (prisma.tutorApplication as any).count({ where: { status: "PENDING" } }).catch(() => 0),
+      prisma.tutorApplication.count({ where: { status: "PENDING" } }).catch(() => 0),
       prisma.user.aggregate({ _sum: { points: true } }).catch(() => ({ _sum: { points: 0 } })),
       prisma.user.findMany({
         orderBy: { createdAt: "desc" },

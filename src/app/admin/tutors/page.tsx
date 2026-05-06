@@ -28,10 +28,10 @@ export default function AdminTutorsPage() {
       educationLevel?: string;
       email?: string;
     }
-  };
-  
-  const [applications, setApplications] = useState<TutorApplication[]>([]);
-  const [allTutors, setAllTutors] = useState<TutorApplication[]>([]);
+   };
+   
+   const [applications, setApplications] = useState<TutorApplication[]>([]);
+   const [allTutors, setAllTutors] = useState<TutorApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);

@@ -71,7 +71,7 @@ export async function completeOnboarding(data: OnboardingData) {
 
   const baseData = {
     email: user.email!,
-    name: user.user_metadata.name || user.user_metadata.full_name || "New User",
+    name: user.user_metadata?.name || user.user_metadata?.full_name || "New User",
     role: prismaRole,
     educationLevel: userEducationLevel,
     curriculum: userEducationLevel === EduLevel.HIGH_SCHOOL ? (curriculum || "8-4-4") : "HEC",

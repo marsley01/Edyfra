@@ -32,8 +32,8 @@ export async function getUserData(): Promise<(User & { studentProfile: StudentPr
         data: {
           id: user.id,
           email: user.email!,
-          name: user.user_metadata.name || user.user_metadata.full_name || "User",
-          role: (user.user_metadata?.role?.toUpperCase() === "TUTOR" ? Role.TUTOR : Role.STUDENT),
+           name: user.user_metadata?.name || user.user_metadata?.full_name || "User",
+           role: (user.user_metadata?.role ? (user.user_metadata.role.toUpperCase() === "TUTOR" ? Role.TUTOR : Role.STUDENT) : Role.STUDENT),
           educationLevel: EduLevel.HIGH_SCHOOL,
           county: "Nairobi",
           tier: Tier.BRONZE,
@@ -88,7 +88,9 @@ export async function updateProfile(data: {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Unauthorized");
 
-    const role = user.user_metadata?.role?.toUpperCase() === "TUTOR" ? Role.TUTOR : Role.STUDENT;
+    const role = user.user_metadata?.role 
+      ? (user.user_metadata.role.toUpperCase() === "TUTOR" ? Role.TUTOR : Role.STUDENT) 
+      : Role.STUDENT;
 
     await prisma.user.update({
       where: { id: user.id },
@@ -179,7 +181,7 @@ export async function updateUserRole(role: "STUDENT" | "TUTOR") {
         data: {
           id: user.id,
           email: user.email!,
-          name: user.user_metadata.name || user.user_metadata.full_name || "New User",
+          name: user.user_metadata?.name || user.user_metadata?.full_name || "New User",
           role: prismaRole,
           educationLevel: EduLevel.HIGH_SCHOOL,
           county: "Nairobi",

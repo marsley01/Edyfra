@@ -2,12 +2,12 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { Role, VerifPath } from "@prisma/client";
+import { Role, VerifPath, TutorApplication, User, TutorProfile } from "@prisma/client";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 
 // Get all tutor applications with user details (ALL statuses)
-export async function getTutorApplicationsWithDetails() {
+export async function getTutorApplicationsWithDetails(): Promise<any[]> {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -28,16 +28,16 @@ export async function getTutorApplicationsWithDetails() {
     }
 
     // Get ALL applications (not just pending) with timeout
-    const timeoutPromise = new Promise((_, reject) => 
+    const timeoutPromise = new Promise<never>((_, reject) => 
       setTimeout(() => reject(new Error("Database query timeout")), 10000)
     );
 
-    const queryPromise = (prisma.tutorApplication as any).findMany({
+    const queryPromise: Promise<TutorApplication[]> = prisma.tutorApplication.findMany({
       include: { user: true },
       orderBy: { createdAt: "desc" }
     });
 
-    const applications = await Promise.race([queryPromise, timeoutPromise]) as any[];
+    const applications = await Promise.race([queryPromise, timeoutPromise]);
     return applications || [];
   } catch (error) {
     console.error("Error fetching tutor applications:", error);
@@ -46,7 +46,7 @@ export async function getTutorApplicationsWithDetails() {
 }
 
 // Get ALL tutors (users with TUTOR role) with their profiles
-export async function getAllTutorsWithDetails() {
+export async function getAllTutorsWithDetails(): Promise<any[]> {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -76,28 +76,26 @@ export async function getAllTutorsWithDetails() {
        orderBy: { createdAt: "desc" }
      });
 
-    // Transform to match the expected format in the UI
-    return tutors.map((tutor: any) => {
-      // Get the most recent tutor application
-      const latestApp = tutor.tutorApplication
-        ?.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
-        || null;
-      
-      return {
-        id: latestApp?.id || tutor.id,
-        status: latestApp?.status || "APPROVED",
-        createdAt: latestApp?.createdAt || tutor.createdAt,
-        subjects: tutor.tutorProfile?.subjects || [],
-        path: latestApp?.path || "Direct Registration",
-        notes: tutor.tutorProfile?.bio || "",
-        userId: tutor.id,
-        user: {
-          name: tutor.name,
-          educationLevel: tutor.educationLevel,
-          email: tutor.email
-        }
-      };
-    });
+     // Transform to match the expected format in the UI
+     return tutors.map((tutor) => {
+       // tutor.tutorApplication is a single object (one-to-one), not an array
+       const latestApp = tutor.tutorApplication || null;
+       
+       return {
+         id: latestApp?.id || tutor.id,
+         status: latestApp?.status || "APPROVED",
+         createdAt: latestApp?.createdAt || tutor.createdAt,
+         subjects: tutor.tutorProfile?.subjects || [],
+         path: latestApp?.path || "Direct Registration",
+         notes: tutor.tutorProfile?.bio || "",
+         userId: tutor.id,
+         user: {
+           name: tutor.name,
+           educationLevel: tutor.educationLevel,
+           email: tutor.email
+         }
+       };
+     });
   } catch (error) {
     console.error("Error fetching all tutors:", error);
     return [];
@@ -124,7 +122,7 @@ export async function approveTutorApplicationEnhanced(applicationId: string) {
     }
 
     // Get the application with timeout
-    const app = await (prisma.tutorApplication as any).findUnique({
+    const app = await prisma.tutorApplication.findUnique({
       where: { id: applicationId },
       include: { user: true }
     });
@@ -160,14 +158,17 @@ export async function approveTutorApplicationEnhanced(applicationId: string) {
     });
 
     // Update application status
-    await (prisma.tutorApplication as any).update({
+    await prisma.tutorApplication.update({
       where: { id: applicationId },
-      data: { status: "APPROVED" }
+      data: { 
+        status: "APPROVED",
+        notes: app.notes || "Application approved"
+      }
     });
 
     // Add notification to tutor
     try {
-      await (prisma.notification as any).create({
+      await prisma.notification.create({
         data: {
           userId: app.userId,
           type: "TUTOR_APPROVED",
@@ -209,7 +210,7 @@ export async function rejectTutorApplication(applicationId: string, reason?: str
     }
 
     // Get the application
-    const app = await (prisma.tutorApplication as any).findUnique({
+    const app = await prisma.tutorApplication.findUnique({
       where: { id: applicationId }
     });
 
@@ -218,7 +219,7 @@ export async function rejectTutorApplication(applicationId: string, reason?: str
     }
 
     // Update application status
-    await (prisma.tutorApplication as any).update({
+    await prisma.tutorApplication.update({
       where: { id: applicationId },
       data: { 
         status: "REJECTED",
@@ -228,7 +229,7 @@ export async function rejectTutorApplication(applicationId: string, reason?: str
 
     // Add notification to applicant
     try {
-      await (prisma.notification as any).create({
+      await prisma.notification.create({
         data: {
           userId: app.userId,
           type: "TUTOR_REJECTED",
@@ -271,7 +272,7 @@ export async function getTutorStatsForAdmin() {
     const [totalTutors, verifiedTutors, pendingApplications, activeSessions, totalSessions] = await Promise.all([
       prisma.user.count({ where: { role: Role.TUTOR } }),
       prisma.tutorProfile.count({ where: { isVerified: true } }),
-      (prisma.tutorApplication as any).count({ where: { status: "PENDING" } }),
+      prisma.tutorApplication.count({ where: { status: "PENDING" } }),
       prisma.session.count({ where: { status: "ACTIVE" } }),
       prisma.session.count({ where: { status: "COMPLETED" } })
     ]);

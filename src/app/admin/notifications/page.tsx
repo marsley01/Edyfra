@@ -30,7 +30,7 @@ export default async function AdminNotificationsPage() {
 
   return (
     <AdminNotificationsClient 
-      notifications={notifications as any}
+       notifications={notifications}
       stats={metrics.mainStats}
     />
   );

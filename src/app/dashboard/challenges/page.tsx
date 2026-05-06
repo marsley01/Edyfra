@@ -111,8 +111,11 @@ export default function ChallengesPage() {
     
     // Save attempt to database
     try {
-      await saveChallengeAttempt(currentChallenge.id, correct);
-      await fetchChallenges(); // Refresh to update attempts
+      const user = await getUserData();
+      if (user) {
+        await saveChallengeAttempt(user.id, currentChallenge.id, correct);
+        await fetchChallenges(); // Refresh to update attempts
+      }
     } catch (err) {
       console.error("Failed to save attempt:", err);
     }

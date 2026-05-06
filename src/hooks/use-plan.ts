@@ -42,7 +42,7 @@ export function usePlan() {
       }
 
       const { data, error } = await supabase
-        .from("User")
+        .from("user")
         .select("subscription_tier, daily_search_count, daily_message_count")
         .eq("id", user.id)
         .single();

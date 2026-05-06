@@ -1,9 +1,9 @@
 import { AIService } from "@/utils/ai-service";
 import prisma from "@/lib/prisma";
 import { Role } from "@prisma/client";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { sessionId, subject, topic } = body;
@@ -25,8 +25,8 @@ export async function POST(req: Request) {
       select: { settings: true }
     });
 
-    const dynamicSettings = adminUser?.settings as any;
-    const googleAiKey = dynamicSettings?.googleAiKey || process.env.GOOGLE_AI_KEY;
+    const settings = adminUser?.settings as Record<string, unknown> | undefined;
+    const googleAiKey = (settings?.googleAiKey as string | undefined) || process.env.GOOGLE_AI_KEY;
 
     if (!googleAiKey) {
       console.error("AI Error: Google AI Key is missing in .env or Admin Settings.");

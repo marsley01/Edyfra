@@ -2,7 +2,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { Role } from "@prisma/client";
+import { Role, EduLevel } from "@prisma/client";
 
 interface ChallengeGenerationRequest {
   level: string; // HIGH_SCHOOL or UNIVERSITY
@@ -30,8 +30,8 @@ export async function generateChallenges(request: ChallengeGenerationRequest): P
       select: { settings: true }
     });
 
-    const settings = adminUser?.settings as any || {};
-    const apiKey = settings?.googleAiKey || process.env.GOOGLE_AI_KEY;
+    const settings = (adminUser?.settings || {}) as { googleAiKey?: string };
+    const apiKey = settings.googleAiKey || process.env.GOOGLE_AI_KEY;
     
     if (!apiKey) {
       throw new Error("AI API key not configured. Please add it in Admin Settings.");
@@ -128,7 +128,7 @@ Make the questions:
         return await prisma.dailyChallenge.create({
           data: {
             subject: subject || challenge.subject || "General",
-            level: level as any,
+            level: level as EduLevel,
             question: challenge.question,
             options: challenge.options,
             answer: challenge.answer,

@@ -9,7 +9,7 @@ import {
   CheckCircle2, AlertTriangle, RefreshCw
 } from "lucide-react";
 import { toast } from "sonner";
-import { generateChallengesAction } from "@/app/actions/challenge-ai";
+import { generateChallenges } from "@/app/actions/challenge-ai";
 
 export default function AIChallengeGenerator() {
   const [generating, setGenerating] = useState(false);

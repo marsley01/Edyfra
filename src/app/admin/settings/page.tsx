@@ -36,17 +36,18 @@ export default function AdminSettingsPage() {
     loadSettings();
   }, []);
 
-  const loadSettings = async () => {
-    try {
-      const settings = await getAdminGlobalSettings() as any;
-      if (settings.googleAiKey) setGoogleAiKey(settings.googleAiKey);
-      if (settings.accentColor) setAccentColor(settings.accentColor);
-    } catch (err) {
-      console.error("Failed to load settings:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+   const loadSettings = async () => {
+     try {
+       const rawSettings = await getAdminGlobalSettings();
+       const settings = rawSettings as Record<string, any> | undefined;
+       if (settings?.googleAiKey) setGoogleAiKey(settings.googleAiKey);
+       if (settings?.accentColor) setAccentColor(settings.accentColor);
+     } catch (err) {
+       console.error("Failed to load settings:", err);
+     } finally {
+       setLoading(false);
+     }
+   };
 
   const handleDeleteUser = async () => {
     if (!userToDelete) return;

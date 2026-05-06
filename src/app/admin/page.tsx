@@ -18,7 +18,7 @@ export default async function AdminDashboard() {
     <AdminDashboardClient 
       stats={metrics.mainStats} 
       telemetry={metrics.telemetry}
-      pendingApplications={pendingApplications as any} 
+      pendingApplications={pendingApplications} 
       recentUsers={metrics.recentUsers}
       systemLoad={metrics.systemLoad}
       completedSessions={metrics.completedSessions}

@@ -50,8 +50,11 @@ export async function findTier1Match(
     if (!tutor) return null;
 
     // Verify tutor is online
-    const availability = tutor.tutorProfile?.availability as any;
-    if (!availability?.isOnline) return null;
+    const availability = tutor.tutorProfile?.availability;
+    const isOnline = typeof availability === 'object' && availability !== null 
+      ? (availability as { isOnline?: boolean }).isOnline 
+      : false;
+    if (!isOnline) return null;
 
     return tutor.id;
   } catch (error) {

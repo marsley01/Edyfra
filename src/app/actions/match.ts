@@ -5,6 +5,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { SESSION_CONFIG } from "@/lib/config";
+import { MatchTier } from "@prisma/client";
 import { randomBytes } from "crypto";
 import { executeSmartMatching, sweepAndAIFallback } from "./match-algorithm";
 
@@ -78,24 +79,24 @@ export async function acceptMatchRequest(requestId: string) {
   const tier = userData?.role === "TUTOR" ? "TUTOR" : "PEER";
 
   const roomId = `room-${randomBytes(8).toString('hex')}`;
-  const session = await prisma.session.create({
-    data: {
-      studentId: matchRequest.studentId,
-      partnerId: user.id,
-      tier: tier as any,
-      subject: matchRequest.subject,
-      topic: matchRequest.topic,
-      status: "ACTIVE",
-      roomId: roomId,
-      startedAt: new Date(),
-    },
-  });
+    const session = await prisma.session.create({
+      data: {
+        studentId: matchRequest.studentId,
+        partnerId: user.id,
+        tier: tier as MatchTier,
+        subject: matchRequest.subject,
+        topic: matchRequest.topic,
+        status: "ACTIVE",
+        roomId: roomId,
+        startedAt: new Date(),
+      },
+    });
 
   await prisma.matchRequest.update({
     where: { id: requestId },
     data: {
       sessionId: session.id,
-      resolvedAs: tier as any,
+      resolvedAs: tier as MatchTier,
       resolvedAt: new Date(),
     }
   });
