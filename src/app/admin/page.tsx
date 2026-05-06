@@ -7,7 +7,8 @@ export default async function AdminDashboard() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user || user.user_metadata?.role !== "ADMIN") {
+  // Normalize role check for consistency
+  if (!user || (user.user_metadata?.role || "").toUpperCase() !== "ADMIN") {
     redirect("/dashboard");
   }
 

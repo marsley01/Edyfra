@@ -46,14 +46,14 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Protect admin routes from non-admin users
+  // Protect admin routes from non-admin users - normalize role to uppercase
   if (isAdminRoute && request.nextUrl.pathname !== '/admin/register') {
     if (!user) {
       const url = request.nextUrl.clone();
       url.pathname = '/login';
       return NextResponse.redirect(url);
     }
-    if (user.user_metadata?.role !== 'ADMIN') {
+    if ((user.user_metadata?.role || "").toUpperCase() !== 'ADMIN') {
       const url = request.nextUrl.clone();
       url.pathname = '/dashboard';
       return NextResponse.redirect(url);
@@ -66,27 +66,27 @@ export async function updateSession(request: NextRequest) {
     // Redirect already logged in users away from auth pages
     if (isAuthRoute) {
       const url = request.nextUrl.clone();
-      if (role === 'TUTOR') url.pathname = '/tutor';
-      else if (role === 'ADMIN') url.pathname = '/admin';
+      if (role?.toUpperCase() === 'TUTOR') url.pathname = '/tutor';
+      else if (role?.toUpperCase() === 'ADMIN') url.pathname = '/admin';
       else url.pathname = '/dashboard';
       return NextResponse.redirect(url);
     }
 
     // Role-based access control
-    if (role === 'TUTOR' && isStudentRoute) {
+    if (role?.toUpperCase() === 'TUTOR' && isStudentRoute) {
       const url = request.nextUrl.clone();
       url.pathname = '/tutor';
       return NextResponse.redirect(url);
     }
 
-    if (role !== 'TUTOR' && isTutorRoute) {
+    if (role?.toUpperCase() !== 'TUTOR' && isTutorRoute) {
       const url = request.nextUrl.clone();
       url.pathname = '/dashboard';
       return NextResponse.redirect(url);
     }
 
     // Prevent non-admins from accessing admin routes
-    if (role !== 'ADMIN' && isAdminRoute && request.nextUrl.pathname !== '/admin/register') {
+    if (role?.toUpperCase() !== 'ADMIN' && isAdminRoute && request.nextUrl.pathname !== '/admin/register') {
       const url = request.nextUrl.clone();
       url.pathname = '/dashboard';
       return NextResponse.redirect(url);
