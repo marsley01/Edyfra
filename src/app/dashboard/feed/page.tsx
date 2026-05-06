@@ -64,18 +64,34 @@ export default function FeedPage() {
     }
   };
 
-  const loadPosts = async () => {
-    setLoading(true);
-    try {
-      const data = await getPosts();
-      setPosts(data);
-    } catch (error: any) {
-      console.error("Failed to load feed:", error);
-      toast.error(error?.message || "Failed to load feed. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+   const loadPosts = async () => {
+     setLoading(true);
+     try {
+       const data = await getPosts();
+       // Map Prisma types to client-side Post interface
+       const mappedData = data.map(post => ({
+         id: post.id,
+         content: post.content,
+         image: post.image,
+         createdAt: post.createdAt,
+         subject: post.subject,
+         likes: post.likes,
+         user: {
+           name: post.user.name,
+           avatar: post.user.avatar,
+           educationLevel: post.user.educationLevel || undefined
+         },
+         likedBy: post.likedBy,
+         comments: post.comments
+       }));
+       setPosts(mappedData);
+     } catch (error: any) {
+       console.error("Failed to load feed:", error);
+       toast.error(error?.message || "Failed to load feed. Please try again.");
+     } finally {
+       setLoading(false);
+     }
+   };
 
   const handleCreatePost = async () => {
     if (!newPostContent.trim()) return;
