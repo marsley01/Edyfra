@@ -1,15 +1,12 @@
-// Fix for Antigravity Environment Issues
-// Apply these fixes to resolve dashboard loading failures
-
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import { Button } from "@/components/ui/button";
 
 // 1. Antigravity-Safe Data Loading Hook
 export function useSafeUserData() {
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
-  
+  const [retryCount, setRetryCount] = useState(0);  
   const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {

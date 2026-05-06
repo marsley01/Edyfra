@@ -49,14 +49,22 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <p className="text-muted-foreground">
               Something went wrong while loading your dashboard.
             </p>
-            <details className="text-left bg-background p-4 rounded-lg border border-border">
-              <summary className="cursor-pointer text-sm font-medium">Error Details</summary>
-              <pre className="mt-2 text-xs text-red-500 overflow-auto max-h-64">
-                {this.state.error?.message}
-                {'\n'}
-                {this.state.error?.stack}
-              </pre>
-            </details>
+            {this.state.error && (
+              <details className="text-left bg-background p-4 rounded-lg border border-border">
+                <summary className="cursor-pointer text-sm font-medium">Error Details</summary>
+                <pre className="mt-2 text-xs text-red-500 overflow-auto max-h-64">
+                  {this.state.error.message}
+                  {'\n'}
+                  {this.state.error.stack}
+                </pre>
+              </details>
+            )}
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              Reload Page
+            </button>
           </div>
         </div>
       );
