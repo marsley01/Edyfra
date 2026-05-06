@@ -84,7 +84,8 @@ export async function acceptMatchRequest(requestId: string) {
             email: studentUser.email || '',
             name: studentUser.user_metadata?.name || 'Unknown',
             role: studentUser.user_metadata?.role || 'STUDENT',
-            educationLevel: studentUser.user_metadata?.educationLevel || 'HIGH_SCHOOL'
+            educationLevel: studentUser.user_metadata?.educationLevel || 'HIGH_SCHOOL',
+            county: studentUser.user_metadata?.county || 'Nairobi'
           }
         });
       }
@@ -180,7 +181,8 @@ export async function forceAIFallback(requestId: string) {
               email: studentUser.email || '',
               name: studentUser.user_metadata?.name || 'Unknown',
               role: studentUser.user_metadata?.role || 'STUDENT',
-              educationLevel: studentUser.user_metadata?.educationLevel || 'HIGH_SCHOOL'
+              educationLevel: studentUser.user_metadata?.educationLevel || 'HIGH_SCHOOL',
+              county: studentUser.user_metadata?.county || 'Nairobi'
             }
           });
         } else {
