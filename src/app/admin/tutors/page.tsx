@@ -8,11 +8,11 @@ import {
   ShieldCheck, ShieldAlert, GraduationCap, 
   MapPin, Clock, Star, ExternalLink,
   CheckCircle2, XCircle, Search, Loader2,
-  FileText, Mail, Info
+  FileText, Mail, Info, Trash2
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { getTutorApplications, approveTutorApplication } from "@/app/actions/admin";
+import { getTutorApplicationsWithDetails, approveTutorApplicationEnhanced, rejectTutorApplication } from "@/app/actions/admin-tutor";
 
 export default function AdminTutorsPage() {
   type TutorApplication = {
@@ -38,7 +38,7 @@ export default function AdminTutorsPage() {
   const fetchApplications = async () => {
     setLoading(true);
     try {
-      const data = await getTutorApplications();
+      const data = await getTutorApplicationsWithDetails();
       setApplications(data);
     } catch (err) {
       toast.error("Failed to load applications.");
@@ -49,13 +49,26 @@ export default function AdminTutorsPage() {
 
   const handleApprove = async (id: string) => {
     try {
-      const result = await approveTutorApplication(id);
+      const result = await approveTutorApplicationEnhanced(id);
       if (result.success) {
         toast.success("Expert dashboard activated successfully!");
         fetchApplications();
       }
     } catch (err) {
-      toast.error("Approval failed.");
+      toast.error("Approval failed: " + (err instanceof Error ? err.message : "Unknown error"));
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    try {
+      const reason = prompt("Enter rejection reason (optional):") || undefined;
+      const result = await rejectTutorApplication(id, reason);
+      if (result.success) {
+        toast.success("Application rejected.");
+        fetchApplications();
+      }
+    } catch (err) {
+      toast.error("Rejection failed: " + (err instanceof Error ? err.message : "Unknown error"));
     }
   };
 
@@ -141,27 +154,31 @@ export default function AdminTutorsPage() {
 
                  {/* Actions */}
                  <div className="p-8 bg-white/[0.01] flex items-center gap-3 lg:border-l border-white/5">
-                    {app.status === "PENDING" ? (
-                      <>
-                        <Button 
-                          onClick={() => handleApprove(app.id)}
-                          className="rounded-xl font-black text-xs tracking-widest gap-2 bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition-all px-6 py-6"
-                        >
-                           <CheckCircle2 className="h-4 w-4" /> ACTIVATE DASHBOARD
-                        </Button>
-                        <Button 
-                          variant="outline"
-                          onClick={() => toast.info("Rejection logic pending...")}
-                          className="rounded-xl font-black text-xs tracking-widest gap-2 border-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all px-6 py-6"
-                        >
-                           <XCircle className="h-4 w-4" /> REJECT
-                        </Button>
-                      </>
-                    ) : (
-                      <div className="flex items-center gap-2 text-green-500 font-black text-xs tracking-widest px-6 py-6">
-                        <ShieldCheck className="h-4 w-4" /> APPROVED & ACTIVATED
-                      </div>
-                    )}
+                     {app.status === "PENDING" ? (
+                       <>
+                         <Button 
+                           onClick={() => handleApprove(app.id)}
+                           className="rounded-xl font-black text-xs tracking-widest gap-2 bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition-all px-6 py-6"
+                         >
+                            <CheckCircle2 className="h-4 w-4" /> ACTIVATE DASHBOARD
+                         </Button>
+                         <Button 
+                           variant="outline"
+                           onClick={() => handleReject(app.id)}
+                           className="rounded-xl font-black text-xs tracking-widest gap-2 border-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all px-6 py-6"
+                         >
+                            <XCircle className="h-4 w-4" /> REJECT
+                         </Button>
+                       </>
+                     ) : app.status === "APPROVED" ? (
+                       <div className="flex items-center gap-2 text-green-500 font-black text-xs tracking-widest px-6 py-6">
+                         <ShieldCheck className="h-4 w-4" /> APPROVED & ACTIVATED
+                       </div>
+                     ) : (
+                       <div className="flex items-center gap-2 text-red-500 font-black text-xs tracking-widest px-6 py-6">
+                         <XCircle className="h-4 w-4" /> REJECTED
+                       </div>
+                     )}
                     <Button variant="ghost" size="icon" className="rounded-xl h-12 w-12 hover:bg-white/5">
                        <ExternalLink className="h-5 w-5 text-muted-foreground" />
                     </Button>

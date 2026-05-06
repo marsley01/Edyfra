@@ -150,14 +150,15 @@ export async function getVerifiedTutors(level?: Role | string) {
 export async function searchTutors(query: string) {
   try {
     if (!query || query.length < 2) return [];
-
-    const normalizedQuery = query.trim();
-
+    
+    const normalizedQuery = query.trim().toLowerCase();
+    
     return await prisma.user.findMany({
       where: {
         role: Role.TUTOR,
         tutorProfile: {
           isNot: null,
+          isVerified: true
         },
         OR: [
           { name: { contains: normalizedQuery, mode: "insensitive" } },
@@ -165,19 +166,61 @@ export async function searchTutors(query: string) {
           {
             tutorProfile: {
               subjects: {
-                hasSome: [normalizedQuery, normalizedQuery.charAt(0).toUpperCase() + normalizedQuery.slice(1).toLowerCase()]
+                hasSome: [normalizedQuery, normalizedQuery.charAt(0).toUpperCase() + normalizedQuery.slice(1)]
               }
             }
           },
+          {
+            county: { contains: normalizedQuery, mode: "insensitive" }
+          }
         ],
       },
       include: {
         tutorProfile: true
       },
-      take: 20
+      take: 20,
+      orderBy: [
+        { tutorProfile: { rating: "desc" } },
+        { createdAt: "desc" }
+      ]
     });
   } catch (error) {
     console.error("Error in searchTutors:", error);
+    return [];
+  }
+}
+
+// Get tutors by subject for better visibility
+export async function getTutorsBySubject(subject: string, level?: string) {
+  try {
+    const whereClause: any = {
+      role: Role.TUTOR,
+      tutorProfile: {
+        isNot: null,
+        isVerified: true,
+        subjects: {
+          hasSome: [subject]
+        }
+      }
+    };
+
+    if (level) {
+      whereClause.tutorProfile.levelsTaught = { has: level };
+    }
+
+    return await prisma.user.findMany({
+      where: whereClause,
+      include: {
+        tutorProfile: true
+      },
+      orderBy: [
+        { tutorProfile: { rating: "desc" } },
+        { createdAt: "desc" }
+      ],
+      take: 50
+    });
+  } catch (error) {
+    console.error("Error in getTutorsBySubject:", error);
     return [];
   }
 }

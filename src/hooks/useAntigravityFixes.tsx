@@ -32,12 +32,21 @@ export function useSafeUserData() {
         return;
       }
 
+      // Set timeout to abort request after 10 seconds
+      const timeoutId = setTimeout(() => {
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+      }, 10000);
+
       const response = await fetch('/api/user-data', {
         signal: abortControllerRef.current.signal,
         headers: {
           'Cache-Control': 'no-cache',
         },
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json();

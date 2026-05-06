@@ -40,54 +40,111 @@ export async function registerAdmin(formData: any) {
 // --- USER MANAGEMENT ---
 
 export async function getAllUsers() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user || user.user_metadata?.role !== "ADMIN") throw new Error("Unauthorized");
-
-  return await prisma.user.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      studentProfile: true,
-      tutorProfile: true
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      throw new Error("Unauthorized: No user found");
     }
-  });
+
+    // Check if user is admin by looking in Prisma
+    const adminUser = await prisma.user.findUnique({
+      where: { id: user.id }
+    });
+
+    if (!adminUser || adminUser.role !== Role.ADMIN) {
+      throw new Error("Unauthorized: Admin access required");
+    }
+
+    return await prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        studentProfile: true,
+        tutorProfile: true
+      }
+    });
+  } catch (error) {
+    console.error("Error in getAllUsers:", error);
+    throw new Error("Failed to fetch users");
+  }
 }
 
 export async function deleteUser(userId: string) {
-  const supabase = await createClient();
-  const { data: { user: admin } } = await supabase.auth.getUser();
-  if (!admin || admin.user_metadata?.role !== "ADMIN") throw new Error("Unauthorized");
+  try {
+    const supabase = await createClient();
+    const { data: { user: admin } } = await supabase.auth.getUser();
+    
+    if (!admin) {
+      throw new Error("Unauthorized: No admin user found");
+    }
 
-  // 1. Wipe from Prisma
-  await prisma.user.delete({ where: { id: userId } });
+    // Check if user is admin by looking in Prisma
+    const adminUser = await prisma.user.findUnique({
+      where: { id: admin.id }
+    });
 
-  // 2. Try to wipe from Supabase Auth (Requires Service Role Key)
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (serviceRoleKey) {
-    const { createClient: createAdminClient } = await import("@supabase/supabase-js");
-    const adminClient = createAdminClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      serviceRoleKey,
-      { auth: { autoRefreshToken: false, persistSession: false } }
-    );
-    await adminClient.auth.admin.deleteUser(userId);
+    if (!adminUser || adminUser.role !== Role.ADMIN) {
+      throw new Error("Unauthorized: Admin access required");
+    }
+
+    // 1. Delete from Prisma first
+    await prisma.user.delete({ where: { id: userId } });
+
+    // 2. Try to delete from Supabase Auth (Requires Service Role Key)
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (serviceRoleKey) {
+      try {
+        const { createClient: createAdminClient } = await import("@supabase/supabase-js");
+        const adminClient = createAdminClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          serviceRoleKey,
+          { auth: { autoRefreshToken: false, persistSession: false } }
+        );
+        await adminClient.auth.admin.deleteUser(userId);
+      } catch (supabaseError) {
+        console.error("Failed to delete from Supabase Auth:", supabaseError);
+        // Continue anyway - Prisma deletion was successful
+      }
+    }
+
+    revalidatePath("/admin/users");
+    return { success: true };
+  } catch (error) {
+    console.error("Error in deleteUser:", error);
+    throw new Error("Failed to delete user");
   }
-
-  revalidatePath("/admin/users");
-  return { success: true };
 }
 
 export async function updateUserRoleAdmin(userId: string, role: Role) {
-  const supabase = await createClient();
-  const { data: { user: admin } } = await supabase.auth.getUser();
-  if (!admin || admin.user_metadata?.role !== "ADMIN") throw new Error("Unauthorized");
+  try {
+    const supabase = await createClient();
+    const { data: { user: admin } } = await supabase.auth.getUser();
+    
+    if (!admin) {
+      throw new Error("Unauthorized: No admin user found");
+    }
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: { role }
-  });
-  revalidatePath("/admin/users");
-  return { success: true };
+    // Check if user is admin by looking in Prisma
+    const adminUser = await prisma.user.findUnique({
+      where: { id: admin.id }
+    });
+
+    if (!adminUser || adminUser.role !== Role.ADMIN) {
+      throw new Error("Unauthorized: Admin access required");
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { role }
+    });
+
+    revalidatePath("/admin/users");
+    return { success: true };
+  } catch (error) {
+    console.error("Error in updateUserRoleAdmin:", error);
+    throw new Error("Failed to update user role");
+  }
 }
 
 // --- SESSION MANAGEMENT ---

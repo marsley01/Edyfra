@@ -25,10 +25,33 @@ export function Navigation() {
   const pathname = usePathname();
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    const handleScroll = () => {
+      // Use requestAnimationFrame for better performance
+      requestAnimationFrame(() => {
+        setScrolled(window.scrollY > 20);
+      });
+    };
+    
+    // Add scroll event with passive option for better performance
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    
+    // Also check on initial mount in case page loads already scrolled
+    requestAnimationFrame(() => {
+      setScrolled(window.scrollY > 20);
+    });
+    
+    // Prevent background scrolling when mobile menu is open
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   const showBackButton = pathname !== "/" && !isOpen;
 
