@@ -48,12 +48,16 @@ export async function getAllUsers() {
       throw new Error("Unauthorized: No user found");
     }
 
-    // Check if user is admin by looking in Prisma
+    // Check if user is admin - check both Prisma and Supabase metadata
     const adminUser = await prisma.user.findUnique({
       where: { id: user.id }
     });
 
-    if (!adminUser || adminUser.role !== Role.ADMIN) {
+    const isAdmin = adminUser?.role === Role.ADMIN || 
+                     user.user_metadata?.role === "ADMIN" ||
+                     user.user_metadata?.role === "ADMIN";
+
+    if (!isAdmin) {
       throw new Error("Unauthorized: Admin access required");
     }
 
