@@ -159,6 +159,24 @@ export async function approveTutorApplication(applicationId: string) {
 
   await (prisma.tutorApplication as any).update({ where: { id: applicationId }, data: { status: "APPROVED" } });
 
+  // Update Supabase auth user metadata to reflect TUTOR role
+  try {
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (serviceRoleKey) {
+      const { createClient: createAdminClient } = await import("@supabase/supabase-js");
+      const adminClient = createAdminClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        serviceRoleKey,
+        { auth: { autoRefreshToken: false, persistSession: false } }
+      );
+      await adminClient.auth.admin.updateUserById(app.userId, {
+        user_metadata: { role: "TUTOR" }
+      });
+    }
+  } catch (e) {
+    console.error("Failed to update Supabase user metadata:", e);
+  }
+
   // Add Notification
   try {
     await (prisma.notification as any).create({

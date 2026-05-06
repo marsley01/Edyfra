@@ -1,8 +1,7 @@
 import { AIService } from "@/utils/ai-service";
-import { PrismaClient, Role } from "@prisma/client";
+import prisma from "@/lib/prisma";
+import { Role } from "@prisma/client";
 import { NextResponse } from "next/server";
-
-const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
@@ -22,7 +21,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "AI key not configured. Please add GOOGLE_AI_KEY to your .env file or Admin Settings." }, { status: 500 });
     }
     
-    console.log(`Mash AI: Initializing session ${sessionId} for ${subject}`);
+
 
     const ai = new AIService({
       provider: "google",
@@ -44,7 +43,7 @@ export async function POST(req: Request) {
       },
     });
 
-    console.log(`Mash AI: Response generated for session ${sessionId}`);
+
 
     // 2. Notify Online Tutors that an AI session needs human intervention
     try {

@@ -16,7 +16,7 @@ export async function getTutorProfile() {
     });
 
     if (!profile && user.role === Role.TUTOR) {
-      console.log(`Creating missing TutorProfile for ${user.id}`);
+
       profile = await prisma.tutorProfile.create({
         data: {
           userId: user.id,
@@ -43,7 +43,7 @@ export async function toggleTutorStatus(isOnline: boolean) {
     const user = await getUserData();
     if (!user) throw new Error("Unauthorized");
 
-    console.log(`Toggling tutor status for ${user.id} to ${isOnline}`);
+
     await prisma.tutorProfile.upsert({
       where: { userId: user.id },
       create: {

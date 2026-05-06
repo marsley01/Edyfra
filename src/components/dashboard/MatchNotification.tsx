@@ -42,7 +42,7 @@ export default function MatchNotification() {
       })
       .subscribe((status: any) => {
         if (status === 'SUBSCRIBED') {
-          console.log('Match notification channel subscribed');
+
         }
       });
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { User } from "@supabase/supabase-js";
@@ -23,12 +23,9 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [points, setPoints] = useState<number | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  useEffect(() => {
-    checkTutor();
-  }, []);
-
-  const checkTutor = async () => {
+  const checkTutor = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -36,7 +33,6 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
         return;
       }
 
-      // Role check - case insensitive
       if ((user.user_metadata?.role || "").toUpperCase() !== "TUTOR") {
         router.push("/dashboard");
         return;
@@ -51,24 +47,11 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
     } finally {
       setLoading(false);
     }
-  };
+  }, [supabase, router]);
 
-  if (loading) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
-
-  const navItems = [
-    { href: "/tutor", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/tutor/requests", label: "Requests", icon: Users },
-    { href: "/tutor/sessions", label: "Sessions", icon: Zap },
-    { href: "/tutor/schedule", label: "Schedule", icon: Calendar },
-    { href: "/tutor/earnings", label: "Earnings", icon: Wallet },
-    { href: "/tutor/settings", label: "Settings", icon: Settings },
-  ];
-
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  useEffect(() => {
+    checkTutor();
+  }, [checkTutor]);
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -81,6 +64,15 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
       document.body.style.overflow = "unset";
     };
   }, [isMobileMenuOpen]);
+
+  const navItems = [
+    { href: "/tutor", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/tutor/requests", label: "Requests", icon: Users },
+    { href: "/tutor/sessions", label: "Sessions", icon: Zap },
+    { href: "/tutor/schedule", label: "Schedule", icon: Calendar },
+    { href: "/tutor/earnings", label: "Earnings", icon: Wallet },
+    { href: "/tutor/settings", label: "Settings", icon: Settings },
+  ];
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-background font-sans">

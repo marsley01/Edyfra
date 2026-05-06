@@ -26,7 +26,7 @@ export async function getUserData(): Promise<(User & { studentProfile: StudentPr
     });
 
     if (!prismaUser) {
-      console.log(`Creating missing Prisma user for ${user.id} (${user.email})`);
+
       prismaUser = await prisma.user.create({
         data: {
           id: user.id,

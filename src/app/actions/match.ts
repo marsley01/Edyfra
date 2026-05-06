@@ -172,7 +172,7 @@ export async function sweepUnmatchedRequests() {
     });
 
     for (const request of unmatchedRequests) {
-      console.log(`Auto-matching stale request ${request.id} with AI`);
+
       await forceAIFallback(request.id);
     }
 

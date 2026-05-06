@@ -23,36 +23,36 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    checkAdmin();
-  }, []);
-
-  const checkAdmin = async () => {
     if (pathname === "/admin/register") {
       setLoading(false);
       return;
     }
 
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push("/login");
-        return;
-      }
+    const checkAdmin = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          // Let middleware handle the redirect
+          setLoading(false);
+          return;
+        }
 
-      if ((user.user_metadata?.role || "").toUpperCase() !== "ADMIN") {
-        router.push("/dashboard");
-        return;
-      }
+        if ((user.user_metadata?.role || "").toUpperCase() !== "ADMIN") {
+          // Let middleware handle the redirect
+          setLoading(false);
+          return;
+        }
 
-      setAdminUser(user);
-    } catch (error) {
-      console.error("Admin auth check failed:", error);
-      router.push("/login");
-      return;
-    } finally {
-      setLoading(false);
-    }
-  };
+        setAdminUser(user);
+        setLoading(false);
+      } catch (error) {
+        console.error("Admin auth check failed:", error);
+        setLoading(false);
+      }
+    };
+
+    checkAdmin();
+  }, [pathname, supabase, router]);
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -66,10 +66,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     };
   }, [isMobileMenuOpen]);
 
-  if (loading) return null;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (pathname === "/admin/register") {
     return <>{children}</>;
+  }
+
+  if (!adminUser) {
+    return null; // Middleware will redirect
   }
 
   const navItems = [
@@ -87,24 +97,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="flex flex-col min-h-screen bg-[#050505] text-white selection:bg-primary/30">
       {/* Global OS Status Bar */}
       <div className="h-8 bg-black border-b border-white/5 flex items-center justify-between px-4 text-[8px] font-black uppercase tracking-[0.3em] z-[60] relative overflow-hidden">
-         <div className="flex items-center gap-4 overflow-hidden">
-            <div className="flex items-center gap-2 flex-shrink-0">
-               <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-               <span className="text-emerald-500">Online</span>
-            </div>
-            <div className="flex items-center gap-2 text-white/40 hidden sm:flex flex-shrink-0">
-               <Activity className="h-3 w-3" />
-               <span>Active</span>
-            </div>
-            <div className="flex items-center gap-2 text-white/40 hidden md:flex flex-shrink-0">
-               <Globe className="h-3 w-3" />
-               <span>Kenya</span>
-            </div>
-         </div>
-         <div className="flex items-center gap-2 text-white/40 flex-shrink-0">
-            <span className="hidden sm:inline">Secure</span>
-            <span className="text-primary">Admin</span>
-         </div>
+        <div className="flex items-center gap-4 overflow-hidden">
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+            <span className="text-emerald-500">Online</span>
+          </div>
+          <div className="flex items-center gap-2 text-white/40 hidden sm:flex flex-shrink-0">
+            <Activity className="h-3 w-3" />
+            <span>Active</span>
+          </div>
+          <div className="flex items-center gap-2 text-white/40 hidden md:flex flex-shrink-0">
+            <Globe className="h-3 w-3" />
+            <span>Kenya</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-white/40 flex-shrink-0">
+          <span className="hidden sm:inline">Secure</span>
+          <span className="text-primary">Admin</span>
+        </div>
       </div>
 
       {/* Mobile Header */}
@@ -134,23 +144,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </button>
       </header>
 
-       {/* Mobile Drawer Overlay */}
-       <AnimatePresence>
-         {isMobileMenuOpen && (
-           <>
-             <motion.div
-               initial={{ opacity: 0 }}
-               animate={{ opacity: 1 }}
-               exit={{ opacity: 0 }}
-               className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] lg:hidden"
-             />
-             <motion.div
-               initial={{ x: "-100%" }}
-               animate={{ x: 0 }}
-               exit={{ x: "-100%" }}
-               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-               className="fixed inset-y-0 left-0 w-80 bg-[#050505] z-[70] shadow-2xl border-r border-white/5 overflow-y-auto"
-             >
+      {/* Mobile Drawer Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] lg:hidden"
+            />
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 left-0 w-80 bg-[#050505] z-[70] shadow-2xl border-r border-white/5 overflow-y-auto"
+            >
               <div className="absolute top-6 right-6 z-50">
                 <button 
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -172,46 +182,46 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         )}
       </AnimatePresence>
 
-       <div className="flex flex-1">
-         {/* Sleek Glass Sidebar (Desktop) */}
-         <aside className="w-72 bg-black/40 backdrop-blur-2xl border-r border-white/5 hidden lg:flex flex-col fixed top-8 bottom-0 z-50">
-           <AdminSidebarContent 
-             pathname={pathname} 
-             navItems={navItems} 
-             adminUser={adminUser}
-             supabase={supabase}
-             router={router}
-           />
-         </aside>
+      <div className="flex flex-1">
+        {/* Sleek Glass Sidebar (Desktop) */}
+        <aside className="w-72 bg-black/40 backdrop-blur-2xl border-r border-white/5 hidden lg:flex flex-col fixed top-8 bottom-0 z-50">
+          <AdminSidebarContent 
+            pathname={pathname} 
+            navItems={navItems} 
+            adminUser={adminUser}
+            supabase={supabase}
+            router={router}
+          />
+        </aside>
 
-         {/* Futuristic Main Content */}
-         <main className="flex-1 lg:ml-72 bg-gradient-to-br from-[#050505] to-[#0a0a0a]">
-           <header className="h-20 bg-black/40 backdrop-blur-md border-b border-white/5 hidden lg:flex items-center justify-between px-6 xl:px-10 sticky top-8 z-40">
-              <div className="flex items-center gap-4 xl:gap-8">
-                 <div className="flex items-center gap-2 text-muted-foreground text-xs font-bold">
-                    <Globe className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-                    <span className="truncate">East Africa</span>
-                 </div>
-                 <div className="flex items-center gap-2 text-muted-foreground text-xs font-bold">
-                    <Activity className="h-3.5 w-3.5 text-primary flex-shrink-0" />
-                    <span>Running</span>
-                 </div>
+        {/* Futuristic Main Content */}
+        <main className="flex-1 lg:ml-72 bg-gradient-to-br from-[#050505] to-[#0a0a0a]">
+          <header className="h-20 bg-black/40 backdrop-blur-md border-b border-white/5 hidden lg:flex items-center justify-between px-6 xl:px-10 sticky top-8 z-40">
+            <div className="flex items-center gap-4 xl:gap-8">
+              <div className="flex items-center gap-2 text-muted-foreground text-xs font-bold">
+                <Globe className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                <span className="truncate">East Africa</span>
               </div>
-              
-              <div className="flex items-center gap-4">
-                 <div className="relative group hidden sm:block">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
-                    <input 
-                      placeholder="Execute command..." 
-                      className="bg-white/5 border border-white/5 rounded-full py-2 pl-9 pr-4 text-[10px] font-bold tracking-widest focus:outline-none focus:border-primary/50 transition-all w-48 xl:w-64"
-                    />
-                 </div>
-                 <button className="relative p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-                    <Bell className="h-4 w-4 text-slate-300" />
-                    <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary-rgb),0.8)]" />
-                 </button>
+              <div className="flex items-center gap-2 text-muted-foreground text-xs font-bold">
+                <Activity className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                <span>Running</span>
               </div>
-           </header>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <div className="relative group hidden sm:block">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+                <input 
+                  placeholder="Execute command..." 
+                  className="bg-white/5 border border-white/5 rounded-full py-2 pl-9 pr-4 text-[10px] font-bold tracking-widest focus:outline-none focus:border-primary/50 transition-all w-48 xl:w-64"
+                />
+              </div>
+              <button className="relative p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
+                <Bell className="h-4 w-4 text-slate-300" />
+                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary-rgb),0.8)]" />
+              </button>
+            </div>
+          </header>
 
           <AnimatePresence mode="wait">
             <motion.div 
@@ -277,26 +287,26 @@ function AdminSidebarContent({ pathname, navItems, adminUser, supabase, router, 
       </nav>
 
       <div className="p-6 border-t border-white/5 bg-black/20">
-         <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary/20 to-primary/5 text-primary flex items-center justify-center font-black border border-primary/10">
-                {adminUser?.email?.[0].toUpperCase()}
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-black truncate">{adminUser?.user_metadata?.full_name || "Marsley"}</p>
-                <div className="flex items-center gap-1.5">
-                   <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                   <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Active Admin</span>
-                </div>
+        <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary/20 to-primary/5 text-primary flex items-center justify-center font-black border border-primary/10">
+              {adminUser?.email?.[0].toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-black truncate">{adminUser?.user_metadata?.full_name || "Admin"}</p>
+              <div className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Active Admin</span>
               </div>
             </div>
-            <button 
-              onClick={() => supabase.auth.signOut().then(() => router.push("/login"))}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/5 hover:bg-destructive/10 hover:text-destructive text-[10px] font-black uppercase tracking-widest transition-all border border-white/5"
-            >
-              <LogOut className="h-3.5 w-3.5" /> Terminate Session
-            </button>
-         </div>
+          </div>
+          <button 
+            onClick={() => supabase.auth.signOut().then(() => router.push("/login"))}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/5 hover:bg-destructive/10 hover:text-destructive text-[10px] font-black uppercase tracking-widest transition-all border border-white/5"
+          >
+            <LogOut className="h-3.5 w-3.5" /> Terminate Session
+          </button>
+        </div>
       </div>
     </>
   );
