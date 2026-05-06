@@ -8,7 +8,7 @@ import {
   ShieldCheck, ShieldAlert, GraduationCap, 
   MapPin, Clock, Star, ExternalLink,
   CheckCircle2, XCircle, Search, Loader2,
-  FileText, Mail, Info, Trash2, AlertTriangle
+  FileText, Mail, Info, Trash2, AlertTriangle, Clock3
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -36,6 +36,7 @@ export default function AdminTutorsPage() {
   const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [showAllTutors, setShowAllTutors] = useState(false);
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -64,6 +65,7 @@ export default function AdminTutorsPage() {
   };
 
   const handleApprove = async (id: string) => {
+    setProcessingId(id);
     try {
       const result = await approveTutorApplicationEnhanced(id);
       if (result.success) {
@@ -74,10 +76,13 @@ export default function AdminTutorsPage() {
       const errorMessage = err instanceof Error ? err.message : "Approval failed due to an unknown error.";
       toast.error("Approval failed: " + errorMessage);
       console.error("Error approving tutor:", err);
+    } finally {
+      setProcessingId(null);
     }
   };
 
   const handleReject = async (id: string) => {
+    setProcessingId(id);
     try {
       const reason = prompt("Enter rejection reason (optional):") || undefined;
       const result = await rejectTutorApplication(id, reason);
@@ -89,6 +94,8 @@ export default function AdminTutorsPage() {
       const errorMessage = err instanceof Error ? err.message : "Rejection failed due to an unknown error.";
       toast.error("Rejection failed: " + errorMessage);
       console.error("Error rejecting tutor:", err);
+    } finally {
+      setProcessingId(null);
     }
   };
 
@@ -173,9 +180,9 @@ export default function AdminTutorsPage() {
         ) : filteredApps.length === 0 ? (
           <div className="text-center py-24 bg-white/[0.02] border border-dashed border-white/10 rounded-[2rem]">
             <Info className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-xl font-bold">No Pending Applications</h3>
+            <h3 className="text-xl font-bold">{showAllTutors ? "No Tutors Found" : "No Pending Applications"}</h3>
             <p className="text-muted-foreground text-sm">
-              {search ? "No applications match your search." : "When tutors apply, they will appear here for review."}
+              {search ? "No results match your search." : showAllTutors ? "No tutors are currently registered." : "When tutors apply, they will appear here for review."}
             </p>
             {search && (
               <Button 
@@ -206,7 +213,9 @@ export default function AdminTutorsPage() {
                         <Badge className="bg-primary/10 text-primary border-none text-[9px] font-black tracking-widest uppercase">
                           {app.user?.educationLevel?.replace("_", " ") || "N/A"}
                         </Badge>
-                        <span className="text-xs font-bold text-muted-foreground">Applied {new Date(app.createdAt).toLocaleDateString()}</span>
+                        <span className="text-xs font-bold text-muted-foreground flex items-center gap-1">
+                          <Clock3 className="h-3 w-3" /> Applied {new Date(app.createdAt).toLocaleDateString()}
+                        </span>
                       </div>
                       {app.user?.email && (
                         <p className="text-[10px] font-bold text-muted-foreground flex items-center gap-1 mt-1">
@@ -238,35 +247,76 @@ export default function AdminTutorsPage() {
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="p-8 bg-white/[0.01] flex items-center gap-3 lg:border-l border-white/5">
+                  {/* Actions with Status Badge */}
+                  <div className="p-8 bg-white/[0.01] flex flex-col items-stretch gap-3 lg:border-l border-white/5 lg:min-w-[220px]">
+                    {/* Status Badge - Always Visible */}
+                    <div className="mb-2">
+                      {app.status === "PENDING" ? (
+                        <Badge className="w-full justify-center bg-amber-500/20 text-amber-500 border border-amber-500/30 text-[9px] font-black tracking-widest">
+                          ⏳ PENDING REVIEW
+                        </Badge>
+                      ) : app.status === "APPROVED" ? (
+                        <Badge className="w-full justify-center bg-green-500/20 text-green-500 border border-green-500/30 text-[9px] font-black tracking-widest">
+                          ✓ APPROVED
+                        </Badge>
+                      ) : (
+                        <Badge className="w-full justify-center bg-red-500/20 text-red-500 border border-red-500/30 text-[9px] font-black tracking-widest">
+                          ✗ REJECTED
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Action Buttons */}
                     {app.status === "PENDING" ? (
                       <>
                         <Button 
                           onClick={() => handleApprove(app.id)}
-                          className="rounded-xl font-black text-xs tracking-widest gap-2 bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition-all px-6 py-6"
+                          disabled={processingId === app.id}
+                          className="rounded-xl font-black text-xs tracking-widest gap-2 bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition-all px-4 py-5 w-full disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <CheckCircle2 className="h-4 w-4" /> ACTIVATE DASHBOARD
+                          {processingId === app.id ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              PROCESSING...
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle2 className="h-4 w-4" />
+                              ACTIVATE
+                            </>
+                          )}
                         </Button>
                         <Button 
-                          variant="outline"
                           onClick={() => handleReject(app.id)}
-                          className="rounded-xl font-black text-xs tracking-widest gap-2 border-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all px-6 py-6"
+                          disabled={processingId === app.id}
+                          variant="outline"
+                          className="rounded-xl font-black text-xs tracking-widest gap-2 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all px-4 py-5 w-full disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <XCircle className="h-4 w-4" /> REJECT
+                          {processingId === app.id ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              PROCESSING...
+                            </>
+                          ) : (
+                            <>
+                              <XCircle className="h-4 w-4" />
+                              REJECT
+                            </>
+                          )}
                         </Button>
                       </>
                     ) : app.status === "APPROVED" ? (
-                      <div className="flex items-center gap-2 text-green-500 font-black text-xs tracking-widest px-6 py-6">
-                        <ShieldCheck className="h-4 w-4" /> APPROVED & ACTIVATED
+                      <div className="flex items-center justify-center gap-2 text-green-500 font-black text-xs tracking-widest px-4 py-5 bg-green-500/10 rounded-lg border border-green-500/20">
+                        <ShieldCheck className="h-4 w-4" /> ACTIVATED
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2 text-red-500 font-black text-xs tracking-widest px-6 py-6">
+                      <div className="flex items-center justify-center gap-2 text-red-500 font-black text-xs tracking-widest px-4 py-5 bg-red-500/10 rounded-lg border border-red-500/20">
                         <XCircle className="h-4 w-4" /> REJECTED
                       </div>
                     )}
-                    <Button variant="ghost" size="icon" className="rounded-xl h-12 w-12 hover:bg-white/5">
-                      <ExternalLink className="h-5 w-5 text-muted-foreground" />
+                    
+                    <Button variant="ghost" size="icon" className="rounded-xl h-10 w-10 hover:bg-white/5">
+                      <ExternalLink className="h-4 w-4 text-muted-foreground" />
                     </Button>
                   </div>
               </div>
