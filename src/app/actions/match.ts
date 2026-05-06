@@ -75,29 +75,31 @@ export async function acceptMatchRequest(requestId: string) {
   });
   
   const tier = userData?.role === "TUTOR" ? "TUTOR" : "PEER";
-
+  
   // Ensure student exists in Prisma
   const studentExists = await prisma.user.findUnique({
     where: { id: matchRequest.studentId }
   });
   
   if (!studentExists) {
-     // Create student in Prisma if they don't exist
-     const { data: { user: studentUser } } = await supabase.auth.admin.getUserById(matchRequest.studentId);
-        if (studentUser) {
-          await prisma.user.create({
-            data: {
-              id: matchRequest.studentId,
-              email: studentUser.email || '',
-              name: studentUser.user_metadata?.name || 'Unknown',
-              role: studentUser.user_metadata?.role || 'STUDENT',
-              educationLevel: studentUser.user_metadata?.educationLevel || 'HIGH_SCHOOL',
-              county: 'Nairobi'
-            }
-          });
-        }
-        }
-     }
+    try {
+      // Create student in Prisma if they don't exist
+      const { data: { user: studentUser } } = await supabase.auth.admin.getUserById(matchRequest.studentId);
+      if (studentUser) {
+        await prisma.user.create({
+          data: {
+            id: matchRequest.studentId,
+            email: studentUser.email || '',
+            name: studentUser.user_metadata?.name || 'Unknown',
+            role: studentUser.user_metadata?.role || 'STUDENT',
+            educationLevel: studentUser.user_metadata?.educationLevel || 'HIGH_SCHOOL',
+            county: 'Nairobi'
+          }
+        });
+      }
+    } catch (err) {
+      console.error("Failed to create student in Prisma:", err);
+    }
   }
 
   // Create the session with a UNIQUE room ID
