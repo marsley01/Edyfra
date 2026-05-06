@@ -9,13 +9,14 @@ export async function getTutorProfile() {
   try {
     const user = await getUserData();
     if (!user) return null;
-    
+
     let profile = await prisma.tutorProfile.findUnique({
       where: { userId: user.id },
       include: { user: true }
     });
-    
+
     if (!profile && user.role === Role.TUTOR) {
+
       profile = await prisma.tutorProfile.create({
         data: {
           userId: user.id,
@@ -29,7 +30,7 @@ export async function getTutorProfile() {
         include: { user: true }
       });
     }
-    
+
     return profile;
   } catch (error) {
     console.error("Error in getTutorProfile:", error);
@@ -41,7 +42,8 @@ export async function toggleTutorStatus(isOnline: boolean) {
   try {
     const user = await getUserData();
     if (!user) throw new Error("Unauthorized");
-    
+
+
     await prisma.tutorProfile.upsert({
       where: { userId: user.id },
       create: {
@@ -62,7 +64,7 @@ export async function toggleTutorStatus(isOnline: boolean) {
         hourlyRate: 500
       }
     });
-    
+
     revalidatePath("/tutor");
     return { success: true };
   } catch (error) {
@@ -75,14 +77,14 @@ export async function updateTutorAvailability(schedule: any) {
   try {
     const user = await getUserData();
     if (!user) throw new Error("Unauthorized");
-    
+
     await prisma.tutorProfile.update({
       where: { userId: user.id },
       data: {
         availability: { schedule }
       }
     });
-    
+
     revalidatePath("/tutor");
     return { success: true };
   } catch (error) {
@@ -98,7 +100,7 @@ export async function getTutorStats() {
   try {
     const user = await getUserData();
     if (!user) return null;
-    
+
     const [activeSessions, completedSessions, totalEarnings] = await Promise.all([
       prisma.session.count({ where: { partnerId: user.id, status: "ACTIVE" } }),
       prisma.session.count({ where: { partnerId: user.id, status: "COMPLETED" } }),
@@ -107,7 +109,7 @@ export async function getTutorStats() {
         _sum: { priceKsh: true }
       })
     ]);
-    
+
     return {
       activeSessions,
       completedSessions,
@@ -127,11 +129,11 @@ export async function getVerifiedTutors(level?: Role | string) {
         isNot: null
       }
     };
-    
+
     if (level) {
       whereClause.tutorProfile.levelsTaught = { has: level };
     }
-    
+
     return await prisma.user.findMany({
       where: whereClause,
       include: {
@@ -165,11 +167,7 @@ export async function searchTutors(query: string) {
               subjects: {
                 hasSome: [normalizedQuery, normalizedQuery.charAt(0).toUpperCase() + normalizedQuery.slice(1)]
               }
-            }
-          },
-          {
-            county: { contains: normalizedQuery, mode: "insensitive" }
-          }
+}
         ],
       },
       include: {
@@ -186,6 +184,20 @@ export async function searchTutors(query: string) {
     return [];
   }
 }
+               }
+             },
+             {
+               county: { contains: normalizedQuery, mode: "insensitive" }
+             }
+           ]
+         }
+       })
+    });
+  } catch (error) {
+    console.error("Error in searchTutors:", error);
+    return [];
+  }
+}
 
 // Get tutors by subject for better visibility
 export async function getTutorsBySubject(subject: string, level?: string) {
@@ -194,6 +206,7 @@ export async function getTutorsBySubject(subject: string, level?: string) {
       role: Role.TUTOR,
       tutorProfile: {
         isNot: null,
+        isVerified: true,
         subjects: {
           hasSome: [subject]
         }
@@ -225,7 +238,7 @@ export async function getTutorSessions(status: "ACTIVE" | "COMPLETED" = "ACTIVE"
   try {
     const user = await getUserData();
     if (!user) return [];
-    
+
     return await prisma.session.findMany({
       where: {
         partnerId: user.id,
