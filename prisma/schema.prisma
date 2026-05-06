@@ -200,7 +200,7 @@ model FeedPost {
   content   String
   image     String?
   subject   String?
-  level     EduLevel
+  level     EduLevel?
   likes     Int        @default(0)
   createdAt DateTime   @default(now())
   comments  Comment[]

@@ -38,7 +38,16 @@ export async function completeOnboarding(data: OnboardingData) {
   } = data;
   
   const isTutor = role === "TUTOR";
-  const isHS = educationLevel === "HIGH_SCHOOL";
+  
+  let userEducationLevel: EduLevel | null = null;
+  if (educationLevel === EduLevel.HIGH_SCHOOL) {
+    userEducationLevel = EduLevel.HIGH_SCHOOL;
+  } else if (educationLevel === EduLevel.UNIVERSITY) {
+    userEducationLevel = EduLevel.UNIVERSITY;
+  } else if (!isTutor) { // For students, ensure a default if not explicitly set
+    userEducationLevel = EduLevel.HIGH_SCHOOL;
+  }
+
   const prismaRole = isTutor ? Role.TUTOR : Role.STUDENT;
 
   // 1. Update Supabase Auth Metadata
@@ -64,11 +73,11 @@ export async function completeOnboarding(data: OnboardingData) {
     email: user.email!,
     name: user.user_metadata.name || user.user_metadata.full_name || "New User",
     role: prismaRole,
-    educationLevel: isHS ? EduLevel.HIGH_SCHOOL : EduLevel.UNIVERSITY,
-    curriculum: isHS ? (curriculum || "8-4-4") : "HEC",
+    educationLevel: userEducationLevel,
+    curriculum: userEducationLevel === EduLevel.HIGH_SCHOOL ? (curriculum || "8-4-4") : "HEC",
     formYear: parseInt(formYear) || null,
     county: county || "Nairobi",
-    isUnder18: isHS,
+    isUnder18: userEducationLevel === EduLevel.HIGH_SCHOOL,
     bio: bio || "",
   };
 
@@ -119,8 +128,8 @@ export async function completeOnboarding(data: OnboardingData) {
       where: { userId: finalUserId },
       create: {
         userId: finalUserId,
-        subjects: subjects || [],
-        levelsTaught: [educationLevel],
+        subjects: subjects || [], // Tutor subjects
+        levelsTaught: userEducationLevel ? [userEducationLevel] : [], // Only add if not null
         verificationPath: verificationPath === "GRADES" ? VerifPath.GRADES : VerifPath.POINTS,
         hourlyRate: parseInt(hourlyRate || TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH.toString()),
         bio: bio || TUTOR_CONFIG.DEFAULT_BIO,

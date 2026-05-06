@@ -1,6 +1,6 @@
 "use server";
 
-import { Role, VerifPath } from "@prisma/client";
+import { Role, VerifPath, EduLevel } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getUserData } from "./user";
@@ -58,11 +58,6 @@ export async function toggleTutorStatus(isOnline: boolean) {
       },
       update: {
         availability: { isOnline },
-        bio: user.bio || TUTOR_CONFIG.DEFAULT_BIO,
-        subjects: [],
-        levelsTaught: [],
-        verificationPath: VerifPath.POINTS,
-        hourlyRate: TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH
       }
     });
 
@@ -122,7 +117,7 @@ export async function getTutorStats() {
   }
 }
 
-export async function getVerifiedTutors(level?: Role | string) {
+export async function getVerifiedTutors(level?: EduLevel) {
   try {
     const whereClause: any = {
       role: Role.TUTOR,
@@ -130,7 +125,6 @@ export async function getVerifiedTutors(level?: Role | string) {
         isNot: null
       }
     };
-
     if (level) {
       whereClause.tutorProfile.levelsTaught = { has: level };
     }
@@ -191,7 +185,7 @@ export async function searchTutors(query: string) {
 }
 
 // Get tutors by subject for better visibility
-export async function getTutorsBySubject(subject: string, level?: string) {
+export async function getTutorsBySubject(subject: string, level?: EduLevel) {
   try {
     const whereClause: any = {
       role: Role.TUTOR,
