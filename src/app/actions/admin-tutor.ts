@@ -6,7 +6,7 @@ import { Role, VerifPath } from "@prisma/client";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 
-// Get all tutor applications with user details
+// Get all tutor applications with user details (ALL statuses)
 export async function getTutorApplicationsWithDetails() {
   try {
     const supabase = await createClient();
@@ -27,13 +27,12 @@ export async function getTutorApplicationsWithDetails() {
       return [];
     }
 
-    // Get pending applications with timeout
+    // Get ALL applications (not just pending) with timeout
     const timeoutPromise = new Promise((_, reject) => 
       setTimeout(() => reject(new Error("Database query timeout")), 10000)
     );
 
     const queryPromise = (prisma.tutorApplication as any).findMany({
-      where: { status: "PENDING" },
       include: { user: true },
       orderBy: { createdAt: "desc" }
     });
@@ -42,6 +41,61 @@ export async function getTutorApplicationsWithDetails() {
     return applications || [];
   } catch (error) {
     console.error("Error fetching tutor applications:", error);
+    return [];
+  }
+}
+
+// Get ALL tutors (users with TUTOR role) with their profiles
+export async function getAllTutorsWithDetails() {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      console.error("No user found");
+      return [];
+    }
+
+    // Check if user is admin
+    const adminUser = await prisma.user.findUnique({
+      where: { id: user.id }
+    });
+
+    if (!adminUser || adminUser.role !== Role.ADMIN) {
+      console.error("Unauthorized: Admin access required");
+      return [];
+    }
+
+    // Get all users with TUTOR role
+    const tutors = await prisma.user.findMany({
+      where: { role: Role.TUTOR },
+      include: {
+        tutorProfile: true,
+        tutorApplication: {
+          orderBy: { createdAt: "desc" },
+          take: 1
+        }
+      },
+      orderBy: { createdAt: "desc" }
+    });
+
+     // Transform to match the expected format in the UI
+     return tutors.map((tutor: any) => ({
+       id: tutor.tutorApplication?.[0]?.id || tutor.id,
+       status: tutor.tutorApplication?.[0]?.status || "APPROVED",
+       createdAt: tutor.tutorApplication?.[0]?.createdAt || tutor.createdAt,
+       subjects: tutor.tutorProfile?.subjects || [],
+       path: tutor.tutorApplication?.[0]?.path || "Direct Registration",
+       notes: tutor.tutorProfile?.bio || "",
+       userId: tutor.id,
+       user: {
+         name: tutor.name,
+         educationLevel: tutor.educationLevel,
+         email: tutor.email
+       }
+     }));
+  } catch (error) {
+    console.error("Error fetching all tutors:", error);
     return [];
   }
 }
