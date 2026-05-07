@@ -1,0 +1,15 @@
+import type { PrismaConfig } from '@prisma/client';
+import { loadEnvConfig } from '@prisma/env';
+
+const { env } = loadEnvConfig();
+
+const config: PrismaConfig = {
+  datasources: {
+    db: {
+      url: env.DATABASE_URL,
+      directUrl: env.DIRECT_URL,
+    },
+  },
+};
+
+export default config;

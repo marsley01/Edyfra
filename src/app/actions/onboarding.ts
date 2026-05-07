@@ -122,27 +122,29 @@ export async function completeOnboarding(data: OnboardingData) {
     }
   });
 
-  // 4. If TUTOR, Create Tutor Profile
+  // 4. If TUTOR, Create Tutor Application (PENDING - requires admin approval)
   if (isTutor) {
-    await prisma.tutorProfile.upsert({
+    await prisma.tutorApplication.upsert({
       where: { userId: finalUserId },
       create: {
         userId: finalUserId,
-        subjects: subjects || [], // Tutor subjects
-        levelsTaught: userEducationLevel ? [userEducationLevel] : [], // Only add if not null
-        verificationPath: verificationPath === "GRADES" ? VerifPath.GRADES : VerifPath.POINTS,
-        hourlyRate: parseInt(hourlyRate || TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH.toString()),
-        bio: bio || TUTOR_CONFIG.DEFAULT_BIO,
-        mpesaNumber: mpesaNumber || "",
-        isVerified: true,
-        availability: { isOnline: false }
+        path: verificationPath === "GRADES" ? VerifPath.GRADES : VerifPath.POINTS,
+        gradesUrl: "",
+        subjects: subjects || [],
+        status: "PENDING",
       },
       update: {
+        path: verificationPath === "GRADES" ? VerifPath.GRADES : VerifPath.POINTS,
         subjects: subjects || [],
-        bio: bio || TUTOR_CONFIG.DEFAULT_BIO,
-        hourlyRate: parseInt(hourlyRate || TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH.toString()),
-        mpesaNumber: mpesaNumber || "",
-        isVerified: true
+        status: "PENDING",
+      }
+    });
+    
+    // Update Supabase metadata to indicate pending tutor application
+    await supabase.auth.updateUser({
+      data: { 
+        tutorApplicationStatus: "PENDING",
+        onboarding_completed: true,
       }
     });
   }

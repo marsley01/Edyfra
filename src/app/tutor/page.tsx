@@ -43,26 +43,38 @@ export default function TutorDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    loadProfile();
-    loadPendingRequests();
+    let channel: any;
+    
+    const setup = async () => {
+      await loadProfile();
+      await loadPendingRequests();
 
-    // Subscribe to new requests
-    const channel = supabase
-      .channel("live-requests")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "MatchRequest" },
-        (payload: any) => {
-          if (!payload.new?.sessionId) {
-            setPendingRequests((prev) => [payload.new as PendingRequest, ...prev]);
-            toast.info("New student request nearby!");
+      // Subscribe to new requests - but only for subjects this tutor teaches
+      const profile = await getTutorProfile();
+      const tutorSubjects = profile?.subjects || [];
+
+      channel = supabase
+        .channel("live-requests")
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "MatchRequest" },
+          (payload: any) => {
+            if (!payload.new?.sessionId) {
+              // Only show if subject matches tutor's subjects (or show all if no subjects set)
+              if (tutorSubjects.length === 0 || tutorSubjects.includes(payload.new?.subject)) {
+                setPendingRequests((prev) => [payload.new as PendingRequest, ...prev]);
+                toast.info(`New ${payload.new?.subject} request!`);
+              }
+            }
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe();
+    };
+
+    setup();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) supabase.removeChannel(channel);
     };
   }, []);
 
@@ -77,15 +89,29 @@ export default function TutorDashboard() {
 
   const loadPendingRequests = async () => {
     setSessionLoading(true);
-    const { data, error } = await supabase
-      .from("MatchRequest")
-      .select("*")
-      .is("sessionId", null)
-      .order("createdAt", { ascending: false })
-      .limit(10);
+    
+    // Fetch tutor's profile to filter by their subjects
+    const tutorProfile = await getTutorProfile();
+    const tutorSubjects = tutorProfile?.subjects || [];
+    
+    // Use server action for filtered queries instead of direct Supabase
+    try {
+      const { getFilteredMatchRequests } = await import("@/app/actions/match-algorithm");
+      const data = await getFilteredMatchRequests(tutorSubjects);
+      setPendingRequests(data);
+    } catch (err) {
+      console.error("Failed to load filtered requests:", err);
+      // Fallback: show all (old behavior) if filter action fails
+      const { data, error } = await supabase
+        .from("MatchRequest")
+        .select("*")
+        .is("sessionId", null)
+        .order("createdAt", { ascending: false })
+        .limit(10);
 
-    if (!error && data) {
-      setPendingRequests(data as PendingRequest[]);
+      if (!error && data) {
+        setPendingRequests(data as PendingRequest[]);
+      }
     }
     setSessionLoading(false);
   };

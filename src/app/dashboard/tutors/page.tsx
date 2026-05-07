@@ -198,7 +198,7 @@ export default function TutorsPage() {
                 rotate: exitX > 0 ? 45 : -45
               }}
               transition={{ type: "spring", damping: 20, stiffness: 300 }}
-              className="absolute w-[350px] md:w-[450px] h-[550px] bg-secondary rounded-[3rem] border border-border/50 shadow-2xl overflow-hidden cursor-grab active:cursor-grabbing flex flex-col"
+                 className="absolute w-[320px] sm:w-[350px] md:w-[450px] h-[520px] sm:h-[550px] bg-secondary rounded-[2rem] sm:rounded-[3rem] border border-border/50 shadow-2xl overflow-hidden cursor-grab active:cursor-grabbing flex flex-col"
             >
               <div className="relative h-2/3 bg-primary/5 flex items-center justify-center p-12 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-secondary/80" />
@@ -246,14 +246,14 @@ export default function TutorsPage() {
                     <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Rate</span>
                     <span className="text-xl font-black">KSH {tutors[currentIndex].tutorProfile?.hourlyRate}</span>
                   </div>
-                  <div className="flex gap-4">
-                    <Button onClick={() => handleSwipe("left")} variant="outline" className="w-14 h-14 rounded-full border-border hover:bg-red-500/10 hover:text-red-500 transition-all">
-                      <Clock className="h-6 w-6" />
-                    </Button>
-                    <Button onClick={() => handleSwipe("right")} className="w-14 h-14 rounded-full bg-primary text-white shadow-xl shadow-primary/20 hover:scale-110 active:scale-95 transition-all">
-                      <Sparkles className="h-6 w-6" />
-                    </Button>
-                  </div>
+                   <div className="flex gap-3">
+                      <Button onClick={() => handleSwipe("left")} variant="outline" className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-border hover:bg-red-500/10 hover:text-red-500 transition-all">
+                        <Clock className="h-5 w-5 sm:h-6 sm:w-6" />
+                      </Button>
+                      <Button onClick={() => handleSwipe("right")} className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary text-white shadow-xl shadow-primary/20 hover:scale-110 active:scale-95 transition-all">
+                        <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />
+                      </Button>
+                    </div>
                 </div>
               </div>
             </motion.div>
@@ -275,16 +275,16 @@ export default function TutorsPage() {
               New teachers are joining our community every hour—check back soon.
             </p>
           </div>
-          <div className="flex gap-4">
-            <Button onClick={() => { setSearch(""); setSubject("all"); setCurrentIndex(0); fetchTutors(userData); }} variant="outline" className="h-14 px-10 rounded-2xl font-black text-[10px] tracking-widest uppercase border-border hover:bg-secondary transition-all">
-              Refresh List
-            </Button>
-            <Link href="/dashboard">
-              <Button className="h-14 px-10 rounded-2xl bg-foreground text-background font-black text-[10px] tracking-widest uppercase shadow-xl transition-all active:scale-95">
-                Back to Dashboard
+             <div className="flex flex-col sm:flex-row gap-4">
+              <Button onClick={() => { setSearch(""); setSubject("all"); setCurrentIndex(0); fetchTutors(userData); }} variant="outline" className="h-12 sm:h-14 px-6 sm:px-10 rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-xs tracking-widest uppercase border-border hover:bg-secondary transition-all">
+                Refresh List
               </Button>
-            </Link>
-          </div>
+              <Link href="/dashboard">
+                <Button className="h-12 sm:h-14 px-6 sm:px-10 rounded-xl sm:rounded-2xl bg-foreground text-background font-black text-[10px] sm:text-xs tracking-widest uppercase shadow-xl transition-all active:scale-95">
+                  Back to Dashboard
+                </Button>
+              </Link>
+            </div>
         </div>
       )}
     </div>

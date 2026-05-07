@@ -13,6 +13,32 @@ import { SESSION_CONFIG } from "@/lib/config";
 import { randomBytes } from "crypto";
 
 /**
+ * Fetch pending match requests filtered by tutor's subjects.
+ * Returns requests that haven't been matched yet.
+ */
+export async function getFilteredMatchRequests(tutorSubjects: string[]) {
+  try {
+    const whereClause: any = {
+      sessionId: null,
+    };
+
+    // Only filter by subject if tutor has subjects configured
+    if (tutorSubjects.length > 0) {
+      whereClause.subject = { in: tutorSubjects };
+    }
+
+    return await prisma.matchRequest.findMany({
+      where: whereClause,
+      orderBy: { createdAt: "desc" },
+      take: 20,
+    });
+  } catch (error) {
+    console.error("Error fetching filtered match requests:", error);
+    return [];
+  }
+}
+
+/**
  * TIER 1: Find high-rated tutors teaching student's needed subject
  * Filters by:
  * - Subject match with student's requested subject

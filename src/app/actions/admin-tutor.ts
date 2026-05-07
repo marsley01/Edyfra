@@ -297,3 +297,71 @@ export async function getTutorStatsForAdmin() {
     };
   }
 }
+
+// Allow existing user to apply to become a tutor
+export async function applyToBecomeTutor(formData: {
+  subjects: string[];
+  bio?: string;
+  hourlyRate?: number;
+  mpesaNumber?: string;
+}) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return { error: "Unauthorized: No user found" };
+    }
+
+    // Get user from Prisma
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id }
+    });
+
+    if (!dbUser) {
+      return { error: "User not found in database" };
+    }
+
+    if (dbUser.role === Role.TUTOR) {
+      return { error: "You are already a tutor" };
+    }
+
+    // Check if there's already a pending application
+    const existingApp = await prisma.tutorApplication.findUnique({
+      where: { userId: user.id }
+    });
+
+    if (existingApp && existingApp.status === "PENDING") {
+      return { error: "You already have a pending application" };
+    }
+
+    // Create or update tutor application
+    await prisma.tutorApplication.upsert({
+      where: { userId: user.id },
+      create: {
+        userId: user.id,
+        path: VerifPath.GRADES,
+        gradesUrl: "",
+        subjects: formData.subjects || [],
+        status: "PENDING",
+      },
+      update: {
+        subjects: formData.subjects || [],
+        status: "PENDING",
+        notes: formData.bio || existingApp?.notes || "",
+      }
+    });
+
+    // Update Supabase metadata
+    await supabase.auth.updateUser({
+      data: { 
+        tutorApplicationStatus: "PENDING",
+      }
+    });
+
+    return { success: true, message: "Application submitted successfully" };
+  } catch (error) {
+    console.error("Error applying to become tutor:", error);
+    return { error: error instanceof Error ? error.message : "Failed to submit application" };
+  }
+}

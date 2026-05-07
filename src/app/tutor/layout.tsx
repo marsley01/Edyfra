@@ -33,14 +33,17 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
         return;
       }
 
-      if ((user.user_metadata?.role || "").toUpperCase() !== "TUTOR") {
+      // Use Prisma as the source of truth for role, with Supabase metadata fallback
+      const dbUser = await getUserData();
+      const role = dbUser?.role || (user.user_metadata?.role || "").toUpperCase();
+
+      if (role !== "TUTOR" && role !== "ADMIN") {
         router.push("/dashboard");
         return;
       }
 
       setUser(user);
-      const data = await getUserData();
-      if (data) setPoints(data.points);
+      if (dbUser) setPoints(dbUser.points);
     } catch (error) {
       console.error("Tutor auth check failed:", error);
       router.push("/login");

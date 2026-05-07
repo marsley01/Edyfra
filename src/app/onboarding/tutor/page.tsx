@@ -68,12 +68,13 @@ export default function TutorOnboardingPage() {
         verificationPath: "GRADES",
       });
       if (result.success) {
-        toast.success("Expert profile established.", {
-          description: "Welcome to the Edyfra Expert Network.",
+        toast.success("Application Submitted!", {
+          description: "Your tutor application is pending admin approval.",
         });
-        window.location.href = "/tutor";
+        // Redirect to pending status page instead of /tutor
+        window.location.href = "/onboarding/tutor-pending";
       } else {
-        toast.error("Profile creation failed.", {
+        toast.error("Application failed.", {
           description: result.error || "Please check your inputs.",
         });
         setLoading(false);

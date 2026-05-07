@@ -30,7 +30,7 @@ export async function sendErrorNotification(params: ErrorNotificationParams) {
 
     // Create notifications for all admins
     await prisma.notification.createMany({
-      data: admins.map(admin => ({
+       data: admins.map((admin: any) => ({
         userId: admin.id,
         type: "ERROR_ALERT",
         title: `System Error: ${type}`,

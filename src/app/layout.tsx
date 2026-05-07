@@ -25,13 +25,13 @@ export const metadata: Metadata = {
   creator: "Edyfra",
   metadataBase: new URL("https://edyfra.com"),
    openGraph: {
-    type: "website",
-    locale: "en_KE",
-    url: "https://edyfra.com",
-    siteName: "Edyfra",
-    title: "Edyfra — Kenya's Institutional Study Platform",
-    description: "AI-powered tutor matching, live study rooms, and institutional analytics for Kenyan scholars.",
-  },
+  type: "website",
+  locale: "en_KE",
+  url: "https://edyfra.com",
+  siteName: "Edyfra",
+  title: "Edyfra — Kenya's Institutional Study Platform",
+  description: "AI-powered tutor matching, live study rooms, and institutional analytics for Kenyan scholars.",
+},
   twitter: {
     card: "summary_large_image",
     title: "Edyfra — Kenya's Institutional Study Platform",
@@ -42,6 +42,7 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
   },
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
 };
 
 

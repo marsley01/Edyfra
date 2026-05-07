@@ -155,13 +155,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] lg:hidden"
             />
-            <motion.div
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 w-80 bg-[#050505] z-[70] shadow-2xl border-r border-white/5 overflow-y-auto"
-            >
+              <motion.div
+                initial={{ x: "-100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "-100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="fixed inset-y-0 left-0 w-72 bg-[#050505] z-[70] shadow-2xl overflow-y-auto custom-scrollbar"
+              >
               <div className="absolute top-6 right-6 z-50">
                 <button
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -212,10 +212,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="flex items-center gap-4">
               <div className="relative group hidden sm:block">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
-                <input
-                  placeholder="Execute command..."
-                  className="bg-white/5 border border-white/5 rounded-full py-2 pl-9 pr-4 text-[10px] font-bold tracking-widest focus:outline-none focus:border-primary/50 transition-all w-48 xl:w-64"
-                />
+             <input
+                   placeholder="Execute command..."
+                   className="bg-white/5 border border-white/5 rounded-full py-1.5 pl-9 pr-4 text-[9px] sm:text-[10px] font-bold tracking-widest focus:outline-none focus:border-primary/50 transition-all w-32 sm:w-48 xl:w-64"
+                 />
               </div>
               <button className="relative p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
                 <Bell className="h-4 w-4 text-slate-300" />
@@ -224,18 +224,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </header>
 
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={pathname}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="p-6 lg:p-10"
-            >
-              {children}
-            </motion.div>
-          </AnimatePresence>
+             <AnimatePresence mode="wait">
+               <motion.div
+                 key={pathname}
+                 initial={{ opacity: 0, y: 10 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 exit={{ opacity: 0, y: -10 }}
+                 transition={{ duration: 0.3 }}
+                 className="p-4 sm:p-6 lg:p-10"
+               >
+                 {children}
+               </motion.div>
+             </AnimatePresence>
         </main>
       </div>
     </div>
@@ -261,13 +261,7 @@ function AdminSidebarContent({ pathname, navItems, adminUser, supabase, router, 
       // 2. Update Database Profile Record (Crucial for Middleware consistency)
       await supabase.from('profiles').update({ role: 'ADMIN', status: 'active' }).eq('id', user.id);
 
-      // Re-fetch user to ensure UI reflects updated metadata immediately
-      const { data: { user: updatedUser } } = await supabase.auth.getUser();
-      if (updatedUser) {
-        setAdminUser(updatedUser);
-      }
-
-      alert("Admin authorization forced. Refreshing session...");
+       alert("Admin authorization forced. Refreshing session...");
       router.refresh();
     } catch (err: any) {
       console.error(err);

@@ -319,3 +319,26 @@ export async function completeSession(sessionId: string) {
     return { success: false };
   }
 }
+
+export async function getUserSessions(userId: string) {
+  try {
+    const sessions = await prisma.session.findMany({
+      where: {
+        OR: [
+          { studentId: userId },
+          { partnerId: userId },
+        ],
+      },
+      include: {
+        student: { select: { name: true } },
+        partner: { select: { name: true } },
+        _count: { select: { messages: true } },
+      },
+      orderBy: { startedAt: "desc" },
+    });
+    return sessions;
+  } catch (error) {
+    console.error("Error fetching user sessions:", error);
+    return [];
+  }
+}

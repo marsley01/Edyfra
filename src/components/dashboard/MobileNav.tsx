@@ -31,7 +31,7 @@ export default function MobileNav({ user }: { user: User }) {
   return (
     <div className="lg:hidden">
       {/* Mobile Header */}
-      <header className="h-16 sm:h-20 bg-background/80 backdrop-blur-md border-b border-border px-4 sm:px-6 flex items-center justify-between sticky top-0 z-40">
+         <header className="h-14 sm:h-16 bg-background/80 backdrop-blur-md border-b border-border px-3 sm:px-4 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center gap-2">
           {showBackButton && (
             <button
@@ -49,14 +49,14 @@ export default function MobileNav({ user }: { user: User }) {
             <span className="text-lg sm:text-xl font-black text-foreground tracking-tighter">Edyfra</span>
           </Link>
         </div>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={() => setIsOpen(true)}
-          className="rounded-xl hover:bg-primary/5"
-        >
-          <Menu className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
-        </Button>
+             <Button 
+           variant="ghost" 
+           size="icon" 
+           onClick={() => setIsOpen(true)}
+           className="rounded-xl hover:bg-primary/5"
+         >
+           <Menu className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
+         </Button>
       </header>
 
       {/* Drawer Overlay */}

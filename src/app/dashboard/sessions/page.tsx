@@ -5,27 +5,21 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, Calendar, Clock, User, ArrowRight, Loader2, MessageSquare, ExternalLink } from "lucide-react";
-import { createClient } from "@/utils/supabase/client";
 import { getUserData } from "@/app/actions/user";
 import Link from "next/link";
 import { format } from "date-fns";
 
-import { User as PrismaUser } from "@prisma/client";
+import { User as PrismaUser, Session } from "@prisma/client";
 
-interface Session {
-  id: string;
-  createdAt: string;
-  subject: string;
-  status: string;
-  topic: string | null;
-  tutorId: string | null;
-  peerId: string | null;
-  messages: { count: number }[];
+interface SessionWithMessages extends Session {
+  _count?: { messages: number };
+  student?: { name: string };
+  partner?: { name: string };
+  createdAt?: string;
 }
 
 export default function SessionsPage() {
-  const supabase = createClient();
-  const [sessions, setSessions] = useState<Session[]>([]);
+  const [sessions, setSessions] = useState<SessionWithMessages[]>([]);
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<PrismaUser | null>(null);
 
@@ -39,17 +33,17 @@ export default function SessionsPage() {
     setUserData(user);
 
     if (user) {
-      // Fetch sessions where user is student, tutor, or peer
-      const { data, error } = await supabase
-        .from("Session")
-        .select(`
-          *,
-          messages (count)
-        `)
-        .or(`studentId.eq.${user.id},tutorId.eq.${user.id},peerId.eq.${user.id}`)
-        .order("createdAt", { ascending: false });
-
-      if (data) setSessions(data);
+      try {
+        const { getUserSessions } = await import("@/app/actions/match");
+         const data = await getUserSessions(user.id);
+         setSessions(data.map(s => ({
+           ...s,
+           partner: s.partner || undefined,
+           createdAt: s.startedAt?.toISOString() || new Date().toISOString()
+         })));
+       } catch (err) {
+         console.error("Failed to fetch sessions:", err);
+       }
     }
     setLoading(false);
   };
@@ -106,7 +100,7 @@ export default function SessionsPage() {
                          </div>
                          <div className="flex items-center gap-1.5">
                             <MessageSquare className="h-4 w-4 text-primary/60" />
-                            {session.messages[0]?.count || 0} Messages
+                            {session._count?.messages || 0} Messages
                          </div>
                       </div>
                     </div>
@@ -118,7 +112,11 @@ export default function SessionsPage() {
                           </div>
                           <div>
                              <p className="text-[10px] font-bold text-muted-foreground uppercase">Partner</p>
-                             <p className="text-sm font-bold">{session.tutorId ? "Verified Tutor" : session.peerId ? "Peer Student" : "Mash AI Assistant"}</p>
+                             <p className="text-sm font-bold">
+                               {session.partner?.name 
+                                 ? (session.tier === "TUTOR" ? "Verified Tutor" : "Peer Student") 
+                                 : "Mash AI Assistant"}
+                             </p>
                           </div>
                        </div>
                     </div>
@@ -126,10 +124,12 @@ export default function SessionsPage() {
 
                   {/* Action */}
                   <div className="p-4 flex items-center justify-center bg-primary/[0.02] border-t md:border-t-0 md:border-l border-primary/10">
-                    <Button variant="ghost" className="h-full w-full md:w-auto px-6 py-8 md:py-0 rounded-none group-hover:bg-primary/5 transition-colors flex flex-col md:flex-row gap-2">
-                       <span className="text-sm font-bold text-primary">View Session</span>
-                       <ExternalLink className="h-4 w-4 text-primary" />
-                    </Button>
+                    <Link href={`/study-room/${session.roomId || session.id}`} className="w-full md:w-auto">
+                      <Button variant="ghost" className="h-full w-full md:w-auto px-6 py-8 md:py-0 rounded-none group-hover:bg-primary/5 transition-colors flex flex-col md:flex-row gap-2">
+                         <span className="text-sm font-bold text-primary">View Session</span>
+                         <ExternalLink className="h-4 w-4 text-primary" />
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </CardContent>
