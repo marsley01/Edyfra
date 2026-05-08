@@ -15,7 +15,7 @@ interface SessionWithMessages extends Session {
   _count?: { messages: number };
   student?: { name: string };
   partner?: { name: string };
-  createdAt?: string;
+  createdAt: string;
 }
 
 export default function SessionsPage() {
