@@ -16,6 +16,10 @@ export default function MobileNav({ user }: { user: User }) {
 
   const showBackButton = pathname !== "/dashboard";
 
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
+
   // Prevent scroll when menu is open
   useEffect(() => {
     if (isOpen) {
@@ -54,6 +58,8 @@ export default function MobileNav({ user }: { user: User }) {
            size="icon" 
            onClick={() => setIsOpen(true)}
            className="rounded-xl hover:bg-primary/5"
+           aria-label="Open dashboard menu"
+           aria-expanded={isOpen}
          >
            <Menu className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
          </Button>
@@ -73,8 +79,8 @@ export default function MobileNav({ user }: { user: User }) {
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 w-80 bg-background z-[70] shadow-2xl overflow-y-auto overscroll-y-contain"
+              transition={{ type: "spring", damping: 30, stiffness: 260 }}
+              className="fixed inset-y-0 left-0 w-[88vw] max-w-80 bg-background z-[70] shadow-2xl overflow-y-auto overscroll-y-contain"
             >
               <div className="absolute top-6 right-6 z-50">
                 <Button 

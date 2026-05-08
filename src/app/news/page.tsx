@@ -59,7 +59,7 @@ export default function NewsPage() {
               animate={{ opacity: 1, y: 0 }}
               className="text-[10px] font-black uppercase tracking-[0.5em] text-primary"
             >
-              Intelligence Feed
+              Edyfra News Room
             </motion.p>
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
@@ -67,8 +67,8 @@ export default function NewsPage() {
               transition={{ delay: 0.1 }}
               className="text-6xl md:text-8xl font-black tracking-tightest leading-none"
             >
-              Ecosystem <br />
-              <span className="text-muted-foreground">News.</span>
+              What&apos;s new <br />
+              <span className="text-muted-foreground">for students.</span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 30 }}
@@ -76,7 +76,7 @@ export default function NewsPage() {
               transition={{ delay: 0.2 }}
               className="text-xl md:text-2xl text-muted-foreground font-medium max-w-2xl leading-relaxed"
             >
-              Stay synchronized with the latest developments across Kenya&apos;s academic ecosystem.
+              Read platform updates, education stories, and study notes that can help you make better choices this week.
             </motion.p>
           </div>
         </div>
@@ -107,7 +107,7 @@ export default function NewsPage() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search articles..."
+              placeholder="Search news, topics, or advice..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="h-12 pl-12 pr-4 rounded-full border-border bg-secondary focus-visible:ring-primary"
@@ -142,7 +142,7 @@ export default function NewsPage() {
               >
                 <Link href={`/news/${featured.slug}`} className="group block">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-                    <div className="aspect-[16/10] lg:aspect-auto rounded-3xl overflow-hidden border border-border shadow-lg group-hover:shadow-2xl transition-all">
+                    <div className="relative aspect-[16/10] lg:aspect-auto lg:min-h-[420px] rounded-3xl overflow-hidden border border-border shadow-lg group-hover:shadow-2xl transition-all">
                       <Image
                         src={featured.cover_image}
                         alt={featured.title}
@@ -171,7 +171,7 @@ export default function NewsPage() {
                         </div>
                         <div>
                           <p className="text-xs font-black uppercase tracking-widest">{featured.author}</p>
-                          <p className="text-[9px] text-muted-foreground">Mission Lead</p>
+                          <p className="text-[9px] text-muted-foreground">Edyfra Desk</p>
                         </div>
                       </div>
                     </div>
@@ -235,9 +235,9 @@ export default function NewsPage() {
               <Sparkles className="h-12 w-12 text-muted-foreground/30" />
             </div>
             <div className="space-y-4 max-w-md mx-auto">
-              <h3 className="text-2xl font-black tracking-tightest">Intelligence Feed Empty</h3>
+              <h3 className="text-2xl font-black tracking-tightest">Nothing matched that search</h3>
               <p className="text-muted-foreground font-medium">
-                No articles match your current filters. Try adjusting your search or category selection.
+                Try another topic, clear the category, or come back when the next update lands.
               </p>
               <Button 
                 onClick={() => { setSelectedCategory("All"); setSearchQuery(""); }}

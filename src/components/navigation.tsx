@@ -39,17 +39,19 @@ export function Navigation() {
     requestAnimationFrame(() => {
       setScrolled(window.scrollY > 20);
     });
-    
-    // Prevent background scrolling when mobile menu is open
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      document.body.style.overflow = '';
+    };
+  }, []);
+
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
     };
   }, [isOpen]);
 
@@ -118,7 +120,9 @@ export function Navigation() {
           <ThemeToggle />
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="p-2 text-foreground"
+            className="p-2 text-foreground rounded-xl hover:bg-primary/5 transition-colors"
+            aria-label={isOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isOpen}
           >
             {isOpen ? <X /> : <Menu />}
           </button>
@@ -132,8 +136,8 @@ export function Navigation() {
             initial={{ opacity: 0, x: "100%" }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed inset-0 top-0 left-0 w-full bg-background z-[60] p-4 sm:p-6 flex flex-col lg:hidden overflow-y-auto overscroll-y-contain"
+            transition={{ type: "spring", damping: 30, stiffness: 260 }}
+            className="fixed inset-0 w-full bg-background z-[60] p-4 sm:p-6 flex flex-col lg:hidden overflow-y-auto overscroll-y-contain"
           >
             <div className="flex items-center justify-between mb-8 sm:mb-12">
               <Link href="/" onClick={() => setIsOpen(false)} className="flex items-center gap-2">

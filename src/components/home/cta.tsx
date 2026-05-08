@@ -21,26 +21,26 @@ export function HomeCTA() {
 
           <div className="relative z-10 space-y-8">
             <h2 className="text-5xl md:text-8xl font-black tracking-tightest leading-none text-white">
-              Master your <br />
-              <span className="text-primary">destiny.</span>
+              Build your <br />
+              <span className="text-primary">study rhythm.</span>
             </h2>
             <p className="text-lg md:text-2xl text-white/60 font-medium max-w-xl mx-auto">
-              Join thousands of scholars and start your institutional journey with Mash today.
+              Create your account, tell Edyfra what you are studying, and get a dashboard that grows with your goals.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-8">
               <Link href="/signup" className="w-full sm:w-auto">
                 <Button className="w-full h-16 px-12 rounded-full bg-primary hover:bg-primary/90 text-white font-black text-xs tracking-widest uppercase shadow-2xl transition-all active:scale-95">
-                  Join Edyfra &mdash; it&apos;s free
+                  Create My Study Space
                 </Button>
               </Link>
               <Link href="/about" className="w-full sm:w-auto">
                 <Button variant="outline" className="w-full h-16 px-12 rounded-full border-white/20 text-white hover:bg-white/10 font-black text-xs tracking-widest uppercase transition-all">
-                  Our Mission
+                  See The Mission
                 </Button>
               </Link>
             </div>
             <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 pt-4">
-              No credit card required. No legacy friction.
+              Free to start. Built for steady progress.
             </p>
           </div>
         </motion.div>

@@ -113,6 +113,12 @@ export default function DashboardPageContent() {
     { label: "Total Sessions", value: sessionCount.toString(), icon: BookOpen },
     { label: "Current Rank", value: userData?.tier || "BRONZE", icon: TrendingUp },
   ];
+  const firstName = userData?.name?.split(" ")[0] || "there";
+  const subjectFocus = userData?.studentProfile?.subjects?.[0] || "your toughest subject";
+  const weakTopic = userData?.studentProfile?.weakTopics?.[0] || "one topic that needs attention";
+  const nextMove = sessionCount > 0
+    ? `Pick up from ${recentSessions[0]?.topic || recentSessions[0]?.subject || subjectFocus} and keep the streak alive.`
+    : `Start with ${subjectFocus}. One focused session is enough to get your dashboard moving.`;
 
   return (
     <div className="p-4 sm:p-6 md:p-12 max-w-7xl mx-auto space-y-8 md:space-y-12 animate-in fade-in duration-1000 font-sans">
@@ -120,16 +126,16 @@ export default function DashboardPageContent() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-8 pb-8 md:pb-12 border-b border-border">
          <div className="space-y-3 md:space-y-4">
             <h1 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tightest leading-none">
-              Hey, <span className="text-primary">{userData?.name?.split(" ")[0] || "there"}.</span>
+              Hey, <span className="text-primary">{firstName}.</span>
             </h1>
             <p className="text-muted-foreground text-base sm:text-lg md:text-xl font-medium max-w-xl">
-              Ready for today&apos;s session? Your study space is all set up.
+              Your study space is ready. Today&apos;s best move: {nextMove}
             </p>
          </div>
          <Link href="/dashboard/study">
            <Button className="bg-foreground text-background hover:bg-foreground/90 font-black text-xs tracking-widest px-8 sm:px-12 h-12 sm:h-16 rounded-full uppercase shadow-2xl transition-all active:scale-95 gap-3">
              <Zap className="h-4 w-4 fill-current text-primary" />
-             Start Studying
+             Start My Next Session
            </Button>
          </Link>
       </div>
@@ -192,8 +198,8 @@ export default function DashboardPageContent() {
                 <div className="bg-secondary p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm">
                    <BookOpen className="h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground/20" />
                 </div>
-                <p className="text-muted-foreground font-medium text-base sm:text-lg max-w-sm">
-                  You haven&apos;t had any sessions yet. Start one and track your progress here.
+              <p className="text-muted-foreground font-medium text-base sm:text-lg max-w-sm">
+                  You haven&apos;t had any sessions yet. Start one and this space will turn into your personal study timeline.
                 </p>
              </div>
            )}
@@ -212,11 +218,11 @@ export default function DashboardPageContent() {
            </div>
            <div className="relative z-10 p-6 sm:p-8 bg-white/5 rounded-[1.5rem] sm:rounded-[2rem] border border-white/10 space-y-6 sm:space-y-8">
               <p className="text-base sm:text-lg font-medium leading-relaxed opacity-80">
-                Complete a study session today to keep your streak alive and earn +50 bonus points.
+                Spend 20 minutes on {weakTopic}. You do not need a perfect plan, just one clear question to work through.
               </p>
               <Link href="/dashboard/challenges" className="block w-full">
                 <Button className="w-full h-12 sm:h-14 bg-primary hover:bg-primary/90 text-white font-black text-xs tracking-widest uppercase rounded-full shadow-2xl transition-all active:scale-95">
-                  View Challenges <ArrowRight className="h-4 w-4 ml-2" />
+                  Choose A Challenge <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </Link>
            </div>
@@ -232,15 +238,15 @@ export default function DashboardPageContent() {
           <div className="flex-1 space-y-3 sm:space-y-4 text-center md:text-left">
              <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.4em] text-primary">Find a Mentor</p>
              <h1 className="text-3xl sm:text-5xl md:text-7xl font-black tracking-tightest leading-none">
-               Don&apos;t study <br /> <span className="text-muted-foreground">alone.</span>
+               Get help when <br /> <span className="text-muted-foreground">you hit a wall.</span>
              </h1>
              <p className="text-muted-foreground font-medium text-base sm:text-lg md:text-xl">
-                Connect with tutors and study partners who can help you push through the tough topics.
+                Find someone who can explain {subjectFocus} in a way that finally clicks.
              </p>
           </div>
           <Link href="/dashboard/tutors" className="w-full md:w-auto">
              <Button className="w-full md:w-auto h-14 sm:h-16 px-8 sm:px-12 rounded-full bg-foreground text-background font-black text-xs tracking-widest uppercase shadow-xl hover:bg-foreground/90 transition-all active:scale-95">
-               Browse Tutors
+               Find My Tutor
              </Button>
           </Link>
        </div>
@@ -257,7 +263,7 @@ export default function DashboardPageContent() {
                  Become a <span className="text-primary">Tutor.</span>
                </h1>
                <p className="text-muted-foreground font-medium text-base sm:text-lg md:text-xl">
-                  Share your knowledge, help others succeed, and earn from every session you lead.
+                  If you are strong in {subjectFocus}, you can help other students while building your own profile.
                </p>
             </div>
             <div className="w-full md:w-auto">

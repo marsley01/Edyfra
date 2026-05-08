@@ -36,7 +36,7 @@ export function HomeHero() {
             <span className="text-primary">reimagined.</span>
           </h1>
           <p className="text-lg md:text-2xl text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed">
-            The ultimate ecosystem for Kenyan scholars. Join a community where Mash AI and verified experts help you achieve your true potential.
+            Your personal study base for school, revision, mentorship, and momentum. Mash AI, verified tutors, and real students help you move from stuck to ready.
           </p>
         </motion.div>
 
@@ -48,13 +48,13 @@ export function HomeHero() {
         >
           <Link href="/signup">
             <Button className="h-16 px-12 rounded-full bg-foreground text-background hover:bg-foreground/90 font-black text-xs tracking-widest uppercase shadow-2xl transition-all active:scale-95">
-              Get Started Free
+              Start Your Study Plan
             </Button>
           </Link>
           <a href={WHATSAPP_CHANNEL} target="_blank" rel="noopener noreferrer">
             <Button variant="outline" className="h-16 px-10 rounded-full border-2 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10 font-black text-xs tracking-widest uppercase transition-all flex items-center gap-3">
               <MessageCircle className="h-5 w-5" />
-              Join WhatsApp Channel
+              Join Student Updates
             </Button>
           </a>
         </motion.div>

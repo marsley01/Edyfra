@@ -29,12 +29,12 @@ export function HomeNews() {
            <div className="space-y-4">
               <h2 className="text-4xl md:text-6xl font-black tracking-tightest">Latest from Edyfra.</h2>
               <p className="text-muted-foreground text-lg md:text-xl font-medium max-w-xl">
-                Synchronize with the latest developments in the Kenyan academic ecosystem.
+                News, platform notes, and study updates worth checking before your next session.
               </p>
            </div>
            <Link href="/news">
               <Button variant="ghost" className="font-black text-[10px] tracking-widest uppercase text-primary hover:text-primary group">
-                Browse All Updates <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                Open News Room <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
            </Link>
         </div>
@@ -92,8 +92,8 @@ export function HomeNews() {
         ) : (
           <EmptyState 
             icon={BookOpen}
-            title="Intelligence Feed Active"
-            description="Our synchronization engine is currently indexing the latest academic protocols. Check back shortly for real-time updates."
+            title="News Room Warming Up"
+            description="We are preparing fresh education updates. Check back soon, or refresh if you just added articles."
             actionText="Refresh Feed"
             onAction={() => window.location.reload()}
           />

@@ -58,6 +58,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     checkAdmin();
   }, [pathname, supabase, router]);
 
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
+
   // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -143,6 +147,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <button
           onClick={() => setIsMobileMenuOpen(true)}
           className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+          aria-label="Open admin menu"
+          aria-expanded={isMobileMenuOpen}
         >
           <Menu className="h-6 w-6 text-slate-300" />
         </button>
@@ -162,8 +168,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 initial={{ x: "-100%" }}
                 animate={{ x: 0 }}
                 exit={{ x: "-100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="fixed inset-y-0 left-0 w-72 bg-[#050505] z-[70] shadow-2xl overflow-y-auto custom-scrollbar"
+                transition={{ type: "spring", damping: 30, stiffness: 260 }}
+                className="fixed inset-y-0 left-0 w-[88vw] max-w-72 bg-[#050505] z-[70] shadow-2xl overflow-y-auto custom-scrollbar"
               >
               <div className="absolute top-6 right-6 z-50">
                 <button

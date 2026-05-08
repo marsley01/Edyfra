@@ -76,28 +76,27 @@ export default function CommunityPage() {
             >
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-widest text-primary mb-2">
                 <Users className="h-4 w-4" />
-                Community of Scholars
+                Your Study Circle
               </div>
               
                <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tightest leading-none">
-                 Learn <br />
-                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/60">Together.</span>
+                 Find people <br />
+                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/60">learning with you.</span>
                </h1>
                
                <p className="text-lg md:text-2xl text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed">
-                 Connect with students from across Kenya. 
-                 Find study partners, share what you&apos;re learning, and grow together.
+                 Meet students working through the same pressure, topics, and exams. Ask, share, and build momentum together.
                </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
                 <Link href="/signup">
                   <Button className="h-14 px-10 rounded-full bg-foreground text-background hover:bg-foreground/90 font-black text-xs tracking-widest uppercase shadow-xl transition-all active:scale-95">
-                    Join the Community
+                    Create My Profile
                   </Button>
                 </Link>
                 <Link href="/dashboard/feed">
                   <Button variant="ghost" className="h-14 px-10 rounded-full font-black text-xs tracking-widest uppercase group">
-                    Browse Feed <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    See Student Posts <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
               </div>
@@ -112,9 +111,9 @@ export default function CommunityPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { label: "Students", value: "Growing", icon: Users },
-              { label: "Points Earned", value: "Daily", icon: Trophy },
-              { label: "Sessions", value: "Ongoing", icon: Zap },
-              { label: "Counties", value: "Nationwide", icon: Globe },
+              { label: "Points Earned", value: "Every Day", icon: Trophy },
+              { label: "Study Help", value: "Live", icon: Zap },
+              { label: "Reach", value: "Kenya", icon: Globe },
             ].map((stat, i) => (
               <motion.div
                 key={stat.label}
@@ -144,15 +143,15 @@ export default function CommunityPage() {
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                  <Crown className="h-8 w-8 text-primary" />
-                 <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Top Students.</h2>
+                 <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Students showing up.</h2>
                </div>
                <p className="text-lg text-muted-foreground font-medium max-w-xl">
-                 Students who are putting in the work and leading the way.
+                 A quick look at students building points through consistency, sessions, and daily effort.
                </p>
             </div>
             <Link href="/dashboard/leaderboard">
               <Button variant="ghost" className="font-black text-[10px] tracking-widest uppercase text-primary hover:text-primary group">
-                Full Leaderboard <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                See Full Leaderboard <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
           </div>
@@ -211,7 +210,7 @@ export default function CommunityPage() {
                <UserCheck className="h-12 w-12 text-muted-foreground/20 mx-auto" />
                <div className="space-y-2">
                  <p className="text-xl font-black tracking-tightest">No rankings yet</p>
-                 <p className="text-muted-foreground">Be the first to earn points and claim the top spot!</p>
+                 <p className="text-muted-foreground">Start learning, earn points, and help set the pace for everyone else.</p>
                </div>
                <Link href="/signup">
                  <Button className="rounded-full bg-primary">
@@ -230,15 +229,15 @@ export default function CommunityPage() {
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <Sparkles className="h-8 w-8 text-primary" />
-                <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Community Feed.</h2>
+                <h2 className="text-4xl md:text-5xl font-black tracking-tightest">What students are sharing.</h2>
               </div>
               <p className="text-lg text-muted-foreground font-medium max-w-xl">
-                See what other students are sharing and learning right now.
+                Questions, wins, study notes, and honest progress from the Edyfra community.
               </p>
             </div>
             <Link href="/dashboard/feed">
               <Button className="h-12 px-10 rounded-full bg-primary hover:bg-primary/90 text-white font-black text-[10px] tracking-widest uppercase shadow-lg transition-all">
-                Open Full Feed <ArrowRight className="ml-2 h-4 w-4" />
+                Open Student Feed <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
           </div>
@@ -248,14 +247,14 @@ export default function CommunityPage() {
               <Users className="h-10 w-10 text-muted-foreground/20" />
             </div>
             <div className="space-y-3 max-w-md mx-auto">
-              <h3 className="text-2xl font-black tracking-tightest">The feed is quiet.</h3>
+              <h3 className="text-2xl font-black tracking-tightest">No one has posted yet.</h3>
               <p className="text-muted-foreground">
-                Be the first to share your learning progress with the community.
+                Share the question you are working on, a topic you finally understood, or a win from today.
               </p>
             </div>
             <Link href="/dashboard/feed">
               <Button className="rounded-full bg-foreground text-background hover:bg-foreground/90 font-black text-xs tracking-widest uppercase">
-                Share an Update <Sparkles className="ml-2 h-4 w-4" />
+                Share My First Update <Sparkles className="ml-2 h-4 w-4" />
               </Button>
             </Link>
           </div>
@@ -275,10 +274,10 @@ export default function CommunityPage() {
               className="relative z-10 space-y-8"
             >
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tightest">
-                Ready to get started?
+                Ready to find your people?
               </h2>
               <p className="text-xl md:text-2xl font-medium opacity-90 max-w-2xl mx-auto">
-                Join thousands of students across Kenya who are learning together every day.
+                Build a profile, join the feed, and make studying feel less lonely.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link href="/signup">

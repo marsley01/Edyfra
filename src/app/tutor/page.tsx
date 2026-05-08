@@ -158,14 +158,16 @@ export default function TutorDashboard() {
     { label: "Earnings", value: `KSH ${(profile?.totalSessions || 0) * (profile?.hourlyRate || 0)}`, icon: Wallet, color: "text-primary", bg: "bg-primary/10" },
     { label: "Rating", value: profile?.rating ? profile.rating.toFixed(1) : "No ratings yet", icon: Star, color: "text-yellow-500", bg: "bg-yellow-500/10" },
   ];
+  const tutorName = profile?.user?.name?.split(" ")[0] || "Tutor";
+  const taughtSubjects = (profile as any)?.subjects?.slice(0, 2).join(", ") || "your strongest subjects";
 
   return (
     <div className="space-y-12 animate-in fade-in duration-700 font-sans p-2">
       {/* Premium Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
         <div className="space-y-2">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tightest">Welcome back, {profile?.user?.name?.split(" ")[0] || "Tutor"}.</h1>
-          <p className="text-muted-foreground text-lg font-medium">Here&apos;s what&apos;s happening with your students right now.</p>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tightest">Welcome back, {tutorName}.</h1>
+          <p className="text-muted-foreground text-lg font-medium">You are set up to help with {taughtSubjects}. Go live when you are ready to take a student from stuck to clear.</p>
         </div>
 
         <div className={`flex items-center gap-6 px-8 py-5 rounded-[2rem] border-2 transition-all duration-500 shadow-xl ${isOnline ? "border-primary bg-primary/5 shadow-primary/5" : "border-border bg-secondary"}`}>
@@ -203,7 +205,7 @@ export default function TutorDashboard() {
           <div className="flex items-center justify-between px-2">
             <div className="space-y-1">
               <h2 className="text-3xl font-black tracking-tightest">Live Requests</h2>
-              <p className="text-muted-foreground font-medium">Accept a session to start earning.</p>
+              <p className="text-muted-foreground font-medium">These are students asking for help in subjects you can teach.</p>
             </div>
             <Button onClick={loadPendingRequests} variant="ghost" className="rounded-full text-xs font-black uppercase tracking-widest text-primary hover:bg-primary/5">
               Refresh Feed
@@ -266,7 +268,7 @@ export default function TutorDashboard() {
                         <Loader2 className="h-5 w-5 animate-spin" />
                       ) : (
                         <>
-                          Establish Connection
+                          Help This Student
                           <ArrowRight className="h-4 w-4 ml-3 group-hover/btn:translate-x-2 transition-transform" />
                         </>
                       )}
@@ -285,7 +287,7 @@ export default function TutorDashboard() {
                  <h3 className="text-2xl font-black tracking-tightest flex items-center gap-3">
                     <Clock className="h-6 w-6" /> Schedule
                  </h3>
-                 <p className="text-primary-foreground/60 font-medium">Manage your teaching availability.</p>
+                 <p className="text-primary-foreground/60 font-medium">Keep the times students can count on you clear.</p>
               </CardHeader>
               <CardContent className="p-10 pt-4 space-y-6">
                  <div className="space-y-3">
@@ -307,7 +309,7 @@ export default function TutorDashboard() {
                  <Sparkles className="h-5 w-5" />
               </div>
               <p className="text-sm font-bold leading-relaxed">
-                 Top performing tutors earn up to <span className="text-primary">KSH 15,000</span> per week by being active during peak hours (6pm - 9pm).
+                 Students usually need the most help after class and in the evening. Going live during those windows can make your tutor profile much more visible.
               </p>
            </div>
         </div>

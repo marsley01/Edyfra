@@ -75,21 +75,21 @@ const FeatureVisuals = [
 const features = [
   {
     title: "Resource Library",
-    description: "Access a curated collection of past papers, revision notes, and study guides tailored to your curriculum.",
+    description: "Find past papers, notes, and study guides that match what you are learning instead of digging through random files.",
     icon: Library,
     link: "/features",
     visualIndex: 0,
   },
   {
     title: "Verified Mentors",
-    description: "Connect with top-performing students from leading Kenyan universities and verified academic experts.",
+    description: "Ask for help from tutors and high-performing peers who understand the Kenyan classroom and the pressure before exams.",
     icon: GraduationCap,
     link: "/dashboard/tutors",
     visualIndex: 1,
   },
   {
     title: "Group Sync",
-    description: "Real-time collaborative study rooms designed for focused synchronization with peers across the country.",
+    description: "Start focused study rooms, share questions, and keep a record of what you worked through with tutors, peers, or Mash AI.",
     icon: MessageSquare,
     link: "/dashboard/study",
     visualIndex: 2,
@@ -104,7 +104,7 @@ export function HomeFeatures() {
           Built for the way students <br className="hidden md:block" /> actually learn.
         </h2>
         <p className="text-muted-foreground text-lg md:text-xl font-medium max-w-2xl mx-auto">
-          We stripped away the clutter to build a platform for ambitious students.
+          Every section is built around a simple question: what do you need next to keep learning?
         </p>
       </div>
 

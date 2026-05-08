@@ -56,6 +56,10 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
     checkTutor();
   }, [checkTutor]);
 
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
+
   // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -101,6 +105,8 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
         <button 
           onClick={() => setIsMobileMenuOpen(true)}
           className="p-2 rounded-xl bg-secondary hover:bg-primary/5 transition-all"
+          aria-label="Open tutor menu"
+          aria-expanded={isMobileMenuOpen}
         >
           <Menu className="h-6 w-6 text-foreground" />
         </button>
@@ -121,7 +127,7 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 w-80 bg-card z-[70] shadow-2xl overflow-y-auto overscroll-y-contain lg:hidden"
+              className="fixed inset-y-0 left-0 w-[88vw] max-w-80 bg-card z-[70] shadow-2xl overflow-y-auto overscroll-y-contain lg:hidden"
             >
               <div className="absolute top-6 right-6 z-50">
                 <button 
