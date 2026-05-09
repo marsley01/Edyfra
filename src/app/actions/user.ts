@@ -170,7 +170,7 @@ export async function updateUserRole(role: "STUDENT" | "TUTOR") {
       where: {
         OR: [
           { id: user.id },
-          { email: user.email! }
+          ...(user.email ? [{ email: user.email }] : [])
         ]
       },
       include: { tutorProfile: true }
@@ -203,7 +203,7 @@ export async function updateUserRole(role: "STUDENT" | "TUTOR") {
       await prisma.user.create({
         data: {
           id: user.id,
-          email: user.email!,
+          email: user.email || `${user.id}@placeholder.edyfra.com`,
           name: user.user_metadata?.name || user.user_metadata?.full_name || "New User",
           role: prismaRole,
           educationLevel: EduLevel.HIGH_SCHOOL,
@@ -216,9 +216,9 @@ export async function updateUserRole(role: "STUDENT" | "TUTOR") {
     revalidatePath("/", "layout");
     revalidatePath("/onboarding");
     return { success: true };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in updateUserRole:", error);
-    throw error;
+    return { success: false, error: error.message || "Failed to update role" };
   }
 }
 

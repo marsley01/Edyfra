@@ -8,6 +8,7 @@ import { GraduationCap, Users, ArrowRight, Sparkles, ShieldCheck } from "lucide-
 import { motion } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export default function RoleChoicePage() {
   const router = useRouter();
@@ -25,9 +26,12 @@ export default function RoleChoicePage() {
         } else {
           window.location.href = "/onboarding/student";
         }
+      } else {
+        toast.error("Selection failed", { description: result.error });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Selection failed:", error);
+      toast.error("System Error", { description: error.message || "We couldn't update your role. Please try again." });
     } finally {
       setLoading(false);
     }
