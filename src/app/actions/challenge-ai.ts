@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { EduLevel } from "@prisma/client";
 import { generateAIResponse } from "@/utils/openrouter";
+import { SESSION_CONFIG, CHALLENGE_CONFIG } from "@/lib/config";
 
 interface ChallengeGenerationRequest {
   level: string;
@@ -13,12 +14,14 @@ interface ChallengeGenerationRequest {
 }
 
 interface GeneratedChallenge {
+  id?: string;
   subject: string;
   level: string;
   question: string;
   options: string[];
   answer: string;
   explanation: string;
+  date?: string;
 }
 
 export async function generateChallenges(request: ChallengeGenerationRequest): Promise<GeneratedChallenge[]> {
@@ -107,24 +110,86 @@ Make the questions:
   }
 }
 
-export async function getChallengesForStudent(userLevel: string, subject?: string) {
+export async function getOrCreateDailyChallenge(level: string, subject?: string) {
   try {
-    const whereClause: any = {
-      level: userLevel,
-      date: { lte: new Date() },
-    };
-    if (subject) whereClause.subject = subject;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const challenges = await prisma.dailyChallenge.findMany({
-      where: whereClause,
-      orderBy: { date: "desc" },
-      take: 10,
+    const existing = await prisma.dailyChallenge.findFirst({
+      where: {
+        level: level as EduLevel,
+        date: { gte: today, lt: tomorrow },
+        ...(subject && { subject }),
+      },
     });
 
-    return challenges;
+    if (existing) return existing;
+
+    const subjects = subject ? [subject] : CHALLENGE_CONFIG.SEED_SUBJECTS;
+    const randomSubject = subjects[Math.floor(Math.random() * subjects.length)];
+
+    const challenges = await generateChallenges({
+      level,
+      subject: randomSubject,
+      count: 1,
+      scheduledDate: today.toISOString(),
+    });
+
+    if (challenges.length === 0) throw new Error("Failed to generate challenge");
+    return challenges[0];
   } catch (error) {
-    console.error("Error fetching challenges:", error);
-    return [];
+    console.error("Error getting/creating daily challenge:", error);
+    return null;
+  }
+}
+
+export async function evaluateChallengeAnswer(challengeId: string, userAnswer: string) {
+  try {
+    const challenge = await prisma.dailyChallenge.findUnique({ where: { id: challengeId } });
+    if (!challenge) throw new Error("Challenge not found");
+
+    const levelText = challenge.level === "UNIVERSITY" ? "university" : "high school";
+    const prompt = `You are evaluating a student's answer to a ${levelText} level challenge.
+
+Question: "${challenge.question}"
+Correct Answer: "${challenge.answer}"
+Student's Answer: "${userAnswer}"
+
+Evaluate the student's answer. Determine if it is correct or incorrect. Be flexible — accept paraphrased answers, synonyms, and partially correct answers if they demonstrate understanding.
+
+Respond with a JSON object:
+{
+  "correct": true/false,
+  "explanation": "Brief explanation of why the answer is right or wrong",
+  "correctAnswer": "${challenge.answer}"
+}`;
+
+    const aiResponse = await generateAIResponse(prompt, challenge.subject);
+    if (!aiResponse) throw new Error("AI evaluation failed");
+
+    let result;
+    try {
+      const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+      const jsonString = jsonMatch ? jsonMatch[0] : aiResponse;
+      result = JSON.parse(jsonString);
+    } catch {
+      result = {
+        correct: userAnswer.toLowerCase().trim() === challenge.answer.toLowerCase().trim(),
+        explanation: challenge.explanation,
+        correctAnswer: challenge.answer,
+      };
+    }
+
+    return {
+      correct: result.correct,
+      explanation: result.explanation || challenge.explanation,
+      correctAnswer: result.correctAnswer || challenge.answer,
+    };
+  } catch (error) {
+    console.error("Error evaluating challenge answer:", error);
+    throw error;
   }
 }
 
@@ -137,7 +202,12 @@ export async function saveChallengeAttempt(userId: string, challengeId: string, 
       where: { userId, challengeId },
     });
 
-    const pointsEarned = correct ? 50 : 0;
+    const platformSettings = await prisma.platformSettings.findUnique({
+      where: { key: "challenge_points" },
+    });
+    const configPoints = (platformSettings?.value as any)?.value || SESSION_CONFIG.CHALLENGE_MEDIUM_POINTS;
+    const difficultyMultiplier = challenge.level === "UNIVERSITY" ? 1.5 : 1;
+    const pointsEarned = correct ? Math.round(configPoints * difficultyMultiplier) : 0;
 
     if (existingAttempt) {
       return await prisma.dailyChallengeAttempt.update({
@@ -146,12 +216,55 @@ export async function saveChallengeAttempt(userId: string, challengeId: string, 
       });
     }
 
-    return await prisma.dailyChallengeAttempt.create({
+    const attempt = await prisma.dailyChallengeAttempt.create({
       data: { userId, challengeId, correct, pointsEarned },
     });
+
+    if (correct && pointsEarned > 0) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { points: { increment: pointsEarned } },
+      });
+    }
+
+    return attempt;
   } catch (error) {
     console.error("Error saving challenge attempt:", error);
     throw error;
+  }
+}
+
+export async function getTodaysChallenge(level: string) {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const challenge = await prisma.dailyChallenge.findFirst({
+      where: {
+        level: level as EduLevel,
+        date: { gte: today, lt: tomorrow },
+      },
+      orderBy: { date: "desc" },
+    });
+
+    return challenge;
+  } catch (error) {
+    console.error("Error fetching today's challenge:", error);
+    return null;
+  }
+}
+
+export async function getChallengeCompletion(userId: string, challengeId: string) {
+  try {
+    const attempt = await prisma.dailyChallengeAttempt.findFirst({
+      where: { userId, challengeId },
+    });
+    return attempt;
+  } catch (error) {
+    console.error("Error fetching challenge completion:", error);
+    return null;
   }
 }
 

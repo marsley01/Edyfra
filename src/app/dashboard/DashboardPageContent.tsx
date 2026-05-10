@@ -2,13 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Zap, BookOpen, Flame, Trophy, TrendingUp, Users, ArrowRight, GraduationCap, Clock, CheckCircle2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Zap, BookOpen, Flame, Trophy, TrendingUp, Users, ArrowRight, GraduationCap, Clock, CheckCircle2, XCircle, Loader2, Sparkles, Send, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useSafeUserData, useSessionCounter } from "@/hooks/useAntigravityFixes";
 import { DashboardLoadingState, DashboardError } from "@/hooks/useAntigravityFixes";
 import { applyToBecomeTutor } from "@/app/actions/admin-tutor";
+import { getOrCreateDailyChallenge, evaluateChallengeAnswer, saveChallengeAttempt, getTodaysChallenge, getChallengeCompletion } from "@/app/actions/challenge-ai";
 import { toast } from "sonner";
 import { createClient } from "@/utils/supabase/client";
+import { motion, AnimatePresence } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
 
 interface RecentSession {
   id: string;
@@ -28,8 +32,17 @@ export default function DashboardPageContent() {
   const [appStatus, setAppStatus] = useState<'NONE' | 'PENDING' | 'APPROVED' | 'REJECTED'>('NONE');
   const [appLoading, setAppLoading] = useState(false);
 
+  const [challenge, setChallenge] = useState<any>(null);
+  const [challengeLoading, setChallengeLoading] = useState(true);
+  const [userAnswer, setUserAnswer] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState<{ correct: boolean; explanation: string; correctAnswer: string } | null>(null);
+  const [completed, setCompleted] = useState(false);
+  const [countdown, setCountdown] = useState("");
+  const [completedAttempt, setCompletedAttempt] = useState<any>(null);
+
   useEffect(() => {
-    if (!userData?.id) return;
+    if (!userData?.id || !userData?.educationLevel) return;
     const load = async () => {
       try {
         const { getUserSessions } = await import("@/app/actions/match");
@@ -48,7 +61,79 @@ export default function DashboardPageContent() {
     load();
   }, [userData?.id]);
 
-  // Check tutor application status
+  useEffect(() => {
+    if (!userData?.educationLevel) return;
+    loadChallenge();
+  }, [userData?.educationLevel]);
+
+  const loadChallenge = async () => {
+    setChallengeLoading(true);
+    try {
+      const existing = await getTodaysChallenge(userData!.educationLevel as string);
+      if (existing) {
+        setChallenge(existing);
+        const attempt = await getChallengeCompletion(userData!.id, existing.id!);
+        if (attempt) {
+          setCompleted(true);
+          setCompletedAttempt(attempt);
+          const tomorrow = new Date();
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          tomorrow.setHours(0, 0, 0, 0);
+          const diff = tomorrow.getTime() - Date.now();
+          const h = Math.floor(diff / 3600000);
+          const m = Math.floor((diff % 3600000) / 60000);
+          setCountdown(`${h}h ${m}m`);
+        }
+        return;
+      }
+      const newChallenge = await getOrCreateDailyChallenge(userData!.educationLevel as string);
+      if (newChallenge) {
+        setChallenge(newChallenge);
+        const attempt = await getChallengeCompletion(userData!.id, newChallenge.id!);
+        if (attempt) {
+          setCompleted(true);
+          setCompletedAttempt(attempt);
+          const tomorrow = new Date();
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          tomorrow.setHours(0, 0, 0, 0);
+          const diff = tomorrow.getTime() - Date.now();
+          const h = Math.floor(diff / 3600000);
+          const m = Math.floor((diff % 3600000) / 60000);
+          setCountdown(`${h}h ${m}m`);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load challenge:", err);
+    } finally {
+      setChallengeLoading(false);
+    }
+  };
+
+  const handleSubmitAnswer = async () => {
+    if (!challenge || !userAnswer.trim() || !userData) return;
+    setSubmitting(true);
+    try {
+      const evaluation = await evaluateChallengeAnswer(challenge.id, userAnswer.trim());
+      setResult(evaluation);
+      await saveChallengeAttempt(userData.id, challenge.id, evaluation.correct);
+      if (evaluation.correct) {
+        toast.success("Correct! Points awarded!");
+      }
+      setCompleted(true);
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+      const diff = tomorrow.getTime() - Date.now();
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      setCountdown(`${h}h ${m}m`);
+    } catch (err) {
+      toast.error("Failed to evaluate answer");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   useEffect(() => {
     if (!userData?.id || userData?.role === 'TUTOR' || userData?.role === 'ADMIN') return;
     const checkAppStatus = async () => {
@@ -203,28 +288,96 @@ export default function DashboardPageContent() {
                 </p>
              </div>
            )}
-           {/* Background Decoration */}
            <div className="absolute top-0 right-0 w-48 sm:w-64 h-48 sm:h-64 bg-primary/5 blur-[100px] rounded-full" />
         </div>
 
-        {/* Daily Quest */}
+        {/* Daily Challenge Card */}
         <div className="p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] bg-black text-white space-y-6 sm:space-y-10 relative overflow-hidden group shadow-2xl">
            <div className="relative z-10 space-y-2">
               <h3 className="text-2xl sm:text-3xl font-black tracking-tightest flex items-center gap-3">
-                Daily Goal
-                <Flame className="h-6 w-6 sm:h-8 sm:w-8 text-primary animate-pulse" />
+                Daily Challenge
+                <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-primary animate-pulse" />
               </h3>
-              <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Keep your streak going</p>
+              <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Test yourself and earn points</p>
            </div>
-           <div className="relative z-10 p-6 sm:p-8 bg-white/5 rounded-[1.5rem] sm:rounded-[2rem] border border-white/10 space-y-6 sm:space-y-8">
-              <p className="text-base sm:text-lg font-medium leading-relaxed opacity-80">
-                Try spending 20 minutes on {weakTopic}. You don&apos;t need a perfect plan — just start with one question.
-              </p>
-              <Link href="/dashboard/challenges" className="block w-full">
-                <Button className="w-full h-12 sm:h-14 bg-primary hover:bg-primary/90 text-white font-black text-xs tracking-widest uppercase rounded-full shadow-2xl transition-all active:scale-95">
-                  Choose A Challenge <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              </Link>
+           <div className="relative z-10 space-y-4">
+             {challengeLoading ? (
+               <div className="flex items-center justify-center py-12">
+                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
+               </div>
+             ) : !challenge ? (
+               <div className="p-6 bg-white/5 rounded-[1.5rem] border border-white/10 text-center space-y-2">
+                 <p className="text-white/60 font-medium">No challenge available today.</p>
+                 <p className="text-white/40 text-sm">Come back tomorrow!</p>
+               </div>
+             ) : completed && result ? (
+               <div className="space-y-4">
+                 <div className={`p-6 rounded-[1.5rem] border ${result.correct ? "bg-green-500/10 border-green-500/30" : "bg-red-500/10 border-red-500/30"}`}>
+                   <div className="flex items-center gap-3 mb-3">
+                     <div className={`p-2 rounded-xl ${result.correct ? "bg-green-500" : "bg-red-500"}`}>
+                       {result.correct ? <CheckCircle2 className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
+                     </div>
+                     <span className="font-bold text-lg">{result.correct ? "Correct!" : "Incorrect"}</span>
+                   </div>
+                   <p className="text-white/70 text-sm leading-relaxed">{result.explanation}</p>
+                   {!result.correct && (
+                     <p className="text-primary font-bold mt-2 text-sm">Correct answer: {result.correctAnswer}</p>
+                   )}
+                 </div>
+                 <div className="p-4 bg-white/5 rounded-xl border border-white/10 text-center space-y-2">
+                   <p className="text-white/60 font-medium">Challenge completed!</p>
+                   <p className="text-primary font-black text-sm">Come back tomorrow</p>
+                   <div className="flex items-center justify-center gap-2 text-white/40 text-xs">
+                     <Clock className="h-3 w-3" />
+                     <span>Next challenge in {countdown}</span>
+                   </div>
+                 </div>
+               </div>
+             ) : completed && completedAttempt ? (
+               <div className="space-y-4">
+                 <div className="p-6 bg-white/5 rounded-[1.5rem] border border-white/10 text-center space-y-3">
+                   <CheckCircle2 className="h-10 w-10 text-primary mx-auto" />
+                   <p className="text-white font-bold text-lg">Already Completed</p>
+                   <p className="text-white/60 text-sm">
+                     Score: {completedAttempt.correct ? "+" : ""}{completedAttempt.pointsEarned || 0} pts
+                   </p>
+                   <div className="flex items-center justify-center gap-2 text-white/40 text-xs">
+                     <Clock className="h-3 w-3" />
+                     <span>Next challenge in {countdown}</span>
+                   </div>
+                 </div>
+               </div>
+             ) : (
+               <div className="space-y-4">
+                 <div className="flex items-center gap-2">
+                   <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px] uppercase tracking-widest font-black">
+                     {challenge?.subject || "General"}
+                   </Badge>
+                   <Badge variant="outline" className="border-white/20 text-white/60 text-[10px] uppercase tracking-widest font-black">
+                     {challenge?.level?.replace("_", " ") || "HIGH SCHOOL"}
+                   </Badge>
+                 </div>
+                 <p className="text-lg font-medium leading-relaxed text-white/90">
+                   {challenge?.question || "What is the powerhouse of the cell?"}
+                 </p>
+                 <div className="flex gap-2">
+                   <Input
+                     value={userAnswer}
+                     onChange={(e) => setUserAnswer(e.target.value)}
+                     placeholder="Type your answer..."
+                     className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/40 rounded-xl h-12"
+                     disabled={submitting}
+                   />
+                   <Button
+                     onClick={handleSubmitAnswer}
+                     disabled={submitting || !userAnswer.trim()}
+                     className="bg-primary hover:bg-primary/90 text-white rounded-xl h-12 px-4"
+                   >
+                     {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                   </Button>
+                 </div>
+               </div>
+             )}
            </div>
            <div className="absolute bottom-0 right-0 w-48 sm:w-64 h-48 sm:h-64 bg-primary/20 blur-[120px] rounded-full translate-y-1/2 translate-x-1/2" />
         </div>
@@ -251,7 +404,7 @@ export default function DashboardPageContent() {
           </Link>
        </div>
 
-       {/* Tutor Application Section - Only show for students */}
+       {/* Tutor Application Section */}
        {userData?.role === 'STUDENT' && (
          <div className="p-6 sm:p-10 md:p-16 rounded-[2rem] sm:rounded-[3rem] bg-gradient-to-br from-primary/5 to-emerald-500/5 border border-primary/20 shadow-sm flex flex-col md:flex-row items-center gap-6 sm:gap-8 md:gap-12 group hover:shadow-2xl transition-all duration-700">
             <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-[1.5rem] sm:rounded-[2rem] bg-primary/10 flex items-center justify-center text-primary shadow-sm border border-primary/20 group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-500 flex-shrink-0">

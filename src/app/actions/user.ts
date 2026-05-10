@@ -241,6 +241,244 @@ export async function updateUserSettings(settings: Prisma.InputJsonValue) {
   }
 }
 
+export async function updateUserPreferences(prefs: {
+  theme?: string;
+  accentColor?: string;
+  layout?: string;
+  fontSize?: string;
+  mashStyle?: string;
+  preferredLanguage?: string;
+  studyTime?: string;
+  sessionLength?: string;
+  sessionTypePref?: string;
+  showProfile?: boolean;
+  showOnlineStatus?: boolean;
+  allowTutorRequests?: boolean;
+  enableMashFallback?: boolean;
+}) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Unauthorized");
+
+    await prisma.userPreferences.upsert({
+      where: { userId: user.id },
+      create: { userId: user.id, ...prefs },
+      update: prefs,
+    });
+
+    revalidatePath("/dashboard/settings");
+    return { success: true };
+  } catch (error) {
+    console.error("Error in updateUserPreferences:", error);
+    throw error;
+  }
+}
+
+export async function updateNotificationSettings(preferences: Record<string, boolean>) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Unauthorized");
+
+    const existing = await prisma.notificationSettings.findUnique({
+      where: { userId: user.id },
+    });
+
+    const merged = { ...((existing?.preferences as Record<string, boolean>) || {}), ...preferences };
+
+    await prisma.notificationSettings.upsert({
+      where: { userId: user.id },
+      create: { userId: user.id, preferences: merged },
+      update: { preferences: merged },
+    });
+
+    revalidatePath("/dashboard/settings");
+    return { success: true };
+  } catch (error) {
+    console.error("Error in updateNotificationSettings:", error);
+    throw error;
+  }
+}
+
+export async function updateTutorProfile(data: {
+  name?: string;
+  bio?: string;
+  subjects?: string[];
+  levelsTaught?: string[];
+  hourlyRate?: number;
+  mpesaNumber?: string;
+  availability?: any;
+  confidenceLevels?: Record<string, number>;
+  defaultSessionDuration?: number;
+  allowSessionRecording?: boolean;
+  showRatingPublicly?: boolean;
+  allowReRequest?: boolean;
+  autoAcceptRequests?: boolean;
+  maxGroupStudents?: number;
+  sessionPreference?: string;
+  allowMashInactive?: boolean;
+  showMashSummary?: boolean;
+}) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Unauthorized");
+
+    if (data.name) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { name: data.name, bio: data.bio },
+      });
+    }
+
+    await prisma.tutorProfile.upsert({
+      where: { userId: user.id },
+      create: {
+        userId: user.id,
+        bio: data.bio || "",
+        subjects: data.subjects || [],
+        levelsTaught: data.levelsTaught || [],
+        verificationPath: VerifPath.POINTS,
+        hourlyRate: data.hourlyRate || 500,
+        mpesaNumber: data.mpesaNumber || "",
+        availability: data.availability || { isOnline: false },
+      },
+      update: {
+        ...(data.bio !== undefined && { bio: data.bio }),
+        ...(data.subjects !== undefined && { subjects: data.subjects }),
+        ...(data.levelsTaught !== undefined && { levelsTaught: data.levelsTaught }),
+        ...(data.hourlyRate !== undefined && { hourlyRate: data.hourlyRate }),
+        ...(data.mpesaNumber !== undefined && { mpesaNumber: data.mpesaNumber }),
+        ...(data.availability !== undefined && { availability: data.availability }),
+      },
+    });
+
+    revalidatePath("/tutor/settings");
+    revalidatePath("/tutor");
+    return { success: true };
+  } catch (error) {
+    console.error("Error in updateTutorProfile:", error);
+    throw error;
+  }
+}
+
+export async function updateStudentProfile(data: {
+  name?: string;
+  bio?: string;
+  educationLevel?: string;
+  subjects?: string[];
+  studyHoursPerWeek?: number;
+}) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Unauthorized");
+
+    const updateData: any = {};
+    if (data.name) updateData.name = data.name;
+    if (data.bio !== undefined) updateData.bio = data.bio;
+    if (data.educationLevel) updateData.educationLevel = data.educationLevel as EduLevel;
+
+    if (Object.keys(updateData).length > 0) {
+      await prisma.user.update({ where: { id: user.id }, data: updateData });
+    }
+
+    if (data.subjects) {
+      const existingProfile = await prisma.studentProfile.findUnique({ where: { userId: user.id } });
+      if (existingProfile) {
+        await prisma.studentProfile.update({ where: { userId: user.id }, data: { subjects: data.subjects } });
+      } else {
+        await prisma.studentProfile.create({ data: { userId: user.id, subjects: data.subjects, studyStyle: "", preferredTimes: {}, goals: [], weakTopics: [] } });
+      }
+    }
+
+    if (data.studyHoursPerWeek !== undefined) {
+      const existingSettings = await prisma.user.findUnique({ where: { id: user.id }, select: { settings: true } });
+      const settings = { ...((existingSettings?.settings as any) || {}), studyHoursPerWeek: data.studyHoursPerWeek };
+      await prisma.user.update({ where: { id: user.id }, data: { settings } });
+    }
+
+    revalidatePath("/dashboard/settings");
+    return { success: true };
+  } catch (error) {
+    console.error("Error in updateStudentProfile:", error);
+    throw error;
+  }
+}
+
+export async function downloadUserData() {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Unauthorized");
+
+    const [userData, userPrefs, notifPrefs] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: user.id },
+        include: { studentProfile: true, tutorProfile: true },
+      }),
+      prisma.userPreferences.findUnique({ where: { userId: user.id } }),
+      prisma.notificationSettings.findUnique({ where: { userId: user.id } }),
+    ]);
+
+    return { success: true, data: JSON.stringify({ ...userData, userPreferences: userPrefs, notificationSettings: notifPrefs }, null, 2) };
+  } catch (error) {
+    console.error("Error in downloadUserData:", error);
+    throw error;
+  }
+}
+
+export async function deleteUserAccount() {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Unauthorized");
+
+    await prisma.user.delete({ where: { id: user.id } });
+
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (serviceRoleKey) {
+      const { createClient: createAdminClient } = await import("@supabase/supabase-js");
+      const adminClient = createAdminClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        serviceRoleKey,
+        { auth: { autoRefreshToken: false, persistSession: false } }
+      );
+      await adminClient.auth.admin.deleteUser(user.id);
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error in deleteUserAccount:", error);
+    throw error;
+  }
+}
+
+export async function changePassword(currentPassword: string, newPassword: string) {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) throw new Error(error.message);
+    return { success: true };
+  } catch (error) {
+    console.error("Error in changePassword:", error);
+    throw error;
+  }
+}
+
+export async function changeEmail(newEmail: string) {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.updateUser({ email: newEmail });
+    if (error) throw new Error(error.message);
+    return { success: true };
+  } catch (error) {
+    console.error("Error in changeEmail:", error);
+    throw error;
+  }
+}
+
 export async function getGlobalStats() {
   try {
     const [studentCount, tutorCount, sessionCount] = await Promise.all([

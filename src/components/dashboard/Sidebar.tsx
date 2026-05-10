@@ -7,7 +7,7 @@ import { User } from "@supabase/supabase-js";
 import { 
   LayoutDashboard, BookOpen, GraduationCap,
   Bell, Settings, LogOut, Zap, Flame, Trophy,
-  Sparkles, Share2, UserSearch, Terminal, Users, MessageSquare
+  Sparkles, Share2, UserSearch, Users, MessageSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -108,11 +108,7 @@ export default function DashboardSidebar({ user, onClose }: { user: User; onClos
                  <GraduationCap className="h-3 w-3" /> Tutor Dashboard
               </Link>
             )}
-            {user.user_metadata?.role === "ADMIN" && (
-              <Link href="/admin" className="flex items-center gap-2 justify-center w-full py-2 rounded-xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest border border-slate-800 hover:bg-black transition-all">
-                 <Terminal className="h-3 w-3" /> Admin Panel
-              </Link>
-            )}
+
            <div className="flex items-center gap-2 justify-center w-full py-2.5 rounded-xl bg-yellow-500/10 text-yellow-600 text-[10px] font-black uppercase tracking-widest border border-yellow-500/20 shadow-sm">
               <Trophy className="h-3 w-3 fill-current" /> {points?.toLocaleString() || "0"} Points
            </div>
