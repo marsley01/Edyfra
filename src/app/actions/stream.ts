@@ -74,7 +74,7 @@ export async function createDMChannel(userAId: string, userBId: string) {
   if (!user) throw new Error("Unauthorized");
 
   const client = getServerClient();
-  const channelId = getDMChannelId(userAId, userBId);
+  const channelId = await getDMChannelId(userAId, userBId);
 
   // Upsert both users
   const userA = await prisma.user.findUnique({ where: { id: userAId }, select: { name: true, avatar: true } });
