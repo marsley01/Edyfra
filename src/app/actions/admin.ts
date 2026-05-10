@@ -314,13 +314,10 @@ export async function saveAdminGlobalSettings(settings: any) {
       return { error: "Unauthorized: Admin access required" };
     }
 
-    // We store global settings in the current admin's settings JSON
-    // The AI services will look for an ADMIN user to find these settings
-    await prisma.user.update({
-      where: { id: admin.id },
-      data: { 
-        settings: settings 
-      }
+    await prisma.platformSettings.upsert({
+      where: { key: "global" },
+      create: { key: "global", value: settings },
+      update: { value: settings },
     });
 
     revalidatePath("/admin/settings");
@@ -333,19 +330,11 @@ export async function saveAdminGlobalSettings(settings: any) {
 
 export async function getAdminGlobalSettings() {
   try {
-    const supabase = await createClient();
-    const { data: { user: admin } } = await supabase.auth.getUser();
-    
-    if (!admin || !(await isAdmin())) {
-      return {};
-    }
-
-    const adminData = await prisma.user.findUnique({
-      where: { id: admin.id },
-      select: { settings: true }
+    const entry = await prisma.platformSettings.findUnique({
+      where: { key: "global" },
     });
 
-    return adminData?.settings || {};
+    return (entry?.value as any) || {};
   } catch (error) {
     console.error("Error fetching global settings:", error);
     return {};

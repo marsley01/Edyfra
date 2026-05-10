@@ -5,7 +5,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { SESSION_CONFIG } from "@/lib/config";
-import { MatchTier } from "@prisma/client";
+import { MatchTier, Role } from "@prisma/client";
 import { randomBytes } from "crypto";
 import { executeSmartMatching, sweepAndAIFallback } from "./match-algorithm";
 import { StreamChat } from "stream-chat";
@@ -98,7 +98,7 @@ export async function acceptMatchRequest(requestId: string) {
     include: { tutorProfile: true }
   });
   
-  const tier = userData?.role === "TUTOR" ? "TUTOR" : "PEER";
+  const tier = userData?.role === Role.TUTOR ? "TUTOR" : "PEER";
 
   // Upsert both users to Stream Chat
   try {

@@ -65,9 +65,9 @@ export default function FeedPage() {
   };
 
    const loadPosts = async () => {
-     setLoading(true);
-     try {
-       const data = await getPosts();
+      setLoading(true);
+      try {
+        const data = await getPosts(filter);
        // Map Prisma types to client-side Post interface
        const mappedData = data.map(post => ({
          id: post.id,
@@ -186,15 +186,11 @@ export default function FeedPage() {
                      />
                   </div>
                    <div className="flex flex-wrap gap-2">
-                     <Button variant="ghost" size="sm" className="rounded-full gap-2">
-                       <ImageIcon className="h-4 w-4" />
-                       <span className="hidden sm:inline">Photo</span>
-                     </Button>
-                     <Button className="rounded-full gap-2 h-9 px-4 text-[11px] sm:text-sm">
-                        <Send className="h-4 w-4" />
-                        Post
-                     </Button>
-                  </div>
+                      <Button variant="ghost" size="sm" className="rounded-full gap-2">
+                        <ImageIcon className="h-4 w-4" />
+                        <span className="hidden sm:inline">Photo</span>
+                      </Button>
+                   </div>
                   <Button 
                     onClick={handleCreatePost}
                     disabled={isSubmitting || !newPostContent.trim()}
@@ -266,14 +262,6 @@ export default function FeedPage() {
                              <Share2 className="h-4 w-4 group-hover/btn:scale-110 transition-transform" />
                           </button>
                        </div>
-
-                      {post.image && (
-                        <div className="pl-[52px]">
-                           <div className="rounded-2xl overflow-hidden border border-border shadow-sm">
-                              <img src={post.image} alt="Post Visual" className="w-full h-auto object-cover max-h-[500px]" />
-                           </div>
-                        </div>
-                      )}
 
                       <div className="flex items-center gap-8 pt-4 border-t border-border/50 pl-[52px]">
                          <button 

@@ -107,7 +107,8 @@ export default function ChallengesPage() {
     const correct = selectedOption === currentChallenge.answer;
     setSubmitted(true);
     setIsCorrect(correct);
-    setAttemptsLeft(prev => Math.max(0, prev - 1));
+    const remaining = Math.max(0, attemptsLeft - 1);
+    setAttemptsLeft(remaining);
     
     // Save attempt to database
     try {
@@ -122,10 +123,10 @@ export default function ChallengesPage() {
     
     if (correct) {
       toast.success("🎉 Correct! +50 Points earned.");
-    } else if (attemptsLeft <= 1) {
+    } else if (remaining <= 1) {
       toast.error("❌ No attempts left for this challenge.");
     } else {
-      toast.error(`❌ Not quite. ${attemptsLeft - 1} attempt(s) left.`);
+      toast.error(`❌ Not quite. ${remaining - 1} attempt(s) left.`);
     }
   };
 

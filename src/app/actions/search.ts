@@ -29,7 +29,7 @@ export async function searchStudents(query: string) {
     id: user.id,
     name: user.name,
     school: user.school,
-    course: user.school || "Unspecified",
+    course: "",
     username: user.name.toLowerCase().replace(/\s/g, "_"),
     avatar_url: user.avatar || `https://api.dicebear.com/7.x/notionists/svg?seed=${user.id}`
   }));

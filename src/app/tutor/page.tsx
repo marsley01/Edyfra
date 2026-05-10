@@ -44,14 +44,11 @@ export default function TutorDashboard() {
 
   useEffect(() => {
     let channel: any;
+    let tutorProfile: any;
     
     const setup = async () => {
-      await loadProfile();
-      await loadPendingRequests();
-
-      // Subscribe to new requests - but only for subjects this tutor teaches
-      const profile = await getTutorProfile();
-      const tutorSubjects = profile?.subjects || [];
+      tutorProfile = await loadProfile();
+      await loadPendingRequests(tutorProfile?.subjects || []);
 
       channel = supabase
         .channel("live-requests")
@@ -60,8 +57,8 @@ export default function TutorDashboard() {
           { event: "INSERT", schema: "public", table: "MatchRequest" },
           (payload: any) => {
             if (!payload.new?.sessionId) {
-              // Only show if subject matches tutor's subjects (or show all if no subjects set)
-              if (tutorSubjects.length === 0 || tutorSubjects.includes(payload.new?.subject)) {
+              const subjects = tutorProfile?.subjects || [];
+              if (subjects.length === 0 || subjects.includes(payload.new?.subject)) {
                 setPendingRequests((prev) => [payload.new as PendingRequest, ...prev]);
                 toast.info(`New ${payload.new?.subject} request!`);
               }
@@ -85,16 +82,12 @@ export default function TutorDashboard() {
       setIsOnline((data.availability as Record<string, boolean>)?.isOnline || false);
     }
     setLoading(false);
+    return data;
   };
 
-  const loadPendingRequests = async () => {
+  const loadPendingRequests = async (tutorSubjects: string[] = []) => {
     setSessionLoading(true);
     
-    // Fetch tutor's profile to filter by their subjects
-    const tutorProfile = await getTutorProfile();
-    const tutorSubjects = tutorProfile?.subjects || [];
-    
-    // Use server action for filtered queries instead of direct Supabase
     try {
       const { getFilteredMatchRequests } = await import("@/app/actions/match-algorithm");
       const data = await getFilteredMatchRequests(tutorSubjects);
@@ -209,7 +202,7 @@ export default function TutorDashboard() {
               <h2 className="text-3xl font-black tracking-tightest">Live Requests</h2>
               <p className="text-muted-foreground font-medium">These are students asking for help in subjects you can teach.</p>
             </div>
-            <Button onClick={loadPendingRequests} variant="ghost" className="rounded-full text-xs font-black uppercase tracking-widest text-primary hover:bg-primary/5">
+            <Button onClick={() => loadPendingRequests()} variant="ghost" className="rounded-full text-xs font-black uppercase tracking-widest text-primary hover:bg-primary/5">
               Refresh Feed
             </Button>
           </div>

@@ -105,6 +105,8 @@ export async function updateProfile(data: {
   subjects?: string[];
   hourlyRate?: number;
   mpesaNumber?: string;
+  educationLevel?: string;
+  county?: string;
 }) {
   try {
     const supabase = await createClient();
@@ -120,8 +122,8 @@ export async function updateProfile(data: {
       data: {
         name: data.name,
         bio: data.bio,
-        // educationLevel and county should not be hardcoded here.
-        // If they are meant to be updated, they should be passed in `data`.
+        ...(data.educationLevel && { educationLevel: data.educationLevel as EduLevel }),
+        ...(data.county && { county: data.county }),
       },
     });
 
@@ -246,7 +248,12 @@ export async function updateUserPreferences(prefs: {
   accentColor?: string;
   layout?: string;
   fontSize?: string;
-  mashStyle?: string;
+  reducedMotion?: boolean;
+  compactMode?: boolean;
+  highContrast?: boolean;
+  emailNotifications?: boolean;
+  pushNotifications?: boolean;
+  smsNotifications?: boolean;
   preferredLanguage?: string;
   studyTime?: string;
   sessionLength?: string;
@@ -261,10 +268,18 @@ export async function updateUserPreferences(prefs: {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Unauthorized");
 
+    const existing = await prisma.userPreferences.findUnique({
+      where: { userId: user.id },
+    });
+
+    const merged = { ...(existing || {}), ...prefs };
+    delete (merged as any).id;
+    delete (merged as any).userId;
+
     await prisma.userPreferences.upsert({
       where: { userId: user.id },
       create: { userId: user.id, ...prefs },
-      update: prefs,
+      update: merged,
     });
 
     revalidatePath("/dashboard/settings");
@@ -458,6 +473,13 @@ export async function deleteUserAccount() {
 export async function changePassword(currentPassword: string, newPassword: string) {
   try {
     const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.email) throw new Error("User not found");
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword,
+    });
+    if (signInError) throw new Error("Current password is incorrect");
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) throw new Error(error.message);
     return { success: true };
@@ -491,7 +513,6 @@ export async function getGlobalStats() {
       { value: studentCount, label: "Students" },
       { value: tutorCount, label: "Verified Mentors" },
       { value: sessionCount, label: "Study Sessions" },
-      { value: 0, label: "Uptime %" },
     ];
   } catch (error) {
     console.error("Error in getGlobalStats:", error);

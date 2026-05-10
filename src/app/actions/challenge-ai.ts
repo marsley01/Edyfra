@@ -141,7 +141,35 @@ export async function getOrCreateDailyChallenge(level: string, subject?: string)
     return challenges[0];
   } catch (error) {
     console.error("Error getting/creating daily challenge:", error);
-    return null;
+    // Fallback: create a hardcoded challenge when AI fails
+    try {
+      const fallback = {
+        question: level === "UNIVERSITY"
+          ? "What is the derivative of f(x) = x²?"
+          : "What is the chemical symbol for water?",
+        options: level === "UNIVERSITY"
+          ? ["2x", "x²", "2", "x"]
+          : ["H₂O", "CO₂", "NaCl", "O₂"],
+        answer: level === "UNIVERSITY" ? "2x" : "H₂O",
+        explanation: level === "UNIVERSITY"
+          ? "The power rule states that d/dx(xⁿ) = nxⁿ⁻¹, so d/dx(x²) = 2x."
+          : "Water's chemical name is dihydrogen monoxide, with the formula H₂O.",
+        subject: subject || "General",
+      };
+      return await prisma.dailyChallenge.create({
+        data: {
+          subject: fallback.subject,
+          level: level as EduLevel,
+          question: fallback.question,
+          options: fallback.options,
+          answer: fallback.answer,
+          explanation: fallback.explanation,
+          date: new Date(),
+        },
+      });
+    } catch {
+      return null;
+    }
   }
 }
 
@@ -270,9 +298,11 @@ export async function getChallengeCompletion(userId: string, challengeId: string
 
 export async function getChallengeStats() {
   try {
+    const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+    const tomorrowStart = new Date(todayStart); tomorrowStart.setDate(tomorrowStart.getDate() + 1);
     const [totalChallenges, activeChallenges, totalAttempts, correctAttempts] = await Promise.all([
       prisma.dailyChallenge.count(),
-      prisma.dailyChallenge.count({ where: { date: { lte: new Date() } } }),
+      prisma.dailyChallenge.count({ where: { date: { gte: todayStart, lt: tomorrowStart } } }),
       prisma.dailyChallengeAttempt.count(),
       prisma.dailyChallengeAttempt.count({ where: { correct: true } }),
     ]);

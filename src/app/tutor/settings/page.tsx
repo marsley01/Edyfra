@@ -53,6 +53,10 @@ export default function TutorSettingsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [downloading, setDownloading] = useState(false);
   const [prefs, setPrefs] = useState<any>({});
+  const [notifPrefs, setNotifPrefs] = useState<Record<string, boolean>>({
+    newRequest: true, studentJoined: true, studentLeft: true,
+    newMessage: true, newRating: true, announcements: true, tutorMessages: true,
+  });
 
   useEffect(() => { loadProfile(); }, []);
 
@@ -313,7 +317,7 @@ export default function TutorSettingsPage() {
               {notifItems.map((item) => (
                 <div key={item.key} className="flex items-center justify-between p-4 rounded-xl bg-primary/5">
                   <Label className="text-base font-bold text-primary">{item.label}</Label>
-                  <Switch defaultChecked />
+                  <Switch checked={notifPrefs[item.key] ?? true} onCheckedChange={(v) => setNotifPrefs({...notifPrefs, [item.key]: v})} />
                 </div>
               ))}
             </CardContent>

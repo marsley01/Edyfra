@@ -62,9 +62,9 @@ export default function DashboardPageContent() {
   }, [userData?.id]);
 
   useEffect(() => {
-    if (!userData?.educationLevel) return;
+    if (!userData?.educationLevel || !userData?.id) return;
     loadChallenge();
-  }, [userData?.educationLevel]);
+  }, [userData?.educationLevel, userData?.id]);
 
   const loadChallenge = async () => {
     setChallengeLoading(true);

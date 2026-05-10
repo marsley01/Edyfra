@@ -34,12 +34,12 @@ export default function StudyPage() {
   useEffect(() => {
     getUserData().then((data) => {
       setUserData(data);
-    });
+    }).catch(console.error);
     
     // Sweep unmatched requests on mount
     import("@/app/actions/match").then(({ sweepUnmatchedRequests }) => {
       sweepUnmatchedRequests();
-    });
+    }).catch(console.error);
   }, []);
 
   const subjects = getSubjectsByLevel(userData?.educationLevel || "HIGH_SCHOOL");

@@ -31,9 +31,8 @@ export async function createPost(content: string, subject?: string, image?: stri
       throw new Error(moderationResult);
     }
   } catch (error: any) {
-    console.error("Moderation Error:", error);
     if (error.message.includes("REJECTED")) throw error;
-    // Fallback: allow if AI fails for technical reasons, but log it
+    console.error("AI Moderation failed — allowing post as fallback:", error?.message, error?.stack);
   }
   
   const post = await prisma.feedPost.create({
@@ -50,7 +49,7 @@ export async function createPost(content: string, subject?: string, image?: stri
   return { success: true, post };
 }
 
-export async function getPosts() {
+export async function getPosts(filter?: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
@@ -61,11 +60,14 @@ export async function getPosts() {
 
   if (!userData) throw new Error("User not found");
 
-  
+  const where: any = {};
+
+  if (filter === "school" && userData.educationLevel) {
+    where.level = userData.educationLevel;
+  }
+
   return await prisma.feedPost.findMany({
-    where: {
-      ...(userData.educationLevel ? { level: userData.educationLevel } : {}),
-    },
+    where,
     include: {
       user: true,
       comments: {
