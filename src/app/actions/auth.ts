@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getUserData } from "./user";
+import { isFounderEmail } from "@/utils/admin-guard";
 export async function login(formData: FormData) {
   const supabase = await createClient();
 
@@ -22,8 +23,9 @@ export async function login(formData: FormData) {
   // FORCE SYNC: Ensure Prisma has this user record immediately on login
   const prismaUser = await getUserData();
   
-  // Prisma is the source of truth for role. Supabase metadata is synced from it below.
-  const role = prismaUser?.role || "STUDENT";
+  // Prisma is the source of truth for role.
+  // Fallback: check founder email when DB is unreachable so admin can still log in.
+  const role = prismaUser?.role || (isFounderEmail(email) ? "ADMIN" : "STUDENT");
   
   // Keep Supabase metadata aligned with Prisma so middleware/layout routing doesn't mis-route users.
   try {
