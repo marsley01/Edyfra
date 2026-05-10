@@ -63,7 +63,7 @@ export async function addMembersToChannel(channelId: string, members: string[]) 
   await channel.addMembers(members);
 }
 
-export function getDMChannelId(userA: string, userB: string) {
+export async function getDMChannelId(userA: string, userB: string) {
   const sorted = [userA, userB].sort();
   return `dm-${sorted[0]}-${sorted[1]}`;
 }

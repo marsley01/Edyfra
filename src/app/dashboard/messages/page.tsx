@@ -6,7 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { MessageSquare, Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
-import "stream-chat-react/dist/css/v2/index.css";
+import "stream-chat-react/dist/css/index.css";
 
 const StreamChatRoom = dynamic(
   () => import("@/components/stream/StreamChatRoom"),

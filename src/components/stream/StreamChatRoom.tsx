@@ -5,7 +5,7 @@ import { StreamChat } from "stream-chat";
 import { Chat, Channel, ChannelHeader, MessageList, MessageComposer, Window, LoadingIndicator, Thread } from "stream-chat-react";
 import { getStreamToken, upsertStreamUser } from "@/app/actions/stream";
 import { useMashAI } from "./useMashAI";
-import "stream-chat-react/dist/css/v2/index.css";
+import "stream-chat-react/dist/css/index.css";
 
 interface StreamChatRoomProps {
   channelId: string;

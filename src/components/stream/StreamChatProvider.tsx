@@ -5,7 +5,7 @@ import { StreamChat, Channel as StreamChannelType, UserResponse } from "stream-c
 import { Chat, Channel, ChannelHeader, MessageList, MessageComposer, Window, useCreateChatClient } from "stream-chat-react";
 import { getStreamToken, upsertStreamUser } from "@/app/actions/stream";
 import { createClient } from "@/utils/supabase/client";
-import "stream-chat-react/dist/css/v2/index.css";
+import "stream-chat-react/dist/css/index.css";
 
 const STREAM_KEY = process.env.NEXT_PUBLIC_STREAM_KEY!;
 
