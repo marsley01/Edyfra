@@ -97,6 +97,9 @@ export default function StudyPage() {
       if (result.success) {
         toast.info("Connecting you to Mash AI...");
         router.push(`/study-room/${result.sessionId}`);
+      } else {
+        // Already matched or not found - poll will handle redirect
+        console.log("AI fallback skipped:", result.message);
       }
     } catch {
       toast.error("AI fallback failed. Please try again.");

@@ -254,9 +254,9 @@ export default function TutorsPage() {
                       </Button>
                       <Button
                         onClick={async () => {
-                          const { createDMChannel, getDMChannelId } = await import("@/app/actions/stream");
+                          const { createDMChannel } = await import("@/app/actions/stream");
                           const channelId = await createDMChannel(userData!.id, tutors[currentIndex].id);
-                          router.push(`/dashboard/messages`);
+                          router.push(`/dashboard/messages?channel=${channelId}`);
                         }}
                         variant="outline"
                         className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-border hover:bg-primary/10 hover:text-primary transition-all"

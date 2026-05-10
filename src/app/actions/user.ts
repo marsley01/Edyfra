@@ -277,7 +277,7 @@ export async function createTestTutorAction() {
         tutorProfile: {
           create: {
             subjects: ['Mathematics', 'Physics', 'Chemistry'],
-            levelsTaught: ['1', '2', '3', '4'],
+            levelsTaught: ['HIGH_SCHOOL', 'UNIVERSITY'],
             verificationPath: VerifPath.GRADES,
             hourlyRate: 750,
             bio: 'I am a high-performance academic mentor focused on KCSE excellence and competitive edge.',

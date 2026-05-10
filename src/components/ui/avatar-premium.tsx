@@ -19,9 +19,19 @@ const sizes = {
   "2xl": "w-32 h-32",
 };
 
+const styles = ["notionists", "avataaars", "bottts", "personas", "pixel-art", "fun-emoji"] as const;
+
+function pickStyle(seed: string): string {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+  }
+  return styles[Math.abs(hash) % styles.length];
+}
+
 export function AvatarPremium({ src, name, seed, size = "md", className = "" }: AvatarProps) {
-  // Option: notionists, personas, bottts, avataaars
-  const fallbackUrl = `https://api.dicebear.com/7.x/notionists/svg?seed=${seed || name || "edyfra"}`;
+  const style = seed ? pickStyle(seed) : "notionists";
+  const fallbackUrl = `https://api.dicebear.com/7.x/${style}/svg?seed=${seed || name || "edyfra"}`;
   const avatarSrc = src || fallbackUrl;
 
   return (

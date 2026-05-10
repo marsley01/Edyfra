@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { MessageSquare, Loader2 } from "lucide-react";
@@ -15,11 +15,19 @@ const StreamChatRoom = dynamic(
 
 export default function MessagesPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
   const [currentUser, setCurrentUser] = useState<{ id: string; name?: string; avatar?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeChannel, setActiveChannel] = useState<string | null>(null);
   const [dmPartners, setDmPartners] = useState<{ id: string; name: string; channelId: string }[]>([]);
+
+  useEffect(() => {
+    const channelParam = searchParams.get("channel");
+    if (channelParam) {
+      setActiveChannel(channelParam);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const init = async () => {
