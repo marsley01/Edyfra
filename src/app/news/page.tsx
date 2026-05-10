@@ -11,6 +11,13 @@ import { motion } from "framer-motion";
 
 const categories = ["All", "Education", "Tech", "Student Life", "Announcements"];
 
+const categoryColors: Record<string, string> = {
+  Tech: "bg-blue-500/15 text-blue-600 border-blue-500/30 dark:text-blue-400",
+  Education: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30 dark:text-emerald-400",
+  "Student Life": "bg-purple-500/15 text-purple-600 border-purple-500/30 dark:text-purple-400",
+  Announcements: "bg-amber-500/15 text-amber-600 border-amber-500/30 dark:text-amber-400",
+};
+
 export default function NewsPage() {
   const [news, setNews] = useState<NewsArticle[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -152,7 +159,7 @@ export default function NewsPage() {
                     </div>
                     <div className="space-y-6 p-4 lg:p-8">
                       <div className="flex items-center gap-3">
-                        <span className="px-4 py-1.5 rounded-full bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest">
+                        <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${categoryColors[featured.category] || "bg-primary/20 text-primary border-primary/30"}`}>
                           {featured.category}
                         </span>
                         <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1">
@@ -201,6 +208,11 @@ export default function NewsPage() {
                           className="object-cover group-hover:scale-105 transition-transform duration-700"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white text-[8px] font-black uppercase tracking-widest">
+                            {item.reading_time || "3m"} read
+                          </span>
+                        </div>
                         <div className="absolute bottom-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity">
                           <span className="px-3 py-1 rounded-full bg-primary text-white text-[8px] font-black uppercase tracking-widest">
                             Read More
@@ -209,7 +221,7 @@ export default function NewsPage() {
                       </div>
                       <div className="space-y-3">
                         <div className="flex items-center gap-3">
-                          <span className="px-3 py-1 rounded-full bg-secondary text-[9px] font-black uppercase tracking-widest text-primary">
+                          <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${categoryColors[item.category] || "bg-secondary text-primary border-transparent"}`}>
                             {item.category}
                           </span>
                           <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1">
@@ -222,6 +234,14 @@ export default function NewsPage() {
                         <p className="text-sm text-muted-foreground font-medium leading-relaxed line-clamp-2">
                           {item.excerpt}
                         </p>
+                        <div className="flex items-center gap-2 pt-1">
+                          <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-primary font-bold text-[8px]">
+                            {item.author[0]}
+                          </div>
+                          <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
+                            {item.author}
+                          </span>
+                        </div>
                       </div>
                     </Link>
                   </motion.div>

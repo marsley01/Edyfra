@@ -25,6 +25,23 @@ export function useStream() {
   return useContext(StreamContext);
 }
 
+// Stream Chat requires clipboard API — provide safe fallback
+if (typeof navigator !== "undefined" && !navigator.clipboard) {
+  Object.defineProperty(navigator, "clipboard", {
+    value: {
+      writeText: async () => {},
+      readText: async () => "",
+      write: async () => {},
+      read: async () => [],
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    },
+    writable: false,
+    configurable: true,
+  });
+}
+
 export function StreamChatProvider({ children }: { children: ReactNode }) {
   const [client, setClient] = useState<StreamChat | null>(null);
   const [userId, setUserId] = useState<string | null>(null);

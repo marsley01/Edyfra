@@ -35,7 +35,8 @@ export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
   // Fallback: Fetch from RSS feeds if DB is empty (Zero-Maintenance Mode)
   try {
     const rss = new RSSService();
-    const items = await rss.fetchAllFeeds();
+    const feedResults = await rss.fetchAllFeeds();
+    const items = feedResults.flatMap(r => r.items);
     
     // AI Summarization for the top 6 items to ensure clean excerpts
     const ai = new AIService({
@@ -60,8 +61,8 @@ export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
         slug: `rss-${index}`,
         excerpt: excerpt,
         content: item.link, // Store original link in content
-        cover_image: "https://images.unsplash.com/photo-1546410531-bb4caa1b4247?q=80&w=2070&auto=format&fit=crop", // Better fallback
-        category: "Global Updates",
+        cover_image: item.imageUrl || "https://images.unsplash.com/photo-1546410531-bb4caa1b4247?q=80&w=2070&auto=format&fit=crop",
+        category: item.category || "Global Updates",
         author: item.source,
         published_at: item.pubDate,
         reading_time: "3m"

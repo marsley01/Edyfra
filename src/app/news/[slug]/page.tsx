@@ -1,13 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 import { Calendar, Clock, ArrowLeft, Share2, Link as LinkIcon, Send, BookOpen, Sparkles } from "lucide-react";
 import { getNewsBySlug, NewsArticle, getLatestNews } from "@/app/actions/news";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, useScroll, useSpring } from "framer-motion";
+
+const categoryColors: Record<string, string> = {
+  Tech: "bg-blue-500/15 text-blue-600 border-blue-500/30 dark:text-blue-400",
+  Education: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30 dark:text-emerald-400",
+  "Student Life": "bg-purple-500/15 text-purple-600 border-purple-500/30 dark:text-purple-400",
+  Announcements: "bg-amber-500/15 text-amber-600 border-amber-500/30 dark:text-amber-400",
+};
 
 export default function ArticlePage() {
   const { slug } = useParams();
@@ -80,18 +87,33 @@ export default function ArticlePage() {
     );
   }
 
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
+
   return (
     <article className="min-h-screen bg-background">
+      {/* Reading Progress Bar */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-1 bg-primary origin-left z-50"
+        style={{ scaleX }}
+      />
       {/* Hero Section with Cover */}
       <div className="relative h-[60vh] w-full border-b border-border">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-background to-background z-10" />
-        <Image
-          src={article.cover_image}
-          alt={article.title}
-          fill
-          className="object-cover"
-          priority
-        />
+        <motion.div
+          initial={{ scale: 1.1 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+          className="absolute inset-0"
+        >
+          <Image
+            src={article.cover_image}
+            alt={article.title}
+            fill
+            className="object-cover"
+            priority
+          />
+        </motion.div>
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent z-20" />
         
         {/* Back Navigation */}
@@ -105,7 +127,7 @@ export default function ArticlePage() {
         <div className="absolute bottom-0 left-0 right-0 z-30 p-8 md:p-16 pb-12">
           <div className="container-max">
             <div className="max-w-4xl space-y-6">
-              <span className="inline-block px-4 py-1.5 rounded-full bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest backdrop-blur-sm border border-primary/30">
+              <span className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-sm border ${categoryColors[article.category] || "bg-primary/20 text-primary border-primary/30"}`}>
                 {article.category}
               </span>
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tightest leading-tight text-white drop-shadow-lg">
@@ -210,7 +232,7 @@ export default function ArticlePage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <span className="px-3 py-1 rounded-full bg-secondary text-[9px] font-black uppercase tracking-widest text-primary">
+                      <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${categoryColors[r.category] || "bg-secondary text-primary border-transparent"}`}>
                         {r.category}
                       </span>
                       <h3 className="text-lg font-black tracking-tight leading-tight group-hover:text-primary transition-colors line-clamp-2">
