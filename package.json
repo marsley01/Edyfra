@@ -6,6 +6,7 @@
     "postinstall": "prisma generate",
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
+    "vercel-build": "prisma db push --skip-generate && next build --turbopack",
     "start": "next start",
     "lint": "eslint"
   },
