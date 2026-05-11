@@ -42,11 +42,28 @@ export async function getFilteredMatchRequests(tutorSubjects: string[]) {
       whereClause.subject = { in: tutorSubjects };
     }
 
-    return await prisma.matchRequest.findMany({
+    const requests = await prisma.matchRequest.findMany({
       where: whereClause,
       orderBy: { createdAt: "desc" },
-      take: 20,
+      take: 50, // Fetch a larger batch to allow for sorting
     });
+
+    // Fetch plans separately to avoid relation typing issues
+    const studentIds = Array.from(new Set(requests.map(r => r.studentId)));
+    const students = await prisma.user.findMany({
+      where: { id: { in: studentIds } },
+      select: { id: true, plan: true }
+    });
+
+    const studentMap = new Map(students.map(s => [s.id, s.plan]));
+
+    // Sort by plan (plus first)
+    return requests.sort((a, b) => {
+      const planA = (studentMap.get(a.studentId) as string) || "free";
+      const planB = (studentMap.get(b.studentId) as string) || "free";
+      if (planA === planB) return 0;
+      return planA === "plus" ? -1 : 1;
+    }).slice(0, 20);
   } catch (error) {
     console.error("Error fetching filtered match requests:", error);
     return [];

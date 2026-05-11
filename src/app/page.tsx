@@ -7,6 +7,9 @@ import { HomeStats } from "@/components/home/stats";
 import { HomeNews } from "@/components/home/news-preview";
 import { HomeTestimonials } from "@/components/home/testimonials";
 import { HomeCTA } from "@/components/home/cta";
+import { HowItWorks } from "@/components/home/how-it-works";
+import { MashSpotlight } from "@/components/home/mash-spotlight";
+import { SubjectCoverage } from "@/components/home/subject-coverage";
 
 // Server Component — fetches real data on every request
 export default async function HomePage() {
@@ -25,6 +28,10 @@ export default async function HomePage() {
       <HomeNews />
       <HomeTestimonials initialReviews={reviews} />
       <HomeCTA />
+      {/* New sections below CTA */}
+      <HowItWorks />
+      <MashSpotlight />
+      <SubjectCoverage />
     </div>
   );
 }

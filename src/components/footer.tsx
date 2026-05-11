@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { GraduationCap, Mail, Globe, MessageCircle, ArrowRight, CheckCircle2 } from "lucide-react";
+import { GraduationCap, Mail, Globe, MessageCircle, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -48,13 +48,46 @@ const footerLinks = [
 export function Footer() {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [fieldError, setFieldError] = useState("");
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-    setSubscribed(true);
-    toast.success("Synchronized! You're now on the elite update list.");
-    setEmail("");
+    setFieldError("");
+
+    if (!email.trim()) {
+      setFieldError("Please enter your email address.");
+      return;
+    }
+    if (!EMAIL_REGEX.test(email.trim())) {
+      setFieldError("Please enter a valid email address.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), source: "landing_page" }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.error || "Something went wrong. Please try again.");
+        return;
+      }
+
+      setSubscribed(true);
+      setEmail("");
+      toast.success("You are in — we will keep you posted.");
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -68,21 +101,28 @@ export function Footer() {
             <h3 className="text-3xl font-black tracking-tightest">Stay in the loop.</h3>
             <p className="text-muted-foreground font-medium text-lg">Get the latest ecosystem updates directly to your inbox.</p>
           </div>
-          <form onSubmit={handleSubscribe} className="flex w-full lg:w-auto gap-2">
-            <Input 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter institutional email" 
-              className="h-14 rounded-2xl px-6 border-border bg-secondary min-w-[300px] focus-visible:ring-primary shadow-sm"
-            />
-            <Button 
-              type="submit"
-              disabled={subscribed}
-              size="icon" 
-              className="h-14 w-14 rounded-2xl bg-foreground text-background hover:bg-foreground/90 shrink-0 transition-all active:scale-95"
-            >
-              {subscribed ? <CheckCircle2 className="h-6 w-6 text-emerald-500" /> : <ArrowRight className="h-6 w-6" />}
-            </Button>
+          <form onSubmit={handleSubscribe} className="flex flex-col w-full lg:w-auto gap-2">
+            <div className="flex w-full gap-2">
+              <Input 
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setFieldError(""); }}
+                placeholder="Enter your email address" 
+                type="email"
+                disabled={subscribed || loading}
+                className="h-14 rounded-2xl px-6 border-border bg-secondary min-w-[300px] focus-visible:ring-primary shadow-sm"
+              />
+              <Button 
+                type="submit"
+                disabled={subscribed || loading}
+                size="icon" 
+                className="h-14 w-14 rounded-2xl bg-foreground text-background hover:bg-foreground/90 shrink-0 transition-all active:scale-95"
+              >
+                {subscribed ? <CheckCircle2 className="h-6 w-6 text-emerald-500" /> : loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowRight className="h-6 w-6" />}
+              </Button>
+            </div>
+            {fieldError && (
+              <p className="text-xs text-red-500 font-medium px-1">{fieldError}</p>
+            )}
           </form>
         </div>
 

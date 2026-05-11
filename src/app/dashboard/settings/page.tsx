@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
+import { UpgradeModal } from "@/components/shared/upgrade-modal";
 
 const ACCENT_COLORS = [
   { name: "Edyfra Blue", value: "#1e3a8a" },
@@ -48,6 +49,8 @@ export default function SettingsPage() {
   const [newEmail, setNewEmail] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [downloading, setDownloading] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [lockedFeature, setLockedFeature] = useState("");
 
   useEffect(() => { loadUserData(); }, []);
 
@@ -91,6 +94,13 @@ export default function SettingsPage() {
   };
 
   const handleSavePrefs = async (key: string, value: any) => {
+    // Plan gating for accent colors
+    if (key === "accentColor" && userData?.plan !== "plus") {
+      setLockedFeature("Custom Accent Colors");
+      setShowUpgradeModal(true);
+      return;
+    }
+
     const updated = { ...prefs, [key]: value };
     setPrefs(updated);
     try {
@@ -367,11 +377,24 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-4">
-                    {ACCENT_COLORS.map((color) => (
-                      <button key={color.value} onClick={() => handleSavePrefs("accentColor", color.value)} className={`h-12 w-12 rounded-full border-4 transition-all transform hover:scale-110 flex items-center justify-center shadow-md ${prefs.accentColor === color.value ? "border-primary scale-110" : "border-transparent"}`} style={{ backgroundColor: color.value }}>
-                        {prefs.accentColor === color.value && <Check className="h-6 w-6 text-white" />}
-                      </button>
-                    ))}
+                    {ACCENT_COLORS.map((color) => {
+                      const isLocked = userData?.plan !== "plus";
+                      return (
+                        <button 
+                          key={color.value} 
+                          onClick={() => handleSavePrefs("accentColor", color.value)} 
+                          className={`h-12 w-12 rounded-full border-4 transition-all transform hover:scale-110 flex items-center justify-center shadow-md relative ${prefs.accentColor === color.value ? "border-primary scale-110" : "border-transparent"}`} 
+                          style={{ backgroundColor: color.value }}
+                        >
+                          {prefs.accentColor === color.value && <Check className="h-6 w-6 text-white" />}
+                          {isLocked && (
+                            <div className="absolute -top-1 -right-1 bg-background rounded-full p-1 border border-border">
+                              <Lock className="h-2 w-2 text-primary" />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>

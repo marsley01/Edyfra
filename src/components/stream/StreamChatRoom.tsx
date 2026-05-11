@@ -1,14 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { StreamChat } from "stream-chat";
-import { Chat, Channel, ChannelHeader, MessageList, MessageComposer, Window, LoadingIndicator, Thread } from "stream-chat-react";
+import {
+  Chat,
+  Channel,
+  ChannelHeader,
+  MessageList,
+  MessageComposer,
+  Window,
+  LoadingIndicator,
+  Thread,
+} from "stream-chat-react";
 import { getStreamToken, upsertStreamUser } from "@/app/actions/stream";
 import { useMashAI } from "./useMashAI";
 import "stream-chat-react/dist/css/index.css";
 import { polyfillClipboard } from "@/utils/clipboard-polyfill";
+import { Loader2, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 polyfillClipboard();
+
+const STREAM_KEY = process.env.NEXT_PUBLIC_STREAM_KEY!;
 
 interface StreamChatRoomProps {
   channelId: string;
@@ -38,6 +51,8 @@ export default function StreamChatRoom({
   const [chatClient, setChatClient] = useState<StreamChat | null>(null);
   const [channel, setChannel] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const clientRef = useRef<StreamChat | null>(null);
 
   useMashAI({
     client: chatClient,
@@ -49,61 +64,145 @@ export default function StreamChatRoom({
     enabled: mashAI?.tier === "MASH",
   });
 
-  useEffect(() => {
-    let client: StreamChat | null = null;
+  const init = useCallback(async () => {
+    setError(null);
+    setIsRetrying(true);
 
-    const init = async () => {
-      try {
-        const token = await getStreamToken(userId);
-        client = StreamChat.getInstance(process.env.NEXT_PUBLIC_STREAM_KEY!);
+    try {
+      console.log(`[StreamChatRoom] Initializing for user: ${userId}, channel: ${channelId}`);
+
+      // Use singleton — StreamChat.getInstance returns the same instance every time
+      // for the same API key, preventing duplicate connections
+      const client = StreamChat.getInstance(STREAM_KEY);
+
+      // Only connect if not already connected to avoid duplicate connections
+      if (client.userID !== userId) {
+        // Token is generated server-side (secret never exposed to browser)
+        let token: string;
+        try {
+          token = await getStreamToken(userId);
+        } catch (tokenErr: any) {
+          // If token fetch fails with auth error, try the HTTP endpoint as fallback
+          console.warn("[StreamChatRoom] Server action token failed, trying HTTP endpoint:", tokenErr);
+          const res = await fetch("/api/stream/token", { method: "POST" });
+          if (!res.ok) throw new Error("Failed to authenticate with chat service");
+          const data = await res.json();
+          token = data.token;
+        }
+
         await client.connectUser(
-          { id: userId, name: userName, image: userImage || undefined },
+          {
+            id: userId,
+            name: userName,
+            image: userImage || undefined,
+          },
           token
         );
 
-        try {
-          await upsertStreamUser(userId, userName, userImage || undefined);
-        } catch {}
-
-        const allMembers = [userId, ...(memberIds?.filter(m => m !== userId) || [])];
-
-        const c = client.channel("messaging", channelId, {
-          members: allMembers,
-        } as any);
-        if (channelName) await c.update({ name: channelName } as any);
-        await c.watch();
-        setChannel(c);
-        setChatClient(client);
-      } catch (err: any) {
-        setError(err.message || "Failed to connect to chat");
+        console.log(`[StreamChatRoom] User connected: ${userId}`);
+      } else {
+        console.log(`[StreamChatRoom] User already connected: ${userId}`);
       }
-    };
 
+      // Upsert user in Stream (server-side, idempotent)
+      try {
+        await upsertStreamUser(userId, userName, userImage || undefined);
+      } catch (upsertErr) {
+        // Non-fatal — user was already upserted during token generation
+        console.warn("[StreamChatRoom] upsertStreamUser non-fatal:", upsertErr);
+      }
+
+      // All members including self
+      const allMembers = [
+        userId,
+        ...(memberIds?.filter((m) => m !== userId) || []),
+      ];
+
+      // Create or connect to the channel — watch() is idempotent
+      const c = client.channel("messaging", channelId, {
+        members: allMembers,
+      } as any);
+
+      if (channelName) {
+        try {
+          await c.update({ name: channelName } as any);
+        } catch {
+          // Non-fatal if update fails (e.g., not channel owner)
+        }
+      }
+
+      await c.watch();
+      console.log(`[StreamChatRoom] Channel ready: ${channelId}`);
+
+      clientRef.current = client;
+      setChannel(c);
+      setChatClient(client);
+    } catch (err: any) {
+      console.error("[StreamChatRoom] Initialization failed:", err);
+      setError(err.message || "Chat failed to load");
+    } finally {
+      setIsRetrying(false);
+    }
+  }, [channelId, userId, userName, userImage, channelName, JSON.stringify(memberIds)]);
+
+  useEffect(() => {
     init();
 
     return () => {
-      if (client) {
-        client.disconnectUser();
+      // Disconnect only when the component unmounts
+      const client = clientRef.current;
+      if (client && client.userID) {
+        console.log("[StreamChatRoom] Disconnecting user on unmount");
+        client.disconnectUser().catch((err) =>
+          console.warn("[StreamChatRoom] Disconnect error:", err)
+        );
       }
     };
-  }, [channelId, userId, userName, userImage, channelName, JSON.stringify(memberIds)]);
+  }, [init]);
 
+  // ─── Error State ────────────────────────────────────────────────────────────
   if (error) {
     return (
-      <div className="flex items-center justify-center h-full p-8">
-        <p className="text-red-500 font-medium">Chat unavailable: {error}</p>
+      <div className="flex flex-col items-center justify-center h-full p-8 gap-6 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center">
+          <RefreshCw className="h-8 w-8 text-red-500" />
+        </div>
+        <div className="space-y-2">
+          <p className="font-black text-sm uppercase tracking-widest text-foreground">
+            Chat failed to load
+          </p>
+          <p className="text-xs text-muted-foreground font-medium max-w-xs">
+            {error}. Refresh to try again.
+          </p>
+        </div>
+        <Button
+          onClick={init}
+          disabled={isRetrying}
+          className="h-12 px-8 rounded-full bg-primary hover:bg-primary/90 text-white font-black text-xs tracking-widest uppercase"
+        >
+          {isRetrying ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            "Retry Connection"
+          )}
+        </Button>
       </div>
     );
   }
 
+  // ─── Loading State ───────────────────────────────────────────────────────────
   if (!chatClient || !channel) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex flex-col items-center justify-center h-full gap-4">
         <LoadingIndicator />
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+          Connecting to chat...
+        </p>
       </div>
     );
   }
 
+  // ─── Chat UI ─────────────────────────────────────────────────────────────────
   return (
     <Chat client={chatClient} theme="str-chat__theme-dark">
       <Channel channel={channel}>

@@ -2,6 +2,7 @@ import { generateAIResponse } from "@/utils/openrouter";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { StreamChat } from "stream-chat";
+import { checkFeatureAccess, incrementDailyAICount } from "@/lib/feature-gates";
 
 const STREAM_KEY = process.env.NEXT_PUBLIC_STREAM_KEY!;
 const STREAM_SECRET = process.env.STREAM_SECRET!;
@@ -19,6 +20,15 @@ export async function POST(req: NextRequest) {
     const { sessionId, subject, topic, userId } = body;
     const messageText = extractMessage(body);
 
+    // Feature Gate Check
+    const access = await checkFeatureAccess("mash_ai");
+    if (!access.allowed) {
+      return NextResponse.json({ 
+        error: "MASH_LIMIT_REACHED", 
+        message: "You've reached your daily limit for Mash AI. Upgrade to Edyfra Plus for unlimited help!" 
+      }, { status: 403 });
+    }
+
     // Get session context
     const session = await prisma.session.findUnique({
       where: { id: sessionId },
@@ -29,6 +39,12 @@ export async function POST(req: NextRequest) {
     const aiTopic = topic || session?.topic;
 
     const aiMessage = await generateAIResponse(messageText, aiSubject, aiTopic || undefined);
+
+    // Increment AI count for free users
+    const dbUser = await prisma.user.findUnique({ where: { id: userId || body.user_id }, select: { plan: true } });
+    if (dbUser?.plan !== "plus") {
+      await incrementDailyAICount(userId || body.user_id);
+    }
 
     // Save to Prisma for history
     await prisma.message.create({
