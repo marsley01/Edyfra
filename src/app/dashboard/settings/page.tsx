@@ -20,12 +20,13 @@ import {
   Eye, EyeOff, Languages, Bot, Search, AlertTriangle, Smartphone
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { getUserData, updateProfile, updateUserSettings, updateUserPreferences, updateNotificationSettings, updateStudentProfile, changePassword, changeEmail, downloadUserData, deleteUserAccount } from "@/app/actions/user";
+import { getUserData, updateProfile, updateUserSettings, updateUserPreferences, updateNotificationSettings, updateStudentProfile, changePassword, changeEmail, downloadUserData, deleteUserAccount, updateAvatar } from "@/app/actions/user";
 import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { UpgradeModal } from "@/components/shared/upgrade-modal";
+import { AvatarPicker, type AvatarStyle } from "@/components/ui/avatar-picker";
 
 const ACCENT_COLORS = [
   { name: "Edyfra Blue", value: "#1e3a8a" },
@@ -45,12 +46,16 @@ export default function SettingsPage() {
   const [prefs, setPrefs] = useState<any>({});
   const [notifPrefs, setNotifPrefs] = useState<Record<string, boolean>>({});
   const [formData, setFormData] = useState({ name: "", bio: "", educationLevel: "", subjects: "", studyHours: "" });
+  const [currentAvatar, setCurrentAvatar] = useState<string | null>(null);
   const [passwordData, setPasswordData] = useState({ current: "", newPass: "", confirm: "" });
   const [newEmail, setNewEmail] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [downloading, setDownloading] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [lockedFeature, setLockedFeature] = useState("");
+  const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
+  const [selectedAvatarStyle, setSelectedAvatarStyle] = useState<AvatarStyle | null>(null);
+  const [savingAvatar, setSavingAvatar] = useState(false);
 
   useEffect(() => { loadUserData(); }, []);
 
@@ -58,6 +63,7 @@ export default function SettingsPage() {
     const data = await getUserData() as any;
     if (data) {
       setUserData(data);
+      setCurrentAvatar(data.avatar || null);
       const settings = (data.settings as any) || {};
       setFormData({
         name: data.name || "",
@@ -203,9 +209,49 @@ export default function SettingsPage() {
                 <CardContent className="space-y-6">
                   <div className="flex items-center gap-6">
                     <Avatar className="h-24 w-24 border-4 border-primary/10 shadow-lg">
+                      <AvatarImage src={currentAvatar || undefined} alt={formData.name} className="object-cover" />
                       <AvatarFallback className="text-2xl bg-primary text-white">{formData.name?.[0]?.toUpperCase()}</AvatarFallback>
                     </Avatar>
-                    <Button variant="outline" className="rounded-xl border-primary/20">Change Avatar</Button>
+                    <Dialog open={avatarDialogOpen} onOpenChange={setAvatarDialogOpen}>
+                      <DialogTrigger render={<Button variant="outline" className="rounded-xl border-primary/20">Change Avatar</Button>} />
+                      <DialogContent className="sm:max-w-md rounded-2xl">
+                        <DialogHeader>
+                          <DialogTitle>Choose an avatar</DialogTitle>
+                          <DialogDescription>Pick a style that represents you.</DialogDescription>
+                        </DialogHeader>
+                        <div className="py-4">
+                          <AvatarPicker
+                            selected={selectedAvatarStyle}
+                            onSelect={setSelectedAvatarStyle}
+                            seed={formData.name || "user"}
+                          />
+                        </div>
+                        <DialogFooter>
+                          <Button variant="ghost" onClick={() => setAvatarDialogOpen(false)}>Cancel</Button>
+                          <Button
+                            disabled={!selectedAvatarStyle || savingAvatar}
+                            onClick={async () => {
+                              if (!selectedAvatarStyle) return;
+                              setSavingAvatar(true);
+                              try {
+                                const url = `https://api.dicebear.com/7.x/${selectedAvatarStyle}/svg?seed=${encodeURIComponent(formData.name || "user")}`;
+                                await updateAvatar(url);
+                                setCurrentAvatar(url);
+                                toast.success("Avatar updated");
+                                setAvatarDialogOpen(false);
+                              } catch {
+                                toast.error("Failed to update avatar");
+                              } finally {
+                                setSavingAvatar(false);
+                              }
+                            }}
+                            className="rounded-xl bg-primary"
+                          >
+                            {savingAvatar ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Save Avatar"}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                   <div className="grid gap-4">
                     <div className="space-y-2">

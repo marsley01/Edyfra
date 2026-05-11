@@ -8,7 +8,7 @@ import {
   Settings, Award, MessageSquare, BarChart3,
   ShieldCheck, LogOut, Bell, Search,
   Activity, Globe, Terminal, Zap, Menu, X, ChevronLeft, Power, CheckCircle,
-  Trash2, Sparkles, Newspaper, Star, Wrench, Cpu
+  Trash2, Sparkles, Newspaper, Star, Wrench, Cpu,   FileText, TrendingUp, BookMarked
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -77,10 +77,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin/users", label: "User Management", icon: Users },
     { href: "/admin/tutors", label: "Tutor Management", icon: GraduationCap },
     { href: "/admin/moderation", label: "Content Moderation", icon: ShieldCheck },
+    { href: "/admin/resources", label: "Resource Hub", icon: FileText },
+    { href: "/admin/curriculum", label: "Curriculum Content", icon: BookMarked },
     { href: "/admin/announcements", label: "Announcements", icon: Bell },
     { href: "/admin/news", label: "Knowledge Feed", icon: Newspaper },
     { href: "/admin/testimonials", label: "Testimonials", icon: Star },
+    { href: "/admin/feedback", label: "Tutor Feedback", icon: MessageSquare },
     { href: "/admin/challenges", label: "AI Challenges", icon: Award },
+    { href: "/admin/insights", label: "Site Insights", icon: TrendingUp },
     { href: "/admin/ai-settings", label: "AI Engine", icon: Cpu },
     { href: "/admin/settings", label: "Settings", icon: Settings },
   ];

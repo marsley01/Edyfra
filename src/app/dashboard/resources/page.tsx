@@ -27,7 +27,7 @@ const SUBJECTS = [
 
 const LEVELS = ["All", "High School", "University", "Primary"];
 const PRICE_FILTERS = ["All", "Free", "Paid"];
-const TYPE_FILTERS = ["All", "Notes", "Past Paper", "Revision Guide", "Reference Book"];
+const TYPE_FILTERS = ["All", "Notes", "Past Paper", "Revision Guide", "Reference Book", "Curriculum Book"];
 
 export default function MarketplacePage() {
   const [resources, setResources] = useState<any[]>([]);

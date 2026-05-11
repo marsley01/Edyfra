@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { getSession as fetchSessionAction } from "@/app/actions/match";
 import { getStreamToken } from "@/app/actions/stream";
 import dynamic from "next/dynamic";
+import SessionReviewModal from "@/components/sessions/SessionReviewModal";
 
 const StreamChatRoom = dynamic(
   () => import("@/components/stream/StreamChatRoom"),
@@ -38,6 +39,7 @@ export default function StudyRoomPage() {
   const [session, setSession] = useState<SessionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<{ id: string; name?: string; avatar?: string } | null>(null);
+  const [showReview, setShowReview] = useState(false);
 
   const getCurrentUser = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -73,6 +75,15 @@ export default function StudyRoomPage() {
     const { deleteStreamChannel } = await import("@/app/actions/stream");
     try { await deleteStreamChannel(sessionId); } catch {}
     toast.success("Session finished! Points awarded.");
+    if (session.tier === "TUTOR" && session.partner) {
+      setShowReview(true);
+    } else {
+      router.push("/dashboard");
+    }
+  };
+
+  const handleReviewClose = () => {
+    setShowReview(false);
     router.push("/dashboard");
   };
 
@@ -179,6 +190,13 @@ export default function StudyRoomPage() {
           )}
         </section>
       </main>
+      <SessionReviewModal
+        open={showReview}
+        onClose={handleReviewClose}
+        sessionId={sessionId}
+        tutorName={session.partner?.name || "your tutor"}
+        subject={session.subject}
+      />
     </div>
   );
 }

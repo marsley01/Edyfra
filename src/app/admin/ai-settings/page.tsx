@@ -80,10 +80,22 @@ export default function AISettingsPage() {
 
       {activeTab === "model" && (
         <Card className="rounded-[2rem] border-border/50">
-          <CardContent className="p-8 space-y-6">
+          <CardContent className="p-8 space-y-8">
+            <div className="space-y-2">
+              <Label className="font-black text-sm">AI Provider</Label>
+              <Select value={settings.ai_provider as string || "auto"} onValueChange={(v) => save("ai_provider", v)}>
+                <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="auto">Auto (OpenRouter → Gemini fallback)</SelectItem>
+                  <SelectItem value="openrouter">OpenRouter Only</SelectItem>
+                  <SelectItem value="gemini">Google Gemini Direct</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">Choose which AI backend powers Mash across the entire site</p>
+            </div>
             <div className="space-y-2">
               <Label className="font-black text-sm">Active AI Model</Label>
-              <Select value={settings.active_ai_model as string || "meta-llama/llama-3.1-8b-instruct:free"} onValueChange={(v) => save("active_ai_model", v)}>
+              <Select value={settings.active_ai_model as string || "google/gemini-2.0-flash-exp:free"} onValueChange={(v) => save("active_ai_model", v)}>
                 <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {AVAILABLE_MODELS.map((m) => (
@@ -93,7 +105,7 @@ export default function AISettingsPage() {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground mt-1">Changes apply immediately — no redeployment needed</p>
+              <p className="text-xs text-muted-foreground mt-1">Changes apply immediately across all study sessions and Mash AI</p>
             </div>
           </CardContent>
         </Card>

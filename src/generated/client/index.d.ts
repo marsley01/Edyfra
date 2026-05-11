@@ -208,7 +208,15 @@ export type newsletter_subscribers = $Result.DefaultSelection<Prisma.$newsletter
  * Enums
  */
 export namespace $Enums {
-  export const Role: {
+  export const Gender: {
+  MALE: 'MALE',
+  FEMALE: 'FEMALE'
+};
+
+export type Gender = (typeof Gender)[keyof typeof Gender]
+
+
+export const Role: {
   STUDENT: 'STUDENT',
   TUTOR: 'TUTOR',
   ADMIN: 'ADMIN'
@@ -282,6 +290,10 @@ export const AppStatus: {
 export type AppStatus = (typeof AppStatus)[keyof typeof AppStatus]
 
 }
+
+export type Gender = $Enums.Gender
+
+export const Gender: typeof $Enums.Gender
 
 export type Role = $Enums.Role
 
@@ -4595,6 +4607,7 @@ export namespace Prisma {
     phone: string | null
     name: string | null
     avatar: string | null
+    gender: $Enums.Gender | null
     role: $Enums.Role | null
     educationLevel: $Enums.EduLevel | null
     formYear: number | null
@@ -4626,6 +4639,7 @@ export namespace Prisma {
     phone: string | null
     name: string | null
     avatar: string | null
+    gender: $Enums.Gender | null
     role: $Enums.Role | null
     educationLevel: $Enums.EduLevel | null
     formYear: number | null
@@ -4657,6 +4671,7 @@ export namespace Prisma {
     phone: number
     name: number
     avatar: number
+    gender: number
     role: number
     educationLevel: number
     formYear: number
@@ -4709,6 +4724,7 @@ export namespace Prisma {
     phone?: true
     name?: true
     avatar?: true
+    gender?: true
     role?: true
     educationLevel?: true
     formYear?: true
@@ -4740,6 +4756,7 @@ export namespace Prisma {
     phone?: true
     name?: true
     avatar?: true
+    gender?: true
     role?: true
     educationLevel?: true
     formYear?: true
@@ -4771,6 +4788,7 @@ export namespace Prisma {
     phone?: true
     name?: true
     avatar?: true
+    gender?: true
     role?: true
     educationLevel?: true
     formYear?: true
@@ -4890,6 +4908,7 @@ export namespace Prisma {
     phone: string | null
     name: string
     avatar: string | null
+    gender: $Enums.Gender | null
     role: $Enums.Role
     educationLevel: $Enums.EduLevel | null
     formYear: number | null
@@ -4941,6 +4960,7 @@ export namespace Prisma {
     phone?: boolean
     name?: boolean
     avatar?: boolean
+    gender?: boolean
     role?: boolean
     educationLevel?: boolean
     formYear?: boolean
@@ -4999,6 +5019,7 @@ export namespace Prisma {
     phone?: boolean
     name?: boolean
     avatar?: boolean
+    gender?: boolean
     role?: boolean
     educationLevel?: boolean
     formYear?: boolean
@@ -5031,6 +5052,7 @@ export namespace Prisma {
     phone?: boolean
     name?: boolean
     avatar?: boolean
+    gender?: boolean
     role?: boolean
     educationLevel?: boolean
     formYear?: boolean
@@ -5122,6 +5144,7 @@ export namespace Prisma {
       phone: string | null
       name: string
       avatar: string | null
+      gender: $Enums.Gender | null
       role: $Enums.Role
       educationLevel: $Enums.EduLevel | null
       formYear: number | null
@@ -5569,6 +5592,7 @@ export namespace Prisma {
     readonly phone: FieldRef<"User", 'String'>
     readonly name: FieldRef<"User", 'String'>
     readonly avatar: FieldRef<"User", 'String'>
+    readonly gender: FieldRef<"User", 'Gender'>
     readonly role: FieldRef<"User", 'Role'>
     readonly educationLevel: FieldRef<"User", 'EduLevel'>
     readonly formYear: FieldRef<"User", 'Int'>
@@ -42781,6 +42805,7 @@ export namespace Prisma {
     phone: 'phone',
     name: 'name',
     avatar: 'avatar',
+    gender: 'gender',
     role: 'role',
     educationLevel: 'educationLevel',
     formYear: 'formYear',
@@ -43398,6 +43423,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Gender'
+   */
+  export type EnumGenderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Gender'>
+    
+
+
+  /**
+   * Reference to a field of type 'Gender[]'
+   */
+  export type ListEnumGenderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Gender[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Role'
    */
   export type EnumRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Role'>
@@ -43577,6 +43616,7 @@ export namespace Prisma {
     phone?: StringNullableFilter<"User"> | string | null
     name?: StringFilter<"User"> | string
     avatar?: StringNullableFilter<"User"> | string | null
+    gender?: EnumGenderNullableFilter<"User"> | $Enums.Gender | null
     role?: EnumRoleFilter<"User"> | $Enums.Role
     educationLevel?: EnumEduLevelNullableFilter<"User"> | $Enums.EduLevel | null
     formYear?: IntNullableFilter<"User"> | number | null
@@ -43634,6 +43674,7 @@ export namespace Prisma {
     phone?: SortOrderInput | SortOrder
     name?: SortOrder
     avatar?: SortOrderInput | SortOrder
+    gender?: SortOrderInput | SortOrder
     role?: SortOrder
     educationLevel?: SortOrderInput | SortOrder
     formYear?: SortOrderInput | SortOrder
@@ -43694,6 +43735,7 @@ export namespace Prisma {
     NOT?: UserWhereInput | UserWhereInput[]
     name?: StringFilter<"User"> | string
     avatar?: StringNullableFilter<"User"> | string | null
+    gender?: EnumGenderNullableFilter<"User"> | $Enums.Gender | null
     role?: EnumRoleFilter<"User"> | $Enums.Role
     educationLevel?: EnumEduLevelNullableFilter<"User"> | $Enums.EduLevel | null
     formYear?: IntNullableFilter<"User"> | number | null
@@ -43751,6 +43793,7 @@ export namespace Prisma {
     phone?: SortOrderInput | SortOrder
     name?: SortOrder
     avatar?: SortOrderInput | SortOrder
+    gender?: SortOrderInput | SortOrder
     role?: SortOrder
     educationLevel?: SortOrderInput | SortOrder
     formYear?: SortOrderInput | SortOrder
@@ -43791,6 +43834,7 @@ export namespace Prisma {
     phone?: StringNullableWithAggregatesFilter<"User"> | string | null
     name?: StringWithAggregatesFilter<"User"> | string
     avatar?: StringNullableWithAggregatesFilter<"User"> | string | null
+    gender?: EnumGenderNullableWithAggregatesFilter<"User"> | $Enums.Gender | null
     role?: EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
     educationLevel?: EnumEduLevelNullableWithAggregatesFilter<"User"> | $Enums.EduLevel | null
     formYear?: IntNullableWithAggregatesFilter<"User"> | number | null
@@ -46527,6 +46571,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -46584,6 +46629,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -46641,6 +46687,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -46698,6 +46745,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -46755,6 +46803,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -46787,6 +46836,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -46819,6 +46869,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -49799,6 +49850,13 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
+  export type EnumGenderNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.Gender | EnumGenderFieldRefInput<$PrismaModel> | null
+    in?: $Enums.Gender[] | ListEnumGenderFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.Gender[] | ListEnumGenderFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumGenderNullableFilter<$PrismaModel> | $Enums.Gender | null
+  }
+
   export type EnumRoleFilter<$PrismaModel = never> = {
     equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
     in?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
@@ -50102,6 +50160,7 @@ export namespace Prisma {
     phone?: SortOrder
     name?: SortOrder
     avatar?: SortOrder
+    gender?: SortOrder
     role?: SortOrder
     educationLevel?: SortOrder
     formYear?: SortOrder
@@ -50143,6 +50202,7 @@ export namespace Prisma {
     phone?: SortOrder
     name?: SortOrder
     avatar?: SortOrder
+    gender?: SortOrder
     role?: SortOrder
     educationLevel?: SortOrder
     formYear?: SortOrder
@@ -50174,6 +50234,7 @@ export namespace Prisma {
     phone?: SortOrder
     name?: SortOrder
     avatar?: SortOrder
+    gender?: SortOrder
     role?: SortOrder
     educationLevel?: SortOrder
     formYear?: SortOrder
@@ -50242,6 +50303,16 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type EnumGenderNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Gender | EnumGenderFieldRefInput<$PrismaModel> | null
+    in?: $Enums.Gender[] | ListEnumGenderFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.Gender[] | ListEnumGenderFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumGenderNullableWithAggregatesFilter<$PrismaModel> | $Enums.Gender | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumGenderNullableFilter<$PrismaModel>
+    _max?: NestedEnumGenderNullableFilter<$PrismaModel>
   }
 
   export type EnumRoleWithAggregatesFilter<$PrismaModel = never> = {
@@ -52406,6 +52477,10 @@ export namespace Prisma {
     set?: string | null
   }
 
+  export type NullableEnumGenderFieldUpdateOperationsInput = {
+    set?: $Enums.Gender | null
+  }
+
   export type EnumRoleFieldUpdateOperationsInput = {
     set?: $Enums.Role
   }
@@ -54173,6 +54248,13 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
+  export type NestedEnumGenderNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.Gender | EnumGenderFieldRefInput<$PrismaModel> | null
+    in?: $Enums.Gender[] | ListEnumGenderFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.Gender[] | ListEnumGenderFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumGenderNullableFilter<$PrismaModel> | $Enums.Gender | null
+  }
+
   export type NestedEnumRoleFilter<$PrismaModel = never> = {
     equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
     in?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
@@ -54275,6 +54357,16 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type NestedEnumGenderNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Gender | EnumGenderFieldRefInput<$PrismaModel> | null
+    in?: $Enums.Gender[] | ListEnumGenderFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.Gender[] | ListEnumGenderFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumGenderNullableWithAggregatesFilter<$PrismaModel> | $Enums.Gender | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumGenderNullableFilter<$PrismaModel>
+    _max?: NestedEnumGenderNullableFilter<$PrismaModel>
   }
 
   export type NestedEnumRoleWithAggregatesFilter<$PrismaModel = never> = {
@@ -56136,6 +56228,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -56192,6 +56285,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -56264,6 +56358,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -56320,6 +56415,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -56376,6 +56472,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -56432,6 +56529,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -56504,6 +56602,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -56560,6 +56659,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -56616,6 +56716,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -56672,6 +56773,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -56744,6 +56846,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -56800,6 +56903,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -56907,6 +57011,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -56963,6 +57068,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -57024,6 +57130,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -57080,6 +57187,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -57233,6 +57341,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -57289,6 +57398,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -57356,6 +57466,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -57412,6 +57523,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -57484,6 +57596,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -57540,6 +57653,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -57657,6 +57771,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -57713,6 +57828,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -57820,6 +57936,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -57876,6 +57993,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -57937,6 +58055,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -57993,6 +58112,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -58110,6 +58230,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -58166,6 +58287,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -58233,6 +58355,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -58289,6 +58412,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -58467,6 +58591,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -58523,6 +58648,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -58630,6 +58756,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -58686,6 +58813,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -58857,6 +58985,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -58913,6 +59042,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -58985,6 +59115,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -59041,6 +59172,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -59097,6 +59229,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -59153,6 +59286,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -59225,6 +59359,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -59281,6 +59416,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -59361,6 +59497,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -59417,6 +59554,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -59527,6 +59665,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -59583,6 +59722,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -59684,6 +59824,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -59740,6 +59881,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -59847,6 +59989,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -59903,6 +60046,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -59988,6 +60132,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -60044,6 +60189,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -60151,6 +60297,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -60207,6 +60354,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -60263,6 +60411,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -60319,6 +60468,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -60391,6 +60541,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -60447,6 +60598,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -60503,6 +60655,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -60559,6 +60712,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -60631,6 +60785,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -60687,6 +60842,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -60743,6 +60899,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -60799,6 +60956,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -60871,6 +61029,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -60927,6 +61086,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -60983,6 +61143,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -61039,6 +61200,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -61111,6 +61273,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -61167,6 +61330,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -61346,6 +61510,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -61402,6 +61567,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -61474,6 +61640,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -61530,6 +61697,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -61631,6 +61799,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -61687,6 +61856,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -61748,6 +61918,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -61804,6 +61975,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -61927,6 +62099,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -61983,6 +62156,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -62050,6 +62224,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -62106,6 +62281,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -62162,6 +62338,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -62218,6 +62395,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -62290,6 +62468,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -62346,6 +62525,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -62443,6 +62623,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -62499,6 +62680,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -62618,6 +62800,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -62674,6 +62857,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -62788,6 +62972,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -62844,6 +63029,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -62948,6 +63134,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -63004,6 +63191,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -63101,6 +63289,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -63157,6 +63346,7 @@ export namespace Prisma {
     phone?: string | null
     name: string
     avatar?: string | null
+    gender?: $Enums.Gender | null
     role?: $Enums.Role
     educationLevel?: $Enums.EduLevel | null
     formYear?: number | null
@@ -63276,6 +63466,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null
@@ -63332,6 +63523,7 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
     formYear?: NullableIntFieldUpdateOperationsInput | number | null

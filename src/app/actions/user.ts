@@ -1,6 +1,6 @@
 "use server";
 
-import { Role, EduLevel, Tier, VerifPath, Prisma, User, StudentProfile, TutorProfile } from "@/generated/client";
+import { Role, EduLevel, Tier, VerifPath, Prisma, User, StudentProfile, TutorProfile, Gender } from "@/generated/client";
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
@@ -47,6 +47,7 @@ export async function getUserData(): Promise<(User & { studentProfile: StudentPr
 
     if (!prismaUser) {
 
+      const metaGender = user.user_metadata?.gender;
       prismaUser = await prisma.user.create({
         data: {
           id: user.id,
@@ -58,6 +59,8 @@ export async function getUserData(): Promise<(User & { studentProfile: StudentPr
           tier: Tier.BRONZE,
           points: SESSION_CONFIG.NEW_USER_WELCOME_BONUS,
           lastActiveAt: new Date(),
+          avatar: user.user_metadata?.avatar || null,
+          gender: metaGender === "MALE" ? Gender.MALE : metaGender === "FEMALE" ? Gender.FEMALE : undefined,
         },
         include: {
           studentProfile: true,
@@ -212,6 +215,7 @@ export async function updateUserRole(role: "STUDENT" | "TUTOR") {
         }
       });
     } else {
+      const metaGender = user.user_metadata?.gender;
       await prisma.user.create({
         data: {
           id: user.id,
@@ -221,6 +225,8 @@ export async function updateUserRole(role: "STUDENT" | "TUTOR") {
           educationLevel: EduLevel.HIGH_SCHOOL,
           county: "Nairobi",
           tier: Tier.BRONZE,
+          avatar: user.user_metadata?.avatar || null,
+          gender: metaGender === "MALE" ? Gender.MALE : metaGender === "FEMALE" ? Gender.FEMALE : undefined,
         }
       });
     }
@@ -428,6 +434,30 @@ export async function updateStudentProfile(data: {
     return { success: true };
   } catch (error) {
     console.error("Error in updateStudentProfile:", error);
+    throw error;
+  }
+}
+
+export async function updateAvatar(avatarUrl: string) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Unauthorized");
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { avatar: avatarUrl },
+    });
+
+    await supabase.auth.updateUser({
+      data: { avatar: avatarUrl },
+    });
+
+    revalidatePath("/dashboard/settings");
+    revalidatePath("/tutor/settings");
+    return { success: true };
+  } catch (error) {
+    console.error("Error in updateAvatar:", error);
     throw error;
   }
 }

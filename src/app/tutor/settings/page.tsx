@@ -15,13 +15,15 @@ import {
   Moon, Sun, Monitor, Bot, Lock, Mail, Download, Trash2, AlertTriangle,
   Wallet, Phone, Calendar, Check, Settings as SettingsIcon
 } from "lucide-react";
-import { getUserData, updateProfile, updateTutorProfile, changePassword, changeEmail, downloadUserData, deleteUserAccount } from "@/app/actions/user";
-import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { useTheme } from "next-themes";
+import { getUserData, updateProfile, updateTutorProfile, changePassword, changeEmail, downloadUserData, deleteUserAccount, updateAvatar } from "@/app/actions/user";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { AvatarPicker, type AvatarStyle } from "@/components/ui/avatar-picker";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { useTheme } from "next-themes";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const TIME_SLOTS = ["Morning", "Afternoon", "Evening"];
@@ -52,6 +54,10 @@ export default function TutorSettingsPage() {
   const [newEmail, setNewEmail] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [downloading, setDownloading] = useState(false);
+  const [currentAvatar, setCurrentAvatar] = useState<string | null>(null);
+  const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
+  const [selectedAvatarStyle, setSelectedAvatarStyle] = useState<AvatarStyle | null>(null);
+  const [savingAvatar, setSavingAvatar] = useState(false);
   const [prefs, setPrefs] = useState<any>({});
   const [notifPrefs, setNotifPrefs] = useState<Record<string, boolean>>({
     newRequest: true, studentJoined: true, studentLeft: true,
@@ -64,6 +70,7 @@ export default function TutorSettingsPage() {
     const user = await getUserData() as any;
     if (user) {
       setUserData(user);
+      setCurrentAvatar(user.avatar || null);
       const tp = user.tutorProfile || {};
       setFormData({
         name: user.name || "",
@@ -206,6 +213,53 @@ export default function TutorSettingsPage() {
               <CardTitle className="text-2xl font-black tracking-tightest flex items-center gap-3"><User className="h-6 w-6 text-primary" /> Profile</CardTitle>
             </CardHeader>
             <CardContent className="p-10 space-y-8">
+              {/* Avatar */}
+              <div className="flex items-center gap-6">
+                <Avatar className="h-20 w-20 border-4 border-primary/10 shadow-lg">
+                  <AvatarImage src={currentAvatar || undefined} alt={formData.name} className="object-cover rounded-full" />
+                  <AvatarFallback className="text-xl bg-primary text-white rounded-full">{formData.name?.[0]?.toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <Dialog open={avatarDialogOpen} onOpenChange={setAvatarDialogOpen}>
+                  <DialogTrigger render={<Button variant="outline" className="rounded-2xl border-primary/20">Change Avatar</Button>} />
+                  <DialogContent className="sm:max-w-md rounded-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Choose an avatar</DialogTitle>
+                      <DialogDescription>Pick a style that represents you.</DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                      <AvatarPicker
+                        selected={selectedAvatarStyle}
+                        onSelect={setSelectedAvatarStyle}
+                        seed={formData.name || "user"}
+                      />
+                    </div>
+                    <DialogFooter>
+                      <Button variant="ghost" onClick={() => setAvatarDialogOpen(false)}>Cancel</Button>
+                      <Button
+                        disabled={!selectedAvatarStyle || savingAvatar}
+                        onClick={async () => {
+                          if (!selectedAvatarStyle) return;
+                          setSavingAvatar(true);
+                          try {
+                            const url = `https://api.dicebear.com/7.x/${selectedAvatarStyle}/svg?seed=${encodeURIComponent(formData.name || "user")}`;
+                            await updateAvatar(url);
+                            setCurrentAvatar(url);
+                            toast.success("Avatar updated");
+                            setAvatarDialogOpen(false);
+                          } catch {
+                            toast.error("Failed to update avatar");
+                          } finally {
+                            setSavingAvatar(false);
+                          }
+                        }}
+                        className="rounded-2xl bg-primary"
+                      >
+                        {savingAvatar ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Save Avatar"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
               <div className="space-y-3">
                 <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Display Name</Label>
                 <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="h-16 rounded-2xl border-border bg-secondary/50 font-bold px-6 focus-visible:ring-primary" />

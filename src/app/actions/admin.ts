@@ -295,6 +295,117 @@ export async function approveTutorApplication(applicationId: string) {
   }
 }
 
+// --- RESOURCE MODERATION ---
+
+export async function getPendingResources() {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || !(await isAdmin())) return [];
+
+    return await prisma.resource.findMany({
+      where: { status: "pending" },
+      include: {
+        seller: { select: { id: true, name: true, email: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (error) {
+    console.error("Failed to fetch pending resources:", error);
+    return [];
+  }
+}
+
+export async function getAllResources() {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || !(await isAdmin())) return [];
+
+    return await prisma.resource.findMany({
+      include: {
+        seller: { select: { id: true, name: true, email: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (error) {
+    console.error("Failed to fetch all resources:", error);
+    return [];
+  }
+}
+
+export async function approveResource(resourceId: string) {
+  try {
+    const supabase = await createClient();
+    const { data: { user: admin } } = await supabase.auth.getUser();
+    if (!admin || !(await isAdmin())) return { error: "Unauthorized" };
+
+    const resource = await prisma.resource.findUnique({ where: { id: resourceId } });
+    if (!resource) return { error: "Resource not found" };
+
+    await prisma.resource.update({
+      where: { id: resourceId },
+      data: { status: "approved" },
+    });
+
+    try {
+      await prisma.notification.create({
+        data: {
+          userId: resource.sellerId,
+          type: "RESOURCE_APPROVED",
+          title: "Resource Approved!",
+          body: `Your resource "${resource.title}" has been approved and is now live.`,
+          actionUrl: "/dashboard/resources",
+        },
+      });
+    } catch (e) {
+      console.error("Failed to send notification:", e);
+    }
+
+    revalidatePath("/admin/resources");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error in approveResource:", error);
+    return { error: error.message || "Failed to approve resource" };
+  }
+}
+
+export async function rejectResource(resourceId: string) {
+  try {
+    const supabase = await createClient();
+    const { data: { user: admin } } = await supabase.auth.getUser();
+    if (!admin || !(await isAdmin())) return { error: "Unauthorized" };
+
+    const resource = await prisma.resource.findUnique({ where: { id: resourceId } });
+    if (!resource) return { error: "Resource not found" };
+
+    await prisma.resource.update({
+      where: { id: resourceId },
+      data: { status: "rejected" },
+    });
+
+    try {
+      await prisma.notification.create({
+        data: {
+          userId: resource.sellerId,
+          type: "RESOURCE_REJECTED",
+          title: "Resource Not Approved",
+          body: `Your resource "${resource.title}" was not approved. Please review and resubmit.`,
+          actionUrl: "/dashboard/resources",
+        },
+      });
+    } catch (e) {
+      console.error("Failed to send notification:", e);
+    }
+
+    revalidatePath("/admin/resources");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error in rejectResource:", error);
+    return { error: error.message || "Failed to reject resource" };
+  }
+}
+
 // --- ADVANCED TERMINAL ---
 
 export async function resetAllSessions() {

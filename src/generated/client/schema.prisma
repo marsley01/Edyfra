@@ -15,6 +15,7 @@ model User {
   phone                    String?                 @unique
   name                     String
   avatar                   String?
+  gender                   Gender?
   role                     Role                    @default(STUDENT)
   educationLevel           EduLevel?
   formYear                 Int?
@@ -561,6 +562,11 @@ model newsletter_subscribers {
 
   @@index([email], map: "idx_newsletter_subscribers_email")
   @@index([subscribed_at(sort: Desc)], map: "idx_newsletter_subscribers_subscribed_at")
+}
+
+enum Gender {
+  MALE
+  FEMALE
 }
 
 enum Role {

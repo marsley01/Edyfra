@@ -110,6 +110,60 @@ export async function rejectTestimonial(id: string) {
   revalidatePath("/admin/testimonials");
 }
 
+// --- CURRICULUM CONTENT (KICD/KLB & PAST PAPERS) ---
+
+export async function createCurriculumResource(data: {
+  title: string;
+  subject: string;
+  educationLevel: string;
+  resourceType: string;
+  topic?: string;
+  description?: string;
+  price?: number;
+  filePath: string;
+}) {
+  await guard();
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const resource = await prisma.resource.create({
+    data: {
+      sellerId: user!.id,
+      title: data.title,
+      subject: data.subject,
+      educationLevel: data.educationLevel,
+      resourceType: data.resourceType,
+      topic: data.topic || null,
+      description: data.description || null,
+      price: data.price || 0,
+      filePath: data.filePath,
+      status: "approved", // Admin content is immediately approved
+    },
+  });
+
+  revalidatePath("/admin/curriculum");
+  revalidatePath("/dashboard/resources");
+  return { success: true, resource };
+}
+
+export async function getAllCurriculumResources(type?: string) {
+  await guard();
+  const where: any = {};
+  if (type) where.resourceType = type;
+  return prisma.resource.findMany({
+    where,
+    orderBy: { createdAt: "desc" },
+    include: { seller: { select: { id: true, name: true } } },
+  });
+}
+
+export async function deleteResource(resourceId: string) {
+  await guard();
+  await prisma.resource.delete({ where: { id: resourceId } });
+  revalidatePath("/admin/curriculum");
+  revalidatePath("/admin/resources");
+}
+
 // --- NOTIFICATION SETTINGS ---
 export async function getNotificationSettings() {
   const supabase = await createClient();

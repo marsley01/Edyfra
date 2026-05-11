@@ -128,6 +128,7 @@ exports.Prisma.UserScalarFieldEnum = {
   phone: 'phone',
   name: 'name',
   avatar: 'avatar',
+  gender: 'gender',
   role: 'role',
   educationLevel: 'educationLevel',
   formYear: 'formYear',
@@ -595,6 +596,11 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
+exports.Gender = exports.$Enums.Gender = {
+  MALE: 'MALE',
+  FEMALE: 'FEMALE'
+};
+
 exports.Role = exports.$Enums.Role = {
   STUDENT: 'STUDENT',
   TUTOR: 'TUTOR',

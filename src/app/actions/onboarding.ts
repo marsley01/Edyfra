@@ -1,6 +1,6 @@
 "use server";
 
-import { Role, EduLevel, Tier, VerifPath } from "@/generated/client";
+import { Role, EduLevel, Tier, VerifPath, Gender } from "@/generated/client";
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
@@ -55,6 +55,8 @@ export async function completeOnboarding(data: OnboardingData) {
     data: { 
       role: isTutor ? "TUTOR" : "STUDENT", 
       onboarding_completed: true,
+      gender: user.user_metadata?.gender,
+      avatar: user.user_metadata?.avatar,
     }
   });
 
@@ -69,6 +71,7 @@ export async function completeOnboarding(data: OnboardingData) {
     }
   });
 
+  const metaGender = user.user_metadata?.gender;
   const baseData = {
     email: user.email!,
     name: user.user_metadata?.name || user.user_metadata?.full_name || "New User",
@@ -79,6 +82,8 @@ export async function completeOnboarding(data: OnboardingData) {
     county: county || "Nairobi",
     isUnder18: userEducationLevel === EduLevel.HIGH_SCHOOL,
     bio: bio || "",
+    avatar: user.user_metadata?.avatar || null,
+    gender: metaGender === "MALE" ? Gender.MALE : metaGender === "FEMALE" ? Gender.FEMALE : undefined,
   };
 
   let finalUserId = user.id;

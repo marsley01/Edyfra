@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useEffect, useState } from "react";
 import { getUserData } from "@/app/actions/user";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -34,10 +35,16 @@ export default function DashboardSidebar({ user, onClose }: { user: User; onClos
   const router = useRouter();
   const supabase = createClient();
   const [points, setPoints] = useState<number | null>(null);
+  const [avatar, setAvatar] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState(user.user_metadata?.name || "Student");
 
   useEffect(() => {
     getUserData().then(data => {
-      if (data) setPoints(data.points);
+      if (data) {
+        setPoints(data.points);
+        setAvatar(data.avatar);
+        if (data.name) setDisplayName(data.name);
+      }
     });
   }, []);
 
@@ -115,11 +122,14 @@ export default function DashboardSidebar({ user, onClose }: { user: User; onClos
         </div>
 
         <div className="flex items-center gap-3 px-3 py-3 rounded-2xl bg-secondary border border-border">
-          <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-black shadow-lg shadow-primary/20">
-            {user.email?.[0].toUpperCase()}
-          </div>
+          <Avatar className="w-10 h-10 rounded-xl shadow-lg shadow-primary/20">
+            <AvatarImage src={avatar || undefined} alt={displayName} className="rounded-xl object-cover" />
+            <AvatarFallback className="rounded-xl bg-primary text-white font-black text-sm">
+              {displayName?.[0]?.toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
           <div className="min-w-0">
-            <p className="text-[11px] font-black truncate text-foreground uppercase tracking-tight">{user.user_metadata?.name || "Student"}</p>
+            <p className="text-[11px] font-black truncate text-foreground uppercase tracking-tight">{displayName}</p>
             <button onClick={handleLogout} className="text-[9px] font-black text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors uppercase tracking-widest">
                <LogOut className="h-3 w-3" /> Sign Out
             </button>

@@ -5,10 +5,16 @@ const GOOGLE_AI_KEY = process.env.GOOGLE_AI_KEY;
 const OPENROUTER_BASE = "https://openrouter.ai/api/v1";
 
 export const AVAILABLE_MODELS = [
+  { id: "google/gemini-2.0-flash-exp:free", label: "Gemini 2.0 Flash (Free)", costPer1K: 0 },
   { id: "meta-llama/llama-3.1-8b-instruct:free", label: "Llama 3.1 8B (Free)", costPer1K: 0 },
-  { id: "meta-llama/llama-3.1-70b-instruct", label: "Llama 3.1 70B", costPer1K: 0.001 },
+  { id: "meta-llama/llama-3.2-3b-instruct:free", label: "Llama 3.2 3B (Free)", costPer1K: 0 },
+  { id: "microsoft/phi-3.5-mini-instruct:free", label: "Phi-3.5 Mini (Free)", costPer1K: 0 },
+  { id: "mistralai/mistral-7b-instruct:free", label: "Mistral 7B (Free)", costPer1K: 0 },
   { id: "google/gemini-flash-1.5", label: "Gemini Flash 1.5", costPer1K: 0.00015 },
   { id: "google/gemini-pro-1.5", label: "Gemini Pro 1.5", costPer1K: 0.00125 },
+  { id: "meta-llama/llama-3.1-70b-instruct", label: "Llama 3.1 70B", costPer1K: 0.001 },
+  { id: "google/gemini-2.0-flash-001", label: "Gemini 2.0 Flash", costPer1K: 0.00015 },
+  { id: "google/gemini-2.0-pro-exp-02-05:free", label: "Gemini 2.0 Pro (Free)", costPer1K: 0 },
   { id: "anthropic/claude-3-haiku", label: "Claude 3 Haiku", costPer1K: 0.0025 },
   { id: "anthropic/claude-3.5-sonnet", label: "Claude 3.5 Sonnet", costPer1K: 0.015 },
   { id: "openai/gpt-4o-mini", label: "GPT-4o Mini", costPer1K: 0.0015 },
@@ -17,7 +23,26 @@ export const AVAILABLE_MODELS = [
 
 const DEFAULT_SYSTEM_PROMPT = `You are Mash, Edyfra's AI study companion for Kenyan students. You are warm, encouraging, and focused. You only help with academic subjects. You never do homework for students — you guide them to the answer. You adapt your language to the student's education level. You are concise and clear. When a student is struggling, you break the problem into smaller steps. You celebrate small wins.`;
 
-const DEFAULT_MODEL = "meta-llama/llama-3.1-8b-instruct:free";
+const DEFAULT_MODEL = "google/gemini-2.0-flash-exp:free";
+
+const GEMINI_MODEL_MAP: Record<string, string> = {
+  "google/gemini-2.0-flash-exp:free": "gemini-2.0-flash-exp",
+  "google/gemini-flash-1.5": "gemini-1.5-flash",
+  "google/gemini-pro-1.5": "gemini-1.5-pro",
+  "google/gemini-2.0-flash-001": "gemini-2.0-flash",
+  "google/gemini-2.0-pro-exp-02-05:free": "gemini-2.0-pro-exp-02-05",
+};
+
+function getGeminiModel(openRouterModel: string): string {
+  return GEMINI_MODEL_MAP[openRouterModel] || "gemini-2.0-flash-exp";
+}
+
+function shouldUseGemini(settings: Record<string, any>): boolean {
+  const provider = settings.ai_provider as string || "auto";
+  if (provider === "gemini") return !!GOOGLE_AI_KEY;
+  if (provider === "openrouter") return false;
+  return !OPENROUTER_API_KEY && !!GOOGLE_AI_KEY;
+}
 
 interface OpenRouterOptions {
   model?: string;
@@ -32,7 +57,7 @@ export async function getActiveSettings() {
   try {
     const { default: prisma } = await import("@/lib/prisma");
     const settings = await prisma.platformSettings.findMany({
-      where: { key: { in: ["active_ai_model", "mash_system_prompt", "safety_blocklist", "refuse_offtopic", "safe_mode_under18", "max_response_tokens"] } }
+      where: { key: { in: ["active_ai_model", "ai_provider", "mash_system_prompt", "safety_blocklist", "refuse_offtopic", "safe_mode_under18", "max_response_tokens"] } }
     });
     const map: Record<string, any> = {};
     for (const s of settings) map[s.key] = s.value;
@@ -76,58 +101,61 @@ export async function generateAIResponse(
   }
 
   let text: string;
+  let tokenCount = 0;
 
-  if (!OPENROUTER_API_KEY && GOOGLE_AI_KEY) {
-    const genAI = new GoogleGenerativeAI(GOOGLE_AI_KEY);
-    const geminiModel = genAI.getGenerativeModel({
-      model: "models/gemini-2.0-flash",
-      systemInstruction: systemPrompt,
-    });
-    const result = await geminiModel.generateContent(userMessage);
-    text = result.response.text();
-  } else {
-    const response = await fetch(`${OPENROUTER_BASE}/chat/completions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-        "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "https://edyfra.vercel.app",
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userMessage },
-        ],
-        max_tokens: maxTokens,
-        temperature: options?.temperature ?? 0.7,
-      }),
-    });
+  try {
+    if (shouldUseGemini(settings)) {
+      const genAI = new GoogleGenerativeAI(GOOGLE_AI_KEY!);
+      const geminiModelName = getGeminiModel(model);
+      const geminiModel = genAI.getGenerativeModel({
+        model: `models/${geminiModelName}`,
+        systemInstruction: systemPrompt,
+      });
+      const result = await geminiModel.generateContent(userMessage);
+      text = result.response.text();
+      tokenCount = Math.ceil(text.length / 4);
+    } else {
+      const response = await fetch(`${OPENROUTER_BASE}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+          "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "https://edyfra.vercel.app",
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userMessage },
+          ],
+          max_tokens: maxTokens,
+          temperature: options?.temperature ?? 0.7,
+        }),
+      });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("OpenRouter error:", response.status, errText);
-      return "Mash is taking a break — try again in a moment.";
+      if (!response.ok) {
+        const errText = await response.text();
+        console.error("OpenRouter error:", response.status, errText);
+        return "Mash is taking a break — try again in a moment.";
+      }
+
+      const data = await response.json();
+      text = data.choices?.[0]?.message?.content || "";
+      tokenCount = data.usage?.total_tokens || 0;
     }
 
-    const data = await response.json();
-    text = data.choices?.[0]?.message?.content || "";
-  }
-
-    // Log conversation
     try {
-        const { default: prisma } = await import("@/lib/prisma");
+      const { default: prisma } = await import("@/lib/prisma");
       await prisma.aiConversation.create({
         data: {
           modelUsed: model,
           subject: subject || null,
-          tokenCount: data.usage?.total_tokens || 0,
-          costEstimate: (data.usage?.total_tokens || 0) * ((AVAILABLE_MODELS.find(m => m.id === model)?.costPer1K || 0) / 1000),
+          tokenCount,
+          costEstimate: tokenCount * ((AVAILABLE_MODELS.find(m => m.id === model)?.costPer1K || 0) / 1000),
         },
       });
     } catch {}
 
-    // Filter blocklisted words
     if (blocklist.length > 0) {
       const lower = text.toLowerCase();
       for (const word of blocklist) {
@@ -139,7 +167,7 @@ export async function generateAIResponse(
 
     return text;
   } catch (error) {
-    console.error("OpenRouter error:", error);
+    console.error("AI error:", error);
     return "Mash is taking a break — try again in a moment.";
   }
 }
@@ -162,7 +190,7 @@ export async function generateAIResponseStream(
 
   let streamResponse: Response | null = null;
 
-  if (!OPENROUTER_API_KEY && GOOGLE_AI_KEY) {
+  if (shouldUseGemini(settings)) {
     const text = await generateAIResponse(userMessage, subject, topic, options);
     return new ReadableStream({
       start(controller) {

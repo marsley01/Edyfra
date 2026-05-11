@@ -34,7 +34,7 @@ const SUBJECTS = [
 
 const LEVELS = ["High School", "University", "Primary"];
 
-const TYPES = ["Notes", "Past Paper", "Revision Guide", "Reference Book", "Other"];
+const TYPES = ["Notes", "Past Paper", "Revision Guide", "Reference Book", "Curriculum Book", "Other"];
 
 export default function UploadResourcePage() {
   const [title, setTitle] = useState("");

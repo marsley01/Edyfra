@@ -18,6 +18,7 @@ import "stream-chat-react/dist/css/index.css";
 import { polyfillClipboard } from "@/utils/clipboard-polyfill";
 import { Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useModeration } from "./useModeration";
 
 polyfillClipboard();
 
@@ -62,6 +63,12 @@ export default function StreamChatRoom({
     topic: mashAI?.topic,
     currentUserId: userId,
     enabled: mashAI?.tier === "MASH",
+  });
+
+  useModeration({
+    client: chatClient,
+    channelId,
+    currentUserId: userId,
   });
 
   const init = useCallback(async () => {
