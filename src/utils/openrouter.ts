@@ -1,4 +1,7 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+const GOOGLE_AI_KEY = process.env.GOOGLE_AI_KEY;
 const OPENROUTER_BASE = "https://openrouter.ai/api/v1";
 
 export const AVAILABLE_MODELS = [
@@ -72,7 +75,17 @@ export async function generateAIResponse(
     systemPrompt += "\nApply extra safety filtering for younger students.";
   }
 
-  try {
+  let text: string;
+
+  if (!OPENROUTER_API_KEY && GOOGLE_AI_KEY) {
+    const genAI = new GoogleGenerativeAI(GOOGLE_AI_KEY);
+    const geminiModel = genAI.getGenerativeModel({
+      model: "models/gemini-2.0-flash",
+      systemInstruction: systemPrompt,
+    });
+    const result = await geminiModel.generateContent(userMessage);
+    text = result.response.text();
+  } else {
     const response = await fetch(`${OPENROUTER_BASE}/chat/completions`, {
       method: "POST",
       headers: {
@@ -98,7 +111,8 @@ export async function generateAIResponse(
     }
 
     const data = await response.json();
-    const text = data.choices?.[0]?.message?.content || "";
+    text = data.choices?.[0]?.message?.content || "";
+  }
 
     // Log conversation
     try {
@@ -146,7 +160,20 @@ export async function generateAIResponseStream(
 
   const maxTokens = (options?.maxTokens ?? (settings.max_response_tokens as number) ?? 500);
 
-  const response = await fetch(`${OPENROUTER_BASE}/chat/completions`, {
+  let streamResponse: Response | null = null;
+
+  if (!OPENROUTER_API_KEY && GOOGLE_AI_KEY) {
+    const text = await generateAIResponse(userMessage, subject, topic, options);
+    return new ReadableStream({
+      start(controller) {
+        const encoder = new TextEncoder();
+        controller.enqueue(encoder.encode(text));
+        controller.close();
+      },
+    });
+  }
+
+  streamResponse = await fetch(`${OPENROUTER_BASE}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -165,13 +192,13 @@ export async function generateAIResponseStream(
     }),
   });
 
-  if (!response.ok) {
+  if (!streamResponse.ok) {
     throw new Error("OpenRouter stream request failed");
   }
 
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
-  const reader = response.body?.getReader();
+  const reader = streamResponse.body?.getReader();
 
   if (!reader) throw new Error("No response body");
 
