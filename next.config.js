@@ -19,6 +19,22 @@ const nextConfig = {
         protocol: "https",
         hostname: "images.unsplash.com",
       },
+      {
+        protocol: "https",
+        hostname: "api.dicebear.com",
+      },
+      {
+        protocol: "https",
+        hostname: "github.com",
+      },
+      {
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+      },
     ],
   },
   experimental: {
@@ -48,7 +64,7 @@ const nextConfig = {
           "script-src 'self' 'unsafe-eval' 'unsafe-inline' *.vercel-scripts.com",
           "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
           "font-src 'self' fonts.gstatic.com",
-          "img-src 'self' data: blob: *.supabase.co images.unsplash.com getstream.io *.getstream.io",
+          "img-src 'self' data: blob: *.supabase.co images.unsplash.com getstream.io *.getstream.io api.dicebear.com github.com avatars.githubusercontent.com lh3.googleusercontent.com",
           "connect-src 'self' *.supabase.co *.vercel-insights.com wss://*.supabase.co *.stream-io-api.com wss://*.stream-io-api.com wss://chat.stream-io-api.com",
           "frame-ancestors 'none'",
         ].join("; "),
