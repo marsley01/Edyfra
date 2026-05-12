@@ -9,7 +9,7 @@ export async function getGroups() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
 
-  const groups = await prisma.struggleGroup.findMany({
+  const myGroups = await prisma.struggleGroup.findMany({
     where: {
       members: { has: user.id }
     },
@@ -22,7 +22,20 @@ export async function getGroups() {
     orderBy: { createdAt: 'desc' }
   });
 
-  return groups;
+  const discoverGroups = await prisma.struggleGroup.findMany({
+    where: {
+      NOT: {
+        members: { has: user.id }
+      },
+      status: "ACTIVE"
+    },
+    include: {
+      _count: { select: { groupMessages: true } }
+    },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  return { myGroups, discoverGroups };
 }
 
 export async function getGroupById(id: string) {

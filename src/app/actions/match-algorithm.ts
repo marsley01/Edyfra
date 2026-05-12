@@ -90,6 +90,7 @@ export async function findTier1Match(
       where: {
         id: { not: studentId },
         role: "TUTOR",
+        ...(educationLevel ? { educationLevel: educationLevel as EduLevel } : {}),
         tutorProfile: {
           subjects: { hasSome: [requestedSubject] },
           isVerified: true,

@@ -20,7 +20,12 @@ async function guard() {
 // --- REPORTS / MODERATION ---
 export async function getReports() {
   await guard();
-  return prisma.report.findMany({ orderBy: { createdAt: "desc" }, take: 100 });
+  try {
+    return await prisma.report.findMany({ orderBy: { createdAt: "desc" }, take: 100 });
+  } catch (error) {
+    console.error("Failed to get reports:", error);
+    return [];
+  }
 }
 
 export async function dismissReport(reportId: string) {
@@ -42,7 +47,12 @@ export async function actionReport(reportId: string, action: "warn" | "suspend" 
 // --- ANNOUNCEMENTS ---
 export async function getAnnouncements() {
   await guard();
-  return prisma.announcement.findMany({ orderBy: { createdAt: "desc" } });
+  try {
+    return await prisma.announcement.findMany({ orderBy: { createdAt: "desc" } });
+  } catch (error) {
+    console.error("Failed to get announcements:", error);
+    return [];
+  }
 }
 
 export async function createAnnouncement(data: { title: string; body: string; targetAudience: string; expiresAt?: string }) {
@@ -72,7 +82,12 @@ export async function deleteAnnouncement(id: string) {
 // --- NEWS ARTICLES ---
 export async function getNewsArticles() {
   await guard();
-  return prisma.newsArticle.findMany({ orderBy: { createdAt: "desc" } });
+  try {
+    return await prisma.newsArticle.findMany({ orderBy: { createdAt: "desc" } });
+  } catch (error) {
+    console.error("Failed to get news articles:", error);
+    return [];
+  }
 }
 
 export async function createNewsArticle(data: { title: string; slug: string; category: string; body: string; coverImage?: string; summary?: string; publish: boolean }) {
@@ -101,7 +116,12 @@ export async function deleteNewsArticle(id: string) {
 // --- TESTIMONIALS ---
 export async function getTestimonials() {
   await guard();
-  return prisma.testimonial.findMany({ orderBy: { createdAt: "desc" } });
+  try {
+    return await prisma.testimonial.findMany({ orderBy: { createdAt: "desc" } });
+  } catch (error) {
+    console.error("Failed to get testimonials:", error);
+    return [];
+  }
 }
 
 export async function approveTestimonial(id: string) {
@@ -154,13 +174,18 @@ export async function createCurriculumResource(data: {
 
 export async function getAllCurriculumResources(type?: string) {
   await guard();
-  const where: any = {};
-  if (type) where.resourceType = type;
-  return prisma.resource.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-    include: { seller: { select: { id: true, name: true } } },
-  });
+  try {
+    const where: any = {};
+    if (type) where.resourceType = type;
+    return await prisma.resource.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      include: { seller: { select: { id: true, name: true } } },
+    });
+  } catch (error) {
+    console.error("Failed to get curriculum resources:", error);
+    return [];
+  }
 }
 
 export async function deleteResource(resourceId: string) {

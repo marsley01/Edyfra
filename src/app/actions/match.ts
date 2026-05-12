@@ -331,38 +331,71 @@ export async function completeSession(sessionId: string) {
     });
 
     if (!session || session.status === "COMPLETED") {
-      return { success: true };
+      return { success: true, pointsAwarded: 0 };
     }
+
+    const now = new Date();
+    const durationMs = session.startedAt ? now.getTime() - session.startedAt.getTime() : 0;
+    const durationMin = Math.floor(durationMs / 60000);
+    
+    // Require at least 3 minutes to award points (prevent spam/failed rooms)
+    const shouldAwardPoints = durationMin >= 3;
 
     await prisma.session.update({
       where: { id: sessionId },
       data: { 
         status: "COMPLETED",
-        endedAt: new Date()
+        endedAt: now,
+        durationMin
       }
     });
 
-    await prisma.user.update({
-      where: { id: session.studentId },
-      data: { points: { increment: SESSION_CONFIG.POINTS_STUDENT } }
-    });
-    await recalibrateTier(session.studentId);
+    let pointsAwarded = 0;
 
-    if (session.partnerId) {
+    if (shouldAwardPoints) {
+      pointsAwarded = SESSION_CONFIG.POINTS_STUDENT;
       await prisma.user.update({
-        where: { id: session.partnerId },
-        data: { points: { increment: SESSION_CONFIG.POINTS_TUTOR } }
+        where: { id: session.studentId },
+        data: { points: { increment: SESSION_CONFIG.POINTS_STUDENT } }
       });
-      await recalibrateTier(session.partnerId);
+      await recalibrateTier(session.studentId);
+      
+      await prisma.notification.create({
+        data: {
+          userId: session.studentId,
+          type: "POINTS_EARNED",
+          title: "Session Completed!",
+          body: `You earned +${SESSION_CONFIG.POINTS_STUDENT} points for completing a study session.`,
+          actionUrl: `/dashboard/sessions`,
+        }
+      });
+
+      if (session.partnerId) {
+        await prisma.user.update({
+          where: { id: session.partnerId },
+          data: { points: { increment: SESSION_CONFIG.POINTS_TUTOR } }
+        });
+        await recalibrateTier(session.partnerId);
+        
+        await prisma.notification.create({
+          data: {
+            userId: session.partnerId,
+            type: "POINTS_EARNED",
+            title: "Session Completed!",
+            body: `You earned +${SESSION_CONFIG.POINTS_TUTOR} points for helping a peer!`,
+            actionUrl: `/dashboard/sessions`,
+          }
+        });
+      }
     }
 
     revalidatePath("/dashboard/sessions");
     revalidatePath("/tutor");
     
-    return { success: true };
+    return { success: true, pointsAwarded };
   } catch (error) {
     console.error("Error completing session:", error);
-    return { success: false };
+    return { success: false, pointsAwarded: 0 };
   }
 }
 

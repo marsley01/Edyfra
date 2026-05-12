@@ -11,6 +11,11 @@ import { HowItWorks } from "@/components/home/how-it-works";
 import { MashSpotlight } from "@/components/home/mash-spotlight";
 import { SubjectCoverage } from "@/components/home/subject-coverage";
 import { HomeNewsletter } from "@/components/home/newsletter";
+import dynamic from "next/dynamic";
+
+const AbstractAnimation = dynamic(() => import("@/components/home/abstract-animation").then(mod => mod.AbstractAnimation), {
+  ssr: false,
+});
 
 // Server Component — fetches real data on every request
 export default async function HomePage() {
@@ -29,6 +34,7 @@ export default async function HomePage() {
       <HomeNews />
       <HomeTestimonials initialReviews={reviews} />
       <HomeCTA />
+      <AbstractAnimation />
       <HomeNewsletter />
       {/* New sections below CTA */}
       <HowItWorks />

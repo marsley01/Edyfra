@@ -23,8 +23,11 @@ interface Group {
 }
 
 export default function GroupsPage() {
-  const [groups, setGroups] = useState<Group[]>([]);
+  const [myGroups, setMyGroups] = useState<Group[]>([]);
+  const [discoverGroups, setDiscoverGroups] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<"my" | "discover">("my");
   const [loading, setLoading] = useState(true);
+  const [joiningGroupId, setJoiningGroupId] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupSubject, setNewGroupSubject] = useState("");
@@ -40,13 +43,31 @@ export default function GroupsPage() {
   const loadGroups = async () => {
     setLoading(true);
     try {
+      const { getGroups } = await import("@/app/actions/groups");
       const data = await getGroups();
-      setGroups(data as any);
+      setMyGroups(data.myGroups as any);
+      setDiscoverGroups(data.discoverGroups as any);
     } catch (error) {
       console.error("Failed to load groups:", error);
       toast.error("Failed to load groups");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleJoinGroup = async (groupId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setJoiningGroupId(groupId);
+    try {
+      const { joinGroup } = await import("@/app/actions/groups");
+      await joinGroup(groupId);
+      toast.success("Joined group successfully!");
+      loadGroups(); // Refresh to move group to 'myGroups'
+    } catch {
+      toast.error("Failed to join group.");
+    } finally {
+      setJoiningGroupId(null);
     }
   };
 
@@ -74,10 +95,84 @@ export default function GroupsPage() {
     }
   };
 
-  const filteredGroups = groups.filter(g =>
+  const filteredMyGroups = myGroups.filter(g =>
     g.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     g.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
     g.topic.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredDiscoverGroups = discoverGroups.filter(g =>
+    g.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    g.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    g.topic.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const renderGroupCard = (group: any, isDiscover: boolean, i: number) => (
+    <motion.div
+      key={group.id}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: i * 0.05 }}
+    >
+      <Link href={isDiscover ? "#" : `/dashboard/groups/${group.id}`}>
+        <Card className={`border-border rounded-2xl hover:shadow-lg hover:translate-y-[-2px] transition-all h-full flex flex-col ${isDiscover ? 'cursor-default' : 'cursor-pointer'}`}>
+          <CardContent className="p-6 space-y-4 flex-1 flex flex-col">
+            <div className="flex items-start justify-between">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Users className="h-6 w-6 text-primary" />
+              </div>
+              <Badge variant="outline" className="text-[9px] font-black uppercase">
+                {group.members.length} members
+              </Badge>
+            </div>
+
+            <div className="space-y-2 flex-1">
+              <h3 className="font-black text-lg tracking-tight">{group.name}</h3>
+              <p className="text-sm text-muted-foreground font-medium line-clamp-2">
+                {group.topic}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
+              <GraduationCap className="h-3 w-3" />
+              <span>{group.subject}</span>
+              <span className="text-muted-foreground">•</span>
+              <span>{group.level.replace('_', ' ')}</span>
+            </div>
+
+            {!isDiscover && group.groupMessages && group.groupMessages[0] && (
+              <div className="pt-3 border-t border-border space-y-1">
+                <p className="text-xs text-muted-foreground line-clamp-1">
+                  {group.groupMessages[0].content}
+                </p>
+                <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
+                  <MessageCircle className="h-3 w-3" />
+                  <span>{group.groupMessages.length} messages</span>
+                </div>
+              </div>
+            )}
+
+            {isDiscover && (
+              <div className="pt-4 border-t border-border mt-auto">
+                <Button 
+                  className="w-full rounded-xl font-bold gap-2"
+                  onClick={(e) => handleJoinGroup(group.id, e)}
+                  disabled={joiningGroupId === group.id}
+                >
+                  {joiningGroupId === group.id ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4" /> Join Group
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </Link>
+    </motion.div>
   );
 
   return (
@@ -97,15 +192,33 @@ export default function GroupsPage() {
         </Button>
       </div>
 
-      {/* Search */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-        <Input
-          placeholder="Search groups by name or subject..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-12 h-12 rounded-full border-border text-base font-medium"
-        />
+      {/* Search and Tabs */}
+      <div className="flex flex-col sm:flex-row justify-between gap-4">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input
+            placeholder="Search groups by name or subject..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-12 h-12 rounded-full border-border text-base font-medium"
+          />
+        </div>
+        <div className="flex bg-muted/50 p-1 rounded-full w-max">
+          <Button
+            variant={activeTab === "my" ? "default" : "ghost"}
+            className="rounded-full px-6 font-bold"
+            onClick={() => setActiveTab("my")}
+          >
+            My Groups
+          </Button>
+          <Button
+            variant={activeTab === "discover" ? "default" : "ghost"}
+            className="rounded-full px-6 font-bold"
+            onClick={() => setActiveTab("discover")}
+          >
+            Discover
+          </Button>
+        </div>
       </div>
 
       {/* Groups Grid */}
@@ -113,77 +226,48 @@ export default function GroupsPage() {
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
         </div>
-      ) : filteredGroups.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredGroups.map((group, i) => (
-            <motion.div
-              key={group.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
+      ) : activeTab === "my" ? (
+        filteredMyGroups.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredMyGroups.map((group, i) => renderGroupCard(group, false, i))}
+          </div>
+        ) : (
+          <div className="text-center py-20 space-y-6">
+            <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mx-auto">
+              <Users className="h-10 w-10 text-muted-foreground/30" />
+            </div>
+            <div className="space-y-2">
+               <h3 className="text-xl font-bold">No groups yet</h3>
+               <p className="text-muted-foreground max-w-md mx-auto">
+                 Join a group or create your own to study with others.
+               </p>
+            </div>
+            <Button 
+              onClick={() => setActiveTab("discover")}
+              className="rounded-full font-black text-xs tracking-widest uppercase"
             >
-              <Link href={`/dashboard/groups/${group.id}`}>
-                <Card className="border-border rounded-2xl hover:shadow-lg hover:translate-y-[-2px] transition-all cursor-pointer h-full">
-                  <CardContent className="p-6 space-y-4">
-                    <div className="flex items-start justify-between">
-                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                        <Users className="h-6 w-6 text-primary" />
-                      </div>
-                      <Badge variant="outline" className="text-[9px] font-black uppercase">
-                        {group.members.length} members
-                      </Badge>
-                    </div>
-
-                    <div className="space-y-2">
-                      <h3 className="font-black text-lg tracking-tight">{group.name}</h3>
-                      <p className="text-sm text-muted-foreground font-medium line-clamp-2">
-                        {group.topic}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
-                      <GraduationCap className="h-3 w-3" />
-                      <span>{group.subject}</span>
-                      <span className="text-muted-foreground">•</span>
-                      <span>{group.level.replace('_', ' ')}</span>
-                    </div>
-
-{group.groupMessages[0] && (
-                       <div className="pt-3 border-t border-border space-y-1">
-                         <p className="text-xs text-muted-foreground line-clamp-1">
-                           {group.groupMessages[0].content}
-                         </p>
-                         <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
-                           <MessageCircle className="h-3 w-3" />
-                           <span>{group.groupMessages.length} messages</span>
-                         </div>
-                       </div>
-                     )}
-                  </CardContent>
-                </Card>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+              Discover Groups
+            </Button>
+          </div>
+        )
       ) : (
-        <div className="text-center py-20 space-y-6">
-          <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mx-auto">
-            <Users className="h-10 w-10 text-muted-foreground/30" />
+        filteredDiscoverGroups.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredDiscoverGroups.map((group, i) => renderGroupCard(group, true, i))}
           </div>
-          <div className="space-y-2">
-             <h3 className="text-xl font-bold">No groups yet</h3>
-             <p className="text-muted-foreground max-w-md mx-auto">
-               Start a group and invite classmates to study together.
-             </p>
+        ) : (
+          <div className="text-center py-20 space-y-6">
+            <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mx-auto">
+              <Search className="h-10 w-10 text-muted-foreground/30" />
+            </div>
+            <div className="space-y-2">
+               <h3 className="text-xl font-bold">No new groups to discover</h3>
+               <p className="text-muted-foreground max-w-md mx-auto">
+                 You've joined all available groups or none exist yet.
+               </p>
+            </div>
           </div>
-          <Button 
-            onClick={() => setShowCreateModal(true)}
-            className="rounded-full font-black text-xs tracking-widest uppercase"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Create Your First Group
-          </Button>
-        </div>
+        )
       )}
 
       {/* Create Group Modal */}

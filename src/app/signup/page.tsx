@@ -55,6 +55,7 @@ export default function SignupPage() {
               <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-xl shadow-primary/20 transition-transform group-hover:scale-110">
                 <GraduationCap className="h-7 w-7" />
               </div>
+              <span className="text-3xl font-black tracking-tightest">EDYFRA</span>
            </Link>
            <h1 className="text-4xl font-black tracking-tightest">Let&apos;s get you started.</h1>
            <p className="text-muted-foreground font-medium text-lg">Create your account and join a community that&apos;s here to help you succeed.</p>

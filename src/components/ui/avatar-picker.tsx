@@ -4,12 +4,12 @@ import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 
 const AVATAR_STYLES = [
-  { id: "notionists", label: "Modern" },
-  { id: "avataaars", label: "Faces" },
-  { id: "bottts", label: "Robots" },
-  { id: "personas", label: "Personas" },
-  { id: "pixel-art", label: "Pixel" },
-  { id: "fun-emoji", label: "Emoji" },
+  { id: "micah", label: "Premium" },
+  { id: "lorelei", label: "Aesthetic" },
+  { id: "notionists", label: "Minimal" },
+  { id: "adventurer", label: "Adventurer" },
+  { id: "bottts", label: "Robot" },
+  { id: "miniavs", label: "Avatar" },
 ] as const;
 
 export type AvatarStyle = (typeof AVATAR_STYLES)[number]["id"];

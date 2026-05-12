@@ -214,34 +214,73 @@ export default function StreamChatRoom({
     <div className="h-full w-full edyfra-chat-wrapper">
       <style>{`
         .str-chat__theme-dark {
-          --str-chat__primary-color: #06B6D4;
-          --str-chat__background-core-elevation-0: #080808;
-          --str-chat__background-core-elevation-1: #111827;
-          --str-chat__background-core-elevation-2: #1a1a2e;
-          --str-chat__background-core-elevation-3: #1e1e3a;
-          --str-chat__background-core-elevation-4: #222244;
-          --str-chat__font-family: DM Sans, system-ui;
-          --str-chat__font-family-geist: DM Sans, system-ui;
-          --str-chat__radius-md: 12px;
-          --str-chat__radius-lg: 16px;
+          --str-chat__primary-color: var(--primary, #06B6D4);
+          --str-chat__background-core-elevation-0: #050505;
+          --str-chat__background-core-elevation-1: #0a0a0a;
+          --str-chat__background-core-elevation-2: #111111;
+          --str-chat__background-core-elevation-3: #1a1a1a;
+          --str-chat__background-core-elevation-4: #222222;
+          --str-chat__font-family: var(--font-sans), system-ui;
+          --str-chat__radius-md: 16px;
+          --str-chat__radius-lg: 24px;
           --str-chat__text-primary: #ffffff;
-          --str-chat__text-secondary: #94a3b8;
+          --str-chat__text-secondary: #a1a1aa;
         }
+        
+        /* Message List */
         .str-chat__theme-dark .str-chat__message-list {
-          background: #111827;
+          background: #050505;
+          padding: 1rem;
         }
+        
+        /* Message Bubbles */
+        .str-chat__theme-dark .str-chat__message-simple-text-inner {
+          border-radius: 1.5rem !important;
+          padding: 0.75rem 1.25rem !important;
+          font-size: 0.95rem;
+          line-height: 1.5;
+          box-shadow: 0 4px 20px -5px rgba(0,0,0,0.3);
+        }
+        
+        /* User messages (outgoing) */
+        .str-chat__theme-dark .str-chat__message--me .str-chat__message-simple-text-inner {
+          background: linear-gradient(135deg, var(--primary, #06B6D4) 0%, rgba(6, 182, 212, 0.8) 100%) !important;
+          color: white;
+          border-bottom-right-radius: 4px !important;
+        }
+        
+        /* Other messages (incoming) */
+        .str-chat__theme-dark .str-chat__message-simple-text-inner {
+          background: #111111 !important;
+          border: 1px solid rgba(255,255,255,0.05);
+          border-bottom-left-radius: 4px !important;
+        }
+
+        /* Composer/Input */
         .str-chat__theme-dark .str-chat__message-input {
-          background: #1a1a2e;
+          background: #0a0a0a;
           border-top: 1px solid rgba(255,255,255,0.05);
+          padding: 1rem;
         }
-        .str-chat__theme-dark .str-chat__message-input-footer {
-          background: #1a1a2e;
+        .str-chat__theme-dark .str-chat__message-input-inner {
+          background: #111111;
+          border-radius: 1.5rem;
+          border: 1px solid rgba(255,255,255,0.1);
+          transition: all 0.2s ease;
+        }
+        .str-chat__theme-dark .str-chat__message-input-inner:focus-within {
+          border-color: var(--primary, #06B6D4);
+          box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2);
         }
         .str-chat__theme-dark .str-chat__textarea {
-          background: #111827;
+          background: transparent;
         }
-        .str-chat__theme-dark .str-chat__message-attachment-card--content {
-          background: #1a1a2e;
+        
+        /* Channel Header */
+        .str-chat__theme-dark .str-chat__header-livestream {
+          background: #0a0a0a;
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+          padding: 1rem 1.5rem;
         }
       `}</style>
       <Chat client={chatClient} theme="str-chat__theme-dark">

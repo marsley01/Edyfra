@@ -71,11 +71,15 @@ export default function StudyRoomPage() {
   const handleEndSession = async () => {
     if (!session) return;
     const { completeSession } = await import("@/app/actions/match");
-    await completeSession(sessionId);
-    const { deleteStreamChannel } = await import("@/app/actions/stream");
-    try { await deleteStreamChannel(sessionId); } catch {}
-    toast.success("Session finished! Points awarded.");
-    if (session.tier === "TUTOR" && session.partner) {
+    const result = await completeSession(sessionId);
+    
+    if (result?.pointsAwarded) {
+      toast.success(`Session finished! +${result.pointsAwarded} points awarded.`);
+    } else {
+      toast.success("Session finished! No points awarded (duration too short).");
+    }
+
+    if (session.tier === "TUTOR" && session.studentId === currentUser?.id) {
       setShowReview(true);
     } else {
       router.push("/dashboard");

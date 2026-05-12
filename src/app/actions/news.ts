@@ -40,22 +40,9 @@ export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
     const feedResults = await rss.fetchAllFeeds();
     const items = feedResults.flatMap(r => r.items);
     
-    // AI Summarization for the top 6 items to ensure clean excerpts
-    const ai = new AIService({
-      provider: "google",
-      systemPrompt: "You are a professional editor for Edyfra. Summarize the following news item description into a single, clean, and engaging sentence (max 150 chars). Remove all HTML tags and technical junk."
-    });
-
-    const newsArticles = await Promise.all(items.slice(0, 6).map(async (item, index) => {
-      let excerpt = "";
-      try {
-        excerpt = await ai.generateResponse(item.description);
-        // Ensure we don't return the "trouble thinking" error message as an excerpt
-        if (excerpt.includes("trouble thinking")) throw new Error("AI Failure");
-      } catch (e) {
-        // Safe Fallback: clean string manually
-        excerpt = item.description.replace(/<[^>]*>?/gm, '').replace(/&lt;.*?&gt;/g, '').slice(0, 180) + "...";
-      }
+    const newsArticles = items.slice(0, limit).map((item, index) => {
+      // Safe Fallback: clean string manually for extremely fast processing
+      const excerpt = item.description.replace(/<[^>]*>?/gm, '').replace(/&lt;.*?&gt;/g, '').slice(0, 180) + "...";
 
       return {
         id: `rss-${index}`,
@@ -69,7 +56,7 @@ export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
         published_at: item.pubDate,
         reading_time: "3m"
       };
-    }));
+    });
 
     return newsArticles;
   } catch (err) {

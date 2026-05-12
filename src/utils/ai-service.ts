@@ -20,11 +20,26 @@ export class AIService {
     this.systemPrompt = options.systemPrompt;
 
     if (this.provider === "openai") {
-      this.openai = new OpenAI({ apiKey: options.apiKey || process.env.OPENAI_API_KEY });
-      this.model = options.model || "gpt-4-turbo-preview";
+      const openRouterKey = process.env.OPENROUTER_API_KEY;
+      const openAiKey = options.apiKey || process.env.OPENAI_API_KEY;
+      
+      if (openRouterKey && !openAiKey) {
+        this.openai = new OpenAI({ 
+          baseURL: "https://openrouter.ai/api/v1",
+          apiKey: openRouterKey,
+          defaultHeaders: {
+            "HTTP-Referer": "https://edyfra.com",
+            "X-Title": "Edyfra",
+          }
+        });
+        this.model = options.model || "google/gemini-2.5-flash"; // Default fast openrouter model
+      } else {
+        this.openai = new OpenAI({ apiKey: openAiKey });
+        this.model = options.model || "gpt-4o-mini";
+      }
     } else {
       this.gemini = new GoogleGenerativeAI(options.apiKey || process.env.GOOGLE_AI_KEY || "");
-      this.model = options.model || "gemini-flash-latest";
+      this.model = options.model || "gemini-1.5-flash";
     }
   }
 
