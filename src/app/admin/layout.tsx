@@ -10,6 +10,7 @@ import {
   Activity, Globe, Terminal, Zap, Menu, X, ChevronLeft, Power, CheckCircle,
   Trash2, Sparkles, Newspaper, Star, Wrench, Cpu,   FileText, TrendingUp, BookMarked
 } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -214,6 +215,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                    className="bg-white/5 border border-white/5 rounded-full py-1.5 pl-9 pr-4 text-[9px] sm:text-[10px] font-bold tracking-widest focus:outline-none focus:border-primary/50 transition-all w-32 sm:w-48 xl:w-64"
                  />
               </div>
+              <ThemeToggle />
               <button className="relative p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
                 <Bell className="h-4 w-4 text-slate-300" />
                 <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary-rgb),0.8)]" />
