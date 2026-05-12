@@ -82,7 +82,8 @@ export default function StudyPage() {
         
         toast.success("Request submitted! Searching for help...");
       }
-    } catch {
+    } catch (error) {
+      console.error("Matching error:", error);
       toast.error("Failed to start matching. Please try again.");
       setIsMatching(false);
     }

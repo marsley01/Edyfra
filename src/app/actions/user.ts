@@ -231,8 +231,12 @@ export async function updateUserRole(role: "STUDENT" | "TUTOR") {
       });
     }
 
-    revalidatePath("/", "layout");
-    revalidatePath("/onboarding");
+    // Fix critical infinite redirect loop
+    if (role === "STUDENT") {
+      revalidatePath("/dashboard");
+    } else {
+      revalidatePath("/tutor/dashboard");
+    }
     return { success: true };
   } catch (error: any) {
     console.error("Error in updateUserRole:", error);

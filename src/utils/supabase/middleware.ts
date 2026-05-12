@@ -48,6 +48,7 @@ export async function updateSession(request: NextRequest) {
 
   if (user) {
     const role = user.user_metadata?.role;
+    const email = user.email;
 
     // Redirect already logged in users away from auth pages
     if (isAuthRoute) {
@@ -55,6 +56,44 @@ export async function updateSession(request: NextRequest) {
       if (role?.toUpperCase() === 'TUTOR') url.pathname = '/tutor';
       else if (role?.toUpperCase() === 'ADMIN') url.pathname = '/admin';
       else url.pathname = '/dashboard';
+      return NextResponse.redirect(url);
+    }
+
+    // Additional role-based redirects for security
+    // Only redirect if user is trying to access wrong role-based route
+    if (isStudentRoute && role?.toUpperCase() === 'TUTOR') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/tutor';
+      return NextResponse.redirect(url);
+    }
+
+    if (isStudentRoute && role?.toUpperCase() === 'ADMIN') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/admin';
+      return NextResponse.redirect(url);
+    }
+
+    if (isTutorRoute && role?.toUpperCase() === 'STUDENT') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/dashboard';
+      return NextResponse.redirect(url);
+    }
+
+    if (isTutorRoute && role?.toUpperCase() === 'ADMIN') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/admin';
+      return NextResponse.redirect(url);
+    }
+
+    if (isAdminRoute && role?.toUpperCase() === 'STUDENT') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/dashboard';
+      return NextResponse.redirect(url);
+    }
+
+    if (isAdminRoute && role?.toUpperCase() === 'TUTOR') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/tutor';
       return NextResponse.redirect(url);
     }
 
