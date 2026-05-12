@@ -87,7 +87,7 @@ export function Navigation() {
             <GraduationCap className="h-5 w-5 text-white" />
           </div>
           <span className="text-xl font-black tracking-tight text-foreground group-hover:text-primary transition-colors">
-            edyfra
+            Edyfra
           </span>
         </Link>
 
@@ -177,7 +177,7 @@ export function Navigation() {
                   <GraduationCap className="h-5 w-5 text-white" />
                 </div>
                 <span className="text-xl font-black tracking-tight text-foreground">
-                  edyfra
+                  Edyfra
                 </span>
               </Link>
               <button onClick={() => setIsOpen(false)} className="p-2" aria-label="Close menu">

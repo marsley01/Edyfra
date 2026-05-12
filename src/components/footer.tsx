@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useState } from "react";
-import { Mail, Globe, MessageCircle, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
+import { Mail, Globe, MessageCircle, ArrowRight, CheckCircle2, Loader2, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -130,14 +129,13 @@ export function Footer() {
         {/* Links Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-12 mb-24">
           <div className="col-span-2 lg:col-span-1 space-y-6">
-            <Link href="/" className="flex items-center group">
-              <Image
-                src="/logo.png"
-                alt="Edyfra"
-                width={120}
-                height={36}
-                className="h-9 w-auto object-contain dark:invert transition-opacity group-hover:opacity-80"
-              />
+            <Link href="/" className="flex items-center gap-2.5 group" aria-label="Edyfra Home">
+              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                <GraduationCap className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-xl font-black tracking-tight text-foreground group-hover:text-primary transition-colors">
+                Edyfra
+              </span>
             </Link>
             <p className="text-sm text-muted-foreground font-medium leading-relaxed max-w-[200px]">
               The all-in-one platform where students discover, connect, and grow.
