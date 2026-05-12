@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { GraduationCap, ArrowRight, Loader2, AlertCircle, ShieldCheck, Eye, EyeOff, Venus, Mars } from "lucide-react";
+import { ArrowRight, Loader2, AlertCircle, ShieldCheck, Eye, EyeOff, Venus, Mars } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import Image from "next/image";
 import { signup } from "@/app/actions/auth";
 
 import { toast } from "sonner";
@@ -51,11 +52,15 @@ export default function SignupPage() {
       >
         {/* Logo */}
         <div className="flex flex-col items-center gap-4 text-center">
-           <Link href="/" className="flex items-center gap-2 group mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-xl shadow-primary/20 transition-transform group-hover:scale-110">
-                <GraduationCap className="h-7 w-7" />
-              </div>
-              <span className="text-3xl font-black tracking-tightest">EDYFRA</span>
+           <Link href="/" className="flex items-center group mb-4">
+              <Image
+                src="/logo.png"
+                alt="Edyfra"
+                width={150}
+                height={44}
+                className="h-11 w-auto object-contain dark:invert"
+                priority
+              />
            </Link>
            <h1 className="text-4xl font-black tracking-tightest">Let&apos;s get you started.</h1>
            <p className="text-muted-foreground font-medium text-lg">Create your account and join a community that&apos;s here to help you succeed.</p>

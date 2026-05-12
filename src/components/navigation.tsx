@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, GraduationCap, ChevronRight, ChevronLeft } from "lucide-react";
@@ -87,12 +88,15 @@ export function Navigation() {
       )}
     >
       <div className="container mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform">
-            <GraduationCap className="h-5 w-5" />
-          </div>
-          <span className="text-xl font-black tracking-tightest">EDYFRA</span>
+        <Link href="/" className="flex items-center group">
+          <Image
+            src="/logo.png"
+            alt="Edyfra"
+            width={130}
+            height={38}
+            className="h-9 w-auto object-contain dark:invert transition-opacity group-hover:opacity-80"
+            priority
+          />
         </Link>
 
         {/* Desktop Links */}
@@ -175,11 +179,14 @@ export function Navigation() {
             className="fixed inset-0 w-full bg-background z-[60] p-4 sm:p-6 flex flex-col lg:hidden overflow-y-auto overscroll-y-contain"
           >
             <div className="flex items-center justify-between mb-8 sm:mb-12">
-              <Link href="/" onClick={() => setIsOpen(false)} className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white">
-                  <GraduationCap className="h-5 w-5" />
-                </div>
-                <span className="text-xl font-black tracking-tightest">EDYFRA</span>
+              <Link href="/" onClick={() => setIsOpen(false)} className="flex items-center">
+                <Image
+                  src="/logo.png"
+                  alt="Edyfra"
+                  width={120}
+                  height={36}
+                  className="h-9 w-auto object-contain dark:invert"
+                />
               </Link>
               <button onClick={() => setIsOpen(false)} className="p-2">
                 <X />
