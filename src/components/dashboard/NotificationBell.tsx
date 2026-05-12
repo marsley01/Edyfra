@@ -2,11 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Bell } from "lucide-react";
 import { getUnreadCount } from "@/app/actions/notifications";
 
 export function NotificationBell() {
   const [unread, setUnread] = useState(0);
+  const pathname = usePathname();
+  const href = pathname.startsWith("/tutor") ? "/tutor/notifications" : "/dashboard/notifications";
 
   useEffect(() => {
     const fetch = async () => {
@@ -14,14 +17,13 @@ export function NotificationBell() {
       setUnread(count);
     };
     fetch();
-    // Poll every 30 seconds for new notifications
     const interval = setInterval(fetch, 30000);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <Link
-      href="/dashboard/notifications"
+      href={href}
       className="relative p-2 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"
       aria-label={`Notifications${unread > 0 ? `, ${unread} unread` : ""}`}
     >

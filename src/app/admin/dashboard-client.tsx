@@ -9,7 +9,7 @@ import { AvatarPremium } from "@/components/ui/avatar-premium";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import AIChallengeGenerator from "@/components/admin/ai-challenge-generator";
+
 
 const ICONS = [Users, GraduationCap, MessageSquare, Zap];
 const COLORS = ["text-blue-400", "text-primary", "text-purple-400", "text-orange-400"];
@@ -313,17 +313,7 @@ export function AdminDashboardClient({
           </Card>
         </div>
 
-        {/* AI Challenge Generator Section */}
-        <div className="mt-10">
-          <div className="flex items-center gap-3 mb-6">
-            <Sparkles className="h-6 w-6 text-orange-500" />
-            <div>
-              <h2 className="text-2xl font-black tracking-tight">AI Content Generation</h2>
-              <p className="text-sm text-muted-foreground">Generate challenges and educational content using AI</p>
-            </div>
-          </div>
-          <AIChallengeGenerator />
-        </div>
+
       </div>
     );
 }

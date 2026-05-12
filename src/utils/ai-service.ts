@@ -1,75 +1,50 @@
-import { OpenAI } from "openai";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 
-interface AIServiceOptions {
-  provider: "openai" | "google";
-  model?: string;
-  systemPrompt: string;
-  apiKey?: string;
-}
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+
+// Create OpenAI client pointing to OpenRouter
+const openai = new OpenAI({
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: OPENROUTER_API_KEY || "missing-key",
+  defaultHeaders: {
+    "HTTP-Referer": "https://edyfra.space",
+    "X-Title": "Edyfra",
+  },
+});
+
+const DEFAULT_MODEL = "meta-llama/llama-3-8b-instruct:free";
 
 export class AIService {
-  private openai?: OpenAI;
-  private gemini?: GoogleGenerativeAI;
-  private provider: "openai" | "google";
-  private model: string;
-  private systemPrompt: string;
+  static async generateCompletion(prompt: string, model: string = DEFAULT_MODEL): Promise<string> {
+    if (!OPENROUTER_API_KEY) {
+      console.warn("[AIService] OPENROUTER_API_KEY is missing. Returning fallback.");
+      return "AI automation requires an OpenRouter API Key in environment variables.";
+    }
 
-  constructor(options: AIServiceOptions) {
-    this.provider = options.provider;
-    this.systemPrompt = options.systemPrompt;
+    try {
+      const completion = await openai.chat.completions.create({
+        model,
+        messages: [{ role: "user", content: prompt }],
+      });
 
-    if (this.provider === "openai") {
-      const openRouterKey = process.env.OPENROUTER_API_KEY;
-      const openAiKey = options.apiKey || process.env.OPENAI_API_KEY;
-      
-      if (openRouterKey && !openAiKey) {
-        this.openai = new OpenAI({ 
-          baseURL: "https://openrouter.ai/api/v1",
-          apiKey: openRouterKey,
-          defaultHeaders: {
-            "HTTP-Referer": "https://edyfra.com",
-            "X-Title": "Edyfra",
-          }
-        });
-        this.model = options.model || "google/gemini-2.5-flash"; // Default fast openrouter model
-      } else {
-        this.openai = new OpenAI({ apiKey: openAiKey });
-        this.model = options.model || "gpt-4o-mini";
-      }
-    } else {
-      this.gemini = new GoogleGenerativeAI(options.apiKey || process.env.GOOGLE_AI_KEY || "");
-      this.model = options.model || "gemini-1.5-flash";
+      return completion.choices[0]?.message?.content || "";
+    } catch (error) {
+      console.error("[AIService] Generation error:", error);
+      throw error;
     }
   }
 
-  async generateResponse(userMessage: string): Promise<string> {
+  static async generateJSON(prompt: string, schema?: any, model: string = DEFAULT_MODEL): Promise<any> {
+    const jsonPrompt = `${prompt}\n\nReturn ONLY valid JSON. Do not include markdown blocks like \`\`\`json.`;
+    
     try {
-      if (this.provider === "openai" && this.openai) {
-        const completion = await this.openai.chat.completions.create({
-          model: this.model,
-          messages: [
-            { role: "system", content: this.systemPrompt },
-            { role: "user", content: userMessage },
-          ],
-        });
-        return completion.choices[0].message.content || "I'm sorry, I couldn't process that.";
-      } 
-      
-      if (this.provider === "google" && this.gemini) {
-        const model = this.gemini.getGenerativeModel({ model: this.model });
-        const result = await model.generateContent([
-          { text: this.systemPrompt },
-          { text: userMessage }
-        ]);
-        const response = await result.response;
-        return response.text();
-      }
-
-      throw new Error("Invalid AI configuration");
+      const text = await this.generateCompletion(jsonPrompt, model);
+      // Try to parse the result as JSON
+      const cleaned = text.replace(/```json/g, "").replace(/```/g, "").trim();
+      return JSON.parse(cleaned);
     } catch (error) {
-      console.error("AI Generation Error:", error);
-      return "I'm having trouble thinking right now. Please try again later.";
+      console.error("[AIService] JSON generation error:", error);
+      throw error;
     }
   }
 }

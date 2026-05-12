@@ -12,14 +12,14 @@ import {
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
-import { acceptMatchRequest } from "@/app/actions/tutor";
+import { acceptMatchRequest, getTutorProfile } from "@/app/actions/tutor";
 
 interface MatchRequest {
   id: string;
   subject: string;
-  topic?: string;
+  topic: string | null;
   createdAt: string | Date;
-  sessionId?: string | null;
+  sessionId: string | null;
 }
 
 export default function TutorRequestsPage() {
@@ -27,60 +27,105 @@ export default function TutorRequestsPage() {
   const [requests, setRequests] = useState<MatchRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
+  const [tutorSubjects, setTutorSubjects] = useState<string[]>([]);
   const router = useRouter();
 
   useEffect(() => {
-    fetchRequests();
-    
-    const dbChannel = supabase
-      .channel("new-requests")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "MatchRequest" },
-        (payload: any) => {
-          const newReq = payload.new as MatchRequest;
-          setRequests((prev) => {
-            if (prev.find(r => r.id === newReq.id)) return prev;
-            return [newReq, ...prev];
-          });
-          toast.info("New study request detected!");
-        }
-      )
-      .subscribe();
+    let channel: any;
+    let broadcastChannel: any;
 
-    const broadcastChannel = supabase
-      .channel('global-matches')
-      .on('broadcast', { event: 'new-request' }, (payload: any) => {
-        const newReq = {
-          id: payload.payload.requestId,
-          subject: payload.payload.subject,
-          topic: payload.payload.topic,
-          createdAt: new Date().toISOString()
-        } as MatchRequest;
-        
-        setRequests((prev) => {
-          if (prev.find(r => r.id === newReq.id)) return prev;
-          return [newReq, ...prev];
-        });
-        toast.info(`Match Request: ${newReq.subject}`);
-      })
-      .subscribe();
+    const setup = async () => {
+      const profile = await getTutorProfile();
+      const subjects = (profile as any)?.subjects || [];
+      setTutorSubjects(subjects);
+      await fetchRequests(subjects);
+
+      channel = supabase
+        .channel("new-requests")
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "MatchRequest" },
+          (payload: any) => {
+            const newReq = payload.new as MatchRequest;
+            if (!newReq?.sessionId) {
+              if (subjects.length === 0 || subjects.includes(newReq?.subject)) {
+                setRequests((prev) => {
+                  if (prev.find(r => r.id === newReq.id)) return prev;
+                  return [newReq, ...prev];
+                });
+                toast.info(`New ${newReq?.subject} request detected!`);
+              }
+            }
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "MatchRequest" },
+          (payload: any) => {
+            if (payload.new?.sessionId) {
+              setRequests((prev) => prev.filter(req => req.id !== payload.new.id));
+            }
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "DELETE", schema: "public", table: "MatchRequest" },
+          (payload: any) => {
+            setRequests((prev) => prev.filter(req => req.id !== payload.old.id));
+          }
+        )
+        .subscribe();
+
+      broadcastChannel = supabase
+        .channel('global-matches')
+        .on('broadcast', { event: 'new-request' }, (payload: any) => {
+          const newReq = {
+            id: payload.payload.requestId,
+            subject: payload.payload.subject,
+            topic: payload.payload.topic,
+            createdAt: new Date().toISOString()
+          } as MatchRequest;
+
+          if (subjects.length === 0 || subjects.includes(newReq.subject)) {
+            setRequests((prev) => {
+              if (prev.find(r => r.id === newReq.id)) return prev;
+              return [newReq, ...prev];
+            });
+            toast.info(`Match Request: ${newReq.subject}`);
+          }
+        })
+        .subscribe();
+    };
+
+    setup();
 
     return () => {
-      supabase.removeChannel(dbChannel);
-      supabase.removeChannel(broadcastChannel);
+      supabase.removeChannel(channel);
+      if (broadcastChannel) supabase.removeChannel(broadcastChannel);
     };
   }, [supabase]);
 
-  const fetchRequests = async () => {
+  const fetchRequests = async (subjects: string[] = []) => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("MatchRequest")
-      .select("*")
-      .is("sessionId", null)
-      .order("createdAt", { ascending: false });
+    try {
+      const { getFilteredMatchRequests } = await import("@/app/actions/match-algorithm");
+      const data = await getFilteredMatchRequests(subjects);
+      setRequests(data);
+    } catch {
+      const { data, error } = await supabase
+        .from("MatchRequest")
+        .select("*")
+        .is("sessionId", null)
+        .order("createdAt", { ascending: false });
 
-    if (data) setRequests(data);
+      if (!error && data) {
+        if (subjects.length > 0) {
+          setRequests(data.filter((r: any) => subjects.includes(r.subject)));
+        } else {
+          setRequests(data);
+        }
+      }
+    }
     setLoading(false);
   };
 

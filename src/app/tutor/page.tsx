@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Users, Star, Wallet, Clock, ArrowRight, Loader2, BookOpen, Sparkles, ShieldCheck } from "lucide-react";
 import { getTutorProfile, toggleTutorStatus, acceptMatchRequest } from "@/app/actions/tutor";
+import { getUserData } from "@/app/actions/user";
 import { createClient } from "@/utils/supabase/client";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
 import { toast } from "sonner";
@@ -30,6 +31,37 @@ interface TutorProfile {
   availability: any;
 }
 
+const GREETINGS: Record<string, { welcome: string, tagline: string, ready: string, offline: string, live: string }> = {
+  english: {
+    welcome: "Welcome back",
+    tagline: "You are set up to help with",
+    ready: "Ready to Teach",
+    offline: "Currently Offline",
+    live: "Go live when you are ready to take a student from stuck to clear."
+  },
+  swahili: {
+    welcome: "Karibu tena",
+    tagline: "Uko tayari kusaidia kwa",
+    ready: "Tayari Kufundisha",
+    offline: "Huko Nje ya Mtandao",
+    live: "Washa mtandao uko tayari kumsaidia mwanafunzi kutoka kwenye shida hadi kuelewa."
+  },
+  french: {
+    welcome: "Bon retour",
+    tagline: "Vous êtes prêt à aider avec",
+    ready: "Prêt à Enseigner",
+    offline: "Actuellement Hors Ligne",
+    live: "Mettez-vous en ligne pour aider un étudiant à passer de bloqué à éclairci."
+  },
+  spanish: {
+    welcome: "Bienvenido de nuevo",
+    tagline: "Estás listo para ayudar con",
+    ready: "Listo para Enseñar",
+    offline: "Actualmente Desconectado",
+    live: "Conéctate cuando estés listo para ayudar a un estudiante a pasar de atascado a claro."
+  }
+};
+
 export default function TutorDashboard() {
   const [profile, setProfile] = useState<TutorProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,6 +70,7 @@ export default function TutorDashboard() {
   const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
   const [sessionLoading, setSessionLoading] = useState(true);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
+  const [language, setLanguage] = useState("english");
   
   const supabase = createClient();
   const router = useRouter();
@@ -98,6 +131,12 @@ export default function TutorDashboard() {
       setProfile(data);
       setIsOnline((data.availability as Record<string, boolean>)?.isOnline || false);
     }
+    try {
+      const userData = await getUserData();
+      if (userData) {
+        setLanguage((userData as any)?.userPreferences?.preferredLanguage || "english");
+      }
+    } catch {} // Non-blocking
     setLoading(false);
     return data;
   };
@@ -170,6 +209,7 @@ export default function TutorDashboard() {
     { label: "Earnings", value: `KSH ${(profile?.totalSessions || 0) * (profile?.hourlyRate || 0)}`, icon: Wallet, color: "text-primary", bg: "bg-primary/10" },
     { label: "Rating", value: profile?.rating ? profile.rating.toFixed(1) : "No ratings yet", icon: Star, color: "text-yellow-500", bg: "bg-yellow-500/10" },
   ];
+  const g = GREETINGS[language] || GREETINGS.english;
   const tutorName = profile?.user?.name?.split(" ")[0] || "Tutor";
   const taughtSubjects = (profile as any)?.subjects?.slice(0, 2).join(", ") || "your strongest subjects";
 
@@ -178,8 +218,8 @@ export default function TutorDashboard() {
       {/* Premium Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
         <div className="space-y-2">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tightest">Welcome back, {tutorName}.</h1>
-          <p className="text-muted-foreground text-lg font-medium">You are set up to help with {taughtSubjects}. Go live when you are ready to take a student from stuck to clear.</p>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tightest">{g.welcome}, {tutorName}.</h1>
+          <p className="text-muted-foreground text-lg font-medium">{g.tagline} {taughtSubjects}. {g.live}</p>
         </div>
 
         <div className={`flex items-center gap-6 px-8 py-5 rounded-[2rem] border-2 transition-all duration-500 shadow-xl ${isOnline ? "border-primary bg-primary/5 shadow-primary/5" : "border-border bg-secondary"}`}>
@@ -187,7 +227,7 @@ export default function TutorDashboard() {
             <div className={`w-3 h-3 rounded-full ${isOnline ? "bg-emerald-500 animate-pulse shadow-[0_0_12px_rgba(16,185,129,0.5)]" : "bg-muted-foreground"}`} />
             <div className="flex flex-col">
                <Label className="font-black text-[10px] uppercase tracking-widest leading-none">Status</Label>
-               <span className="text-sm font-bold mt-1">{isOnline ? "Ready to Teach" : "Currently Offline"}</span>
+                <span className="text-sm font-bold mt-1">{isOnline ? g.ready : g.offline}</span>
             </div>
           </div>
           <Switch checked={isOnline} onCheckedChange={handleStatusToggle} disabled={toggling} className="data-[state=checked]:bg-primary" />

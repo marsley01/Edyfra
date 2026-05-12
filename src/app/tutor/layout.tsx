@@ -8,13 +8,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   LayoutDashboard, Users, GraduationCap, 
   Settings, LogOut, Zap, Calendar, Wallet, Trophy,
-  Menu, X, ChevronLeft, BookOpen
+  Menu, X, ChevronLeft, BookOpen, Bell
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getUserData } from "@/app/actions/user";
+import { NotificationBell } from "@/components/dashboard/NotificationBell";
 
 export default function TutorLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -79,14 +80,23 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
     { href: "/tutor/resources", label: "My Resources", icon: BookOpen },
     { href: "/tutor/schedule", label: "Schedule", icon: Calendar },
     { href: "/tutor/earnings", label: "Earnings", icon: Wallet },
+    { href: "/tutor/notifications", label: "Notifications", icon: Bell },
     { href: "/tutor/settings", label: "Settings", icon: Settings },
   ];
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-background font-sans">
       {/* Mobile Header */}
-      <header className="lg:hidden h-20 bg-card border-b border-border px-6 flex items-center justify-between sticky top-0 z-40">
+      <header className="lg:hidden h-20 bg-card border-b border-border px-4 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center gap-2">
+          <button 
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="p-2 rounded-xl bg-secondary hover:bg-primary/5 transition-all"
+            aria-label="Open tutor menu"
+            aria-expanded={isMobileMenuOpen}
+          >
+            <Menu className="h-6 w-6 text-foreground" />
+          </button>
           {pathname !== "/tutor" && (
             <button
               onClick={() => router.back()}
@@ -103,14 +113,6 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
             <span className="text-xl font-black text-foreground tracking-tighter">Edyfra</span>
           </Link>
         </div>
-        <button 
-          onClick={() => setIsMobileMenuOpen(true)}
-          className="p-2 rounded-xl bg-secondary hover:bg-primary/5 transition-all"
-          aria-label="Open tutor menu"
-          aria-expanded={isMobileMenuOpen}
-        >
-          <Menu className="h-6 w-6 text-foreground" />
-        </button>
       </header>
 
       {/* Mobile Sidebar Overlay */}
@@ -191,34 +193,45 @@ function TutorSidebarContent({
         </Link>
       </div>
 
-      <nav className="flex-1 p-6 space-y-2 overflow-y-auto">
-        {navItems.map((item: any) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={onClose}
-            className={cn(
-              "flex items-center gap-4 px-5 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all duration-300",
-              pathname === item.href
-                ? "bg-primary text-white shadow-xl shadow-primary/10"
-                : "text-muted-foreground hover:text-primary hover:bg-primary/5"
-            )}
-          >
-            <item.icon className="h-4 w-4" />
-            {item.label}
-          </Link>
-        ))}
+      <nav className="flex-1 p-4 md:p-6 overflow-y-auto">
+        <div className={cn(
+          "grid gap-1.5",
+          onClose ? "grid-cols-2" : "grid-cols-1"
+        )}>
+          {navItems.map((item: any) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={onClose}
+              className={cn(
+                "flex items-center gap-3 rounded-xl font-black uppercase tracking-widest transition-all duration-300",
+                onClose 
+                  ? "flex-col px-3 py-4 text-[9px] justify-center"
+                  : "px-5 py-4 text-[11px]",
+                pathname === item.href
+                  ? "bg-primary text-white shadow-xl shadow-primary/10"
+                  : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+              )}
+            >
+              <item.icon className={cn(onClose ? "h-5 w-5" : "h-4 w-4")} />
+              {item.label}
+            </Link>
+          ))}
+        </div>
       </nav>
 
       <div className="p-6 border-t border-border/50 space-y-6 bg-secondary/20">
         <div className="flex items-center justify-between px-2">
            <ThemeToggle />
-           <button 
-              onClick={() => supabase.auth.signOut().then(() => router.push("/login"))}
-              className="p-3 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
-           >
-              <LogOut className="h-5 w-5" />
-           </button>
+           <div className="flex items-center gap-1">
+             <NotificationBell />
+             <button 
+                onClick={() => supabase.auth.signOut().then(() => router.push("/login"))}
+                className="p-3 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
+             >
+                <LogOut className="h-5 w-5" />
+             </button>
+           </div>
         </div>
         
         <div className="p-4 rounded-[1.5rem] bg-card border border-border flex items-center gap-4">

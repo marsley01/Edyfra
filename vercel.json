@@ -1,6 +1,12 @@
 {
-  "framework": "nextjs",
-  "buildCommand": "npx prisma generate && next build",
-  "installCommand": "npm install",
-  "outputDirectory": ".next"
+  "crons": [
+    {
+      "path": "/api/cron/daily-challenges",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/weekly-report",
+      "schedule": "0 20 * * 0"
+    }
+  ]
 }

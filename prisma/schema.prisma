@@ -62,9 +62,10 @@ model User {
   payouts                  TutorPayout[]
   matchRequests            MatchRequest[]
   newsArticles             NewsArticle[]
-  userCredits              UserCredits?
+   userCredits              UserCredits?
   creditTransactions       CreditTransaction[]
   sellerEarnings           SellerEarning[]
+  pushSubscriptions        PushSubscription[]
 }
 
 model StudentProfile {
@@ -379,6 +380,19 @@ model NotificationSettings {
   userId      String   @unique
   preferences Json     @default("{\"newMatch\": true, \"newMessage\": true, \"announcements\": true, \"tutorAccepted\": true, \"dailyChallenge\": true, \"pointsMilestone\": true}")
   updatedAt   DateTime @updatedAt
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model UserPreferences {

@@ -17,7 +17,6 @@ export interface NewsArticle {
 }
 
 import { RSSService, RSSItem } from "@/utils/rss-service";
-import { AIService } from "@/utils/ai-service";
 
 export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
   const supabase = await createClient();

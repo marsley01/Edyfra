@@ -426,6 +426,15 @@ exports.Prisma.NotificationSettingsScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.PushSubscriptionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  endpoint: 'endpoint',
+  p256dh: 'p256dh',
+  auth: 'auth',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.UserPreferencesScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -678,6 +687,7 @@ exports.Prisma.ModelName = {
   CreditTransaction: 'CreditTransaction',
   Testimonial: 'Testimonial',
   NotificationSettings: 'NotificationSettings',
+  PushSubscription: 'PushSubscription',
   UserPreferences: 'UserPreferences',
   Challenge: 'Challenge',
   ChallengeCompletion: 'ChallengeCompletion',

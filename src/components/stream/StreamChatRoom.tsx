@@ -21,12 +21,12 @@ import {
 import { VideoCallUI } from "./VideoCallUI";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 import { getStreamToken, upsertStreamUser } from "@/app/actions/stream";
-import { useMashAI } from "./useMashAI";
+
 import "stream-chat-react/dist/css/index.css";
 import { polyfillClipboard } from "@/utils/clipboard-polyfill";
 import { Loader2, RefreshCw, Video, VideoOff, Maximize2, X, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useModeration } from "./useModeration";
+
 import { cn } from "@/lib/utils";
 
 polyfillClipboard();
@@ -42,7 +42,7 @@ interface StreamChatRoomProps {
   channelName?: string;
   hideHeader?: boolean;
   mashAI?: {
-    tier: string;
+    tier?: string;
     subject: string;
     topic?: string;
   };
@@ -56,7 +56,6 @@ export default function StreamChatRoom({
   memberIds,
   channelName,
   hideHeader,
-  mashAI,
 }: StreamChatRoomProps) {
   const [chatClient, setChatClient] = useState<StreamChat | null>(null);
   const [videoClient, setVideoClient] = useState<StreamVideoClient | null>(null);
@@ -65,24 +64,11 @@ export default function StreamChatRoom({
   const [isVideoActive, setIsVideoActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
+  const [hasActiveCall, setHasActiveCall] = useState(false);
   const clientRef = useRef<StreamChat | null>(null);
   const videoClientRef = useRef<StreamVideoClient | null>(null);
 
-  useMashAI({
-    client: chatClient,
-    channelId,
-    tier: mashAI?.tier || "",
-    subject: mashAI?.subject || "",
-    topic: mashAI?.topic,
-    currentUserId: userId,
-    enabled: mashAI?.tier === "MASH",
-  });
 
-  useModeration({
-    client: chatClient,
-    channelId,
-    currentUserId: userId,
-  });
 
   const init = useCallback(async () => {
     setError(null);
@@ -173,19 +159,18 @@ export default function StreamChatRoom({
       setChatClient(client);
 
       // Auto-detect active call for this channel
-      if (vClient) {
-        const { calls } = await vClient.queryCalls({
+      const vc = videoClientRef.current;
+      if (vc) {
+        const { calls } = await vc.queryCalls({
           filter_conditions: {
             id: { $eq: channelId },
-            ringing: { $eq: false },
           },
         });
         
         if (calls.length > 0) {
           const call = calls[0];
-          await call.join();
+          setHasActiveCall(true);
           setActiveCall(call);
-          setIsVideoActive(true);
         }
       }
     } catch (err: any) {
@@ -202,12 +187,17 @@ export default function StreamChatRoom({
     // Listen for call created events to auto-join
     let unsubscribe: () => void;
     if (videoClient) {
-      unsubscribe = videoClient.on("call.created", async (event) => {
+      unsubscribe = videoClient.on("all", async (event: any) => {
         if (event.call?.id === channelId) {
-          const call = videoClient.call("default", channelId);
-          await call.join();
-          setActiveCall(call);
-          setIsVideoActive(true);
+          if (event.type === "call.created" || event.type === "call.ring" || event.type === "call.session_started") {
+            setHasActiveCall(true);
+            const call = videoClient.call("default", channelId);
+            setActiveCall(call);
+          } else if (event.type === "call.ended") {
+            setHasActiveCall(false);
+            setIsVideoActive(false);
+            setActiveCall(null);
+          }
         }
       });
     }
@@ -456,16 +446,19 @@ export default function StreamChatRoom({
                         await call.join({ create: true });
                         setActiveCall(call);
                         setIsVideoActive(true);
+                        setHasActiveCall(true);
                       } catch (err) {
                         console.error("Failed to start video call:", err);
                       }
                     }}
-                    variant="outline"
+                    variant={hasActiveCall ? "default" : "outline"}
                     size="sm"
-                    className="rounded-full bg-secondary hover:bg-primary hover:text-white border-white/5 transition-all"
+                    className={`rounded-full transition-all ${hasActiveCall ? "bg-emerald-500 hover:bg-emerald-600 text-white animate-pulse shadow-[0_0_15px_rgba(16,185,129,0.5)]" : "bg-secondary hover:bg-primary hover:text-white border-white/5"}`}
                   >
                     <Video className="h-4 w-4 mr-2" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Start Call</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest">
+                      {hasActiveCall ? "Join Live Call" : "Start Call"}
+                    </span>
                   </Button>
                 </div>
               </div>

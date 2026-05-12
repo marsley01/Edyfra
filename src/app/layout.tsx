@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeColorManager } from "@/components/theme-color-manager";
 import { ConditionalShell } from "@/components/conditional-shell";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -51,6 +52,17 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
+    apple: "/icons/apple-touch-icon.png",
+    other: [
+      { rel: "icon", url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { rel: "icon", url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+  },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    title: "Edyfra",
+    statusBarStyle: "black-translucent",
   },
   other: {
     "geo.region": "KE",
@@ -83,6 +95,7 @@ export default function RootLayout({
         >
           <ThemeColorManager />
           <ConditionalShell>{children}</ConditionalShell>
+          <ServiceWorkerRegister />
           <Toaster richColors position="top-right" />
           <Analytics />
           <SpeedInsights />

@@ -13,9 +13,11 @@ import { Separator } from "@/components/ui/separator";
 import {
   User, BookOpen, Loader2, Save, Bell, Clock, Shield, Palette,
   Moon, Sun, Monitor, Bot, Lock, Mail, Download, Trash2, AlertTriangle,
-  Wallet, Phone, Calendar, Check, Settings as SettingsIcon
+  Wallet, Phone, Calendar, Check, Settings as SettingsIcon, Globe
 } from "lucide-react";
-import { getUserData, updateProfile, updateTutorProfile, changePassword, changeEmail, downloadUserData, deleteUserAccount, updateAvatar } from "@/app/actions/user";
+import { getUserData, updateProfile, updateTutorProfile, changePassword, changeEmail, downloadUserData, deleteUserAccount, updateAvatar, updateNotificationSettings } from "@/app/actions/user";
+import { getNotificationSettings } from "@/app/actions/notifications";
+import { PushNotificationInit } from "@/components/PushNotificationInit";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { AvatarPicker, type AvatarStyle } from "@/components/ui/avatar-picker";
 import {
@@ -94,6 +96,12 @@ export default function TutorSettingsPage() {
       setSchedule(tp.availability?.schedule || {});
       setAvailableNow(tp.availability?.isOnline || false);
       setPrefs(user.userPreferences || {});
+      try {
+        const notifSettings = await getNotificationSettings();
+        if (Object.keys(notifSettings).length > 0) {
+          setNotifPrefs(prev => ({ ...prev, ...notifSettings }));
+        }
+      } catch {} // Non-blocking
     }
     setLoading(false);
   };
@@ -139,6 +147,13 @@ export default function TutorSettingsPage() {
       await updateUserPreferences({ [key]: value });
       if (key === "accentColor") window.dispatchEvent(new CustomEvent("accent-color-changed", { detail: value }));
     } catch { toast.error("Failed to save"); }
+  };
+
+  const handleSaveNotif = async (key: string, value: boolean) => {
+    const updated = { ...notifPrefs, [key]: value };
+    setNotifPrefs(updated);
+    try { await updateNotificationSettings(updated); }
+    catch { toast.error("Failed to save notification preferences"); }
   };
 
   const handleChangePassword = async () => {
@@ -196,14 +211,14 @@ export default function TutorSettingsPage() {
       </div>
 
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="w-full justify-start bg-transparent border-b border-border rounded-none p-0 h-auto overflow-x-auto gap-6 mb-8">
-          <TabsTrigger value="profile" className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none pb-3 px-1"><User className="h-4 w-4 mr-2" /> Profile</TabsTrigger>
-          <TabsTrigger value="availability" className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none pb-3 px-1"><Calendar className="h-4 w-4 mr-2" /> Availability</TabsTrigger>
-          <TabsTrigger value="notifications" className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none pb-3 px-1"><Bell className="h-4 w-4 mr-2" /> Notifications</TabsTrigger>
-          <TabsTrigger value="sessions" className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none pb-3 px-1"><Clock className="h-4 w-4 mr-2" /> Sessions</TabsTrigger>
-          <TabsTrigger value="mash" className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none pb-3 px-1"><Bot className="h-4 w-4 mr-2" /> Mash</TabsTrigger>
-          <TabsTrigger value="appearance" className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none pb-3 px-1"><Palette className="h-4 w-4 mr-2" /> Appearance</TabsTrigger>
-          <TabsTrigger value="account" className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none pb-3 px-1"><Shield className="h-4 w-4 mr-2" /> Account</TabsTrigger>
+        <TabsList className="w-full justify-start bg-transparent border-b border-border rounded-none p-0 h-auto overflow-x-auto gap-1 sm:gap-4 mb-8 flex-nowrap whitespace-nowrap scrollbar-thin">
+          <TabsTrigger value="profile" className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none pb-3 px-2 sm:px-3 text-[11px] sm:text-sm flex-shrink-0"><User className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" /> Profile</TabsTrigger>
+          <TabsTrigger value="availability" className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none pb-3 px-2 sm:px-3 text-[11px] sm:text-sm flex-shrink-0"><Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" /> Availability</TabsTrigger>
+          <TabsTrigger value="notifications" className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none pb-3 px-2 sm:px-3 text-[11px] sm:text-sm flex-shrink-0"><Bell className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" /> Notifications</TabsTrigger>
+          <TabsTrigger value="sessions" className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none pb-3 px-2 sm:px-3 text-[11px] sm:text-sm flex-shrink-0"><Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" /> Sessions</TabsTrigger>
+          <TabsTrigger value="mash" className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none pb-3 px-2 sm:px-3 text-[11px] sm:text-sm flex-shrink-0"><Bot className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" /> Mash</TabsTrigger>
+          <TabsTrigger value="appearance" className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none pb-3 px-2 sm:px-3 text-[11px] sm:text-sm flex-shrink-0"><Palette className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" /> Appearance</TabsTrigger>
+          <TabsTrigger value="account" className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none pb-3 px-2 sm:px-3 text-[11px] sm:text-sm flex-shrink-0"><Shield className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" /> Account</TabsTrigger>
         </TabsList>
 
         {/* PROFILE */}
@@ -371,9 +386,18 @@ export default function TutorSettingsPage() {
               {notifItems.map((item) => (
                 <div key={item.key} className="flex items-center justify-between p-4 rounded-xl bg-primary/5">
                   <Label className="text-base font-bold text-primary">{item.label}</Label>
-                  <Switch checked={notifPrefs[item.key] ?? true} onCheckedChange={(v) => setNotifPrefs({...notifPrefs, [item.key]: v})} />
+                  <Switch checked={notifPrefs[item.key] ?? true} onCheckedChange={(v) => handleSaveNotif(item.key, v)} />
                 </div>
               ))}
+              <div className="pt-4 border-t border-border">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-primary/5">
+                  <div>
+                    <Label className="text-base font-bold text-primary">Push Notifications</Label>
+                    <p className="text-sm text-muted-foreground">Receive alerts even when the tab is closed</p>
+                  </div>
+                  <PushNotificationInit />
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -462,6 +486,28 @@ export default function TutorSettingsPage() {
                     {prefs.accentColor === color.value && <Check className="h-6 w-6 text-white" />}
                   </button>
                 ))}
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-border bg-card/50 rounded-[3rem]">
+            <CardHeader className="p-10 border-b border-border">
+              <CardTitle className="text-2xl font-black tracking-tightest flex items-center gap-3"><Globe className="h-6 w-6 text-primary" /> Language</CardTitle>
+            </CardHeader>
+            <CardContent className="p-10">
+              <div className="space-y-3">
+                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-2">Preferred Language</Label>
+                <Select value={prefs.preferredLanguage || "english"} onValueChange={(v) => handleSavePrefs("preferredLanguage", v)}>
+                  <SelectTrigger className="h-14 rounded-2xl border-border bg-secondary/50 font-bold px-6">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="english">English</SelectItem>
+                    <SelectItem value="swahili">Kiswahili</SelectItem>
+                    <SelectItem value="french">Français</SelectItem>
+                    <SelectItem value="spanish">Español</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground font-medium ml-2">The dashboard greeting and interface will adapt to your chosen language.</p>
               </div>
             </CardContent>
           </Card>

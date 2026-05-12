@@ -13,7 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { createClient } from "@/utils/supabase/client";
-import { createResource, getMyResources } from "@/app/actions/resources";
+import { uploadAndCreateResource, getMyResources } from "@/app/actions/resources";
 import { motion, AnimatePresence } from "framer-motion";
 
 const SUBJECTS = [
@@ -104,30 +104,17 @@ export default function TutorResourcesPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { toast.error("Please sign in"); return; }
 
-      // Upload file to Supabase Storage
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage
-        .from("resources")
-        .upload(fileName, file, { cacheControl: "3600", upsert: false });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("title", title);
+      formData.append("subject", subject);
+      formData.append("education_level", level);
+      formData.append("resource_type", type);
+      if (topic) formData.append("topic", topic);
+      if (description) formData.append("description", description);
+      formData.append("price", price.toString());
 
-      if (uploadError) {
-        toast.error("File upload failed: " + uploadError.message);
-        return;
-      }
-
-      const { data: { publicUrl } } = supabase.storage.from("resources").getPublicUrl(fileName);
-
-      // Use server action to insert (bypasses RLS)
-      const result = await createResource({
-        title, subject,
-        education_level: level,
-        resource_type: type,
-        topic: topic || undefined,
-        description: description || undefined,
-        price,
-        file_path: publicUrl,
-      });
+      const result = await uploadAndCreateResource(formData);
 
       if (result.error) {
         toast.error(result.error);

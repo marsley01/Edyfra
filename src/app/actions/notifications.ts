@@ -34,6 +34,21 @@ export async function getUnreadCount() {
   }
 }
 
+export async function getNotificationSettings(): Promise<Record<string, boolean>> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return {};
+
+  try {
+    const settings = await prisma.notificationSettings.findUnique({
+      where: { userId: user.id },
+    });
+    return (settings?.preferences as Record<string, boolean>) || {};
+  } catch {
+    return {};
+  }
+}
+
 export async function markAllRead() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -45,6 +60,7 @@ export async function markAllRead() {
   });
 
   revalidatePath("/dashboard/notifications");
+  revalidatePath("/tutor/notifications");
 }
 
 export async function markNotificationRead(id: string) {
@@ -58,4 +74,5 @@ export async function markNotificationRead(id: string) {
   });
 
   revalidatePath("/dashboard/notifications");
+  revalidatePath("/tutor/notifications");
 }

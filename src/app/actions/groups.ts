@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import { createStreamChannel, addMembersToChannel } from "@/app/actions/stream";
 
 export async function getGroups() {
   const supabase = await createClient();
@@ -97,6 +98,13 @@ export async function createGroup(data: {
     }
   });
 
+  // Create Stream channel
+  try {
+    await createStreamChannel(`group_${group.id}`, [user.id], data.name);
+  } catch (err) {
+    console.error("Failed to create Stream channel for group", err);
+  }
+
   revalidatePath("/dashboard/groups");
   return { success: true, group };
 }
@@ -112,6 +120,13 @@ export async function joinGroup(groupId: string) {
       members: { push: user.id }
     }
   });
+
+  // Add member to Stream channel
+  try {
+    await addMembersToChannel(`group_${groupId}`, [user.id]);
+  } catch (err) {
+    console.error("Failed to add user to Stream group channel", err);
+  }
 
   revalidatePath("/dashboard/groups");
   return { success: true };

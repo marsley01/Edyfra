@@ -106,7 +106,7 @@ export default function GroupChatPage() {
       <section className="flex-1 flex flex-col bg-background relative">
         {currentUser && (
           <StreamChatRoom
-            channelId={groupId}
+            channelId={`group_${groupId}`}
             userId={currentUser.id}
             userName={currentUser.name || "User"}
             userImage={currentUser.avatar}
