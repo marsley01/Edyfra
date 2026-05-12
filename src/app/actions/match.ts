@@ -54,13 +54,6 @@ export async function createMatchRequest(data: { subject: string; topic: string 
     },
   });
 
-  // Start automated matching immediately (skip AI - let client timer decide)
-  try {
-    await initiateAutoMatch(matchRequest.id, { skipAI: true });
-  } catch (err) {
-    console.error("Auto-match failed:", err);
-  }
-
   revalidatePath("/tutor/requests");
   return { success: true, matchRequestId: matchRequest.id };
 }
