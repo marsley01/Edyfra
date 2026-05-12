@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, Loader2, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Loader2, AlertCircle, Eye, EyeOff, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import Image from "next/image";
 import { login } from "@/app/actions/auth";
 
 export default function LoginPage() {
@@ -38,15 +37,11 @@ export default function LoginPage() {
       >
         {/* Logo */}
         <div className="flex flex-col items-center gap-4 text-center">
-           <Link href="/" className="flex items-center group mb-4">
-              <Image
-                src="/logo.png"
-                alt="Edyfra"
-                width={150}
-                height={44}
-                className="h-11 w-auto object-contain dark:invert"
-                priority
-              />
+           <Link href="/" className="flex items-center gap-3 group mb-4">
+              <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 transition-transform group-hover:scale-110">
+                <GraduationCap className="text-white h-7 w-7" />
+              </div>
+              <span className="text-3xl font-black text-foreground tracking-tighter">Edyfra</span>
            </Link>
            <h1 className="text-4xl font-black tracking-tightest">Welcome back.</h1>
            <p className="text-muted-foreground font-medium text-lg">We&apos;re glad you&apos;re here. Sign in to pick up where you left off.</p>

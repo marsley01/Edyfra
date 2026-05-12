@@ -115,7 +115,7 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
         </div>
       </header>
 
-      {/* Mobile Sidebar Overlay */}
+      {/* Mobile Sidebar Overlay - Full Screen */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <>
@@ -124,21 +124,38 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] lg:hidden"
+              onClick={() => setIsMobileMenuOpen(false)}
             />
             <motion.div
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 w-[88vw] max-w-80 bg-card z-[70] shadow-2xl overflow-y-auto overscroll-y-contain lg:hidden"
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed inset-0 w-full h-full bg-card z-[70] shadow-2xl overflow-y-auto overscroll-y-contain lg:hidden"
             >
-              <div className="absolute top-6 right-6 z-50">
-                <button 
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-2 rounded-xl bg-secondary hover:bg-secondary/80"
-                >
-                  <X className="h-5 w-5" />
-                </button>
+              <div className="sticky top-0 z-50 flex items-center justify-between p-4 border-b border-border bg-card">
+                <Link href="/tutor" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                    <GraduationCap className="text-white h-5 w-5" />
+                  </div>
+                  <span className="text-xl font-black text-foreground tracking-tighter">Edyfra</span>
+                </Link>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="p-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-all"
+                    aria-label="Student Dashboard"
+                  >
+                    <LayoutDashboard className="h-5 w-5" />
+                  </Link>
+                  <button 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="p-2 rounded-xl bg-secondary hover:bg-secondary/80"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
               </div>
               <TutorSidebarContent 
                 user={user} 
