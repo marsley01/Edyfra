@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://edyfra.com';
+  const baseUrl = 'https://edyfra.space';
 
   // Add the main public routes
   const routes = ['', '/features', '/about', '/contact', '/login', '/signup'].map((route) => ({

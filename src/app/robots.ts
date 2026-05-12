@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/dashboard/', '/tutor/', '/admin/', '/api/'],
     },
-    sitemap: 'https://edyfra.com/sitemap.xml',
+    sitemap: 'https://edyfra.space/sitemap.xml',
   };
 }
