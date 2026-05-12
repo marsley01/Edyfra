@@ -132,14 +132,8 @@ export default function MarketplacePage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
           <h1 className="text-3xl font-black tracking-tightest">Resource <span className="text-primary">Marketplace</span></h1>
-          <p className="text-muted-foreground font-medium">Verified study materials from top tutors and students.</p>
+          <p className="text-muted-foreground font-medium">Verified study materials from top tutors.</p>
         </div>
-        <Button 
-          onClick={() => window.location.href = "/dashboard/resources/upload"}
-          className="h-12 px-6 rounded-2xl bg-primary text-white font-black text-xs uppercase tracking-widest shadow-lg shadow-primary/20"
-        >
-          Sell Resources
-        </Button>
       </div>
 
       {/* Tabs */}

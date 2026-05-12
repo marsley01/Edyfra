@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   LayoutDashboard, Users, GraduationCap, 
   Settings, LogOut, Zap, Calendar, Wallet, Trophy,
-  Menu, X, ChevronLeft
+  Menu, X, ChevronLeft, BookOpen
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -76,6 +76,7 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
     { href: "/tutor", label: "Dashboard", icon: LayoutDashboard },
     { href: "/tutor/requests", label: "Requests", icon: Users },
     { href: "/tutor/sessions", label: "Sessions", icon: Zap },
+    { href: "/tutor/resources", label: "My Resources", icon: BookOpen },
     { href: "/tutor/schedule", label: "Schedule", icon: Calendar },
     { href: "/tutor/earnings", label: "Earnings", icon: Wallet },
     { href: "/tutor/settings", label: "Settings", icon: Settings },
@@ -230,9 +231,6 @@ function TutorSidebarContent({
           </div>
         </div>
         <div className="flex flex-col gap-2">
-          <Link href="/dashboard" onClick={onClose} className="flex items-center gap-2 justify-center w-full py-3 rounded-xl bg-secondary text-muted-foreground text-[10px] font-black uppercase tracking-widest border border-border hover:bg-primary/5 hover:text-primary transition-all">
-             <LayoutDashboard className="h-3.5 w-3.5" /> Student Dashboard
-          </Link>
           <div className="flex items-center gap-2 justify-center w-full py-2.5 rounded-xl bg-yellow-500/10 text-yellow-600 text-[10px] font-black uppercase tracking-widest border border-yellow-500/20 shadow-sm">
              <Trophy className="h-3 w-3 fill-current" /> {points?.toLocaleString() || "0"} Points
           </div>
