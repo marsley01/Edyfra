@@ -14,7 +14,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { uploadResource } from "@/app/actions/upload-resource";
 
 const HIGH_SCHOOL_SUBJECTS = [
   "Mathematics",
@@ -110,20 +109,46 @@ export default function UploadResourcePage() {
 
     setIsUploading(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("title", title);
-      formData.append("subject", subject);
-      formData.append("education_level", level);
-      formData.append("resource_type", type);
-      formData.append("topic", topic);
-      formData.append("description", description);
-      formData.append("price", String(price));
+      // 1. Upload file to Supabase storage
+      const supabase = (await import("@/utils/supabase/client")).createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { toast.error("Please sign in"); return; }
 
-      const result = await uploadResource(formData);
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-      if (result.error) {
-        toast.error(result.error);
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("resources")
+        .upload(fileName, file, { cacheControl: "3600", upsert: false });
+
+      if (uploadError) {
+        toast.error(uploadError.message);
+        return;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("resources")
+        .getPublicUrl(fileName);
+
+      // 2. Create resource via API (uses Prisma — no RLS)
+      const res = await fetch("/api/resources", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          subject,
+          education_level: level,
+          resource_type: type,
+          topic: topic || undefined,
+          description: description || undefined,
+          price: price || 0,
+          file_path: publicUrl,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || "Failed to save resource");
         return;
       }
 

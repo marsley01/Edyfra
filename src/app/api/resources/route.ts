@@ -89,7 +89,38 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  // This endpoint is for creating a resource via API (alternative to direct upload)
-  // But we'll keep the upload client-side to Supabase Storage for simplicity
-  return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { title, subject, education_level, resource_type, topic, description, price, file_path } = body;
+
+    if (!title || !subject || !education_level || !resource_type || !file_path) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    const resource = await prisma.resource.create({
+      data: {
+        sellerId: user.id,
+        title,
+        subject,
+        educationLevel: education_level,
+        resourceType: resource_type,
+        topic: topic || null,
+        description: description || null,
+        price: price || 0,
+        filePath: file_path,
+        status: "pending",
+      },
+    });
+
+    return NextResponse.json({ success: true, resource });
+  } catch (error: any) {
+    console.error("[Resources API POST] Error:", error);
+    return NextResponse.json({ error: error?.message || "Failed to create resource" }, { status: 500 });
+  }
 }
