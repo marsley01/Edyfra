@@ -101,9 +101,9 @@ export default function StudyRoomPage() {
   if (!session) return null;
 
   return (
-    <div className="h-screen bg-background text-foreground flex flex-col overflow-hidden font-sans">
+    <div className="h-[100dvh] bg-background text-foreground flex flex-col overflow-hidden font-sans">
       {/* Header */}
-      <header className="h-20 border-b border-border/50 px-8 flex items-center justify-between bg-background/80 backdrop-blur-2xl z-50">
+      <header className="h-20 border-b border-border/50 px-8 flex items-center justify-between bg-background/80 backdrop-blur-2xl z-50 pt-[env(safe-area-inset-top,0px)]">
         <div className="flex items-center gap-6">
           <button
             onClick={() => router.back()}

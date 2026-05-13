@@ -267,7 +267,7 @@ export default function StreamChatRoom({
 
   // ─── Chat UI ─────────────────────────────────────────────────────────────────
   return (
-    <div className="h-full w-full edyfra-chat-wrapper">
+    <div className="h-full w-full edyfra-chat-wrapper flex flex-col overflow-hidden">
       <style>{`
         .str-chat__theme-dark {
           --str-chat__primary-color: var(--primary, #06B6D4);

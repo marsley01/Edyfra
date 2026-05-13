@@ -85,9 +85,9 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
   ];
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-background font-sans">
+    <div className="flex flex-col lg:flex-row min-h-[100dvh] bg-background font-sans overflow-x-hidden">
       {/* Mobile Header */}
-      <header className="lg:hidden h-20 bg-card border-b border-border px-4 flex items-center justify-between sticky top-0 z-40">
+      <header className="lg:hidden h-20 bg-card border-b border-border px-4 flex items-center justify-between sticky top-0 z-40 pt-[env(safe-area-inset-top,0px)]">
         <div className="flex items-center gap-2">
           <button 
             onClick={() => setIsMobileMenuOpen(true)}
