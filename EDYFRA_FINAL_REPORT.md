@@ -11,10 +11,10 @@ Edyfra is built using a modern "Serverless First" architecture for maximum scala
 - **Core Framework**: `Next.js 15/16` with `Turbopack` for lightning-fast builds and `TypeScript` for absolute type safety.
 - **Database & Auth**: `Supabase` handles authentication, PostgreSQL database management, and real-time subscriptions.
 - **Data Modeling**: `Prisma ORM` provides a robust, type-safe interface for all database operations.
-- **Communication Layer**: 
-    - `Stream SDK` powers the high-definition video classrooms and low-latency chat messaging.
-- **Artificial Intelligence**: 
-    - `OpenRouter` integrates top-tier AI models to power **Mash AI**, your personal study companion.
+- **Communication Layer**:
+  - `Stream SDK` powers the high-definition video classrooms and low-latency chat messaging.
+- **Artificial Intelligence**:
+  - `OpenRouter` integrates top-tier AI models to power **Mash AI**, your personal study companion.
 - **Payments & Monetization**: Integrated with `Paystack` and `M-Pesa` for secure, localized transaction handling.
 - **Design & UI**: `Tailwind CSS v4` for premium styling, combined with `Framer Motion` for high-end micro-animations and transitions.
 
@@ -27,9 +27,9 @@ The platform operates on a "Request & Sync" workflow:
 1. **Onboarding**: Users choose their role (Student or Tutor) and education level.
 2. **Match Me**: Students create a study request for a specific subject (e.g., Calculus, Physics).
 3. **Tiered Matching Algorithm**:
-    - **Tier 1 (Tutor)**: First, it looks for a verified tutor available for that subject.
-    - **Tier 2 (Peer)**: If no tutor is found, it looks for a high-performing peer studying the same topic.
-    - **Tier 3 (Mash AI)**: If no human is available within 30 seconds, **Mash AI** steps in to facilitate the session.
+  - **Tier 1 (Tutor)**: First, it looks for a verified tutor available for that subject.
+  - **Tier 2 (Peer)**: If no tutor is found, it looks for a high-performing peer studying the same topic.
+  - **Tier 3 (Mash AI)**: If no human is available within 30 seconds, **Mash AI** steps in to facilitate the session.
 4. **Live Session**: Once matched, users are redirected to a **Study Room** equipped with live video, real-time chat, and AI assistance.
 5. **Gamification**: Every session earned awards **XP (Points)**, which recalibrates the user's tier and standing within the community.
 

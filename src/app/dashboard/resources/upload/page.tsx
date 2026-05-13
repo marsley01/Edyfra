@@ -16,7 +16,7 @@ import {
 import { toast } from "sonner";
 import { uploadResource } from "@/app/actions/upload-resource";
 
-const SUBJECTS = [
+const HIGH_SCHOOL_SUBJECTS = [
   "Mathematics",
   "English",
   "Kiswahili",
@@ -32,7 +32,33 @@ const SUBJECTS = [
   "Agriculture",
 ];
 
-const LEVELS = ["High School", "University", "Primary"];
+const UNIVERSITY_SUBJECTS = [
+  "Computer Science",
+  "Information Technology",
+  "Software Engineering",
+  "Electrical Engineering",
+  "Mechanical Engineering",
+  "Civil Engineering",
+  "Medicine & Surgery",
+  "Pharmacy",
+  "Nursing",
+  "Law",
+  "Economics",
+  "Accounting",
+  "Finance",
+  "Business Administration",
+  "Education",
+  "Architecture",
+  "Mathematics",
+  "Physics",
+  "Chemistry",
+  "Biology",
+  "Biochemistry",
+  "Psychology",
+  "Journalism",
+];
+
+const LEVELS = ["High School", "University"];
 
 const TYPES = ["Notes", "Past Paper", "Revision Guide", "Reference Book", "Curriculum Book", "Other"];
 
@@ -42,11 +68,13 @@ export default function UploadResourcePage() {
   const [level, setLevel] = useState("");
   const [type, setType] = useState("");
   const [price, setPrice] = useState<number>(0);
-const [file, setFile] = useState<File | null>(null);
-const [preview, setPreview] = useState<string | null>(null);
-const [isUploading, setIsUploading] = useState(false);
-const [topic, setTopic] = useState("");
-const [description, setDescription] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [topic, setTopic] = useState("");
+  const [description, setDescription] = useState("");
+
+  const subjects = level === "University" ? UNIVERSITY_SUBJECTS : HIGH_SCHOOL_SUBJECTS;
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const f = acceptedFiles[0];
@@ -150,7 +178,7 @@ const [description, setDescription] = useState("");
                 <SelectValue placeholder="Select subject" />
               </SelectTrigger>
               <SelectContent>
-                {SUBJECTS.map((s) => (
+                {subjects.map((s) => (
                   <SelectItem key={s} value={s}>{s}</SelectItem>
                 ))}
               </SelectContent>
@@ -159,7 +187,7 @@ const [description, setDescription] = useState("");
 
           <div className="space-y-2">
             <Label htmlFor="level">Education Level *</Label>
-            <Select value={level} onValueChange={(val) => setLevel(val || "")} required>
+            <Select value={level} onValueChange={(val) => { setLevel(val || ""); setSubject(""); }} required>
               <SelectTrigger className="h-12 rounded-xl">
                 <SelectValue placeholder="Select level" />
               </SelectTrigger>

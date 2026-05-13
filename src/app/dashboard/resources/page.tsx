@@ -25,7 +25,7 @@ const SUBJECTS = [
   "Computer Studies", "Agriculture"
 ];
 
-const LEVELS = ["All", "High School", "University", "Primary"];
+const LEVELS = ["All", "High School", "University"];
 const PRICE_FILTERS = ["All", "Free", "Paid"];
 const TYPE_FILTERS = ["All", "Notes", "Past Paper", "Revision Guide", "Reference Book", "Curriculum Book"];
 

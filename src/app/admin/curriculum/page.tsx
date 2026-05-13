@@ -24,7 +24,7 @@ const SUBJECTS = [
   "Computer Studies", "Agriculture",
 ];
 
-const LEVELS = ["Primary", "High School", "University"];
+const LEVELS = ["High School", "University"];
 const CURRICULUM_TYPES = ["8-4-4", "CBC", "HEC"];
 const CONTENT_TYPES: ContentType[] = ["Curriculum Book", "Past Paper", "Revision Guide", "Reference Book"];
 

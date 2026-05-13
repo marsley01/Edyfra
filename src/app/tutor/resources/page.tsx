@@ -21,7 +21,7 @@ const SUBJECTS = [
   "Biology", "History", "Geography", "CRE", "IRE",
   "Business Studies", "Computer Studies", "Agriculture",
 ];
-const LEVELS = ["High School", "University", "Primary"];
+const LEVELS = ["High School", "University"];
 const TYPES = ["Notes", "Past Paper", "Revision Guide", "Reference Book", "Curriculum Book", "Other"];
 
 const STATUS_COLORS: Record<string, string> = {

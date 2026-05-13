@@ -33,6 +33,7 @@ export async function uploadResource(formData: FormData) {
     .upload(fileName, file, { cacheControl: "3600", upsert: false });
 
   if (uploadError) {
+    console.error("upload-resource storage error:", uploadError);
     return { error: uploadError.message };
   }
 
@@ -52,6 +53,7 @@ export async function uploadResource(formData: FormData) {
   });
 
   if (insertError) {
+    console.error("upload-resource insert error:", insertError);
     return { error: insertError.message };
   }
 
