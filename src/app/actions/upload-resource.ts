@@ -2,6 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
+import prisma from "@/lib/prisma";
 
 export async function uploadResource(formData: FormData) {
   const supabase = await createClient();
@@ -39,22 +40,24 @@ export async function uploadResource(formData: FormData) {
 
   const { data: { publicUrl } } = adminClient.storage.from("resources").getPublicUrl(fileName);
 
-  const { error: insertError } = await adminClient.from("resources").insert({
-    seller_id: user.id,
-    title,
-    subject,
-    education_level,
-    resource_type,
-    topic: topic || null,
-    description: description || null,
-    price,
-    file_path: publicUrl,
-    status: "pending",
-  });
-
-  if (insertError) {
-    console.error("upload-resource insert error:", insertError);
-    return { error: insertError.message };
+  try {
+    await prisma.resource.create({
+      data: {
+        sellerId: user.id,
+        title,
+        subject,
+        educationLevel: education_level,
+        resourceType: resource_type || null,
+        topic: topic || null,
+        description: description || null,
+        price,
+        filePath: publicUrl,
+        status: "pending",
+      },
+    });
+  } catch (dbError: any) {
+    console.error("upload-resource prisma error:", dbError);
+    return { error: dbError?.message || "Failed to save resource" };
   }
 
   return { success: true };
