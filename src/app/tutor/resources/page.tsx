@@ -16,10 +16,18 @@ import { createClient } from "@/utils/supabase/client";
 import { uploadAndCreateResource, getMyResources } from "@/app/actions/resources";
 import { motion, AnimatePresence } from "framer-motion";
 
-const SUBJECTS = [
+const HIGH_SCHOOL_SUBJECTS = [
   "Mathematics", "English", "Kiswahili", "Physics", "Chemistry",
   "Biology", "History", "Geography", "CRE", "IRE",
   "Business Studies", "Computer Studies", "Agriculture",
+];
+const UNIVERSITY_SUBJECTS = [
+  "Computer Science", "Information Technology", "Software Engineering",
+  "Electrical Engineering", "Mechanical Engineering", "Civil Engineering",
+  "Medicine & Surgery", "Pharmacy", "Nursing", "Law", "Economics",
+  "Accounting", "Finance", "Business Administration", "Education",
+  "Architecture", "Mathematics", "Physics", "Chemistry", "Biology",
+  "Biochemistry", "Psychology", "Journalism",
 ];
 const LEVELS = ["High School", "University"];
 const TYPES = ["Notes", "Past Paper", "Revision Guide", "Reference Book", "Curriculum Book", "Other"];
@@ -44,6 +52,8 @@ export default function TutorResourcesPage() {
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
   const [level, setLevel] = useState("");
+
+  const subjects = level === "University" ? UNIVERSITY_SUBJECTS : HIGH_SCHOOL_SUBJECTS;
   const [type, setType] = useState("");
   const [price, setPrice] = useState<number>(0);
   const [topic, setTopic] = useState("");
@@ -224,12 +234,12 @@ export default function TutorResourcesPage() {
                   <Label>Subject *</Label>
                   <Select value={subject} onValueChange={val => setSubject(val || "")}>
                     <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Select subject" /></SelectTrigger>
-                    <SelectContent>{SUBJECTS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                    <SelectContent>{subjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Education Level *</Label>
-                  <Select value={level} onValueChange={val => setLevel(val || "")}>
+                  <Select value={level} onValueChange={val => { setLevel(val || ""); setSubject(""); }}>
                     <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Select level" /></SelectTrigger>
                     <SelectContent>{LEVELS.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}</SelectContent>
                   </Select>

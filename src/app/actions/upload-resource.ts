@@ -25,17 +25,38 @@ export async function uploadResource(formData: FormData) {
     return { error: "Missing required fields" };
   }
 
+  // Ensure the Prisma User record exists (foreign key requirement)
+  const existingUser = await prisma.user.findUnique({ where: { id: user.id } });
+  if (!existingUser) {
+    return { error: "Please visit your dashboard first to activate your account before uploading." };
+  }
+
   const adminClient = createAdminClient();
   const fileExt = file.name.split(".").pop();
   const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-  const { error: uploadError } = await adminClient.storage
+  // Try uploading to storage — create bucket if it doesn't exist
+  let { error: uploadError } = await adminClient.storage
     .from("resources")
     .upload(fileName, file, { cacheControl: "3600", upsert: false });
 
   if (uploadError) {
-    console.error("upload-resource storage error:", uploadError);
-    return { error: uploadError.message };
+    if (uploadError.message?.includes("bucket") || uploadError.message?.includes("not found")) {
+      const { error: bucketError } = await adminClient.storage.createBucket("resources", {
+        public: true,
+      });
+      if (bucketError) {
+        return { error: `Storage unavailable: ${bucketError.message}` };
+      }
+      const { error: retryError } = await adminClient.storage
+        .from("resources")
+        .upload(fileName, file, { cacheControl: "3600", upsert: false });
+      if (retryError) {
+        return { error: retryError.message };
+      }
+    } else {
+      return { error: uploadError.message };
+    }
   }
 
   const { data: { publicUrl } } = adminClient.storage.from("resources").getPublicUrl(fileName);
@@ -57,6 +78,9 @@ export async function uploadResource(formData: FormData) {
     });
   } catch (dbError: any) {
     console.error("upload-resource prisma error:", dbError);
+    if (dbError?.code === "P2003") {
+      return { error: "Account not fully set up. Visit your dashboard first." };
+    }
     return { error: dbError?.message || "Failed to save resource" };
   }
 
