@@ -130,9 +130,7 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-12 mb-24">
           <div className="col-span-2 lg:col-span-1 space-y-6">
             <Link href="/" className="flex items-center gap-2.5 group" aria-label="Edyfra Home">
-              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                <GraduationCap className="h-5 w-5 text-white" />
-              </div>
+              <img src="/icon.png" alt="Edyfra Logo" className="w-9 h-9 rounded-xl shadow-lg object-cover" />
               <span className="text-xl font-black tracking-tight text-foreground group-hover:text-primary transition-colors">
                 Edyfra
               </span>

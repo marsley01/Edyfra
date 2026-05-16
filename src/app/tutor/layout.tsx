@@ -112,9 +112,7 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
             </button>
           )}
           <Link href="/tutor" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-              <GraduationCap className="text-white h-5 w-5" />
-            </div>
+            <img src="/icon.png" alt="Edyfra Logo" className="w-9 h-9 rounded-xl shadow-lg object-cover" />
             <span className="text-xl font-black text-foreground tracking-tighter">Edyfra</span>
           </Link>
         </div>
@@ -140,9 +138,7 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
             >
               <div className="sticky top-0 z-50 flex items-center justify-between p-4 border-b border-border bg-card">
                 <Link href="/tutor" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-                    <GraduationCap className="text-white h-5 w-5" />
-                  </div>
+                  <img src="/icon.png" alt="Edyfra Logo" className="w-9 h-9 rounded-xl shadow-lg object-cover" />
                   <span className="text-xl font-black text-foreground tracking-tighter">Edyfra</span>
                 </Link>
                 <div className="flex items-center gap-2">
@@ -205,9 +201,7 @@ function TutorSidebarContent({
     <div className="flex flex-col h-full">
       <div className="p-8 border-b border-border/50">
         <Link href="/tutor" onClick={onClose} className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 transition-transform group-hover:scale-110">
-            <GraduationCap className="text-white h-6 w-6" />
-          </div>
+          <img src="/icon.png" alt="Edyfra Logo" className="w-9 h-9 rounded-xl shadow-lg object-cover" />
           <div className="flex flex-col">
              <span className="text-2xl font-black text-foreground tracking-tighter leading-none">Edyfra</span>
              <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mt-1">Teacher Dashboard</span>

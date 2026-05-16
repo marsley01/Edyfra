@@ -81,9 +81,7 @@ export function Navigation() {
       <div className="container mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
         {/* Logo — icon + text */}
         <Link href="/" className="flex items-center gap-2.5 group" aria-label="Edyfra Home">
-          <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-            <GraduationCap className="h-5 w-5 text-white" />
-          </div>
+          <img src="/icon.png" alt="Edyfra Logo" className="w-9 h-9 rounded-xl shadow-lg group-hover:scale-105 transition-transform object-cover" />
           <span className="text-xl font-black tracking-tight text-foreground group-hover:text-primary transition-colors">
             Edyfra
           </span>
@@ -181,9 +179,7 @@ export function Navigation() {
           >
             <div className="flex items-center justify-between mb-12">
               <Link href="/" onClick={() => setIsOpen(false)} className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg">
-                  <GraduationCap className="h-6 w-6 text-white" />
-                </div>
+                <img src="/icon.png" alt="Edyfra Logo" className="w-10 h-10 rounded-xl shadow-lg object-cover" />
                 <span className="text-2xl font-black tracking-tight text-foreground">
                   Edyfra
                 </span>

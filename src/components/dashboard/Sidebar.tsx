@@ -75,9 +75,7 @@ export default function DashboardSidebar({ user, onClose }: { user: User; onClos
       {/* Workspace Switcher */}
       <div className="px-4 py-3 border-b border-border/50">
         <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-secondary/80 transition-all cursor-pointer group active:scale-[0.98]">
-          <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-white shrink-0 shadow-lg shadow-primary/20">
-            <GraduationCap className="h-4.5 w-4.5" />
-          </div>
+          <img src="/icon.png" alt="Edyfra Logo" className="w-9 h-9 rounded-xl shadow-lg object-cover" />
           <div className="flex-1 min-w-0">
             <span className="text-xl font-black truncate tracking-tighter">Edyfra</span>
           </div>
