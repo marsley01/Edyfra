@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { Role } from "@/generated/client";
+import { Prisma, Role } from "@/generated/client";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { TUTOR_CONFIG } from "@/lib/config";
@@ -20,6 +20,10 @@ export type AdminGlobalSettings = {
   updatedAt?: string;
   [key: string]: unknown;
 };
+
+function toAdminSettingsJson(settings: AdminGlobalSettings): Prisma.InputJsonValue {
+  return JSON.parse(JSON.stringify(settings)) as Prisma.InputJsonValue;
+}
 
 // Helper: check if current user is an admin (used by server-only contexts)
 async function isAdmin(): Promise<boolean> {
@@ -473,10 +477,12 @@ export async function saveAdminGlobalSettings(settings: AdminGlobalSettings) {
       return { error: "Unauthorized: Admin access required" };
     }
 
+    const settingsJson = toAdminSettingsJson(settings);
+
     await prisma.platformSettings.upsert({
       where: { key: "global" },
-      create: { key: "global", value: settings },
-      update: { value: settings },
+      create: { key: "global", value: settingsJson },
+      update: { value: settingsJson },
     });
 
     revalidatePath("/admin/settings");
