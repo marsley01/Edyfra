@@ -7,6 +7,20 @@ import { revalidatePath } from "next/cache";
 import { TUTOR_CONFIG } from "@/lib/config";
 import { isFounderEmail } from "@/utils/admin-guard";
 
+export type AdminGlobalSettings = {
+  googleAiKey?: string;
+  accentColor?: string;
+  maintenanceMode?: boolean;
+  registrationGate?: boolean;
+  dataCluster?: string;
+  aiProvider?: string;
+  aiMatchmaking?: boolean;
+  pointsMultiplier?: string;
+  tutorEarnings?: boolean;
+  updatedAt?: string;
+  [key: string]: unknown;
+};
+
 // Helper: check if current user is an admin (used by server-only contexts)
 async function isAdmin(): Promise<boolean> {
   try {
@@ -450,7 +464,7 @@ export async function clearGlobalCache() {
   }
 }
 
-export async function saveAdminGlobalSettings(settings: any) {
+export async function saveAdminGlobalSettings(settings: AdminGlobalSettings) {
   try {
     const supabase = await createClient();
     const { data: { user: admin } } = await supabase.auth.getUser();
@@ -466,6 +480,7 @@ export async function saveAdminGlobalSettings(settings: any) {
     });
 
     revalidatePath("/admin/settings");
+    revalidatePath("/admin/ai-settings");
     return { success: true };
   } catch (error: any) {
     console.error("Error saving global settings:", error);
@@ -473,13 +488,20 @@ export async function saveAdminGlobalSettings(settings: any) {
   }
 }
 
-export async function getAdminGlobalSettings() {
+export async function getAdminGlobalSettings(): Promise<AdminGlobalSettings> {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user || !(await isAdmin())) {
+      return {};
+    }
+
     const entry = await prisma.platformSettings.findUnique({
       where: { key: "global" },
     });
 
-    return (entry?.value as any) || {};
+    return (entry?.value as AdminGlobalSettings) || {};
   } catch (error) {
     console.error("Error fetching global settings:", error);
     return {};

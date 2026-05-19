@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,13 +10,22 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, GraduationCap, Upload, FileText, Loader2, CheckCircle, XCircle, ExternalLink, Trash2, BookMarked } from "lucide-react";
+import { BookOpen, Upload, FileText, Loader2, ExternalLink, Trash2, BookMarked } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/utils/supabase/client";
 import { cn } from "@/lib/utils";
 
 type ContentTab = "upload" | "library";
 type ContentType = "Curriculum Book" | "Past Paper" | "Revision Guide" | "Reference Book";
+type CurriculumResource = {
+  id: string;
+  title: string;
+  resourceType: string;
+  subject: string;
+  educationLevel: string;
+  downloads: number | null;
+  filePath: string | null;
+};
 
 const SUBJECTS = [
   "Mathematics", "English", "Kiswahili", "Physics", "Chemistry",
@@ -30,7 +39,7 @@ const CONTENT_TYPES: ContentType[] = ["Curriculum Book", "Past Paper", "Revision
 
 export default function AdminCurriculumPage() {
   const [tab, setTab] = useState<ContentTab>("upload");
-  const [resources, setResources] = useState<any[]>([]);
+  const [resources, setResources] = useState<CurriculumResource[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Upload form
@@ -61,27 +70,34 @@ export default function AdminCurriculumPage() {
     multiple: false,
   });
 
-  const loadResources = async () => {
+  const loadResources = useCallback(async () => {
     setLoading(true);
     try {
       const { getAllCurriculumResources } = await import("@/app/actions/admin-content");
       const data = await getAllCurriculumResources();
-      setResources(data);
+      setResources(data as CurriculumResource[]);
     } catch {
       toast.error("Failed to load resources");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    if (tab === "library") loadResources();
-  }, [tab]);
+    if (tab === "library") {
+      void loadResources();
+    }
+  }, [tab, loadResources]);
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file || !title || !subject || !level || !contentType) {
       toast.error("Please fill in all required fields");
+      return;
+    }
+
+    if (contentType === "Curriculum Book" && !curriculumType) {
+      toast.error("Please select the curriculum system for this book");
       return;
     }
 
@@ -91,9 +107,8 @@ export default function AdminCurriculumPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { toast.error("Please sign in"); return; }
 
-      const fileExt = file.name.split(".").pop();
       const fileName = `curriculum/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("resources")
         .upload(fileName, file, { cacheControl: "3600", upsert: false });
 
@@ -117,19 +132,25 @@ export default function AdminCurriculumPage() {
         toast.success(`${contentType} published successfully`);
         setTitle(""); setSubject(""); setLevel(""); setContentType("");
         setCurriculumType(""); setTopic(""); setDescription(""); setPrice(0); setFile(null);
+        setTab("library");
+        await loadResources();
       }
-    } catch (error: any) {
-      toast.error(error.message || "Upload failed");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Upload failed");
     } finally {
       setIsUploading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    const { deleteResource } = await import("@/app/actions/admin-content");
-    await deleteResource(id);
-    setResources((prev) => prev.filter((r) => r.id !== id));
-    toast.success("Resource deleted");
+    try {
+      const { deleteResource } = await import("@/app/actions/admin-content");
+      await deleteResource(id);
+      setResources((prev) => prev.filter((resource) => resource.id !== id));
+      toast.success("Resource deleted");
+    } catch {
+      toast.error("Failed to delete resource");
+    }
   };
 
   return (

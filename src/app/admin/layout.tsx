@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/client";
 import {
   ChevronLeft, Menu, Activity, Globe, Users, LayoutDashboard, GraduationCap, ShieldCheck, FileText, BookMarked, Bell, Newspaper, Star, MessageSquare, Award, TrendingUp, Cpu, Settings, Search, Terminal, LogOut 
@@ -9,15 +10,29 @@ import {
 import { ThemeToggle } from "@/components/theme-toggle";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
+
+type NavItem = {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+};
+
+type AdminSidebarContentProps = {
+  pathname: string;
+  navItems: NavItem[];
+  adminUser: User;
+  supabase: ReturnType<typeof createClient>;
+  router: ReturnType<typeof useRouter>;
+  onClose?: () => void;
+};
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const supabase = createClient();
   const [loading, setLoading] = useState(true);
-  const [adminUser, setAdminUser] = useState<any>(null);
+  const [adminUser, setAdminUser] = useState<User | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -67,9 +82,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!adminUser) return null;
 
-  if (!adminUser) return null;
-
-  const navItems = [
+  const navItems: NavItem[] = [
     { href: "/admin", label: "Overview", icon: LayoutDashboard },
     { href: "/admin/users", label: "User Management", icon: Users },
     { href: "/admin/tutors", label: "Tutor Management", icon: GraduationCap },
@@ -240,7 +253,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   );
 }
 
-function AdminSidebarContent({ pathname, navItems, adminUser, supabase, router, onClose }: any) {
+function AdminSidebarContent({ pathname, navItems, adminUser, supabase, router, onClose }: AdminSidebarContentProps) {
   return (
     <>
       <div className="p-8 border-b border-white/5 flex items-center gap-4">
@@ -257,7 +270,7 @@ function AdminSidebarContent({ pathname, navItems, adminUser, supabase, router, 
 
       <nav className="flex-1 p-6 space-y-2 overflow-y-auto custom-scrollbar">
         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-4 mb-4">Operations</p>
-        {navItems.map((item: any) => {
+        {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link
