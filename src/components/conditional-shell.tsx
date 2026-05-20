@@ -9,6 +9,7 @@ import { Footer } from "@/components/footer";
 const APP_ROUTES = [
   "/dashboard",
   "/admin",
+  "/institution",
   "/tutor",
   "/study-room",
   "/onboarding",
