@@ -1,14 +1,81 @@
 "use client";
 
-import { useState } from "react";
-import { Save, Building2, Globe, Bell, Shield, Image } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Save, Building2, Globe, Bell, Image, Loader2, Mail, MapPin, Phone } from "lucide-react";
+import { toast } from "sonner";
 
 export default function SettingsPage() {
-  const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    code: "",
+    email: "",
+    description: "",
+    location: "",
+    phone: "",
+    website: "",
+  });
 
-  function handleSave() {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      try {
+        const { getUserInstitution } = await import("@/app/actions/institution-data");
+        const membership = await getUserInstitution();
+        if (membership) {
+          const inst = membership.institution;
+          setForm({
+            name: inst.name,
+            code: inst.code,
+            email: inst.email || "",
+            description: inst.description || "",
+            location: inst.location || "",
+            phone: inst.phone || "",
+            website: inst.website || "",
+          });
+        }
+      } catch {
+        toast.error("Failed to load institution settings");
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      const { getUserInstitution } = await import("@/app/actions/institution-data");
+      const membership = await getUserInstitution();
+      if (!membership) {
+        toast.error("Not authenticated");
+        return;
+      }
+      const { updateInstitutionProfile } = await import("@/app/actions/institution");
+      await updateInstitutionProfile(membership.institution.id, {
+        name: form.name,
+        description: form.description,
+        location: form.location,
+        email: form.email,
+        phone: form.phone,
+        website: form.website,
+      });
+      toast.success("Settings saved");
+    } catch {
+      toast.error("Failed to save settings");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="h-6 w-6 animate-spin text-[#3730A3]" />
+      </div>
+    );
   }
 
   return (
@@ -18,7 +85,6 @@ export default function SettingsPage() {
         <p className="text-sm text-gray-500">Manage your institution profile and preferences.</p>
       </div>
 
-      {/* Institution Profile */}
       <div className="rounded-xl border border-gray-200 bg-white p-5">
         <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-900">
           <Building2 className="h-4 w-4 text-[#3730A3]" />
@@ -28,62 +94,78 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="text-xs font-medium text-gray-500">Institution Name</label>
-              <input defaultValue="Kenyatta University" className="mt-1 h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3730A3]/20" />
+              <input
+                value={form.name}
+                onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                className="mt-1 h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3730A3]/20"
+              />
             </div>
             <div>
               <label className="text-xs font-medium text-gray-500">Institution Code</label>
-              <input defaultValue="KU-2026" disabled className="mt-1 h-10 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm text-gray-400" />
+              <input value={form.code} disabled className="mt-1 h-10 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm text-gray-400" />
             </div>
           </div>
           <div>
-            <label className="text-xs font-medium text-gray-500">Email Address</label>
-            <input defaultValue="admin@ku.ac.ke" className="mt-1 h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3730A3]/20" />
+            <label className="text-xs font-medium text-gray-500">
+              <Mail className="mr-1 inline h-3 w-3" />
+              Email Address
+            </label>
+            <input
+              value={form.email}
+              onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+              className="mt-1 h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3730A3]/20"
+            />
           </div>
           <div>
             <label className="text-xs font-medium text-gray-500">Description</label>
-            <textarea rows={3} defaultValue="Leading public university in Kenya committed to academic excellence and innovation." className="mt-1 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#3730A3]/20" />
-          </div>
-        </div>
-      </div>
-
-      {/* Branding */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5">
-        <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-          <Image className="h-4 w-4 text-[#3730A3]" />
-          Branding
-        </h3>
-        <div className="mt-4 space-y-4">
-          <div>
-            <label className="text-xs font-medium text-gray-500">Institution Logo</label>
-            <div className="mt-1 flex items-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-[#3730A3] text-2xl font-bold text-white">
-                KU
-              </div>
-              <button className="rounded-lg border border-gray-200 px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50">
-                Change Logo
-              </button>
-            </div>
+            <textarea
+              value={form.description}
+              onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+              rows={3}
+              className="mt-1 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#3730A3]/20"
+            />
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="text-xs font-medium text-gray-500">Primary Color</label>
-              <div className="mt-1 flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-[#3730A3]" />
-                <span className="text-xs text-gray-500">#3730A3</span>
-              </div>
+              <label className="text-xs font-medium text-gray-500">
+                <MapPin className="mr-1 inline h-3 w-3" />
+                Location
+              </label>
+              <input
+                value={form.location}
+                onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))}
+                placeholder="Nairobi, Kenya"
+                className="mt-1 h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3730A3]/20"
+              />
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-500">Accent Color</label>
-              <div className="mt-1 flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-[#4f46e5]" />
-                <span className="text-xs text-gray-500">#4f46e5</span>
-              </div>
+              <label className="text-xs font-medium text-gray-500">
+                <Phone className="mr-1 inline h-3 w-3" />
+                Phone
+              </label>
+              <input
+                value={form.phone}
+                onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
+                placeholder="+254 700 000 000"
+                className="mt-1 h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3730A3]/20"
+              />
             </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-500">
+              <Globe className="mr-1 inline h-3 w-3" />
+              Website
+            </label>
+            <input
+              value={form.website}
+              onChange={(e) => setForm((p) => ({ ...p, website: e.target.value }))}
+              placeholder="https://school.edu"
+              className="mt-1 h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3730A3]/20"
+            />
           </div>
         </div>
       </div>
 
-      {/* Notifications */}
       <div className="rounded-xl border border-gray-200 bg-white p-5">
         <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-900">
           <Bell className="h-4 w-4 text-[#3730A3]" />
@@ -107,10 +189,11 @@ export default function SettingsPage() {
 
       <button
         onClick={handleSave}
-        className="inline-flex items-center gap-2 rounded-lg bg-[#3730A3] px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-[#3730A3]/90"
+        disabled={saving}
+        className="inline-flex items-center gap-2 rounded-lg bg-[#3730A3] px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-[#3730A3]/90 disabled:opacity-50"
       >
-        <Save className="h-4 w-4" />
-        {saved ? "Saved!" : "Save Changes"}
+        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+        Save Changes
       </button>
     </div>
   );

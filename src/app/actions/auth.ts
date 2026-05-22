@@ -1,5 +1,6 @@
 "use server";
 
+import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -10,6 +11,7 @@ export async function login(formData: FormData) {
 
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+  const code = formData.get("code") as string;
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -39,6 +41,24 @@ export async function login(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
+
+  // Institution login: if code is provided and user is an institution member, redirect to institution portal
+  if (code && prismaUser) {
+    try {
+      const membership = await prisma.institutionMember.findFirst({
+        where: {
+          userId: prismaUser.id,
+          institution: { code },
+        },
+        include: { institution: true },
+      });
+      if (membership) {
+        redirect("/institution/dashboard");
+      }
+    } catch {
+      // Fall through to normal redirect if institution check fails
+    }
+  }
   
   if (role === "TUTOR") {
     redirect("/tutor");

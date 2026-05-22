@@ -1,16 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { FileText, Download, Search, BookOpen, Video, File, Filter } from "lucide-react";
+import { useState, useEffect } from "react";
+import { FileText, Download, Search, BookOpen, Video, File, Loader2 } from "lucide-react";
 
-const resources = [
-  { id: 1, title: "Calculus Revision Notes.pdf", type: "PDF", subject: "Mathematics", form: "Form 4", downloads: 234, size: "2.4 MB", date: "May 12, 2026" },
-  { id: 2, title: "Photo Synthesis — Complete Guide", type: "PDF", subject: "Biology", form: "Form 3", downloads: 189, size: "3.1 MB", date: "May 10, 2026" },
-  { id: 3, title: "Newton's Laws — Video Lesson", type: "Video", subject: "Physics", form: "Form 4", downloads: 312, size: "45 MB", date: "May 8, 2026" },
-  { id: 4, title: "Periodic Table Flashcards", type: "Interactive", subject: "Chemistry", form: "Form 2", downloads: 167, size: "1.8 MB", date: "May 5, 2026" },
-  { id: 5, title: "KCSE Past Papers 2025", type: "PDF", subject: "All Subjects", form: "Form 4", downloads: 891, size: "12.5 MB", date: "Apr 30, 2026" },
-  { id: 6, title: "Essay Writing Techniques", type: "PDF", subject: "English", form: "Form 3", downloads: 203, size: "1.2 MB", date: "Apr 28, 2026" },
-];
+type ResourceItem = {
+  id: string;
+  title: string;
+  type: string;
+  subject: string;
+  form: string;
+  downloads: number;
+  size: string;
+  date: string;
+};
 
 const typeIcon: Record<string, typeof FileText> = {
   PDF: FileText,
@@ -19,8 +21,29 @@ const typeIcon: Record<string, typeof FileText> = {
 };
 
 export default function ResourcesPage() {
+  const [resources, setResources] = useState<ResourceItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
+
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      try {
+        const { getInstitutionResources, getUserInstitution } = await import("@/app/actions/institution-data");
+        const membership = await getUserInstitution();
+        if (membership) {
+          const data = await getInstitutionResources(membership.institution.id);
+          setResources(data as ResourceItem[]);
+        }
+      } catch {
+        setResources([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   const filtered = resources.filter((r) => {
     const matchesSearch =
@@ -30,11 +53,19 @@ export default function ResourcesPage() {
     return matchesSearch && matchesType;
   });
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="h-6 w-6 animate-spin text-[#3730A3]" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-lg font-semibold text-gray-900">Resources</h2>
-        <p className="text-sm text-gray-500">Educational materials shared across your institution.</p>
+        <p className="text-sm text-gray-500">{resources.length} resource{resources.length !== 1 ? "s" : ""} available.</p>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -64,36 +95,46 @@ export default function ResourcesPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((r) => {
-          const Icon = typeIcon[r.type] || File;
-          return (
-            <div key={r.id} className="rounded-xl border border-gray-200 bg-white p-5 transition-colors hover:border-gray-300">
-              <div className="flex items-start justify-between">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#3730A3]/10">
-                  <Icon className="h-5 w-5 text-[#3730A3]" />
+      {filtered.length === 0 ? (
+        <div className="flex flex-col items-center py-16 text-center">
+          <FileText className="mb-3 h-10 w-10 text-gray-200" />
+          <p className="text-sm font-medium text-gray-500">No resources found</p>
+          <p className="text-xs text-gray-400">
+            {search ? "Try a different search term." : "No resources have been uploaded yet."}
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((r) => {
+            const Icon = typeIcon[r.type] || File;
+            return (
+              <div key={r.id} className="rounded-xl border border-gray-200 bg-white p-5 transition-colors hover:border-gray-300">
+                <div className="flex items-start justify-between">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#3730A3]/10">
+                    <Icon className="h-5 w-5 text-[#3730A3]" />
+                  </div>
+                  <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-500">
+                    {r.size}
+                  </span>
                 </div>
-                <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-500">
-                  {r.size}
-                </span>
-              </div>
-              <h3 className="mt-3 text-sm font-semibold text-gray-900 line-clamp-2">{r.title}</h3>
-              <div className="mt-1 flex items-center gap-2 text-xs text-gray-400">
-                <span>{r.subject}</span>
-                <span>·</span>
-                <span>{r.form}</span>
-              </div>
-              <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3 text-xs text-gray-400">
-                <div className="flex items-center gap-1">
-                  <Download className="h-3.5 w-3.5" />
-                  {r.downloads} downloads
+                <h3 className="mt-3 text-sm font-semibold text-gray-900 line-clamp-2">{r.title}</h3>
+                <div className="mt-1 flex items-center gap-2 text-xs text-gray-400">
+                  <span>{r.subject}</span>
+                  <span>·</span>
+                  <span>{r.form}</span>
                 </div>
-                <span>{r.date}</span>
+                <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3 text-xs text-gray-400">
+                  <div className="flex items-center gap-1">
+                    <Download className="h-3.5 w-3.5" />
+                    {r.downloads} download{r.downloads !== 1 ? "s" : ""}
+                  </div>
+                  <span>{r.date}</span>
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
