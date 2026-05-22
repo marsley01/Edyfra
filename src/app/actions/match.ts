@@ -12,6 +12,7 @@ import { executeSmartMatching, sweepAndAIFallback } from "./match-algorithm";
 import { StreamChat } from "stream-chat";
 import { notifyUser } from "@/app/actions/notifications";
 import { getUserData } from "@/app/actions/user";
+import { withRateLimit } from "@/lib/rate-limit";
 
 const STREAM_KEY = process.env.NEXT_PUBLIC_STREAM_KEY!;
 const STREAM_SECRET = process.env.STREAM_SECRET!;
@@ -36,19 +37,27 @@ export async function createMatchRequest(data: { subject: string; topic: string 
       return { success: false, error: "Please sign in to start matching." };
     }
 
-    // Ensure Prisma User record exists before creating FK reference
-    await getUserData();
+    const limited = await withRateLimit("createMatchRequest", user.id, async () => {
+      // Ensure Prisma User record exists before creating FK reference
+      await getUserData();
 
-    const matchRequest = await prisma.matchRequest.create({
-      data: {
-        studentId: user.id,
-        subject: data.subject,
-        topic: data.topic,
-      },
-    });
+      const matchRequest = await prisma.matchRequest.create({
+        data: {
+          studentId: user.id,
+          subject: data.subject,
+          topic: data.topic,
+        },
+      });
 
-    revalidatePath("/tutor/requests");
-    return { success: true, matchRequestId: matchRequest.id };
+      revalidatePath("/tutor/requests");
+      return { matchRequestId: matchRequest.id };
+    }, { interval: 60_000, maxRequests: 10 });
+
+    if (!limited.success) {
+      return { success: false, error: limited.error };
+    }
+
+    return { success: true, matchRequestId: limited.data.matchRequestId };
   } catch (err: any) {
     console.error("[createMatchRequest] Error:", err);
     return { success: false, error: err?.message || "Failed to create match request" };
@@ -73,7 +82,7 @@ export async function acceptMatchRequest(requestId: string) {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    return { success: false, error: "Unauthorized" };
+    return { success: false, error: "Please sign in to accept a match." };
   }
 
   const matchRequest = await prisma.matchRequest.findUnique({
