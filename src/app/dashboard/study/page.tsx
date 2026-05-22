@@ -57,31 +57,35 @@ export default function StudyPage() {
 
     try {
       const result = await createMatchRequest(formData);
-      if (result.success) {
-        setCurrentRequestId(result.matchRequestId);
-        
-        // Broadcast the request to all online users/tutors
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          try {
-            await supabase.channel('global-matches').send({
-              type: 'broadcast',
-              event: 'new-request',
-              payload: {
-                requestId: result.matchRequestId,
-                studentId: user.id,
-                studentName: user.user_metadata?.name || 'A student',
-                subject: formData.subject,
-                topic: formData.topic || 'General'
-              }
-            });
-          } catch (broadcastErr) {
-            console.error('Broadcast failed, but matching continues:', broadcastErr);
-          }
-        }
-        
-        toast.success("Request submitted! Searching for help...");
+      if (!result.success) {
+        toast.error(result.error || "Failed to start matching. Please try again.");
+        setIsMatching(false);
+        return;
       }
+      
+      setCurrentRequestId(result.matchRequestId);
+      
+      // Broadcast the request to all online users/tutors
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        try {
+          await supabase.channel('global-matches').send({
+            type: 'broadcast',
+            event: 'new-request',
+            payload: {
+              requestId: result.matchRequestId,
+              studentId: user.id,
+              studentName: user.user_metadata?.name || 'A student',
+              subject: formData.subject,
+              topic: formData.topic || 'General'
+            }
+          });
+        } catch (broadcastErr) {
+          console.error('Broadcast failed, but matching continues:', broadcastErr);
+        }
+      }
+      
+      toast.success("Request submitted! Searching for help...");
     } catch (error) {
       console.error("Matching error:", error);
       toast.error("Failed to start matching. Please try again.");

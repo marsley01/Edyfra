@@ -27,36 +27,28 @@ async function upsertStreamUsers(users: { id: string; name: string; image?: stri
 }
 
 export async function createMatchRequest(data: { subject: string; topic: string }) {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll(cookiesToSet: any) {
-          try { cookiesToSet.forEach(({ name, value, options }: any) => cookieStore.set(name, value, options)); } catch {}
-        },
-      },
+  try {
+    const supabase = await (await import("@/utils/supabase/server")).createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: "Please sign in to start matching." };
     }
-  );
 
-  const { data: { user } } = await supabase.auth.getUser();
+    const matchRequest = await prisma.matchRequest.create({
+      data: {
+        studentId: user.id,
+        subject: data.subject,
+        topic: data.topic,
+      },
+    });
 
-  if (!user) {
-    throw new Error("Unauthorized");
+    revalidatePath("/tutor/requests");
+    return { success: true, matchRequestId: matchRequest.id };
+  } catch (err: any) {
+    console.error("[createMatchRequest] Error:", err);
+    return { success: false, error: err?.message || "Failed to create match request" };
   }
-
-  const matchRequest = await prisma.matchRequest.create({
-    data: {
-      studentId: user.id,
-      subject: data.subject,
-      topic: data.topic,
-    },
-  });
-
-  revalidatePath("/tutor/requests");
-  return { success: true, matchRequestId: matchRequest.id };
 }
 
 export async function acceptMatchRequest(requestId: string) {
