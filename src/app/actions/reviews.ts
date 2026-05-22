@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { revalidatePath } from "next/cache";
+import { notifyUser } from "@/app/actions/notifications";
 
 // ─── Landing Page Testimonials (Supabase reviews table) ──────────────
 
@@ -152,14 +153,11 @@ export async function createSessionReview(
 
   await recalculateTutorRating(session.partnerId);
 
-  await prisma.notification.create({
-    data: {
-      userId: session.partnerId,
-      type: "REVIEW_RECEIVED",
-      title: "New Review!",
-      body: `You received a ${rating}-star review after your session.`,
-      actionUrl: `/tutor`,
-    },
+  await notifyUser(session.partnerId, {
+    type: "REVIEW_RECEIVED",
+    title: "New Review!",
+    body: `You received a ${rating}-star review after your session.`,
+    actionUrl: `/tutor`,
   });
 
   revalidatePath("/dashboard");

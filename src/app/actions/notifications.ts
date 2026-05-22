@@ -76,3 +76,36 @@ export async function markNotificationRead(id: string) {
   revalidatePath("/dashboard/notifications");
   revalidatePath("/tutor/notifications");
 }
+
+export async function notifyUser(
+  userId: string,
+  data: {
+    type: string;
+    title: string;
+    body: string;
+    actionUrl?: string;
+  }
+) {
+  const notification = await prisma.notification.create({
+    data: {
+      userId,
+      type: data.type,
+      title: data.title,
+      body: data.body,
+      actionUrl: data.actionUrl,
+    },
+  });
+
+  try {
+    const { sendNotificationPush } = await import("./push");
+    sendNotificationPush(userId, {
+      title: data.title,
+      body: data.body,
+      url: data.actionUrl,
+    }).catch(() => {});
+  } catch {
+    // Non-blocking
+  }
+
+  return notification;
+}

@@ -45,3 +45,6 @@ next-env.d.ts
 /src/generated
 
 .vercel
+
+# codex backup
+.codex-push-previous

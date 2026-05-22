@@ -10,6 +10,7 @@ import { MatchTier, Role } from "@/generated/client";
 import { randomBytes } from "crypto";
 import { executeSmartMatching, sweepAndAIFallback } from "./match-algorithm";
 import { StreamChat } from "stream-chat";
+import { notifyUser } from "@/app/actions/notifications";
 
 const STREAM_KEY = process.env.NEXT_PUBLIC_STREAM_KEY!;
 const STREAM_SECRET = process.env.STREAM_SECRET!;
@@ -139,28 +140,14 @@ export async function acceptMatchRequest(requestId: string) {
   }
 
   try {
-    await prisma.notification.create({
-      data: {
-        userId: matchRequest.studentId,
-        type: "MATCH_FOUND",
-        title: "Help is here!",
-        body: `${userData?.name || 'An expert'} has accepted your request. Entering room...`,
-        actionUrl: `/study-room/${session.id}`,
-      }
+    await notifyUser(matchRequest.studentId, {
+      type: "MATCH_FOUND",
+      title: "Help is here!",
+      body: `${userData?.name || 'An expert'} has accepted your request. Entering room...`,
+      actionUrl: `/study-room/${session.id}`,
     });
   } catch (e) {
     console.error("Failed to notify student:", e);
-  }
-
-  try {
-    const { sendNotificationPush } = await import("./push");
-    await sendNotificationPush(matchRequest.studentId, {
-      title: "Help is here!",
-      body: `${userData?.name || 'An expert'} has accepted your request. Entering room...`,
-      url: `/study-room/${session.id}`,
-    });
-  } catch (e) {
-    console.error("Failed to send push notification:", e);
   }
 
   revalidatePath("/tutor/requests");
@@ -198,37 +185,19 @@ export async function initiateAutoMatch(requestId: string, options?: { skipAI?: 
             select: { name: true }
           });
 
-          await prisma.notification.create({
-            data: {
-              userId: matchRequest?.studentId || "",
-              type: "MATCH_FOUND",
-              title: "Connected!",
-              body: `You've been matched with ${partner?.name || tierName}! Starting session...`,
-              actionUrl: `/study-room/${result.sessionId}`,
-            }
+          await notifyUser(matchRequest?.studentId || "", {
+            type: "MATCH_FOUND",
+            title: "Connected!",
+            body: `You've been matched with ${partner?.name || tierName}! Starting session...`,
+            actionUrl: `/study-room/${result.sessionId}`,
           });
         } else {
-          await prisma.notification.create({
-            data: {
-              userId: matchRequest?.studentId || "",
-              type: "MATCH_FOUND",
-              title: "Ready to learn!",
-              body: "Mash AI is ready to help. Entering room...",
-              actionUrl: `/study-room/${result.sessionId}`,
-            }
+          await notifyUser(matchRequest?.studentId || "", {
+            type: "MATCH_FOUND",
+            title: "Ready to learn!",
+            body: "Mash AI is ready to help. Entering room...",
+            actionUrl: `/study-room/${result.sessionId}`,
           });
-        }
-
-        if (matchRequest?.studentId && result.sessionId) {
-          try {
-            const { sendNotificationPush } = await import("./push");
-            const name = (result.partnerId ? await prisma.user.findUnique({ where: { id: result.partnerId }, select: { name: true } }) : null);
-            await sendNotificationPush(matchRequest.studentId, {
-              title: "Connected!",
-              body: `You've been matched with ${name?.name || tierName}!`,
-              url: `/study-room/${result.sessionId}`,
-            });
-          } catch {} // Non-blocking
         }
       } catch (e) {
         console.error("Failed to notify student:", e);
@@ -375,14 +344,11 @@ export async function completeSession(sessionId: string) {
       });
       await recalibrateTier(session.studentId);
       
-      await prisma.notification.create({
-        data: {
-          userId: session.studentId,
-          type: "POINTS_EARNED",
-          title: "Session Completed!",
-          body: `You earned +${SESSION_CONFIG.POINTS_STUDENT} points for completing a study session.`,
-          actionUrl: `/dashboard/sessions`,
-        }
+      await notifyUser(session.studentId, {
+        type: "POINTS_EARNED",
+        title: "Session Completed!",
+        body: `You earned +${SESSION_CONFIG.POINTS_STUDENT} points for completing a study session.`,
+        actionUrl: `/dashboard/sessions`,
       });
 
       if (session.partnerId) {
@@ -392,14 +358,11 @@ export async function completeSession(sessionId: string) {
         });
         await recalibrateTier(session.partnerId);
         
-        await prisma.notification.create({
-          data: {
-            userId: session.partnerId,
-            type: "POINTS_EARNED",
-            title: "Session Completed!",
-            body: `You earned +${SESSION_CONFIG.POINTS_TUTOR} points for helping a peer!`,
-            actionUrl: `/dashboard/sessions`,
-          }
+        await notifyUser(session.partnerId, {
+          type: "POINTS_EARNED",
+          title: "Session Completed!",
+          body: `You earned +${SESSION_CONFIG.POINTS_TUTOR} points for helping a peer!`,
+          actionUrl: `/dashboard/sessions`,
         });
       }
     }

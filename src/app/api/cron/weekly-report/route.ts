@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { AIService } from "@/utils/ai-service";
 import prisma from "@/lib/prisma";
+import { notifyUser } from "@/app/actions/notifications";
 
 export const maxDuration = 60; // Allow 60 seconds
 
@@ -63,14 +64,11 @@ export async function GET(request: Request) {
       try {
         const insight = await AIService.generateCompletion(prompt);
 
-        await prisma.notification.create({
-          data: {
-            userId: student.id,
-            type: "WEEKLY_REPORT",
-            title: "Your Weekly Progress Report is Here!",
-            body: insight,
-            actionUrl: `/dashboard/profile`
-          }
+        await notifyUser(student.id, {
+          type: "WEEKLY_REPORT",
+          title: "Your Weekly Progress Report is Here!",
+          body: insight,
+          actionUrl: `/dashboard/profile`,
         });
         
         reportsGenerated++;

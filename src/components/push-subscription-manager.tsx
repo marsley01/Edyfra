@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { urlBase64ToUint8Array } from "@/lib/utils";
 
 export function PushSubscriptionManager() {
   useEffect(() => {
@@ -23,7 +24,7 @@ export function PushSubscriptionManager() {
 
         const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: publicKey,
+          applicationServerKey: urlBase64ToUint8Array(publicKey),
         });
 
         await fetch("/api/push/subscribe", {

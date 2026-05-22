@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { AIService } from "@/utils/ai-service";
 import prisma from "@/lib/prisma";
 import { StreamChat } from "stream-chat";
+import { notifyUser } from "@/app/actions/notifications";
 
 export async function POST(request: Request) {
   try {
@@ -53,14 +54,11 @@ export async function POST(request: Request) {
     const summary = await AIService.generateCompletion(prompt);
 
     // 3. Send Notification to Student
-    await prisma.notification.create({
-      data: {
-        userId: studentId,
-        type: "SESSION_SUMMARY",
-        title: "Session Summary Ready",
-        body: summary,
-        actionUrl: `/dashboard/sessions/${sessionId}`
-      }
+    await notifyUser(studentId, {
+      type: "SESSION_SUMMARY",
+      title: "Session Summary Ready",
+      body: summary,
+      actionUrl: `/dashboard/sessions/${sessionId}`,
     });
 
     return NextResponse.json({ success: true });

@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { TUTOR_CONFIG } from "@/lib/config";
 import { isFounderEmail } from "@/utils/admin-guard";
+import { notifyUser } from "@/app/actions/notifications";
 
 export type AdminGlobalSettings = {
   googleAiKey?: string;
@@ -293,14 +294,11 @@ export async function approveTutorApplication(applicationId: string) {
 
     // Add Notification
     try {
-      await prisma.notification.create({
-        data: {
-          userId: app.userId,
-          type: "TUTOR_APPROVED",
-          title: "Application Approved!",
-          body: "Congratulations! Your expert dashboard has been activated.",
-          actionUrl: "/tutor"
-        }
+      await notifyUser(app.userId, {
+        type: "TUTOR_APPROVED",
+        title: "Application Approved!",
+        body: "Congratulations! Your expert dashboard has been activated.",
+        actionUrl: "/tutor"
       });
     } catch (e) {
       console.error("Failed to send notification:", e);
@@ -368,14 +366,11 @@ export async function approveResource(resourceId: string) {
     });
 
     try {
-      await prisma.notification.create({
-        data: {
-          userId: resource.sellerId,
-          type: "RESOURCE_APPROVED",
-          title: "Resource Approved!",
-          body: `Your resource "${resource.title}" has been approved and is now live.`,
-          actionUrl: "/dashboard/resources",
-        },
+      await notifyUser(resource.sellerId, {
+        type: "RESOURCE_APPROVED",
+        title: "Resource Approved!",
+        body: `Your resource "${resource.title}" has been approved and is now live.`,
+        actionUrl: "/dashboard/resources",
       });
     } catch (e) {
       console.error("Failed to send notification:", e);
@@ -404,14 +399,11 @@ export async function rejectResource(resourceId: string) {
     });
 
     try {
-      await prisma.notification.create({
-        data: {
-          userId: resource.sellerId,
-          type: "RESOURCE_REJECTED",
-          title: "Resource Not Approved",
-          body: `Your resource "${resource.title}" was not approved. Please review and resubmit.`,
-          actionUrl: "/dashboard/resources",
-        },
+      await notifyUser(resource.sellerId, {
+        type: "RESOURCE_REJECTED",
+        title: "Resource Not Approved",
+        body: `Your resource "${resource.title}" was not approved. Please review and resubmit.`,
+        actionUrl: "/dashboard/resources",
       });
     } catch (e) {
       console.error("Failed to send notification:", e);
