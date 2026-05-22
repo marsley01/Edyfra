@@ -51,22 +51,24 @@ export async function uploadAndCreateResource(formData: FormData) {
 
   const { data: { publicUrl } } = adminClient.storage.from("resources").getPublicUrl(fileName);
 
-  const { error } = await adminClient.from("resources").insert({
-    seller_id: user.id,
-    title,
-    subject,
-    education_level,
-    resource_type,
-    topic: topic || null,
-    description: description || null,
-    price,
-    file_path: publicUrl,
-    status: "pending",
-  });
-
-  if (error) {
-    console.error("Resource insert error:", error);
-    return { error: error.message };
+  try {
+    await prisma.resource.create({
+      data: {
+        sellerId: user.id,
+        title,
+        subject,
+        educationLevel: education_level,
+        resourceType: resource_type || null,
+        topic: topic || null,
+        description: description || null,
+        price,
+        filePath: publicUrl,
+        status: "pending",
+      },
+    });
+  } catch (dbError: any) {
+    console.error("Resource Prisma insert error:", dbError);
+    return { error: dbError?.message || "Failed to save resource" };
   }
 
   revalidatePath("/tutor/resources");
@@ -81,12 +83,12 @@ export async function getMyResources() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
-  const { data, error } = await supabase
-    .from("resources")
-    .select("*")
-    .eq("seller_id", user.id)
-    .order("created_at", { ascending: false });
-
-  if (error) return [];
-  return data || [];
+  try {
+    return await prisma.resource.findMany({
+      where: { sellerId: user.id },
+      orderBy: { createdAt: "desc" },
+    });
+  } catch {
+    return [];
+  }
 }
