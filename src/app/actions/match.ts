@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { SESSION_CONFIG } from "@/lib/config";
 import { recalibrateTier } from "./user";
-import { MatchTier, Role } from "@/generated/client";
+import { MatchTier, Role, EduLevel, Tier } from "@/generated/client";
 import { randomBytes } from "crypto";
 import { executeSmartMatching, sweepAndAIFallback } from "./match-algorithm";
 import { StreamChat } from "stream-chat";
@@ -38,12 +38,29 @@ export async function createMatchRequest(data: { subject: string; topic: string 
     }
 
     const limited = await withRateLimit("createMatchRequest", user.id, async () => {
-      // Ensure Prisma User record exists before creating FK reference
-      await getUserData();
+      // Ensure Prisma User record exists for this exact Supabase ID
+      let prismaUser = await prisma.user.findUnique({ where: { id: user.id } });
+      if (!prismaUser) {
+        const meta = user.user_metadata || {};
+        prismaUser = await prisma.user.create({
+          data: {
+            id: user.id,
+            email: user.email!,
+            name: meta.name || meta.full_name || "User",
+            role: "STUDENT" as Role,
+            educationLevel: "HIGH_SCHOOL" as EduLevel,
+            county: "Nairobi",
+            tier: "BRONZE" as Tier,
+            points: SESSION_CONFIG.NEW_USER_WELCOME_BONUS,
+            lastActiveAt: new Date(),
+            avatar: meta.avatar || null,
+          },
+        });
+      }
 
       const matchRequest = await prisma.matchRequest.create({
         data: {
-          studentId: user.id,
+          studentId: prismaUser.id,
           subject: data.subject,
           topic: data.topic,
         },
