@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { autoRefreshToken: false, persistSession: false } }
-);
-
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function getAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+}
 
 /**
  * POST /api/newsletter
@@ -30,7 +32,7 @@ export async function POST(request: NextRequest) {
     const normalizedEmail = email.trim().toLowerCase();
 
     // Insert to newsletter_subscribers table (upsert to avoid duplicate errors)
-    const { error } = await supabaseAdmin
+    const { error } = await getAdminClient()
       .from("newsletter_subscribers")
       .upsert(
         {

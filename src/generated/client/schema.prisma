@@ -66,8 +66,8 @@ model User {
   creditTransactions       CreditTransaction[]
   sellerEarnings           SellerEarning[]
   pushSubscriptions        PushSubscription[]
-  institutionStudent       InstitutionStudent?
-  institutionTutors        InstitutionTutor[]
+  institutionMembers       InstitutionMember[]
+  institutionDocuments     InstitutionDocument[]
 }
 
 model StudentProfile {
@@ -580,6 +580,65 @@ model newsletter_subscribers {
   @@index([subscribed_at(sort: Desc)], map: "idx_newsletter_subscribers_subscribed_at")
 }
 
+enum InstitutionRole {
+  INSTITUTION_ADMIN
+  DEPARTMENT_HEAD
+  INSTRUCTOR
+  STUDENT
+}
+
+model Institution {
+  id             String   @id @default(cuid())
+  name           String
+  code           String   @unique
+  description    String?
+  logo           String?
+  banner         String?
+  location       String?
+  email          String?
+  phone          String?
+  website        String?
+  verified       Boolean  @default(false)
+  plan           String   @default("premium")
+  allowedDomains String[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  members   InstitutionMember[]
+  documents InstitutionDocument[]
+}
+
+model InstitutionMember {
+  id            String          @id @default(cuid())
+  institutionId String
+  userId        String
+  role          InstitutionRole @default(STUDENT)
+  status        String          @default("ACTIVE")
+  joinedAt      DateTime        @default(now())
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([institutionId, userId])
+  @@index([institutionId])
+  @@index([userId])
+}
+
+model InstitutionDocument {
+  id            String   @id @default(cuid())
+  institutionId String
+  title         String
+  description   String?
+  filePath      String
+  fileType      String
+  fileSize      Int
+  uploadedBy    String
+  createdAt     DateTime @default(now())
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  uploader    User        @relation(fields: [uploadedBy], references: [id])
+}
+
 enum Gender {
   MALE
   FEMALE
@@ -652,57 +711,4 @@ enum resource_status {
   pending
   approved
   rejected
-}
-
-model Institution {
-  id        String   @id @default(cuid())
-  name      String
-  type      String   @default("HIGH_SCHOOL") // e.g., HIGH_SCHOOL, UNIVERSITY
-  code      String?  @unique
-  logo      String?
-  branding  Json     @default("{}") // Colors, custom text, etc.
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  isActive  Boolean  @default(true)
-
-  staff    InstitutionStaff[]
-  students InstitutionStudent[]
-  tutors   InstitutionTutor[]
-}
-
-model InstitutionStaff {
-  id            String   @id @default(cuid())
-  institutionId String
-  userId        String?  @unique // Link to main User if they use the same auth
-  email         String   @unique
-  name          String
-  role          String   @default("ADMIN") // ADMIN, TEACHER, etc.
-  createdAt     DateTime @default(now())
-
-  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-}
-
-model InstitutionStudent {
-  id            String   @id @default(cuid())
-  institutionId String
-  userId        String   @unique
-  studentIdStr  String? // The school's internal student ID like "ADM/2021/001"
-  classYear     String?
-  createdAt     DateTime @default(now())
-
-  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model InstitutionTutor {
-  id            String   @id @default(cuid())
-  institutionId String
-  userId        String
-  status        String   @default("ACTIVE")
-  createdAt     DateTime @default(now())
-
-  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([institutionId, userId])
 }

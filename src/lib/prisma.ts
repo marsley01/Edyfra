@@ -1,15 +1,15 @@
 import { PrismaClient } from "../generated/client";
 
-const prismaClientSingleton = () => {
-  return new PrismaClient();
-};
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
 
-declare global {
-  var prismaGlobal: undefined | ReturnType<typeof prismaClientSingleton>;
-}
+const prisma = globalForPrisma.prisma ?? new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL || "postgresql://localhost:5432/postgres?connect_timeout=1",
+    },
+  },
+});
 
-const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
 export default prisma;
-
-if (process.env.NODE_ENV !== "production") globalThis.prismaGlobal = prisma;

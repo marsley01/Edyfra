@@ -584,39 +584,39 @@ exports.Prisma.Newsletter_subscribersScalarFieldEnum = {
 exports.Prisma.InstitutionScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  type: 'type',
   code: 'code',
+  description: 'description',
   logo: 'logo',
-  branding: 'branding',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  isActive: 'isActive'
-};
-
-exports.Prisma.InstitutionStaffScalarFieldEnum = {
-  id: 'id',
-  institutionId: 'institutionId',
-  userId: 'userId',
+  banner: 'banner',
+  location: 'location',
   email: 'email',
-  name: 'name',
+  phone: 'phone',
+  website: 'website',
+  verified: 'verified',
+  plan: 'plan',
+  allowedDomains: 'allowedDomains',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.InstitutionMemberScalarFieldEnum = {
+  id: 'id',
+  institutionId: 'institutionId',
+  userId: 'userId',
   role: 'role',
-  createdAt: 'createdAt'
-};
-
-exports.Prisma.InstitutionStudentScalarFieldEnum = {
-  id: 'id',
-  institutionId: 'institutionId',
-  userId: 'userId',
-  studentIdStr: 'studentIdStr',
-  classYear: 'classYear',
-  createdAt: 'createdAt'
-};
-
-exports.Prisma.InstitutionTutorScalarFieldEnum = {
-  id: 'id',
-  institutionId: 'institutionId',
-  userId: 'userId',
   status: 'status',
+  joinedAt: 'joinedAt'
+};
+
+exports.Prisma.InstitutionDocumentScalarFieldEnum = {
+  id: 'id',
+  institutionId: 'institutionId',
+  title: 'title',
+  description: 'description',
+  filePath: 'filePath',
+  fileType: 'fileType',
+  fileSize: 'fileSize',
+  uploadedBy: 'uploadedBy',
   createdAt: 'createdAt'
 };
 
@@ -699,6 +699,13 @@ exports.AppStatus = exports.$Enums.AppStatus = {
   REJECTED: 'REJECTED'
 };
 
+exports.InstitutionRole = exports.$Enums.InstitutionRole = {
+  INSTITUTION_ADMIN: 'INSTITUTION_ADMIN',
+  DEPARTMENT_HEAD: 'DEPARTMENT_HEAD',
+  INSTRUCTOR: 'INSTRUCTOR',
+  STUDENT: 'STUDENT'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   StudentProfile: 'StudentProfile',
@@ -740,9 +747,8 @@ exports.Prisma.ModelName = {
   ResourcePurchase: 'ResourcePurchase',
   newsletter_subscribers: 'newsletter_subscribers',
   Institution: 'Institution',
-  InstitutionStaff: 'InstitutionStaff',
-  InstitutionStudent: 'InstitutionStudent',
-  InstitutionTutor: 'InstitutionTutor'
+  InstitutionMember: 'InstitutionMember',
+  InstitutionDocument: 'InstitutionDocument'
 };
 
 /**
