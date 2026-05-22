@@ -63,7 +63,7 @@ export default function StudyPage() {
         return;
       }
       
-      setCurrentRequestId(result.matchRequestId);
+      setCurrentRequestId(result.matchRequestId || null);
       
       // Broadcast the request to all online users/tutors
       const { data: { user } } = await supabase.auth.getUser();

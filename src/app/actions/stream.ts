@@ -50,6 +50,17 @@ export async function getStreamToken(userId: string) {
     role: "user",
   });
 
+  // Ensure mash-ai user exists in Stream (required for channel membership)
+  try {
+    await client.upsertUser({
+      id: "mash-ai",
+      name: "Mash AI",
+      role: "user",
+    });
+  } catch {
+    // Non-blocking — mash-ai might already exist
+  }
+
   console.log(`[Stream] Token generated for user: ${userId}`);
   return client.createToken(userId);
 }
