@@ -150,16 +150,12 @@ export default function TutorDashboard() {
       setPendingRequests(data);
     } catch (err) {
       console.error("Failed to load filtered requests:", err);
-      // Fallback: show all (old behavior) if filter action fails
-      const { data, error } = await supabase
-        .from("MatchRequest")
-        .select("*")
-        .is("sessionId", null)
-        .order("createdAt", { ascending: false })
-        .limit(10);
-
-      if (!error && data) {
-        setPendingRequests(data as PendingRequest[]);
+      try {
+        const { getFilteredMatchRequests } = await import("@/app/actions/match-algorithm");
+        const fallback = await getFilteredMatchRequests([]);
+        setPendingRequests(fallback as PendingRequest[]);
+      } catch {
+        setPendingRequests([]);
       }
     }
     setSessionLoading(false);

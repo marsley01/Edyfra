@@ -36,6 +36,7 @@ export default function DashboardPageContent() {
   const [challenge, setChallenge] = useState<any>(null);
   const [challengeLoading, setChallengeLoading] = useState(true);
   const [userAnswer, setUserAnswer] = useState("");
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ correct: boolean; explanation: string; correctAnswer: string } | null>(null);
   const [completed, setCompleted] = useState(false);
@@ -111,11 +112,16 @@ export default function DashboardPageContent() {
     }
   };
 
+  const challengeOptions: string[] = Array.isArray(challenge?.options)
+    ? (challenge.options as string[])
+    : [];
+
   const handleSubmitAnswer = async () => {
-    if (!challenge || !userAnswer.trim() || !userData) return;
+    const answerText = challengeOptions.length >= 2 ? selectedOption : userAnswer.trim();
+    if (!challenge || !answerText || !userData) return;
     setSubmitting(true);
     try {
-      const evaluation = await evaluateChallengeAnswer(challenge.id, userAnswer.trim());
+      const evaluation = await evaluateChallengeAnswer(challenge.id, answerText);
       setResult(evaluation);
       await saveChallengeAttempt(userData.id, challenge.id, evaluation.correct);
       if (evaluation.correct) {
@@ -365,22 +371,50 @@ export default function DashboardPageContent() {
                  <p className="text-lg font-medium leading-relaxed text-white/90">
                    {challenge?.question || "Loading challenge..."}
                  </p>
-                 <div className="flex gap-2">
-                   <Input
-                     value={userAnswer}
-                     onChange={(e) => setUserAnswer(e.target.value)}
-                     placeholder="Type your answer..."
-                     className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/40 rounded-xl h-12"
-                     disabled={submitting}
-                   />
-                   <Button
-                     onClick={handleSubmitAnswer}
-                     disabled={submitting || !userAnswer.trim()}
-                     className="bg-primary hover:bg-primary/90 text-white rounded-xl h-12 px-4"
-                   >
-                     {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                   </Button>
-                 </div>
+                 {challengeOptions.length >= 2 ? (
+                   <div className="space-y-2">
+                     {challengeOptions.map((option, i) => (
+                       <button
+                         key={option}
+                         type="button"
+                         disabled={submitting}
+                         onClick={() => setSelectedOption(option)}
+                         className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                           selectedOption === option
+                             ? "border-primary bg-primary/20 text-white"
+                             : "border-white/20 bg-white/5 text-white/80 hover:border-white/40"
+                         }`}
+                       >
+                         <span className="font-black mr-3">{String.fromCharCode(65 + i)}.</span>
+                         {option}
+                       </button>
+                     ))}
+                     <Button
+                       onClick={handleSubmitAnswer}
+                       disabled={submitting || !selectedOption}
+                       className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl h-12 font-black uppercase tracking-widest text-xs"
+                     >
+                       {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit Answer"}
+                     </Button>
+                   </div>
+                 ) : (
+                   <div className="flex gap-2">
+                     <Input
+                       value={userAnswer}
+                       onChange={(e) => setUserAnswer(e.target.value)}
+                       placeholder="Type your answer..."
+                       className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/40 rounded-xl h-12"
+                       disabled={submitting}
+                     />
+                     <Button
+                       onClick={handleSubmitAnswer}
+                       disabled={submitting || !userAnswer.trim()}
+                       className="bg-primary hover:bg-primary/90 text-white rounded-xl h-12 px-4"
+                     >
+                       {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                     </Button>
+                   </div>
+                 )}
                  <div className="mt-4 pt-4 border-t border-white/10">
                    <Button
                      onClick={handleGeneratePersonalized}

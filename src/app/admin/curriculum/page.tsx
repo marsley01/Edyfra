@@ -12,7 +12,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, Upload, FileText, Loader2, ExternalLink, Trash2, BookMarked } from "lucide-react";
 import { toast } from "sonner";
-import { createClient } from "@/utils/supabase/client";
 import { cn } from "@/lib/utils";
 
 type ContentTab = "upload" | "library";
@@ -103,30 +102,19 @@ export default function AdminCurriculumPage() {
 
     setIsUploading(true);
     try {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { toast.error("Please sign in"); return; }
+      const { uploadCurriculumContent } = await import("@/app/actions/admin-content");
+      const payload = new FormData();
+      payload.append("file", file);
+      payload.append("title", title);
+      payload.append("subject", subject);
+      payload.append("educationLevel", level);
+      payload.append("resourceType", contentType);
+      payload.append("curriculumType", curriculumType);
+      if (topic) payload.append("topic", topic);
+      if (description) payload.append("description", description);
+      payload.append("price", String(price));
 
-      const fileName = `curriculum/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
-      const { error: uploadError } = await supabase.storage
-        .from("resources")
-        .upload(fileName, file, { cacheControl: "3600", upsert: false });
-
-      if (uploadError) { toast.error(uploadError.message); return; }
-
-      const { data: { publicUrl } } = supabase.storage.from("resources").getPublicUrl(fileName);
-
-      const { createCurriculumResource } = await import("@/app/actions/admin-content");
-      const result = await createCurriculumResource({
-        title: `${curriculumType ? `[${curriculumType}] ` : ""}${title}`,
-        subject,
-        educationLevel: level,
-        resourceType: contentType,
-        topic: topic || undefined,
-        description: description || undefined,
-        price,
-        filePath: publicUrl,
-      });
+      const result = await uploadCurriculumContent(payload);
 
       if (result.success) {
         toast.success(`${contentType} published successfully`);
@@ -134,6 +122,8 @@ export default function AdminCurriculumPage() {
         setCurriculumType(""); setTopic(""); setDescription(""); setPrice(0); setFile(null);
         setTab("library");
         await loadResources();
+      } else if ("error" in result && result.error) {
+        toast.error(result.error);
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Upload failed");
@@ -143,11 +133,16 @@ export default function AdminCurriculumPage() {
   };
 
   const handleDelete = async (id: string) => {
+    if (!confirm("Delete this resource permanently? This cannot be undone.")) return;
     try {
       const { deleteResource } = await import("@/app/actions/admin-content");
-      await deleteResource(id);
-      setResources((prev) => prev.filter((resource) => resource.id !== id));
-      toast.success("Resource deleted");
+      const result = await deleteResource(id);
+      if (result.success) {
+        setResources((prev) => prev.filter((resource) => resource.id !== id));
+        toast.success("Resource deleted");
+      } else {
+        toast.error(result.error || "Failed to delete resource");
+      }
     } catch {
       toast.error("Failed to delete resource");
     }

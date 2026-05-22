@@ -58,9 +58,20 @@ Use simple language and include examples where helpful.`;
     }
 
     const data = await response.json();
-    return data.choices?.[0]?.message?.content || "";
+    const content = data.choices?.[0]?.message?.content || "";
+    if (content) return content;
+    throw new Error("Empty OpenRouter response");
   } catch (error) {
-    console.error("AI generation error:", error);
-    return "I apologize, but I encountered an error generating a response. Please try again.";
+    console.error("OpenRouter error, trying Google AI fallback:", error);
+    if (genAI) {
+      try {
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const result = await model.generateContent(`${systemPrompt}\n\n${prompt}`);
+        return result.response.text();
+      } catch (googleErr) {
+        console.error("Google AI fallback failed:", googleErr);
+      }
+    }
+    throw error instanceof Error ? error : new Error("AI generation failed");
   }
 }

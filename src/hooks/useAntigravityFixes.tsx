@@ -103,18 +103,10 @@ export function useSessionCounter(userId: string) {
     const fetchSessionCount = async () => {
       try {
         setLoading(true);
-        
-        const supabase = createAntigravitySafeClient();
-        if (!supabase) return;
+        const { getUserSessions } = await import("@/app/actions/match");
+        const sessions = await getUserSessions(userId);
 
-        const { count, error } = await supabase
-          .from("session")
-          .select("*", { count: "exact", head: true })
-          .or(`studentId.eq.${userId},partnerId.eq.${userId}`);
-
-        if (error) throw error;
-        
-        setSessionCount(count || 0);
+        setSessionCount(sessions.length);
       } catch (error) {
         console.error('Session count error:', error);
         setSessionCount(0);

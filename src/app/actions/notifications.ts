@@ -77,6 +77,35 @@ export async function markNotificationRead(id: string) {
   revalidatePath("/tutor/notifications");
 }
 
+const PUSH_PREF_BY_TYPE: Record<string, string> = {
+  MATCH_FOUND: "newMatch",
+  MATCH_ACCEPTED: "tutorAccepted",
+  TUTOR_ACCEPTED: "tutorAccepted",
+  NEW_MESSAGE: "newMessage",
+  ANNOUNCEMENT: "announcements",
+  RESOURCE_APPROVED: "announcements",
+  RESOURCE_REJECTED: "announcements",
+  DAILY_CHALLENGE: "dailyChallenge",
+  POINTS_MILESTONE: "pointsMilestone",
+  PAYMENT_SUCCESS: "announcements",
+  SESSION_COMPLETE: "newMatch",
+  ERROR_ALERT: "announcements",
+};
+
+async function shouldSendPush(userId: string, type: string): Promise<boolean> {
+  try {
+    const settings = await prisma.notificationSettings.findUnique({
+      where: { userId },
+    });
+    const prefs = (settings?.preferences as Record<string, boolean>) || {};
+    const prefKey = PUSH_PREF_BY_TYPE[type];
+    if (!prefKey) return true;
+    return prefs[prefKey] !== false;
+  } catch {
+    return true;
+  }
+}
+
 export async function notifyUser(
   userId: string,
   data: {
@@ -97,15 +126,54 @@ export async function notifyUser(
   });
 
   try {
-    const { sendNotificationPush } = await import("./push");
-    sendNotificationPush(userId, {
-      title: data.title,
-      body: data.body,
-      url: data.actionUrl,
-    }).catch(() => {});
-  } catch {
-    // Non-blocking
+    if (await shouldSendPush(userId, data.type)) {
+      const { sendNotificationPush } = await import("./push");
+      await sendNotificationPush(userId, {
+        title: data.title,
+        body: data.body,
+        url: data.actionUrl || "/dashboard/notifications",
+      });
+    }
+  } catch (err) {
+    console.error("[notifyUser] push failed:", err);
   }
 
   return notification;
+}
+
+/** Fan-out in-app + push for bulk announcements and admin alerts. */
+export async function notifyManyUsers(
+  userIds: string[],
+  data: {
+    type: string;
+    title: string;
+    body: string;
+    actionUrl?: string;
+  }
+) {
+  if (userIds.length === 0) return [];
+
+  await prisma.notification.createMany({
+    data: userIds.map((userId) => ({
+      userId,
+      type: data.type,
+      title: data.title,
+      body: data.body,
+      actionUrl: data.actionUrl,
+    })),
+  });
+
+  const { sendNotificationPush } = await import("./push");
+  await Promise.allSettled(
+    userIds.map(async (userId) => {
+      if (!(await shouldSendPush(userId, data.type))) return;
+      await sendNotificationPush(userId, {
+        title: data.title,
+        body: data.body,
+        url: data.actionUrl || "/dashboard/notifications",
+      });
+    })
+  );
+
+  return userIds.length;
 }

@@ -571,6 +571,50 @@ export async function getGlobalStats() {
   }
 }
 
+export async function getLeaderboard(educationLevel: EduLevel) {
+  try {
+    const leaders = await prisma.user.findMany({
+      where: { educationLevel },
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+        points: true,
+        educationLevel: true,
+        tier: true,
+      },
+      orderBy: { points: "desc" },
+      take: 20,
+    });
+    return leaders;
+  } catch (error) {
+    console.error("Error in getLeaderboard:", error);
+    return [];
+  }
+}
+
+export async function getCommunityScholars() {
+  try {
+    const legends = await prisma.user.findMany({
+      where: { role: Role.STUDENT, tier: Tier.LEGEND },
+      select: { id: true, name: true, county: true, points: true, tier: true },
+      orderBy: { points: "desc" },
+      take: 3,
+    });
+    if (legends.length > 0) return legends;
+
+    return prisma.user.findMany({
+      where: { role: Role.STUDENT },
+      select: { id: true, name: true, county: true, points: true, tier: true },
+      orderBy: { points: "desc" },
+      take: 4,
+    });
+  } catch (error) {
+    console.error("Error in getCommunityScholars:", error);
+    return [];
+  }
+}
+
 export async function recalibrateTier(userId: string) {
   try {
     const user = await prisma.user.findUnique({ where: { id: userId }, select: { points: true, tier: true } });

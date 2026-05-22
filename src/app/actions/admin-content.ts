@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { isFounderEmail } from "@/utils/admin-guard";
 
@@ -93,17 +94,16 @@ export async function createAnnouncement(data: { title: string; body: string; ta
     });
 
     if (targetUsers.length > 0) {
-      await prisma.notification.createMany({
-        data: targetUsers.map(u => ({
-          userId: u.id,
+      const { notifyManyUsers } = await import("@/app/actions/notifications");
+      await notifyManyUsers(
+        targetUsers.map((u) => u.id),
+        {
           type: "ANNOUNCEMENT",
           title: `📢 ${data.title}`,
           body: data.body,
           actionUrl: "/dashboard/notifications",
-          read: false,
-        })),
-        skipDuplicates: true,
-      });
+        }
+      );
     }
   } catch (err) {
     console.error("Failed to fan out announcement notifications:", err);
@@ -179,6 +179,58 @@ export async function rejectTestimonial(id: string) {
 
 // --- CURRICULUM CONTENT (KICD/KLB & PAST PAPERS) ---
 
+export async function uploadCurriculumContent(formData: FormData) {
+  await guard();
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Unauthorized" };
+
+  const file = formData.get("file") as File | null;
+  const title = formData.get("title") as string;
+  const subject = formData.get("subject") as string;
+  const educationLevel = formData.get("educationLevel") as string;
+  const resourceType = formData.get("resourceType") as string;
+  const topic = (formData.get("topic") as string) || undefined;
+  const description = (formData.get("description") as string) || undefined;
+  const price = Number(formData.get("price") || 0);
+  const curriculumType = (formData.get("curriculumType") as string) || "";
+
+  if (!file || !title || !subject || !educationLevel || !resourceType) {
+    return { success: false, error: "Missing required fields" };
+  }
+
+  const adminClient = createAdminClient();
+  const safeName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
+  const fileName = `curriculum/${user.id}/${Date.now()}_${safeName}`;
+
+  let { error: uploadError } = await adminClient.storage
+    .from("resources")
+    .upload(fileName, file, { cacheControl: "3600", upsert: false });
+
+  if (uploadError?.message?.includes("bucket") || uploadError?.message?.includes("not found")) {
+    await adminClient.storage.createBucket("resources", { public: true });
+    const retry = await adminClient.storage.from("resources").upload(fileName, file, { cacheControl: "3600", upsert: false });
+    uploadError = retry.error;
+  }
+
+  if (uploadError) {
+    return { success: false, error: uploadError.message };
+  }
+
+  const { data: { publicUrl } } = adminClient.storage.from("resources").getPublicUrl(fileName);
+
+  return createCurriculumResource({
+    title: `${curriculumType ? `[${curriculumType}] ` : ""}${title}`,
+    subject,
+    educationLevel,
+    resourceType,
+    topic,
+    description,
+    price,
+    filePath: publicUrl,
+  });
+}
+
 export async function createCurriculumResource(data: {
   title: string;
   subject: string;
@@ -218,11 +270,12 @@ export async function getAllCurriculumResources(type?: string) {
   try {
     const where: any = {};
     if (type) where.resourceType = type;
-    return await prisma.resource.findMany({
+    const rows = await prisma.resource.findMany({
       where,
       orderBy: { createdAt: "desc" },
       include: { seller: { select: { id: true, name: true } } },
     });
+    return rows;
   } catch (error) {
     console.error("Failed to get curriculum resources:", error);
     return [];
@@ -230,10 +283,38 @@ export async function getAllCurriculumResources(type?: string) {
 }
 
 export async function deleteResource(resourceId: string) {
-  await guard();
-  await prisma.resource.delete({ where: { id: resourceId } });
-  revalidatePath("/admin/curriculum");
-  revalidatePath("/admin/resources");
+  try {
+    await guard();
+    const resource = await prisma.resource.findUnique({ where: { id: resourceId } });
+    if (!resource) return { success: false, error: "Resource not found" };
+
+    if (resource.filePath) {
+      try {
+        const adminClient = createAdminClient();
+        const url = new URL(resource.filePath);
+        const marker = "/storage/v1/object/public/resources/";
+        const idx = url.pathname.indexOf(marker);
+        if (idx !== -1) {
+          const storagePath = decodeURIComponent(url.pathname.slice(idx + marker.length));
+          await adminClient.storage.from("resources").remove([storagePath]);
+        }
+      } catch (storageErr) {
+        console.warn("deleteResource: storage cleanup skipped:", storageErr);
+      }
+    }
+
+    await prisma.resource.delete({ where: { id: resourceId } });
+    revalidatePath("/admin/curriculum");
+    revalidatePath("/admin/resources");
+    revalidatePath("/dashboard/resources");
+    return { success: true };
+  } catch (error) {
+    console.error("deleteResource failed:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to delete resource",
+    };
+  }
 }
 
 // --- NOTIFICATION SETTINGS ---

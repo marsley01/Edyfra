@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { getUserData } from "@/app/actions/user";
 
 export type Tier = "free" | "pro" | "institution";
 
@@ -33,34 +33,24 @@ export function usePlan() {
   });
 
   useEffect(() => {
-    const supabase = createClient();
     async function fetchPlan() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getUserData();
       if (!user) {
         setState(prev => ({ ...prev, isLoading: false }));
         return;
       }
 
-      const { data, error } = await supabase
-        .from("user")
-        .select("subscription_tier, daily_search_count, daily_message_count")
-        .eq("id", user.id)
-        .single();
+      const tier = ((user.subscriptionTier || user.plan || "free") as Tier);
 
-      if (data && !error) {
-        const tier = (data.subscription_tier as Tier) || "free";
-        setState({
-          tier,
-          limits: TIER_LIMITS[tier],
-          currentUsage: {
-            searches: data.daily_search_count || 0,
-            messages: data.daily_message_count || 0,
-          },
-          isLoading: false,
-        });
-      } else {
-        setState(prev => ({ ...prev, isLoading: false }));
-      }
+      setState({
+        tier,
+        limits: TIER_LIMITS[tier],
+        currentUsage: {
+          searches: user.dailySearchCount || 0,
+          messages: user.dailyMessageCount || 0,
+        },
+        isLoading: false,
+      });
     }
 
     fetchPlan();

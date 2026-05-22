@@ -5,8 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Medal, Crown, TrendingUp, Search, Loader2, Award } from "lucide-react";
-import { createClient } from "@/utils/supabase/client";
-import { getUserData } from "@/app/actions/user";
+import { getUserData, getLeaderboard } from "@/app/actions/user";
 
 import { User } from "@/generated/client";
 
@@ -20,7 +19,6 @@ interface Leader {
 }
 
 export default function LeaderboardPage() {
-  const supabase = createClient();
   const [leaders, setLeaders] = useState<Leader[]>([]);
   const [userData, setUserData] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,15 +32,16 @@ export default function LeaderboardPage() {
     const user = await getUserData();
     setUserData(user);
 
-    if (user) {
-      const { data, error } = await supabase
-        .from("User")
-        .select("id, name, avatar, points, educationLevel, tier")
-        .eq("educationLevel", user.educationLevel)
-        .order("points", { ascending: false })
-        .limit(20);
+    if (user?.educationLevel) {
+      const data = await getLeaderboard(user.educationLevel);
 
-      if (data) setLeaders(data);
+      setLeaders(
+        data.map((row) => ({
+          ...row,
+          educationLevel: row.educationLevel ?? "",
+          tier: String(row.tier),
+        }))
+      );
     }
     setLoading(false);
   };

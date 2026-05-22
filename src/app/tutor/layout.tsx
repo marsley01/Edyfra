@@ -50,6 +50,7 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
 
       setUser(user);
       if (dbUser) setPoints(dbUser.points);
+
     } catch (error) {
       console.error("Tutor auth check failed:", error);
       router.push("/login");
@@ -88,6 +89,14 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
     { href: "/tutor/notifications", label: "Notifications", icon: Bell },
     { href: "/tutor/settings", label: "Settings", icon: Settings },
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
+        <div className="h-10 w-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col lg:flex-row min-h-[100dvh] bg-background font-sans overflow-x-hidden">

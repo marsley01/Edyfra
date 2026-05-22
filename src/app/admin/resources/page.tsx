@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, Loader2, FileText, ExternalLink, AlertCircle } from "lucide-react";
+import { CheckCircle, XCircle, Loader2, FileText, ExternalLink, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -47,6 +47,18 @@ export default function AdminResourcesPage() {
       setResources((prev) => prev.filter((r) => r.id !== id));
     } else {
       toast.error(result.error || "Failed to reject");
+    }
+  };
+
+  const handleDelete = async (id: string, title: string) => {
+    if (!confirm(`Delete "${title}" permanently? This cannot be undone.`)) return;
+    const { deleteResource } = await import("@/app/actions/admin-content");
+    const result = await deleteResource(id);
+    if (result.success) {
+      toast.success("Resource deleted");
+      setResources((prev) => prev.filter((r) => r.id !== id));
+    } else {
+      toast.error(result.error || "Failed to delete resource");
     }
   };
 
@@ -152,6 +164,15 @@ export default function AdminResourcesPage() {
                         </Button>
                       </a>
                     )}
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="rounded-xl"
+                      onClick={() => handleDelete(r.id, r.title)}
+                      title="Delete permanently"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               </CardContent>

@@ -28,16 +28,16 @@ export async function sendErrorNotification(params: ErrorNotificationParams) {
       return;
     }
 
-    // Create notifications for all admins
-    await prisma.notification.createMany({
-       data: admins.map((admin) => ({
-        userId: admin.id,
+    const { notifyManyUsers } = await import("@/app/actions/notifications");
+    await notifyManyUsers(
+      admins.map((admin) => admin.id),
+      {
         type: "ERROR_ALERT",
         title: `System Error: ${type}`,
-        body: `Error: ${message}${endpoint ? `\nEndpoint: ${endpoint}` : ''}${userId ? `\nUser: ${userId}` : ''}`,
+        body: `Error: ${message}${endpoint ? `\nEndpoint: ${endpoint}` : ""}${userId ? `\nUser: ${userId}` : ""}`,
         actionUrl: "/admin/notifications",
-      }))
-    });
+      }
+    );
 
     console.log(`Error notification sent to ${admins.length} admin(s)`);
   } catch (error) {
