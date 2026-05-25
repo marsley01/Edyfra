@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { SESSION_CONFIG } from "@/lib/config";
 import { recalibrateTier } from "./user";
-import { MatchTier, Role, EduLevel, Tier } from "@/generated/client";
+import { MatchTier, Role, EduLevel, Tier } from "@prisma/client";
 import { randomBytes } from "crypto";
 import { executeSmartMatching, sweepAndAIFallback } from "./match-algorithm";
 import { StreamChat } from "stream-chat";

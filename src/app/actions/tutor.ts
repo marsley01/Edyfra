@@ -1,6 +1,6 @@
 "use server";
 
-import { Role, VerifPath, EduLevel } from "@/generated/client";
+import { Role, VerifPath, EduLevel } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getUserData } from "./user";

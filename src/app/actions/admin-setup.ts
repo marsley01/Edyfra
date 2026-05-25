@@ -2,7 +2,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { Role } from "@/generated/client";
+import { Role } from "@prisma/client";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 

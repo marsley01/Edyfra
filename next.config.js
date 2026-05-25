@@ -7,6 +7,7 @@ const nextConfig = {
   turbopack: {
     root: __dirname,
   },
+  serverExternalPackages: ["@prisma/client", "prisma"],
   compress: true,
   images: {
     minimumCacheTTL: 60,
