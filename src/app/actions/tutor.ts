@@ -253,7 +253,7 @@ export async function getTutorsBySubject(subject: string, level?: EduLevel) {
   }
 }
 
-export async function getTutorSessions(status: "ACTIVE" | "COMPLETED" = "ACTIVE") {
+export async function getTutorSessions(status: "ACTIVE" | "COMPLETED" | "PENDING" = "ACTIVE") {
   try {
     const user = await getUserData();
     if (!user) return [];
@@ -278,5 +278,32 @@ export async function getTutorSessions(status: "ACTIVE" | "COMPLETED" = "ACTIVE"
   } catch (error) {
     console.error("Error in getTutorSessions:", error);
     return [];
+  }
+}
+
+export async function bookTutorSession(tutorId: string, subject: string, topic: string, scheduledTime: string) {
+  try {
+    const user = await getUserData();
+    if (!user) throw new Error("Unauthorized");
+
+    const session = await prisma.session.create({
+      data: {
+        studentId: user.id,
+        partnerId: tutorId,
+        tier: "TUTOR",
+        subject,
+        topic,
+        status: "PENDING",
+        roomId: `room_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+        startedAt: new Date(scheduledTime),
+      }
+    });
+
+    revalidatePath("/dashboard/tutors");
+    revalidatePath("/tutor");
+    return { success: true, sessionId: session.id };
+  } catch (error) {
+    console.error("Error in bookTutorSession:", error);
+    return { success: false, error: "Failed to book session" };
   }
 }

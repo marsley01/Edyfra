@@ -1,334 +1,261 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { GraduationCap, Search, Clock, Loader2, Sparkles, MessageSquare, Users as UsersIcon, ShieldCheck } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
-import { AvatarPremium } from "@/components/ui/avatar-premium";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+import { useState, useEffect } from "react";
+import { getVerifiedTutors, bookTutorSession } from "@/app/actions/tutor";
+import { EduLevel } from "@/generated/client";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { getSubjectsByLevel } from "@/utils/subjects";
-import { getUserData } from "@/app/actions/user";
-import { getVerifiedTutors } from "@/app/actions/tutor";
-import { User, TutorProfile } from "@/generated/client";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2, Star, CheckCircle2, Clock, Calendar, Search } from "lucide-react";
+import { AvatarPremium } from "@/components/ui/avatar-premium";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
-
-type TutorWithProfile = User & { tutorProfile: TutorProfile | null };
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useRouter } from "next/navigation";
 
 export default function TutorsPage() {
-  const router = useRouter();
-  const [tutors, setTutors] = useState<TutorWithProfile[]>([]);
+  const [tutors, setTutors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userData, setUserData] = useState<User | null>(null);
-  const [isUnauthorized, setIsUnauthorized] = useState(false);
   const [search, setSearch] = useState("");
-  const [subject, setSubject] = useState("all");
-  const initialLoadRef = useRef(true); // Ref to track initial load
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [exitX, setExitX] = useState(0);
-
-  const fetchTutors = useCallback(async (currentUser: User | null) => {
-    setLoading(true);
-    setIsUnauthorized(false);
-    try {
-      if (!currentUser) {
-        setIsUnauthorized(true);
-        setTutors([]);
-        return;
-      }
-      // Only show tutors who teach the student's education level
-      const data = await getVerifiedTutors(currentUser.educationLevel || 'HIGH_SCHOOL');
-      setTutors(data);
-    } catch (err) {
-      console.error("Error fetching tutors:", err);
-      setIsUnauthorized(true);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const performSearch = useCallback(async () => {
-    if (!userData) return;
-    setLoading(true);
-    try {
-      const { searchTutors } = await import("@/app/actions/tutor");
-      const data = await searchTutors(search);
-      // Filter or update based on search
-      setTutors(data as TutorWithProfile[]);
-    } catch (err) {
-      console.error("Search failed:", err);
-      toast.error("Search failed. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  }, [search, userData]);
+  const [level, setLevel] = useState<EduLevel | "ALL">("ALL");
 
   useEffect(() => {
-    const loadUserDataAndTutors = async () => {
-      const user = await getUserData();
-      setUserData(user);
-      if (initialLoadRef.current) {
-        await fetchTutors(user);
-        initialLoadRef.current = false;
-      }
-    };
-    loadUserDataAndTutors();
-  }, [fetchTutors]);
+    loadTutors();
+  }, [level]);
 
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      if (search.length >= 2) {
-        performSearch();
-      } else if (search.length === 0 && !initialLoadRef.current) {
-        fetchTutors(userData);
-      }
-    }, 400);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [search, performSearch, fetchTutors, userData]);
-
-  const handleSwipe = async (direction: "left" | "right") => {
-    setExitX(direction === "right" ? 500 : -500);
-
-    if (direction === "right") {
-      const tutor = tutors[currentIndex];
-      try {
-        const { createDMChannel } = await import("@/app/actions/stream");
-        const channelId = await createDMChannel(userData!.id, tutor.id);
-        router.push(`/dashboard/messages?channel=${channelId}`);
-      } catch (err) {
-        toast.error("Failed to connect.");
-      }
-      return;
-    }
-
-    setTimeout(() => {
-      setCurrentIndex(prev => prev + 1);
-      setExitX(0);
-    }, 50);
+  const loadTutors = async () => {
+    setLoading(true);
+    const data = await getVerifiedTutors(level === "ALL" ? undefined : level);
+    setTutors(data || []);
+    setLoading(false);
   };
 
-  const createTestMentor = async () => {
-    try {
-      const { createTestTutorAction } = await import("@/app/actions/user");
-      await createTestTutorAction();
-      toast.success("Test mentor created!");
-      await fetchTutors(userData);
-    } catch (err) {
-      toast.error("Operation failed.");
-    }
-  };
-
-  const subjects = getSubjectsByLevel(userData?.educationLevel || "HIGH_SCHOOL");
+  const filteredTutors = tutors.filter((t: any) => 
+    t.name?.toLowerCase().includes(search.toLowerCase()) || 
+    t.tutorProfile?.subjects?.some((s: string) => s.toLowerCase().includes(search.toLowerCase()))
+  );
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-12 animate-in fade-in duration-700">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-8 border-b border-border/50">
-        <div className="space-y-4">
-          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Find a Mentor</p>
-          <h1 className="text-5xl md:text-7xl font-black tracking-tightest leading-none">
-            Meet Your <br /> <span className="text-muted-foreground">Mentor.</span>
-          </h1>
-        </div>
-        <div className="flex flex-col sm:row gap-4 w-full md:w-auto">
-          <div className="relative group flex-1 sm:w-80">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-            <Input
-              className="h-14 pl-12 rounded-2xl border-border bg-secondary shadow-sm focus-visible:ring-primary"
-              placeholder="Search experts by name or school..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            {loading && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-primary" />}
-          </div>
-          <Select value={subject} onValueChange={(v) => setSubject(v || "all")}>
-            <SelectTrigger className="h-14 w-full sm:w-[220px] rounded-2xl border-border bg-secondary font-bold">
-              <SelectValue placeholder="All Disciplines" />
-            </SelectTrigger>
-            <SelectContent className="rounded-2xl border-border bg-background shadow-2xl">
-              <SelectItem value="all" className="font-bold">All Disciplines</SelectItem>
-              {subjects.map(s => (
-                <SelectItem key={s} value={s} className="font-bold">{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+    <div className="space-y-8 pb-20 p-2 lg:p-6 animate-in fade-in duration-700">
+      <div className="flex flex-col gap-4">
+        <h1 className="text-4xl md:text-5xl font-black tracking-tightest">Expert Tutors.</h1>
+        <p className="text-muted-foreground text-lg">Book personalized sessions with verified educators to master any subject.</p>
       </div>
 
-      {/* Institution Tutors Priority Section (Mock for UI) */}
-      {!loading && !isUnauthorized && (
-        <div className="mb-12 space-y-6">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5 text-emerald-500" />
-            <h2 className="text-lg font-bold text-foreground">Your Institution's Tutors</h2>
-            <span className="bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-full">Fast Track</span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[
-              { id: 101, name: "Dr. Sarah Wanjiku", subject: "Calculus", rating: 4.9 },
-              { id: 102, name: "Mr. David Ochieng", subject: "Physics", rating: 4.8 },
-            ].map((instTutor) => (
-              <div key={instTutor.id} className="bg-secondary/50 rounded-2xl p-4 border border-emerald-500/20 flex items-center justify-between group hover:bg-secondary transition-colors cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                    <GraduationCap className="h-5 w-5 text-emerald-500" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-sm">{instTutor.name}</h4>
-                    <p className="text-xs text-muted-foreground">{instTutor.subject} • ⭐ {instTutor.rating}</p>
-                  </div>
-                </div>
-                <Button size="sm" variant="outline" className="opacity-0 group-hover:opacity-100 transition-opacity border-emerald-500/50 text-emerald-500 hover:bg-emerald-500 hover:text-white">
-                  Connect
-                </Button>
-              </div>
-            ))}
-          </div>
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-4 bg-secondary/30 p-4 rounded-[2rem] border border-border">
+        <div className="relative flex-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input 
+            placeholder="Search tutors or subjects..." 
+            className="pl-12 h-14 rounded-xl border-border bg-background focus-visible:ring-primary text-base font-bold"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
-      )}
+        <Select value={level} onValueChange={(val: any) => setLevel(val)}>
+          <SelectTrigger className="w-full sm:w-[200px] h-14 rounded-xl border-border bg-background font-bold text-base focus:ring-primary">
+            <SelectValue placeholder="Education Level" />
+          </SelectTrigger>
+          <SelectContent className="rounded-xl border-border bg-background/95 backdrop-blur-xl">
+            <SelectItem value="ALL" className="font-bold cursor-pointer rounded-lg">All Levels</SelectItem>
+            <SelectItem value="HIGH_SCHOOL" className="font-bold cursor-pointer rounded-lg">High School</SelectItem>
+            <SelectItem value="UNIVERSITY" className="font-bold cursor-pointer rounded-lg">University</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-      {loading && tutors.length === 0 ? (
-        <div className="flex items-center justify-center h-[500px]">
-          <div className="h-[400px] w-[350px] bg-secondary animate-pulse rounded-[3rem] border border-border/50" />
+      {loading ? (
+        <div className="py-32 flex justify-center">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
         </div>
-      ) : isUnauthorized ? (
-        <div className="flex flex-col items-center justify-center py-48 space-y-8 bg-secondary/30 rounded-[3rem] border-2 border-dashed border-border">
-          <div className="w-20 h-20 rounded-full bg-background flex items-center justify-center text-muted-foreground shadow-sm">
-            <UsersIcon className="h-10 w-10 text-red-500 opacity-50" />
+      ) : filteredTutors.length === 0 ? (
+        <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 bg-secondary/30 rounded-[3rem] border border-dashed border-border">
+          <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-2">
+            <Search className="h-8 w-8 text-muted-foreground" />
           </div>
-          <div className="text-center space-y-2">
-            <h3 className="text-2xl font-black tracking-tight">Access Denied</h3>
-             <p className="text-muted-foreground font-medium max-w-sm mx-auto">
-               You need to log in to access this page.
-             </p>
-          </div>
-          <Link href="/login">
-            <Button className="h-14 px-10 rounded-2xl bg-foreground text-background font-black text-[10px] tracking-widest uppercase shadow-xl transition-all active:scale-95">
-              Log In
-            </Button>
-          </Link>
-        </div>
-      ) : tutors.length > 0 && currentIndex < tutors.length ? (
-        <div className="relative h-[600px] w-full flex items-center justify-center overflow-hidden">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={tutors[currentIndex].id}
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              onDragEnd={(_, info) => {
-                if (info.offset.x > 100) handleSwipe("right");
-                else if (info.offset.x < -100) handleSwipe("left");
-              }}
-              initial={{ scale: 0.9, opacity: 0, rotate: -5 }}
-              animate={{ scale: 1, opacity: 1, rotate: 0 }}
-              exit={{
-                x: exitX,
-                opacity: 0,
-                rotate: exitX > 0 ? 45 : -45
-              }}
-              transition={{ type: "spring", damping: 20, stiffness: 300 }}
-                 className="absolute w-[320px] sm:w-[350px] md:w-[450px] h-[520px] sm:h-[550px] bg-secondary rounded-[2rem] sm:rounded-[3rem] border border-border/50 shadow-2xl overflow-hidden cursor-grab active:cursor-grabbing flex flex-col"
-            >
-              <div className="relative h-2/3 bg-primary/5 flex items-center justify-center p-12 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-secondary/80" />
-                <AvatarPremium
-                  seed={tutors[currentIndex].id}
-                  src={tutors[currentIndex].avatar || ""}
-                  size="xl"
-                  className="scale-[2.5] relative z-10"
-                />
-                <div className="absolute top-8 left-8 z-20 flex flex-col gap-2">
-                  <div className="px-4 py-2 rounded-2xl bg-background/50 backdrop-blur-md border border-border/50">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-primary">⭐ {tutors[currentIndex].tutorProfile?.rating?.toFixed(1) || "5.0"}</span>
-                  </div>
-                  <div className="px-4 py-2 rounded-2xl bg-primary text-white shadow-lg">
-                    <span className="text-[9px] font-black uppercase tracking-widest">
-                      {tutors[currentIndex].educationLevel === 'UNIVERSITY' ? 'University Expert' : 'High School Expert'}
-                    </span>
-                  </div>
-                </div>
-
-              </div>
-
-              <div className="flex-1 p-10 space-y-6 bg-secondary">
-                <div className="space-y-2">
-                  <h2 className="text-3xl font-black tracking-tight">{tutors[currentIndex].name}</h2>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                    <GraduationCap className="h-3 w-3" /> {tutors[currentIndex].county}
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {tutors[currentIndex].tutorProfile?.subjects?.map(s => (
-                    <span key={s} className="px-3 py-1 rounded-full bg-background border border-border text-[8px] font-black uppercase tracking-widest">
-                      {s}
-                    </span>
-                  ))}
-                </div>
-
-                <p className="text-sm text-muted-foreground font-medium leading-relaxed line-clamp-2">
-                  {tutors[currentIndex].tutorProfile?.bio}
-                </p>
-
-                 <div className="flex items-center justify-between pt-4">
-                  <div className="flex flex-col">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Rate</span>
-                    <span className="text-xl font-black">KSH {tutors[currentIndex].tutorProfile?.hourlyRate}</span>
-                  </div>
-                   <div className="flex gap-3">
-                      <Button onClick={() => handleSwipe("left")} variant="outline" className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-border hover:bg-red-500/10 hover:text-red-500 transition-all">
-                        <Clock className="h-5 w-5 sm:h-6 sm:w-6" />
-                      </Button>
-                      <Button
-                        onClick={async () => {
-                          const { createDMChannel } = await import("@/app/actions/stream");
-                          const channelId = await createDMChannel(userData!.id, tutors[currentIndex].id);
-                          router.push(`/dashboard/messages?channel=${channelId}`);
-                        }}
-                        variant="outline"
-                        className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-border hover:bg-primary/10 hover:text-primary transition-all"
-                      >
-                        <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6" />
-                      </Button>
-                      <Button onClick={() => handleSwipe("right")} className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary text-white shadow-xl shadow-primary/20 hover:scale-110 active:scale-95 transition-all">
-                        <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />
-                      </Button>
-                    </div>
-                </div>
-              </div>
-            </motion.div>
-          </AnimatePresence>
-
-          <div className="absolute bottom-4 text-[9px] font-black uppercase tracking-[0.5em] text-muted-foreground animate-pulse">
-            Swipe Right to Connect • Swipe Left to Skip
-          </div>
+          <h3 className="text-2xl font-black tracking-tightest">No tutors found.</h3>
+          <p className="text-muted-foreground">Try adjusting your filters or search criteria.</p>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-48 space-y-8 bg-secondary/30 rounded-[3rem] border-2 border-dashed border-border">
-          <div className="w-20 h-20 rounded-full bg-background flex items-center justify-center text-muted-foreground shadow-sm">
-            <Sparkles className="h-10 w-10 text-primary opacity-20" />
-          </div>
-          <div className="text-center space-y-2">
-            <h3 className="text-2xl font-black tracking-tight">No more tutors found</h3>
-             <p className="text-muted-foreground font-medium max-w-sm mx-auto">
-               We couldn&apos;t find any more tutors right now. New mentors join every day — check back later.
-             </p>
-          </div>
-             <div className="flex flex-col sm:flex-row gap-4">
-              <Button onClick={() => { setSearch(""); setSubject("all"); setCurrentIndex(0); fetchTutors(userData); }} variant="outline" className="h-12 sm:h-14 px-6 sm:px-10 rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-xs tracking-widest uppercase border-border hover:bg-secondary transition-all">
-                Refresh List
-              </Button>
-              <Link href="/dashboard">
-                <Button className="h-12 sm:h-14 px-6 sm:px-10 rounded-xl sm:rounded-2xl bg-foreground text-background font-black text-[10px] sm:text-xs tracking-widest uppercase shadow-xl transition-all active:scale-95">
-                  Back to Dashboard
-                </Button>
-              </Link>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filteredTutors.map((tutor) => (
+            <TutorCard key={tutor.id} tutor={tutor} />
+          ))}
         </div>
       )}
     </div>
+  );
+}
+
+function TutorCard({ tutor }: { tutor: any }) {
+  const profile = tutor.tutorProfile;
+  const rating = profile?.rating || 0;
+  
+  return (
+    <Card className="border-border/50 bg-secondary/30 backdrop-blur-3xl hover:border-primary/50 transition-all duration-500 rounded-[2.5rem] overflow-hidden group shadow-xl hover:shadow-primary/5 flex flex-col h-full">
+      <CardContent className="p-8 flex flex-col h-full gap-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <AvatarPremium seed={tutor.name} src={tutor.avatar || ""} size="lg" />
+              {profile?.availability?.isOnline && (
+                 <div className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 rounded-full border-2 border-background animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+              )}
+            </div>
+            <div>
+              <h3 className="text-xl font-black tracking-tightest flex items-center gap-2">
+                {tutor.name}
+                {profile?.isVerified && <CheckCircle2 className="h-4 w-4 text-primary" />}
+              </h3>
+              <div className="flex items-center gap-1 text-yellow-500 mt-1">
+                <Star className="h-3 w-3 fill-current" />
+                <span className="text-xs font-bold">{rating > 0 ? rating.toFixed(1) : "New"}</span>
+              </div>
+            </div>
+          </div>
+          <Badge className="bg-primary/10 text-primary border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
+            KSH {profile?.hourlyRate}/hr
+          </Badge>
+        </div>
+
+        <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed flex-1">
+          {profile?.bio || "No bio provided."}
+        </p>
+
+        <div className="flex flex-wrap gap-2">
+          {profile?.subjects?.slice(0, 3).map((sub: string) => (
+            <Badge key={sub} variant="outline" className="border-border bg-background text-[10px] font-black uppercase tracking-widest rounded-full">
+              {sub}
+            </Badge>
+          ))}
+          {profile?.subjects?.length > 3 && (
+            <Badge variant="outline" className="border-border bg-background text-[10px] font-black uppercase tracking-widest rounded-full">
+              +{profile.subjects.length - 3}
+            </Badge>
+          )}
+        </div>
+
+        <div className="pt-4 border-t border-border/50 mt-auto">
+          <BookingDialog tutor={tutor} />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function BookingDialog({ tutor }: { tutor: any }) {
+  const [open, setOpen] = useState(false);
+  const [booking, setBooking] = useState(false);
+  const [subject, setSubject] = useState(tutor.tutorProfile?.subjects?.[0] || "");
+  const [topic, setTopic] = useState("");
+  const [time, setTime] = useState("");
+  const router = useRouter();
+
+  // Mock time slots (these would normally come from tutor.availability)
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const dayAfter = new Date();
+  dayAfter.setDate(dayAfter.getDate() + 2);
+  
+  const timeSlots = [
+    { label: `Tomorrow, 2:00 PM`, value: new Date(tomorrow.setHours(14, 0, 0, 0)).toISOString() },
+    { label: `Tomorrow, 4:00 PM`, value: new Date(tomorrow.setHours(16, 0, 0, 0)).toISOString() },
+    { label: `${dayAfter.toLocaleDateString('en-US', {weekday: 'short'})}, 10:00 AM`, value: new Date(dayAfter.setHours(10, 0, 0, 0)).toISOString() },
+    { label: `${dayAfter.toLocaleDateString('en-US', {weekday: 'short'})}, 3:00 PM`, value: new Date(dayAfter.setHours(15, 0, 0, 0)).toISOString() },
+  ];
+
+  const handleBook = async () => {
+    if (!subject || !topic || !time) {
+      toast.error("Please fill all fields.");
+      return;
+    }
+    setBooking(true);
+    try {
+      const res = await bookTutorSession(tutor.id, subject, topic, time);
+      if (res.success) {
+        toast.success("Session Booked!", {
+          description: "You can find it in your sessions tab."
+        });
+        setOpen(false);
+        router.push("/dashboard/sessions");
+      } else {
+        toast.error("Failed to book session.");
+      }
+    } catch (e) {
+      toast.error("An error occurred.");
+    } finally {
+      setBooking(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="w-full h-12 rounded-xl font-black text-xs tracking-widest uppercase bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/20 transition-all active:scale-95">
+          <Calendar className="mr-2 h-4 w-4" /> Book Session
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden bg-card border-border rounded-[2rem]">
+        <DialogHeader className="p-8 pb-0">
+          <DialogTitle className="text-3xl font-black tracking-tightest">Book {tutor.name}</DialogTitle>
+          <p className="text-muted-foreground mt-2">Schedule a personalized learning session.</p>
+        </DialogHeader>
+
+        <div className="p-8 space-y-8">
+          <div className="space-y-4">
+             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Select Subject</label>
+             <Select value={subject} onValueChange={setSubject}>
+               <SelectTrigger className="h-14 rounded-xl border-border bg-background font-bold focus:ring-primary">
+                 <SelectValue placeholder="Choose subject" />
+               </SelectTrigger>
+               <SelectContent className="rounded-xl border-border bg-background/95 backdrop-blur-xl">
+                 {tutor.tutorProfile?.subjects?.map((sub: string) => (
+                   <SelectItem key={sub} value={sub} className="font-bold cursor-pointer rounded-lg">{sub}</SelectItem>
+                 ))}
+               </SelectContent>
+             </Select>
+          </div>
+
+          <div className="space-y-4">
+             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Select Time Slot</label>
+             <Select value={time} onValueChange={setTime}>
+               <SelectTrigger className="h-14 rounded-xl border-border bg-background font-bold focus:ring-primary">
+                 <SelectValue placeholder="Choose a time slot" />
+               </SelectTrigger>
+               <SelectContent className="rounded-xl border-border bg-background/95 backdrop-blur-xl">
+                 {timeSlots.map((slot) => (
+                   <SelectItem key={slot.value} value={slot.value} className="font-bold cursor-pointer rounded-lg">
+                     <div className="flex items-center gap-2">
+                       <Clock className="h-4 w-4 text-primary" /> {slot.label}
+                     </div>
+                   </SelectItem>
+                 ))}
+               </SelectContent>
+             </Select>
+          </div>
+
+          <div className="space-y-4">
+             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">What do you need help with?</label>
+             <Textarea 
+                placeholder="List any specific topics, weak areas, or upcoming assignments..."
+                className="min-h-[120px] rounded-xl border-border bg-background font-medium focus-visible:ring-primary p-4 resize-none"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+             />
+          </div>
+
+          <Button 
+            onClick={handleBook} 
+            disabled={booking || !subject || !topic || !time}
+            className="w-full h-14 rounded-xl font-black text-sm tracking-widest uppercase bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/20 transition-all active:scale-95"
+          >
+            {booking ? <Loader2 className="h-5 w-5 animate-spin" /> : "Confirm Booking"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

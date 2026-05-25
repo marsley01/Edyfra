@@ -81,11 +81,6 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
 
   const navItems = [
     { href: "/tutor", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/tutor/requests", label: "Requests", icon: Users },
-    { href: "/tutor/sessions", label: "Sessions", icon: Zap },
-    { href: "/tutor/resources", label: "My Resources", icon: BookOpen },
-    { href: "/tutor/schedule", label: "Schedule", icon: Calendar },
-    { href: "/tutor/earnings", label: "Earnings", icon: Wallet },
     { href: "/tutor/notifications", label: "Notifications", icon: Bell },
     { href: "/tutor/settings", label: "Settings", icon: Settings },
   ];
