@@ -209,7 +209,7 @@ function BookingDialog({ tutor }: { tutor: any }) {
         <div className="p-8 space-y-8">
           <div className="space-y-4">
              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Select Subject</label>
-             <Select value={subject} onValueChange={setSubject}>
+             <Select value={subject} onValueChange={(v) => setSubject(v ?? "")}>
                <SelectTrigger className="h-14 rounded-xl border-border bg-background font-bold focus:ring-primary">
                  <SelectValue placeholder="Choose subject" />
                </SelectTrigger>
@@ -223,7 +223,7 @@ function BookingDialog({ tutor }: { tutor: any }) {
 
           <div className="space-y-4">
              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Select Time Slot</label>
-             <Select value={time} onValueChange={setTime}>
+              <Select value={time} onValueChange={(v) => setTime(v ?? "")}>
                <SelectTrigger className="h-14 rounded-xl border-border bg-background font-bold focus:ring-primary">
                  <SelectValue placeholder="Choose a time slot" />
                </SelectTrigger>
