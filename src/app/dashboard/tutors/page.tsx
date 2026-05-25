@@ -193,7 +193,7 @@ function BookingDialog({ tutor }: { tutor: any }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger>
         <Button className="w-full h-12 rounded-xl font-black text-xs tracking-widest uppercase bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/20 transition-all active:scale-95">
           <Calendar className="mr-2 h-4 w-4" /> Book Session
         </Button>
@@ -207,7 +207,7 @@ function BookingDialog({ tutor }: { tutor: any }) {
         <div className="p-8 space-y-8">
           <div className="space-y-4">
              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Select Subject</label>
-             <Select value={subject} onValueChange={setSubject}>
+             <Select value={subject} onValueChange={(v) => setSubject(v ?? "")}>
                <SelectTrigger className="h-14 rounded-xl border-border bg-background font-bold focus:ring-primary">
                  <SelectValue placeholder="Choose subject" />
                </SelectTrigger>
@@ -221,7 +221,7 @@ function BookingDialog({ tutor }: { tutor: any }) {
 
           <div className="space-y-4">
              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Select Time Slot</label>
-             <Select value={time} onValueChange={setTime}>
+             <Select value={time} onValueChange={(v) => setTime(v ?? "")}>
                <SelectTrigger className="h-14 rounded-xl border-border bg-background font-bold focus:ring-primary">
                  <SelectValue placeholder="Choose a time slot" />
                </SelectTrigger>
