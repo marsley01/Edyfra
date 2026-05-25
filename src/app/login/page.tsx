@@ -6,9 +6,11 @@ import { ArrowRight, Loader2, AlertCircle, Eye, EyeOff, GraduationCap } from "lu
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { login } from "@/app/actions/auth";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -24,6 +26,8 @@ export default function LoginPage() {
     if (result?.error) {
       setError(result.error);
       setLoading(false);
+    } else if (result?.redirectTo) {
+      router.push(result.redirectTo);
     }
   }
 

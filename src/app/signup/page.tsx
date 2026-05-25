@@ -6,6 +6,7 @@ import { ArrowRight, Loader2, AlertCircle, ShieldCheck, Eye, EyeOff, Venus, Mars
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { signup } from "@/app/actions/auth";
 
 import { toast } from "sonner";
@@ -13,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { AvatarPicker, type AvatarStyle } from "@/components/ui/avatar-picker";
 
 export default function SignupPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [gender, setGender] = useState<string>("");
@@ -35,6 +37,8 @@ export default function SignupPage() {
     if (result?.error) {
       setError(result.error);
       setLoading(false);
+    } else if (result?.redirectTo) {
+      router.push(result.redirectTo);
     } else if (result?.success && result.message) {
       toast.success(result.message);
       setLoading(false);

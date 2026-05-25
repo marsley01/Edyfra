@@ -317,7 +317,7 @@ export async function sendMessage(data: { sessionId: string; senderId: string; c
     return { success: true, message };
   } catch (error) {
     console.error('Error sending message via Server Action:', error);
-    return { success: false, error };
+    return { success: false, error: error instanceof Error ? error.message : "Failed to send message" };
   }
 }
 

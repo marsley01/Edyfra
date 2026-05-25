@@ -2,7 +2,6 @@
 
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getUserData } from "./user";
 import { isFounderEmail } from "@/utils/admin-guard";
@@ -42,6 +41,8 @@ export async function login(formData: FormData) {
 
   revalidatePath("/", "layout");
 
+  let redirectTo = "/dashboard";
+
   // Institution login: if code is provided and user is an institution member, redirect to institution portal
   if (code && prismaUser) {
     try {
@@ -53,7 +54,7 @@ export async function login(formData: FormData) {
         include: { institution: true },
       });
       if (membership) {
-        redirect("/institution/dashboard");
+        return { redirectTo: "/institution/dashboard" };
       }
     } catch {
       // Fall through to normal redirect if institution check fails
@@ -61,12 +62,12 @@ export async function login(formData: FormData) {
   }
   
   if (role === "TUTOR") {
-    redirect("/tutor");
+    redirectTo = "/tutor";
   } else if (role === "ADMIN") {
-    redirect("/admin");
-  } else {
-    redirect("/dashboard");
+    redirectTo = "/admin";
   }
+
+  return { redirectTo };
 }
 
 export async function signup(formData: FormData) {
@@ -102,11 +103,11 @@ export async function signup(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
-  redirect("/onboarding");
+  return { redirectTo: "/onboarding" };
 }
 
 export async function logout() {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/login");
+  return { redirectTo: "/login" };
 }
