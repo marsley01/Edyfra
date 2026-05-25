@@ -11,7 +11,7 @@ export async function getAllBookings() {
         student: { select: { id: true, name: true, avatar: true } },
         partner: { select: { id: true, name: true, avatar: true } },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { id: "desc" },
     });
     return sessions;
   } catch (error) {
