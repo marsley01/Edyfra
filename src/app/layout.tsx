@@ -9,6 +9,7 @@ import { ThemeColorManager } from "@/components/theme-color-manager";
 import { ConditionalShell } from "@/components/conditional-shell";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { PushSubscriptionManager } from "@/components/push-subscription-manager";
+import { AssistLoopWidget } from "@/components/assistloop-widget";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -99,6 +100,7 @@ export default function RootLayout({
           <Toaster richColors position="top-right" />
           <Analytics />
           <SpeedInsights />
+          <AssistLoopWidget />
         </ThemeProvider>
       </body>
     </html>
