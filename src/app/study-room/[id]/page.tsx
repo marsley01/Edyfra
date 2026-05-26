@@ -40,6 +40,8 @@ export default function StudyRoomPage() {
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<{ id: string; name?: string; avatar?: string } | null>(null);
   const [showReview, setShowReview] = useState(false);
+  const [showNoShowPrompt, setShowNoShowPrompt] = useState(false);
+  const [converting, setConverting] = useState(false);
 
   const getCurrentUser = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -54,7 +56,11 @@ export default function StudyRoomPage() {
 
   const fetchSession = useCallback(async () => {
     try {
-      const data = await fetchSessionAction(sessionId);
+      let data: any = await fetchSessionAction(sessionId);
+      if (!data) {
+        const { getBookingSessionData } = await import("@/app/actions/bookings");
+        data = await getBookingSessionData(sessionId);
+      }
       if (data) setSession(data as SessionData);
     } catch (e) {
       toast.error("Failed to load session");
@@ -67,6 +73,33 @@ export default function StudyRoomPage() {
     getCurrentUser();
     fetchSession();
   }, [getCurrentUser, fetchSession]);
+
+  useEffect(() => {
+    if (session && session.tier === "TUTOR" && session.studentId === currentUser?.id) {
+      const timer = setTimeout(() => {
+        setShowNoShowPrompt(true);
+      }, 5 * 60 * 1000); // 5 minutes
+      return () => clearTimeout(timer);
+    }
+  }, [session, currentUser]);
+
+  const handleConvertToMashAI = async () => {
+    setConverting(true);
+    try {
+      const { convertBookingToMashAI } = await import("@/app/actions/bookings");
+      const result = await convertBookingToMashAI(sessionId);
+      if (result.success && result.sessionId) {
+        toast.success("Connected to Mash AI!");
+        router.push(`/study-room/${result.sessionId}`);
+      } else {
+        toast.error("Failed to convert session.");
+      }
+    } catch (e) {
+      toast.error("An error occurred");
+    } finally {
+      setConverting(false);
+    }
+  };
 
   const handleEndSession = async () => {
     if (!session) return;
@@ -130,6 +163,11 @@ export default function StudyRoomPage() {
         </div>
 
         <div className="flex items-center gap-4">
+          {showNoShowPrompt && (
+            <Button onClick={handleConvertToMashAI} disabled={converting} variant="outline" className="hidden md:flex h-10 px-4 rounded-xl border-yellow-500/50 text-yellow-500 font-black text-[10px] tracking-widest uppercase hover:bg-yellow-500/10">
+              {converting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Tutor Unavailable? Use AI"}
+            </Button>
+          )}
           <div className="hidden md:flex -space-x-3">
             <AvatarPremium seed={session.student?.name} size="sm" className="border-2 border-background" />
             {session.partner && (

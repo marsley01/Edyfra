@@ -26,6 +26,7 @@ import {
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { useTheme } from "next-themes";
+import { TutorAvailabilityCalendar } from "@/components/tutor/TutorAvailabilityCalendar";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const TIME_SLOTS = ["Morning", "Afternoon", "Evening"];
@@ -462,25 +463,8 @@ export default function TutorSettingsPage() {
                     <Switch checked={availableNow} onCheckedChange={setAvailableNow} />
                   </div>
                   <Separator />
-                  <div className="space-y-1">
-                    <Label className="text-sm font-semibold">Weekly Schedule</Label>
-                    <p className="text-sm text-muted-foreground">Toggle your availability for each day and time slot</p>
-                  </div>
-                  <div className="space-y-2">
-                    {DAYS.map(day => (
-                      <div key={day} className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-xl bg-secondary/20 border border-border/30">
-                        <span className="sm:w-24 font-semibold text-sm">{day}</span>
-                        <div className="flex gap-2">
-                          {TIME_SLOTS.map(slot => (
-                            <button key={slot} onClick={() => toggleSchedule(day, slot)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                              (schedule[day] || []).includes(slot)
-                                ? "bg-primary text-white shadow-sm"
-                                : "bg-secondary text-muted-foreground hover:bg-secondary/80"
-                            }`}>{slot}</button>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
+                  <div className="space-y-4">
+                    <TutorAvailabilityCalendar tutorId={userData?.id} />
                   </div>
                   <Separator />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

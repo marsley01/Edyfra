@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getVerifiedTutors, bookTutorSession } from "@/app/actions/tutor";
+import { createBooking } from "@/app/actions/bookings";
 import { EduLevel } from "@/generated/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ export default function TutorsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [level, setLevel] = useState<EduLevel | "ALL">("ALL");
+  const router = useRouter();
 
   useEffect(() => {
     loadTutors();
@@ -76,8 +78,14 @@ export default function TutorsPage() {
           <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-2">
             <Search className="h-8 w-8 text-muted-foreground" />
           </div>
-          <h3 className="text-2xl font-black tracking-tightest">No tutors found.</h3>
-          <p className="text-muted-foreground">Try adjusting your filters or search criteria.</p>
+          <h3 className="text-2xl font-black tracking-tightest">No tutors available right now.</h3>
+          <p className="text-muted-foreground">Try adjusting your filters, or study with Mash AI instantly.</p>
+          <Button 
+            onClick={() => router.push("/dashboard/study")}
+            className="mt-4 h-12 px-8 rounded-full font-black text-xs tracking-widest uppercase bg-emerald-500 hover:bg-emerald-600 text-white shadow-xl shadow-emerald-500/20 transition-all active:scale-95"
+          >
+            Study with Mash AI
+          </Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -151,36 +159,46 @@ function BookingDialog({ tutor }: { tutor: any }) {
   const [booking, setBooking] = useState(false);
   const [subject, setSubject] = useState(tutor.tutorProfile?.subjects?.[0] || "");
   const [topic, setTopic] = useState("");
-  const [time, setTime] = useState("");
+  const [selectedSlot, setSelectedSlot] = useState("");
   const router = useRouter();
 
-  // Mock time slots (these would normally come from tutor.availability)
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const dayAfter = new Date();
-  dayAfter.setDate(dayAfter.getDate() + 2);
+  // Generate real time slots from tutorAvailability
+  const timeSlots: { label: string, value: string, date: string, startTime: string }[] = [];
   
-  const timeSlots = [
-    { label: `Tomorrow, 2:00 PM`, value: new Date(tomorrow.setHours(14, 0, 0, 0)).toISOString() },
-    { label: `Tomorrow, 4:00 PM`, value: new Date(tomorrow.setHours(16, 0, 0, 0)).toISOString() },
-    { label: `${dayAfter.toLocaleDateString('en-US', {weekday: 'short'})}, 10:00 AM`, value: new Date(dayAfter.setHours(10, 0, 0, 0)).toISOString() },
-    { label: `${dayAfter.toLocaleDateString('en-US', {weekday: 'short'})}, 3:00 PM`, value: new Date(dayAfter.setHours(15, 0, 0, 0)).toISOString() },
-  ];
+  if (tutor.tutorAvailability && tutor.tutorAvailability.length > 0) {
+    const today = new Date();
+    for (let i = 1; i <= 7; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() + i);
+      const dayOfWeek = d.getDay(); // 0 is Sunday
+      
+      const slotsForDay = tutor.tutorAvailability.filter((a: any) => a.dayOfWeek === dayOfWeek && !a.isBlocked);
+      slotsForDay.forEach((slot: any) => {
+        const dateStr = d.toISOString();
+        const value = `${dateStr}|${slot.startTime}`;
+        const label = `${d.toLocaleDateString('en-US', {weekday: 'short'})}, ${slot.startTime}`;
+        timeSlots.push({ label, value, date: dateStr, startTime: slot.startTime });
+      });
+    }
+  }
 
   const handleBook = async () => {
-    if (!subject || !topic || !time) {
+    if (!subject || !topic || !selectedSlot) {
       toast.error("Please fill all fields.");
       return;
     }
+    
+    const [date, startTime] = selectedSlot.split("|");
+    
     setBooking(true);
     try {
-      const res = await bookTutorSession(tutor.id, subject, topic, time);
+      const res = await createBooking(tutor.id, subject, topic, date, startTime, 60);
       if (res.success) {
-        toast.success("Session Booked!", {
-          description: "You can find it in your sessions tab."
+        toast.success("Session Request Sent!", {
+          description: "The tutor will review and confirm your request."
         });
         setOpen(false);
-        router.push("/dashboard/sessions");
+        // Maybe redirect or just close
       } else {
         toast.error("Failed to book session.");
       }
@@ -221,20 +239,26 @@ function BookingDialog({ tutor }: { tutor: any }) {
 
           <div className="space-y-4">
              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Select Time Slot</label>
-             <Select value={time} onValueChange={(v) => setTime(v ?? "")}>
-               <SelectTrigger className="h-14 rounded-xl border-border bg-background font-bold focus:ring-primary">
-                 <SelectValue placeholder="Choose a time slot" />
-               </SelectTrigger>
-               <SelectContent className="rounded-xl border-border bg-background/95 backdrop-blur-xl">
-                 {timeSlots.map((slot) => (
-                   <SelectItem key={slot.value} value={slot.value} className="font-bold cursor-pointer rounded-lg">
-                     <div className="flex items-center gap-2">
-                       <Clock className="h-4 w-4 text-primary" /> {slot.label}
-                     </div>
-                   </SelectItem>
-                 ))}
-               </SelectContent>
-             </Select>
+             {timeSlots.length === 0 ? (
+               <div className="p-4 bg-secondary/30 border border-border rounded-xl text-center">
+                 <p className="text-sm font-bold text-muted-foreground">Tutor has no available slots.</p>
+               </div>
+             ) : (
+               <Select value={selectedSlot} onValueChange={(v) => setSelectedSlot(v ?? "")}>
+                 <SelectTrigger className="h-14 rounded-xl border-border bg-background font-bold focus:ring-primary">
+                   <SelectValue placeholder="Choose a time slot" />
+                 </SelectTrigger>
+                 <SelectContent className="rounded-xl border-border bg-background/95 backdrop-blur-xl max-h-[200px]">
+                   {timeSlots.map((slot) => (
+                     <SelectItem key={slot.value} value={slot.value} className="font-bold cursor-pointer rounded-lg">
+                       <div className="flex items-center gap-2">
+                         <Clock className="h-4 w-4 text-primary" /> {slot.label}
+                       </div>
+                     </SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+             )}
           </div>
 
           <div className="space-y-4">
@@ -249,7 +273,7 @@ function BookingDialog({ tutor }: { tutor: any }) {
 
           <Button 
             onClick={handleBook} 
-            disabled={booking || !subject || !topic || !time}
+            disabled={booking || !subject || !topic || !selectedSlot}
             className="w-full h-14 rounded-xl font-black text-sm tracking-widest uppercase bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/20 transition-all active:scale-95"
           >
             {booking ? <Loader2 className="h-5 w-5 animate-spin" /> : "Confirm Booking"}

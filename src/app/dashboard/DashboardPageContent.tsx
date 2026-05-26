@@ -25,10 +25,22 @@ interface RecentSession {
   tier: string;
 }
 
+interface UpcomingBooking {
+  id: string;
+  subject: string;
+  topic: string | null;
+  date: string;
+  startTime: string;
+  durationMinutes: number;
+  status: string;
+  tutor: { name: string, avatar: string | null };
+}
+
 export default function DashboardPageContent() {
   const { userData, loading: userDataLoading, error: userDataError, retryCount, setRetryCount } = useSafeUserData();
   const { sessionCount, loading: sessionsLoading } = useSessionCounter(userData?.id || '');
   const [recentSessions, setRecentSessions] = useState<RecentSession[]>([]);
+  const [upcomingBookings, setUpcomingBookings] = useState<UpcomingBooking[]>([]);
   const [loadingRecent, setLoadingRecent] = useState(true);
   const [appStatus, setAppStatus] = useState<'NONE' | 'PENDING' | 'APPROVED' | 'REJECTED'>('NONE');
   const [appLoading, setAppLoading] = useState(false);
@@ -49,12 +61,15 @@ export default function DashboardPageContent() {
     const load = async () => {
       try {
         const { getUserSessions } = await import("@/app/actions/match");
+        const { getUpcomingStudentBookings } = await import("@/app/actions/bookings");
         const data = await getUserSessions(userData.id);
-         setRecentSessions(data.slice(0, 5).map(s => ({
-           ...s,
-           createdAt: s.startedAt?.toISOString() || new Date().toISOString(),
-           topic: s.topic || null
-         })));
+        const bookings = await getUpcomingStudentBookings();
+        setRecentSessions(data.slice(0, 5).map(s => ({
+          ...s,
+          createdAt: s.startedAt?.toISOString() || new Date().toISOString(),
+          topic: s.topic || null
+        })));
+        setUpcomingBookings(bookings as any[]);
        } catch (err) {
          console.error("Failed to load recent sessions:", err);
        } finally {
@@ -263,8 +278,36 @@ export default function DashboardPageContent() {
              <div className="relative z-10 min-h-[200px] flex items-center justify-center">
                <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
              </div>
-           ) : recentSessions.length > 0 ? (
+           ) : (recentSessions.length > 0 || upcomingBookings.length > 0) ? (
              <div className="relative z-10 space-y-3">
+               {upcomingBookings.length > 0 && (
+                 <div className="space-y-3 mb-6">
+                   <h4 className="text-sm font-black uppercase tracking-widest text-primary">Upcoming Bookings</h4>
+                   {upcomingBookings.map((booking) => (
+                     <div key={booking.id} className="flex items-center gap-4 p-4 rounded-2xl bg-primary/5 border border-primary/20 transition-all">
+                       <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-white font-black text-lg shadow-lg shadow-primary/20">
+                         {booking.subject[0]}
+                       </div>
+                       <div className="flex-1 min-w-0">
+                         <p className="font-bold text-sm truncate">{booking.topic || booking.subject}</p>
+                         <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">
+                           With {booking.tutor.name} • {new Date(booking.date).toLocaleDateString()} at {booking.startTime} ({booking.durationMinutes}m)
+                         </p>
+                       </div>
+                       <div className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full ${booking.status === 'confirmed' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-yellow-500/10 text-yellow-500'}`}>
+                         {booking.status}
+                       </div>
+                       {booking.status === 'confirmed' && (
+                         <Button onClick={() => window.location.href = `/study-room/${booking.id}`} className="bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-full h-8 px-4">
+                           Join Room
+                         </Button>
+                       )}
+                     </div>
+                   ))}
+                 </div>
+               )}
+               
+               {recentSessions.length > 0 && <h4 className="text-sm font-black uppercase tracking-widest text-muted-foreground">Past Sessions</h4>}
                {recentSessions.map((session) => (
                  <Link href={`/study-room/${session.id}`} key={session.id} className="block">
                    <div className="flex items-center gap-4 p-4 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all group/item">

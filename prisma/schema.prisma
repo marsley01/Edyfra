@@ -70,6 +70,11 @@ model User {
   institutionMembers       InstitutionMember[]
   uploadedDocuments        InstitutionDocument[]
   pushSubscriptions        PushSubscription[]
+  tutorAvailabilities      TutorAvailability[]     @relation("TutorAvailability")
+  studentBookings          Booking[]               @relation("StudentBookings")
+  tutorBookings            Booking[]               @relation("TutorBookings")
+  bookingReminders         BookingReminder[]
+  sessionFlags             SessionFlag[]           @relation("TutorSessionFlags")
 
   @@index([role])
 }
@@ -760,4 +765,74 @@ model InstitutionDocument {
   uploader    User        @relation(fields: [uploadedBy], references: [id])
 
   @@map("institution_documents")
+}
+
+model TutorAvailability {
+  id           String    @id @default(cuid())
+  tutorId      String    @map("tutor_id")
+  dayOfWeek    Int       @map("day_of_week") // 0-6
+  startTime    String    @map("start_time") // HH:mm format
+  endTime      String    @map("end_time") // HH:mm format
+  isRecurring  Boolean   @default(true) @map("is_recurring")
+  specificDate DateTime? @map("specific_date") @db.Date
+  isBlocked    Boolean   @default(false) @map("is_blocked")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  tutor        User      @relation("TutorAvailability", fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@map("tutor_availability")
+}
+
+model Booking {
+  id                String    @id @default(cuid())
+  studentId         String    @map("student_id")
+  tutorId           String    @map("tutor_id")
+  subject           String
+  topic             String?
+  educationLevel    String?   @map("education_level")
+  date              DateTime  @db.Date
+  startTime         String    @map("start_time")
+  endTime           String    @map("end_time")
+  durationMinutes   Int       @map("duration_minutes")
+  status            String    @default("pending") // pending/confirmed/completed/cancelled/student_no_show/tutor_no_show
+  amount            Int       @default(0)
+  paystackReference String?   @map("paystack_reference")
+  declineReason     String?   @map("decline_reason")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  student           User      @relation("StudentBookings", fields: [studentId], references: [id], onDelete: Cascade)
+  tutor             User      @relation("TutorBookings", fields: [tutorId], references: [id], onDelete: Cascade)
+  reminders         BookingReminder[]
+  flags             SessionFlag[]
+
+  @@map("bookings")
+}
+
+model BookingReminder {
+  id             String    @id @default(cuid())
+  bookingId      String    @map("booking_id")
+  userId         String    @map("user_id")
+  reminderType   String    @map("reminder_type") // 24hr/30min/5min/start
+  scheduledFor   DateTime  @map("scheduled_for")
+  sentAt         DateTime? @map("sent_at")
+  channel        String    @default("inapp") @map("channel") // inapp/whatsapp
+
+  booking        Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("booking_reminders")
+}
+
+model SessionFlag {
+  id         String   @id @default(cuid())
+  tutorId    String   @map("tutor_id")
+  flagType   String   @map("flag_type") // unresponsive/no_show/declined
+  bookingId  String   @map("booking_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  tutor      User     @relation("TutorSessionFlags", fields: [tutorId], references: [id], onDelete: Cascade)
+  booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("session_flags")
 }

@@ -649,6 +649,55 @@ exports.Prisma.InstitutionDocumentScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.TutorAvailabilityScalarFieldEnum = {
+  id: 'id',
+  tutorId: 'tutorId',
+  dayOfWeek: 'dayOfWeek',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  isRecurring: 'isRecurring',
+  specificDate: 'specificDate',
+  isBlocked: 'isBlocked',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.BookingScalarFieldEnum = {
+  id: 'id',
+  studentId: 'studentId',
+  tutorId: 'tutorId',
+  subject: 'subject',
+  topic: 'topic',
+  educationLevel: 'educationLevel',
+  date: 'date',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  durationMinutes: 'durationMinutes',
+  status: 'status',
+  amount: 'amount',
+  paystackReference: 'paystackReference',
+  declineReason: 'declineReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.BookingReminderScalarFieldEnum = {
+  id: 'id',
+  bookingId: 'bookingId',
+  userId: 'userId',
+  reminderType: 'reminderType',
+  scheduledFor: 'scheduledFor',
+  sentAt: 'sentAt',
+  channel: 'channel'
+};
+
+exports.Prisma.SessionFlagScalarFieldEnum = {
+  id: 'id',
+  tutorId: 'tutorId',
+  flagType: 'flagType',
+  bookingId: 'bookingId',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -773,7 +822,11 @@ exports.Prisma.ModelName = {
   InstitutionStudent: 'InstitutionStudent',
   InstitutionTutor: 'InstitutionTutor',
   InstitutionMember: 'InstitutionMember',
-  InstitutionDocument: 'InstitutionDocument'
+  InstitutionDocument: 'InstitutionDocument',
+  TutorAvailability: 'TutorAvailability',
+  Booking: 'Booking',
+  BookingReminder: 'BookingReminder',
+  SessionFlag: 'SessionFlag'
 };
 
 /**

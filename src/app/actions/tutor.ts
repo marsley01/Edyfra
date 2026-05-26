@@ -132,7 +132,8 @@ export async function getVerifiedTutors(level?: EduLevel) {
     return await prisma.user.findMany({
       where: whereClause,
       include: {
-        tutorProfile: true
+        tutorProfile: true,
+        tutorAvailabilities: true
       },
       orderBy: { createdAt: "desc" }
     });

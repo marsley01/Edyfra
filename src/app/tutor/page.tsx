@@ -12,6 +12,8 @@ import { getUserData } from "@/app/actions/user";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
+import { IncomingRequests } from "@/components/tutor/IncomingRequests";
+import { getUpcomingBookings } from "@/app/actions/bookings";
 
 interface TutorProfile {
   totalSessions: number;
@@ -28,6 +30,7 @@ export default function TutorDashboard() {
   const [toggling, setToggling] = useState(false);
   const [pendingSessions, setPendingSessions] = useState<any[]>([]);
   const [activeSessions, setActiveSessions] = useState<any[]>([]);
+  const [upcomingBookings, setUpcomingBookings] = useState<any[]>([]);
   const [sessionLoading, setSessionLoading] = useState(true);
   
   const router = useRouter();
@@ -52,8 +55,10 @@ export default function TutorDashboard() {
     try {
       const pending = await getTutorSessions("PENDING");
       const active = await getTutorSessions("ACTIVE");
+      const bookings = await getUpcomingBookings();
       setPendingSessions(pending);
       setActiveSessions(active);
+      setUpcomingBookings(bookings);
     } catch (err) {
       console.error("Failed to load bookings:", err);
     }
@@ -136,6 +141,8 @@ export default function TutorDashboard() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 md:gap-12">
         {/* Schedule List */}
         <div className="xl:col-span-2 space-y-8">
+          <IncomingRequests />
+
           <div className="flex items-center justify-between px-2">
             <div className="space-y-1">
               <h2 className="text-3xl font-black tracking-tightest">Your Schedule</h2>
@@ -151,7 +158,7 @@ export default function TutorDashboard() {
               <div className="py-20 flex items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-            ) : [...activeSessions, ...pendingSessions].length === 0 ? (
+            ) : [...activeSessions, ...pendingSessions, ...upcomingBookings].length === 0 ? (
               <div className="p-20 flex flex-col items-center justify-center text-center space-y-6 bg-secondary/30 rounded-[3rem] border border-dashed border-border">
                 <CalendarIcon className="h-12 w-12 text-muted-foreground/20" />
                <div className="space-y-2">
@@ -160,7 +167,8 @@ export default function TutorDashboard() {
                </div>
               </div>
             ) : (
-              [...activeSessions, ...pendingSessions].map((session) => (
+              <>
+              {[...activeSessions, ...pendingSessions].map((session) => (
                 <Card key={session.id} className="border-border/50 bg-secondary/30 backdrop-blur-3xl hover:border-primary/50 transition-all duration-500 rounded-[3rem] overflow-hidden group shadow-xl hover:shadow-primary/5">
                   <CardContent className="p-8 md:p-10 flex flex-col lg:flex-row items-center justify-between gap-8">
                     <div className="flex items-center gap-6 w-full lg:w-auto">
@@ -210,7 +218,48 @@ export default function TutorDashboard() {
                     </div>
                   </CardContent>
                 </Card>
-              ))
+              ))}
+              {upcomingBookings.map((booking) => (
+                <Card key={booking.id} className="border-border/50 bg-secondary/30 backdrop-blur-3xl hover:border-primary/50 transition-all duration-500 rounded-[3rem] overflow-hidden group shadow-xl hover:shadow-primary/5">
+                  <CardContent className="p-8 md:p-10 flex flex-col lg:flex-row items-center justify-between gap-8">
+                    <div className="flex items-center gap-6 w-full lg:w-auto">
+                      <AvatarPremium
+                        seed={booking.student.name}
+                        src={booking.student.avatar || ""}
+                        size="lg"
+                      />
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-3">
+                          <h3 className="text-2xl font-black tracking-tightest">{booking.student.name}</h3>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge className="bg-primary/10 text-primary border-primary/20 text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full">
+                            {booking.subject}
+                          </Badge>
+                          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest bg-background border border-border px-3 py-1 rounded-full flex items-center gap-1">
+                            <Clock className="h-3 w-3" /> {new Date(booking.date).toLocaleDateString()} at {booking.startTime}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-center gap-6 w-full lg:w-auto">
+                      <div className="flex flex-col items-center sm:items-end w-full sm:w-auto">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Session Status</span>
+                        <span className="text-sm font-black text-foreground">Confirmed</span>
+                      </div>
+                      <Button 
+                        onClick={() => handleJoinRoom(booking.id)}
+                        className={`w-full sm:w-auto h-16 px-10 rounded-[1.8rem] font-black text-xs tracking-[0.2em] uppercase shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3 bg-primary hover:bg-primary/90 text-white`}
+                      >
+                        <Video className="h-5 w-5" />
+                        Join Room
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              </>
             )}
           </div>
         </div>

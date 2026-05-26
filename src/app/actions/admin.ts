@@ -202,6 +202,105 @@ export async function getActiveSessions() {
   }
 }
 
+export async function getAdminBookings(filter?: "all" | "pending" | "confirmed" | "declined" | "completed" | "tutor_no_show") {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || !(await isAdmin())) return [];
+
+    const where = filter && filter !== "all" ? { status: filter } : {};
+
+    return await prisma.booking.findMany({
+      where,
+      include: {
+        student: { select: { id: true, name: true, email: true, avatar: true } },
+        tutor: { select: { id: true, name: true, email: true, avatar: true } },
+        flags: true,
+      },
+      orderBy: [{ date: "desc" }, { startTime: "desc" }],
+      take: 100,
+    });
+  } catch (error) {
+    console.error("Error in getAdminBookings:", error);
+    return [];
+  }
+}
+
+export async function adminCancelBooking(bookingId: string, reason?: string) {
+  try {
+    const supabase = await createClient();
+    const { data: { user: admin } } = await supabase.auth.getUser();
+    if (!admin || !(await isAdmin())) return { error: "Unauthorized" };
+
+    const booking = await prisma.booking.update({
+      where: { id: bookingId },
+      data: { status: "cancelled", declineReason: reason || "Cancelled by admin" },
+      include: {
+        student: { select: { id: true, name: true } },
+        tutor: { select: { id: true, name: true } },
+      },
+    });
+
+    try {
+      await notifyUser(booking.studentId, {
+        type: "BOOKING_CANCELLED",
+        title: "Booking Cancelled",
+        body: `Your ${booking.subject} booking has been cancelled by admin.`,
+        actionUrl: "/dashboard/sessions",
+      });
+      await notifyUser(booking.tutorId, {
+        type: "BOOKING_CANCELLED",
+        title: "Booking Cancelled",
+        body: `A ${booking.subject} booking was cancelled by admin.`,
+        actionUrl: "/tutor",
+      });
+    } catch (e) {
+      console.error("Failed to send cancellation notifications:", e);
+    }
+
+    revalidatePath("/admin/bookings");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error in adminCancelBooking:", error);
+    return { error: error.message || "Failed to cancel booking" };
+  }
+}
+
+export async function adminConfirmBooking(bookingId: string) {
+  try {
+    const supabase = await createClient();
+    const { data: { user: admin } } = await supabase.auth.getUser();
+    if (!admin || !(await isAdmin())) return { error: "Unauthorized" };
+
+    const booking = await prisma.booking.update({
+      where: { id: bookingId },
+      data: { status: "confirmed" },
+      include: {
+        student: { select: { id: true } },
+        tutor: { select: { id: true } },
+      },
+    });
+
+    try {
+      await notifyUser(booking.studentId, {
+        type: "BOOKING_CONFIRMED",
+        title: "Booking Confirmed!",
+        body: `Your ${booking.subject} session has been confirmed.`,
+        actionUrl: `/study-room/${booking.id}`,
+      });
+    } catch (e) {
+      console.error("Failed to send confirmation notification:", e);
+    }
+
+    revalidatePath("/admin/bookings");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error in adminConfirmBooking:", error);
+    return { error: error.message || "Failed to confirm booking" };
+  }
+}
+
+
 export async function closeSession(sessionId: string) {
   try {
     const supabase = await createClient();

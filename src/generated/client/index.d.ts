@@ -238,6 +238,26 @@ export type InstitutionMember = $Result.DefaultSelection<Prisma.$InstitutionMemb
  * 
  */
 export type InstitutionDocument = $Result.DefaultSelection<Prisma.$InstitutionDocumentPayload>
+/**
+ * Model TutorAvailability
+ * 
+ */
+export type TutorAvailability = $Result.DefaultSelection<Prisma.$TutorAvailabilityPayload>
+/**
+ * Model Booking
+ * 
+ */
+export type Booking = $Result.DefaultSelection<Prisma.$BookingPayload>
+/**
+ * Model BookingReminder
+ * 
+ */
+export type BookingReminder = $Result.DefaultSelection<Prisma.$BookingReminderPayload>
+/**
+ * Model SessionFlag
+ * 
+ */
+export type SessionFlag = $Result.DefaultSelection<Prisma.$SessionFlagPayload>
 
 /**
  * Enums
@@ -934,6 +954,46 @@ export class PrismaClient<
     * ```
     */
   get institutionDocument(): Prisma.InstitutionDocumentDelegate<ExtArgs>;
+
+  /**
+   * `prisma.tutorAvailability`: Exposes CRUD operations for the **TutorAvailability** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more TutorAvailabilities
+    * const tutorAvailabilities = await prisma.tutorAvailability.findMany()
+    * ```
+    */
+  get tutorAvailability(): Prisma.TutorAvailabilityDelegate<ExtArgs>;
+
+  /**
+   * `prisma.booking`: Exposes CRUD operations for the **Booking** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Bookings
+    * const bookings = await prisma.booking.findMany()
+    * ```
+    */
+  get booking(): Prisma.BookingDelegate<ExtArgs>;
+
+  /**
+   * `prisma.bookingReminder`: Exposes CRUD operations for the **BookingReminder** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more BookingReminders
+    * const bookingReminders = await prisma.bookingReminder.findMany()
+    * ```
+    */
+  get bookingReminder(): Prisma.BookingReminderDelegate<ExtArgs>;
+
+  /**
+   * `prisma.sessionFlag`: Exposes CRUD operations for the **SessionFlag** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more SessionFlags
+    * const sessionFlags = await prisma.sessionFlag.findMany()
+    * ```
+    */
+  get sessionFlag(): Prisma.SessionFlagDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -1419,7 +1479,11 @@ export namespace Prisma {
     InstitutionStudent: 'InstitutionStudent',
     InstitutionTutor: 'InstitutionTutor',
     InstitutionMember: 'InstitutionMember',
-    InstitutionDocument: 'InstitutionDocument'
+    InstitutionDocument: 'InstitutionDocument',
+    TutorAvailability: 'TutorAvailability',
+    Booking: 'Booking',
+    BookingReminder: 'BookingReminder',
+    SessionFlag: 'SessionFlag'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1435,7 +1499,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "studentProfile" | "tutorProfile" | "matchRequest" | "session" | "message" | "review" | "dailyChallenge" | "dailyChallengeAttempt" | "struggleGroup" | "groupMessage" | "tutorApplication" | "notification" | "feedPost" | "postLike" | "comment" | "achievement" | "platformSettings" | "aiConversation" | "report" | "announcement" | "newsArticle" | "userCredits" | "creditTransaction" | "testimonial" | "notificationSettings" | "pushSubscription" | "userPreferences" | "challenge" | "challengeCompletion" | "plan" | "payment" | "sessionPayment" | "tutorPayout" | "sellerEarning" | "curriculumTopic" | "resource" | "resourcePurchase" | "newsletter_subscribers" | "institution" | "institutionStaff" | "institutionStudent" | "institutionTutor" | "institutionMember" | "institutionDocument"
+      modelProps: "user" | "studentProfile" | "tutorProfile" | "matchRequest" | "session" | "message" | "review" | "dailyChallenge" | "dailyChallengeAttempt" | "struggleGroup" | "groupMessage" | "tutorApplication" | "notification" | "feedPost" | "postLike" | "comment" | "achievement" | "platformSettings" | "aiConversation" | "report" | "announcement" | "newsArticle" | "userCredits" | "creditTransaction" | "testimonial" | "notificationSettings" | "pushSubscription" | "userPreferences" | "challenge" | "challengeCompletion" | "plan" | "payment" | "sessionPayment" | "tutorPayout" | "sellerEarning" | "curriculumTopic" | "resource" | "resourcePurchase" | "newsletter_subscribers" | "institution" | "institutionStaff" | "institutionStudent" | "institutionTutor" | "institutionMember" | "institutionDocument" | "tutorAvailability" | "booking" | "bookingReminder" | "sessionFlag"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -4589,6 +4653,286 @@ export namespace Prisma {
           }
         }
       }
+      TutorAvailability: {
+        payload: Prisma.$TutorAvailabilityPayload<ExtArgs>
+        fields: Prisma.TutorAvailabilityFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.TutorAvailabilityFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TutorAvailabilityPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.TutorAvailabilityFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TutorAvailabilityPayload>
+          }
+          findFirst: {
+            args: Prisma.TutorAvailabilityFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TutorAvailabilityPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.TutorAvailabilityFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TutorAvailabilityPayload>
+          }
+          findMany: {
+            args: Prisma.TutorAvailabilityFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TutorAvailabilityPayload>[]
+          }
+          create: {
+            args: Prisma.TutorAvailabilityCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TutorAvailabilityPayload>
+          }
+          createMany: {
+            args: Prisma.TutorAvailabilityCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.TutorAvailabilityCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TutorAvailabilityPayload>[]
+          }
+          delete: {
+            args: Prisma.TutorAvailabilityDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TutorAvailabilityPayload>
+          }
+          update: {
+            args: Prisma.TutorAvailabilityUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TutorAvailabilityPayload>
+          }
+          deleteMany: {
+            args: Prisma.TutorAvailabilityDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.TutorAvailabilityUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.TutorAvailabilityUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TutorAvailabilityPayload>
+          }
+          aggregate: {
+            args: Prisma.TutorAvailabilityAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateTutorAvailability>
+          }
+          groupBy: {
+            args: Prisma.TutorAvailabilityGroupByArgs<ExtArgs>
+            result: $Utils.Optional<TutorAvailabilityGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.TutorAvailabilityCountArgs<ExtArgs>
+            result: $Utils.Optional<TutorAvailabilityCountAggregateOutputType> | number
+          }
+        }
+      }
+      Booking: {
+        payload: Prisma.$BookingPayload<ExtArgs>
+        fields: Prisma.BookingFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.BookingFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BookingPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.BookingFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BookingPayload>
+          }
+          findFirst: {
+            args: Prisma.BookingFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BookingPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.BookingFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BookingPayload>
+          }
+          findMany: {
+            args: Prisma.BookingFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BookingPayload>[]
+          }
+          create: {
+            args: Prisma.BookingCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BookingPayload>
+          }
+          createMany: {
+            args: Prisma.BookingCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.BookingCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BookingPayload>[]
+          }
+          delete: {
+            args: Prisma.BookingDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BookingPayload>
+          }
+          update: {
+            args: Prisma.BookingUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BookingPayload>
+          }
+          deleteMany: {
+            args: Prisma.BookingDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.BookingUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.BookingUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BookingPayload>
+          }
+          aggregate: {
+            args: Prisma.BookingAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateBooking>
+          }
+          groupBy: {
+            args: Prisma.BookingGroupByArgs<ExtArgs>
+            result: $Utils.Optional<BookingGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.BookingCountArgs<ExtArgs>
+            result: $Utils.Optional<BookingCountAggregateOutputType> | number
+          }
+        }
+      }
+      BookingReminder: {
+        payload: Prisma.$BookingReminderPayload<ExtArgs>
+        fields: Prisma.BookingReminderFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.BookingReminderFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BookingReminderPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.BookingReminderFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BookingReminderPayload>
+          }
+          findFirst: {
+            args: Prisma.BookingReminderFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BookingReminderPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.BookingReminderFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BookingReminderPayload>
+          }
+          findMany: {
+            args: Prisma.BookingReminderFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BookingReminderPayload>[]
+          }
+          create: {
+            args: Prisma.BookingReminderCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BookingReminderPayload>
+          }
+          createMany: {
+            args: Prisma.BookingReminderCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.BookingReminderCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BookingReminderPayload>[]
+          }
+          delete: {
+            args: Prisma.BookingReminderDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BookingReminderPayload>
+          }
+          update: {
+            args: Prisma.BookingReminderUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BookingReminderPayload>
+          }
+          deleteMany: {
+            args: Prisma.BookingReminderDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.BookingReminderUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.BookingReminderUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BookingReminderPayload>
+          }
+          aggregate: {
+            args: Prisma.BookingReminderAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateBookingReminder>
+          }
+          groupBy: {
+            args: Prisma.BookingReminderGroupByArgs<ExtArgs>
+            result: $Utils.Optional<BookingReminderGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.BookingReminderCountArgs<ExtArgs>
+            result: $Utils.Optional<BookingReminderCountAggregateOutputType> | number
+          }
+        }
+      }
+      SessionFlag: {
+        payload: Prisma.$SessionFlagPayload<ExtArgs>
+        fields: Prisma.SessionFlagFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.SessionFlagFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionFlagPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.SessionFlagFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionFlagPayload>
+          }
+          findFirst: {
+            args: Prisma.SessionFlagFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionFlagPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.SessionFlagFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionFlagPayload>
+          }
+          findMany: {
+            args: Prisma.SessionFlagFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionFlagPayload>[]
+          }
+          create: {
+            args: Prisma.SessionFlagCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionFlagPayload>
+          }
+          createMany: {
+            args: Prisma.SessionFlagCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.SessionFlagCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionFlagPayload>[]
+          }
+          delete: {
+            args: Prisma.SessionFlagDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionFlagPayload>
+          }
+          update: {
+            args: Prisma.SessionFlagUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionFlagPayload>
+          }
+          deleteMany: {
+            args: Prisma.SessionFlagDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.SessionFlagUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.SessionFlagUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionFlagPayload>
+          }
+          aggregate: {
+            args: Prisma.SessionFlagAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateSessionFlag>
+          }
+          groupBy: {
+            args: Prisma.SessionFlagGroupByArgs<ExtArgs>
+            result: $Utils.Optional<SessionFlagGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.SessionFlagCountArgs<ExtArgs>
+            result: $Utils.Optional<SessionFlagCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -4775,6 +5119,11 @@ export namespace Prisma {
     institutionMembers: number
     uploadedDocuments: number
     pushSubscriptions: number
+    tutorAvailabilities: number
+    studentBookings: number
+    tutorBookings: number
+    bookingReminders: number
+    sessionFlags: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4803,6 +5152,11 @@ export namespace Prisma {
     institutionMembers?: boolean | UserCountOutputTypeCountInstitutionMembersArgs
     uploadedDocuments?: boolean | UserCountOutputTypeCountUploadedDocumentsArgs
     pushSubscriptions?: boolean | UserCountOutputTypeCountPushSubscriptionsArgs
+    tutorAvailabilities?: boolean | UserCountOutputTypeCountTutorAvailabilitiesArgs
+    studentBookings?: boolean | UserCountOutputTypeCountStudentBookingsArgs
+    tutorBookings?: boolean | UserCountOutputTypeCountTutorBookingsArgs
+    bookingReminders?: boolean | UserCountOutputTypeCountBookingRemindersArgs
+    sessionFlags?: boolean | UserCountOutputTypeCountSessionFlagsArgs
   }
 
   // Custom InputTypes
@@ -4989,6 +5343,41 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountPushSubscriptionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PushSubscriptionWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountTutorAvailabilitiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TutorAvailabilityWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountStudentBookingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BookingWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountTutorBookingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BookingWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountBookingRemindersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BookingReminderWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountSessionFlagsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SessionFlagWhereInput
   }
 
 
@@ -5269,6 +5658,46 @@ export namespace Prisma {
    */
   export type InstitutionCountOutputTypeCountDocumentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: InstitutionDocumentWhereInput
+  }
+
+
+  /**
+   * Count Type BookingCountOutputType
+   */
+
+  export type BookingCountOutputType = {
+    reminders: number
+    flags: number
+  }
+
+  export type BookingCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    reminders?: boolean | BookingCountOutputTypeCountRemindersArgs
+    flags?: boolean | BookingCountOutputTypeCountFlagsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * BookingCountOutputType without action
+   */
+  export type BookingCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BookingCountOutputType
+     */
+    select?: BookingCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * BookingCountOutputType without action
+   */
+  export type BookingCountOutputTypeCountRemindersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BookingReminderWhereInput
+  }
+
+  /**
+   * BookingCountOutputType without action
+   */
+  export type BookingCountOutputTypeCountFlagsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SessionFlagWhereInput
   }
 
 
@@ -5720,6 +6149,11 @@ export namespace Prisma {
     institutionMembers?: boolean | User$institutionMembersArgs<ExtArgs>
     uploadedDocuments?: boolean | User$uploadedDocumentsArgs<ExtArgs>
     pushSubscriptions?: boolean | User$pushSubscriptionsArgs<ExtArgs>
+    tutorAvailabilities?: boolean | User$tutorAvailabilitiesArgs<ExtArgs>
+    studentBookings?: boolean | User$studentBookingsArgs<ExtArgs>
+    tutorBookings?: boolean | User$tutorBookingsArgs<ExtArgs>
+    bookingReminders?: boolean | User$bookingRemindersArgs<ExtArgs>
+    sessionFlags?: boolean | User$sessionFlagsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -5820,6 +6254,11 @@ export namespace Prisma {
     institutionMembers?: boolean | User$institutionMembersArgs<ExtArgs>
     uploadedDocuments?: boolean | User$uploadedDocumentsArgs<ExtArgs>
     pushSubscriptions?: boolean | User$pushSubscriptionsArgs<ExtArgs>
+    tutorAvailabilities?: boolean | User$tutorAvailabilitiesArgs<ExtArgs>
+    studentBookings?: boolean | User$studentBookingsArgs<ExtArgs>
+    tutorBookings?: boolean | User$tutorBookingsArgs<ExtArgs>
+    bookingReminders?: boolean | User$bookingRemindersArgs<ExtArgs>
+    sessionFlags?: boolean | User$sessionFlagsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -5857,6 +6296,11 @@ export namespace Prisma {
       institutionMembers: Prisma.$InstitutionMemberPayload<ExtArgs>[]
       uploadedDocuments: Prisma.$InstitutionDocumentPayload<ExtArgs>[]
       pushSubscriptions: Prisma.$PushSubscriptionPayload<ExtArgs>[]
+      tutorAvailabilities: Prisma.$TutorAvailabilityPayload<ExtArgs>[]
+      studentBookings: Prisma.$BookingPayload<ExtArgs>[]
+      tutorBookings: Prisma.$BookingPayload<ExtArgs>[]
+      bookingReminders: Prisma.$BookingReminderPayload<ExtArgs>[]
+      sessionFlags: Prisma.$SessionFlagPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -6283,6 +6727,11 @@ export namespace Prisma {
     institutionMembers<T extends User$institutionMembersArgs<ExtArgs> = {}>(args?: Subset<T, User$institutionMembersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InstitutionMemberPayload<ExtArgs>, T, "findMany"> | Null>
     uploadedDocuments<T extends User$uploadedDocumentsArgs<ExtArgs> = {}>(args?: Subset<T, User$uploadedDocumentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InstitutionDocumentPayload<ExtArgs>, T, "findMany"> | Null>
     pushSubscriptions<T extends User$pushSubscriptionsArgs<ExtArgs> = {}>(args?: Subset<T, User$pushSubscriptionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PushSubscriptionPayload<ExtArgs>, T, "findMany"> | Null>
+    tutorAvailabilities<T extends User$tutorAvailabilitiesArgs<ExtArgs> = {}>(args?: Subset<T, User$tutorAvailabilitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TutorAvailabilityPayload<ExtArgs>, T, "findMany"> | Null>
+    studentBookings<T extends User$studentBookingsArgs<ExtArgs> = {}>(args?: Subset<T, User$studentBookingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findMany"> | Null>
+    tutorBookings<T extends User$tutorBookingsArgs<ExtArgs> = {}>(args?: Subset<T, User$tutorBookingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findMany"> | Null>
+    bookingReminders<T extends User$bookingRemindersArgs<ExtArgs> = {}>(args?: Subset<T, User$bookingRemindersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BookingReminderPayload<ExtArgs>, T, "findMany"> | Null>
+    sessionFlags<T extends User$sessionFlagsArgs<ExtArgs> = {}>(args?: Subset<T, User$sessionFlagsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionFlagPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -7228,6 +7677,106 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: PushSubscriptionScalarFieldEnum | PushSubscriptionScalarFieldEnum[]
+  }
+
+  /**
+   * User.tutorAvailabilities
+   */
+  export type User$tutorAvailabilitiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TutorAvailability
+     */
+    select?: TutorAvailabilitySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TutorAvailabilityInclude<ExtArgs> | null
+    where?: TutorAvailabilityWhereInput
+    orderBy?: TutorAvailabilityOrderByWithRelationInput | TutorAvailabilityOrderByWithRelationInput[]
+    cursor?: TutorAvailabilityWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TutorAvailabilityScalarFieldEnum | TutorAvailabilityScalarFieldEnum[]
+  }
+
+  /**
+   * User.studentBookings
+   */
+  export type User$studentBookingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Booking
+     */
+    select?: BookingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingInclude<ExtArgs> | null
+    where?: BookingWhereInput
+    orderBy?: BookingOrderByWithRelationInput | BookingOrderByWithRelationInput[]
+    cursor?: BookingWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: BookingScalarFieldEnum | BookingScalarFieldEnum[]
+  }
+
+  /**
+   * User.tutorBookings
+   */
+  export type User$tutorBookingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Booking
+     */
+    select?: BookingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingInclude<ExtArgs> | null
+    where?: BookingWhereInput
+    orderBy?: BookingOrderByWithRelationInput | BookingOrderByWithRelationInput[]
+    cursor?: BookingWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: BookingScalarFieldEnum | BookingScalarFieldEnum[]
+  }
+
+  /**
+   * User.bookingReminders
+   */
+  export type User$bookingRemindersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BookingReminder
+     */
+    select?: BookingReminderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingReminderInclude<ExtArgs> | null
+    where?: BookingReminderWhereInput
+    orderBy?: BookingReminderOrderByWithRelationInput | BookingReminderOrderByWithRelationInput[]
+    cursor?: BookingReminderWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: BookingReminderScalarFieldEnum | BookingReminderScalarFieldEnum[]
+  }
+
+  /**
+   * User.sessionFlags
+   */
+  export type User$sessionFlagsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionFlag
+     */
+    select?: SessionFlagSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SessionFlagInclude<ExtArgs> | null
+    where?: SessionFlagWhereInput
+    orderBy?: SessionFlagOrderByWithRelationInput | SessionFlagOrderByWithRelationInput[]
+    cursor?: SessionFlagWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: SessionFlagScalarFieldEnum | SessionFlagScalarFieldEnum[]
   }
 
   /**
@@ -50550,6 +51099,4082 @@ export namespace Prisma {
 
 
   /**
+   * Model TutorAvailability
+   */
+
+  export type AggregateTutorAvailability = {
+    _count: TutorAvailabilityCountAggregateOutputType | null
+    _avg: TutorAvailabilityAvgAggregateOutputType | null
+    _sum: TutorAvailabilitySumAggregateOutputType | null
+    _min: TutorAvailabilityMinAggregateOutputType | null
+    _max: TutorAvailabilityMaxAggregateOutputType | null
+  }
+
+  export type TutorAvailabilityAvgAggregateOutputType = {
+    dayOfWeek: number | null
+  }
+
+  export type TutorAvailabilitySumAggregateOutputType = {
+    dayOfWeek: number | null
+  }
+
+  export type TutorAvailabilityMinAggregateOutputType = {
+    id: string | null
+    tutorId: string | null
+    dayOfWeek: number | null
+    startTime: string | null
+    endTime: string | null
+    isRecurring: boolean | null
+    specificDate: Date | null
+    isBlocked: boolean | null
+    createdAt: Date | null
+  }
+
+  export type TutorAvailabilityMaxAggregateOutputType = {
+    id: string | null
+    tutorId: string | null
+    dayOfWeek: number | null
+    startTime: string | null
+    endTime: string | null
+    isRecurring: boolean | null
+    specificDate: Date | null
+    isBlocked: boolean | null
+    createdAt: Date | null
+  }
+
+  export type TutorAvailabilityCountAggregateOutputType = {
+    id: number
+    tutorId: number
+    dayOfWeek: number
+    startTime: number
+    endTime: number
+    isRecurring: number
+    specificDate: number
+    isBlocked: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type TutorAvailabilityAvgAggregateInputType = {
+    dayOfWeek?: true
+  }
+
+  export type TutorAvailabilitySumAggregateInputType = {
+    dayOfWeek?: true
+  }
+
+  export type TutorAvailabilityMinAggregateInputType = {
+    id?: true
+    tutorId?: true
+    dayOfWeek?: true
+    startTime?: true
+    endTime?: true
+    isRecurring?: true
+    specificDate?: true
+    isBlocked?: true
+    createdAt?: true
+  }
+
+  export type TutorAvailabilityMaxAggregateInputType = {
+    id?: true
+    tutorId?: true
+    dayOfWeek?: true
+    startTime?: true
+    endTime?: true
+    isRecurring?: true
+    specificDate?: true
+    isBlocked?: true
+    createdAt?: true
+  }
+
+  export type TutorAvailabilityCountAggregateInputType = {
+    id?: true
+    tutorId?: true
+    dayOfWeek?: true
+    startTime?: true
+    endTime?: true
+    isRecurring?: true
+    specificDate?: true
+    isBlocked?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type TutorAvailabilityAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TutorAvailability to aggregate.
+     */
+    where?: TutorAvailabilityWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TutorAvailabilities to fetch.
+     */
+    orderBy?: TutorAvailabilityOrderByWithRelationInput | TutorAvailabilityOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: TutorAvailabilityWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TutorAvailabilities from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TutorAvailabilities.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned TutorAvailabilities
+    **/
+    _count?: true | TutorAvailabilityCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: TutorAvailabilityAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: TutorAvailabilitySumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: TutorAvailabilityMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: TutorAvailabilityMaxAggregateInputType
+  }
+
+  export type GetTutorAvailabilityAggregateType<T extends TutorAvailabilityAggregateArgs> = {
+        [P in keyof T & keyof AggregateTutorAvailability]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateTutorAvailability[P]>
+      : GetScalarType<T[P], AggregateTutorAvailability[P]>
+  }
+
+
+
+
+  export type TutorAvailabilityGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TutorAvailabilityWhereInput
+    orderBy?: TutorAvailabilityOrderByWithAggregationInput | TutorAvailabilityOrderByWithAggregationInput[]
+    by: TutorAvailabilityScalarFieldEnum[] | TutorAvailabilityScalarFieldEnum
+    having?: TutorAvailabilityScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: TutorAvailabilityCountAggregateInputType | true
+    _avg?: TutorAvailabilityAvgAggregateInputType
+    _sum?: TutorAvailabilitySumAggregateInputType
+    _min?: TutorAvailabilityMinAggregateInputType
+    _max?: TutorAvailabilityMaxAggregateInputType
+  }
+
+  export type TutorAvailabilityGroupByOutputType = {
+    id: string
+    tutorId: string
+    dayOfWeek: number
+    startTime: string
+    endTime: string
+    isRecurring: boolean
+    specificDate: Date | null
+    isBlocked: boolean
+    createdAt: Date
+    _count: TutorAvailabilityCountAggregateOutputType | null
+    _avg: TutorAvailabilityAvgAggregateOutputType | null
+    _sum: TutorAvailabilitySumAggregateOutputType | null
+    _min: TutorAvailabilityMinAggregateOutputType | null
+    _max: TutorAvailabilityMaxAggregateOutputType | null
+  }
+
+  type GetTutorAvailabilityGroupByPayload<T extends TutorAvailabilityGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<TutorAvailabilityGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof TutorAvailabilityGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], TutorAvailabilityGroupByOutputType[P]>
+            : GetScalarType<T[P], TutorAvailabilityGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type TutorAvailabilitySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tutorId?: boolean
+    dayOfWeek?: boolean
+    startTime?: boolean
+    endTime?: boolean
+    isRecurring?: boolean
+    specificDate?: boolean
+    isBlocked?: boolean
+    createdAt?: boolean
+    tutor?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["tutorAvailability"]>
+
+  export type TutorAvailabilitySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tutorId?: boolean
+    dayOfWeek?: boolean
+    startTime?: boolean
+    endTime?: boolean
+    isRecurring?: boolean
+    specificDate?: boolean
+    isBlocked?: boolean
+    createdAt?: boolean
+    tutor?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["tutorAvailability"]>
+
+  export type TutorAvailabilitySelectScalar = {
+    id?: boolean
+    tutorId?: boolean
+    dayOfWeek?: boolean
+    startTime?: boolean
+    endTime?: boolean
+    isRecurring?: boolean
+    specificDate?: boolean
+    isBlocked?: boolean
+    createdAt?: boolean
+  }
+
+  export type TutorAvailabilityInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tutor?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type TutorAvailabilityIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tutor?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $TutorAvailabilityPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "TutorAvailability"
+    objects: {
+      tutor: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      tutorId: string
+      dayOfWeek: number
+      startTime: string
+      endTime: string
+      isRecurring: boolean
+      specificDate: Date | null
+      isBlocked: boolean
+      createdAt: Date
+    }, ExtArgs["result"]["tutorAvailability"]>
+    composites: {}
+  }
+
+  type TutorAvailabilityGetPayload<S extends boolean | null | undefined | TutorAvailabilityDefaultArgs> = $Result.GetResult<Prisma.$TutorAvailabilityPayload, S>
+
+  type TutorAvailabilityCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<TutorAvailabilityFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: TutorAvailabilityCountAggregateInputType | true
+    }
+
+  export interface TutorAvailabilityDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['TutorAvailability'], meta: { name: 'TutorAvailability' } }
+    /**
+     * Find zero or one TutorAvailability that matches the filter.
+     * @param {TutorAvailabilityFindUniqueArgs} args - Arguments to find a TutorAvailability
+     * @example
+     * // Get one TutorAvailability
+     * const tutorAvailability = await prisma.tutorAvailability.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends TutorAvailabilityFindUniqueArgs>(args: SelectSubset<T, TutorAvailabilityFindUniqueArgs<ExtArgs>>): Prisma__TutorAvailabilityClient<$Result.GetResult<Prisma.$TutorAvailabilityPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one TutorAvailability that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {TutorAvailabilityFindUniqueOrThrowArgs} args - Arguments to find a TutorAvailability
+     * @example
+     * // Get one TutorAvailability
+     * const tutorAvailability = await prisma.tutorAvailability.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends TutorAvailabilityFindUniqueOrThrowArgs>(args: SelectSubset<T, TutorAvailabilityFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TutorAvailabilityClient<$Result.GetResult<Prisma.$TutorAvailabilityPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first TutorAvailability that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TutorAvailabilityFindFirstArgs} args - Arguments to find a TutorAvailability
+     * @example
+     * // Get one TutorAvailability
+     * const tutorAvailability = await prisma.tutorAvailability.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends TutorAvailabilityFindFirstArgs>(args?: SelectSubset<T, TutorAvailabilityFindFirstArgs<ExtArgs>>): Prisma__TutorAvailabilityClient<$Result.GetResult<Prisma.$TutorAvailabilityPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first TutorAvailability that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TutorAvailabilityFindFirstOrThrowArgs} args - Arguments to find a TutorAvailability
+     * @example
+     * // Get one TutorAvailability
+     * const tutorAvailability = await prisma.tutorAvailability.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends TutorAvailabilityFindFirstOrThrowArgs>(args?: SelectSubset<T, TutorAvailabilityFindFirstOrThrowArgs<ExtArgs>>): Prisma__TutorAvailabilityClient<$Result.GetResult<Prisma.$TutorAvailabilityPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more TutorAvailabilities that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TutorAvailabilityFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all TutorAvailabilities
+     * const tutorAvailabilities = await prisma.tutorAvailability.findMany()
+     * 
+     * // Get first 10 TutorAvailabilities
+     * const tutorAvailabilities = await prisma.tutorAvailability.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const tutorAvailabilityWithIdOnly = await prisma.tutorAvailability.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends TutorAvailabilityFindManyArgs>(args?: SelectSubset<T, TutorAvailabilityFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TutorAvailabilityPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a TutorAvailability.
+     * @param {TutorAvailabilityCreateArgs} args - Arguments to create a TutorAvailability.
+     * @example
+     * // Create one TutorAvailability
+     * const TutorAvailability = await prisma.tutorAvailability.create({
+     *   data: {
+     *     // ... data to create a TutorAvailability
+     *   }
+     * })
+     * 
+     */
+    create<T extends TutorAvailabilityCreateArgs>(args: SelectSubset<T, TutorAvailabilityCreateArgs<ExtArgs>>): Prisma__TutorAvailabilityClient<$Result.GetResult<Prisma.$TutorAvailabilityPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many TutorAvailabilities.
+     * @param {TutorAvailabilityCreateManyArgs} args - Arguments to create many TutorAvailabilities.
+     * @example
+     * // Create many TutorAvailabilities
+     * const tutorAvailability = await prisma.tutorAvailability.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends TutorAvailabilityCreateManyArgs>(args?: SelectSubset<T, TutorAvailabilityCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many TutorAvailabilities and returns the data saved in the database.
+     * @param {TutorAvailabilityCreateManyAndReturnArgs} args - Arguments to create many TutorAvailabilities.
+     * @example
+     * // Create many TutorAvailabilities
+     * const tutorAvailability = await prisma.tutorAvailability.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many TutorAvailabilities and only return the `id`
+     * const tutorAvailabilityWithIdOnly = await prisma.tutorAvailability.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends TutorAvailabilityCreateManyAndReturnArgs>(args?: SelectSubset<T, TutorAvailabilityCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TutorAvailabilityPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a TutorAvailability.
+     * @param {TutorAvailabilityDeleteArgs} args - Arguments to delete one TutorAvailability.
+     * @example
+     * // Delete one TutorAvailability
+     * const TutorAvailability = await prisma.tutorAvailability.delete({
+     *   where: {
+     *     // ... filter to delete one TutorAvailability
+     *   }
+     * })
+     * 
+     */
+    delete<T extends TutorAvailabilityDeleteArgs>(args: SelectSubset<T, TutorAvailabilityDeleteArgs<ExtArgs>>): Prisma__TutorAvailabilityClient<$Result.GetResult<Prisma.$TutorAvailabilityPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one TutorAvailability.
+     * @param {TutorAvailabilityUpdateArgs} args - Arguments to update one TutorAvailability.
+     * @example
+     * // Update one TutorAvailability
+     * const tutorAvailability = await prisma.tutorAvailability.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends TutorAvailabilityUpdateArgs>(args: SelectSubset<T, TutorAvailabilityUpdateArgs<ExtArgs>>): Prisma__TutorAvailabilityClient<$Result.GetResult<Prisma.$TutorAvailabilityPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more TutorAvailabilities.
+     * @param {TutorAvailabilityDeleteManyArgs} args - Arguments to filter TutorAvailabilities to delete.
+     * @example
+     * // Delete a few TutorAvailabilities
+     * const { count } = await prisma.tutorAvailability.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends TutorAvailabilityDeleteManyArgs>(args?: SelectSubset<T, TutorAvailabilityDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more TutorAvailabilities.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TutorAvailabilityUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many TutorAvailabilities
+     * const tutorAvailability = await prisma.tutorAvailability.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends TutorAvailabilityUpdateManyArgs>(args: SelectSubset<T, TutorAvailabilityUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one TutorAvailability.
+     * @param {TutorAvailabilityUpsertArgs} args - Arguments to update or create a TutorAvailability.
+     * @example
+     * // Update or create a TutorAvailability
+     * const tutorAvailability = await prisma.tutorAvailability.upsert({
+     *   create: {
+     *     // ... data to create a TutorAvailability
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the TutorAvailability we want to update
+     *   }
+     * })
+     */
+    upsert<T extends TutorAvailabilityUpsertArgs>(args: SelectSubset<T, TutorAvailabilityUpsertArgs<ExtArgs>>): Prisma__TutorAvailabilityClient<$Result.GetResult<Prisma.$TutorAvailabilityPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of TutorAvailabilities.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TutorAvailabilityCountArgs} args - Arguments to filter TutorAvailabilities to count.
+     * @example
+     * // Count the number of TutorAvailabilities
+     * const count = await prisma.tutorAvailability.count({
+     *   where: {
+     *     // ... the filter for the TutorAvailabilities we want to count
+     *   }
+     * })
+    **/
+    count<T extends TutorAvailabilityCountArgs>(
+      args?: Subset<T, TutorAvailabilityCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], TutorAvailabilityCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a TutorAvailability.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TutorAvailabilityAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends TutorAvailabilityAggregateArgs>(args: Subset<T, TutorAvailabilityAggregateArgs>): Prisma.PrismaPromise<GetTutorAvailabilityAggregateType<T>>
+
+    /**
+     * Group by TutorAvailability.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TutorAvailabilityGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends TutorAvailabilityGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: TutorAvailabilityGroupByArgs['orderBy'] }
+        : { orderBy?: TutorAvailabilityGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, TutorAvailabilityGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTutorAvailabilityGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the TutorAvailability model
+   */
+  readonly fields: TutorAvailabilityFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for TutorAvailability.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__TutorAvailabilityClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    tutor<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the TutorAvailability model
+   */ 
+  interface TutorAvailabilityFieldRefs {
+    readonly id: FieldRef<"TutorAvailability", 'String'>
+    readonly tutorId: FieldRef<"TutorAvailability", 'String'>
+    readonly dayOfWeek: FieldRef<"TutorAvailability", 'Int'>
+    readonly startTime: FieldRef<"TutorAvailability", 'String'>
+    readonly endTime: FieldRef<"TutorAvailability", 'String'>
+    readonly isRecurring: FieldRef<"TutorAvailability", 'Boolean'>
+    readonly specificDate: FieldRef<"TutorAvailability", 'DateTime'>
+    readonly isBlocked: FieldRef<"TutorAvailability", 'Boolean'>
+    readonly createdAt: FieldRef<"TutorAvailability", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * TutorAvailability findUnique
+   */
+  export type TutorAvailabilityFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TutorAvailability
+     */
+    select?: TutorAvailabilitySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TutorAvailabilityInclude<ExtArgs> | null
+    /**
+     * Filter, which TutorAvailability to fetch.
+     */
+    where: TutorAvailabilityWhereUniqueInput
+  }
+
+  /**
+   * TutorAvailability findUniqueOrThrow
+   */
+  export type TutorAvailabilityFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TutorAvailability
+     */
+    select?: TutorAvailabilitySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TutorAvailabilityInclude<ExtArgs> | null
+    /**
+     * Filter, which TutorAvailability to fetch.
+     */
+    where: TutorAvailabilityWhereUniqueInput
+  }
+
+  /**
+   * TutorAvailability findFirst
+   */
+  export type TutorAvailabilityFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TutorAvailability
+     */
+    select?: TutorAvailabilitySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TutorAvailabilityInclude<ExtArgs> | null
+    /**
+     * Filter, which TutorAvailability to fetch.
+     */
+    where?: TutorAvailabilityWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TutorAvailabilities to fetch.
+     */
+    orderBy?: TutorAvailabilityOrderByWithRelationInput | TutorAvailabilityOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TutorAvailabilities.
+     */
+    cursor?: TutorAvailabilityWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TutorAvailabilities from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TutorAvailabilities.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TutorAvailabilities.
+     */
+    distinct?: TutorAvailabilityScalarFieldEnum | TutorAvailabilityScalarFieldEnum[]
+  }
+
+  /**
+   * TutorAvailability findFirstOrThrow
+   */
+  export type TutorAvailabilityFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TutorAvailability
+     */
+    select?: TutorAvailabilitySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TutorAvailabilityInclude<ExtArgs> | null
+    /**
+     * Filter, which TutorAvailability to fetch.
+     */
+    where?: TutorAvailabilityWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TutorAvailabilities to fetch.
+     */
+    orderBy?: TutorAvailabilityOrderByWithRelationInput | TutorAvailabilityOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TutorAvailabilities.
+     */
+    cursor?: TutorAvailabilityWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TutorAvailabilities from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TutorAvailabilities.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TutorAvailabilities.
+     */
+    distinct?: TutorAvailabilityScalarFieldEnum | TutorAvailabilityScalarFieldEnum[]
+  }
+
+  /**
+   * TutorAvailability findMany
+   */
+  export type TutorAvailabilityFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TutorAvailability
+     */
+    select?: TutorAvailabilitySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TutorAvailabilityInclude<ExtArgs> | null
+    /**
+     * Filter, which TutorAvailabilities to fetch.
+     */
+    where?: TutorAvailabilityWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TutorAvailabilities to fetch.
+     */
+    orderBy?: TutorAvailabilityOrderByWithRelationInput | TutorAvailabilityOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing TutorAvailabilities.
+     */
+    cursor?: TutorAvailabilityWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TutorAvailabilities from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TutorAvailabilities.
+     */
+    skip?: number
+    distinct?: TutorAvailabilityScalarFieldEnum | TutorAvailabilityScalarFieldEnum[]
+  }
+
+  /**
+   * TutorAvailability create
+   */
+  export type TutorAvailabilityCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TutorAvailability
+     */
+    select?: TutorAvailabilitySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TutorAvailabilityInclude<ExtArgs> | null
+    /**
+     * The data needed to create a TutorAvailability.
+     */
+    data: XOR<TutorAvailabilityCreateInput, TutorAvailabilityUncheckedCreateInput>
+  }
+
+  /**
+   * TutorAvailability createMany
+   */
+  export type TutorAvailabilityCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many TutorAvailabilities.
+     */
+    data: TutorAvailabilityCreateManyInput | TutorAvailabilityCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * TutorAvailability createManyAndReturn
+   */
+  export type TutorAvailabilityCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TutorAvailability
+     */
+    select?: TutorAvailabilitySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many TutorAvailabilities.
+     */
+    data: TutorAvailabilityCreateManyInput | TutorAvailabilityCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TutorAvailabilityIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * TutorAvailability update
+   */
+  export type TutorAvailabilityUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TutorAvailability
+     */
+    select?: TutorAvailabilitySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TutorAvailabilityInclude<ExtArgs> | null
+    /**
+     * The data needed to update a TutorAvailability.
+     */
+    data: XOR<TutorAvailabilityUpdateInput, TutorAvailabilityUncheckedUpdateInput>
+    /**
+     * Choose, which TutorAvailability to update.
+     */
+    where: TutorAvailabilityWhereUniqueInput
+  }
+
+  /**
+   * TutorAvailability updateMany
+   */
+  export type TutorAvailabilityUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update TutorAvailabilities.
+     */
+    data: XOR<TutorAvailabilityUpdateManyMutationInput, TutorAvailabilityUncheckedUpdateManyInput>
+    /**
+     * Filter which TutorAvailabilities to update
+     */
+    where?: TutorAvailabilityWhereInput
+  }
+
+  /**
+   * TutorAvailability upsert
+   */
+  export type TutorAvailabilityUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TutorAvailability
+     */
+    select?: TutorAvailabilitySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TutorAvailabilityInclude<ExtArgs> | null
+    /**
+     * The filter to search for the TutorAvailability to update in case it exists.
+     */
+    where: TutorAvailabilityWhereUniqueInput
+    /**
+     * In case the TutorAvailability found by the `where` argument doesn't exist, create a new TutorAvailability with this data.
+     */
+    create: XOR<TutorAvailabilityCreateInput, TutorAvailabilityUncheckedCreateInput>
+    /**
+     * In case the TutorAvailability was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<TutorAvailabilityUpdateInput, TutorAvailabilityUncheckedUpdateInput>
+  }
+
+  /**
+   * TutorAvailability delete
+   */
+  export type TutorAvailabilityDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TutorAvailability
+     */
+    select?: TutorAvailabilitySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TutorAvailabilityInclude<ExtArgs> | null
+    /**
+     * Filter which TutorAvailability to delete.
+     */
+    where: TutorAvailabilityWhereUniqueInput
+  }
+
+  /**
+   * TutorAvailability deleteMany
+   */
+  export type TutorAvailabilityDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TutorAvailabilities to delete
+     */
+    where?: TutorAvailabilityWhereInput
+  }
+
+  /**
+   * TutorAvailability without action
+   */
+  export type TutorAvailabilityDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TutorAvailability
+     */
+    select?: TutorAvailabilitySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TutorAvailabilityInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Booking
+   */
+
+  export type AggregateBooking = {
+    _count: BookingCountAggregateOutputType | null
+    _avg: BookingAvgAggregateOutputType | null
+    _sum: BookingSumAggregateOutputType | null
+    _min: BookingMinAggregateOutputType | null
+    _max: BookingMaxAggregateOutputType | null
+  }
+
+  export type BookingAvgAggregateOutputType = {
+    durationMinutes: number | null
+    amount: number | null
+  }
+
+  export type BookingSumAggregateOutputType = {
+    durationMinutes: number | null
+    amount: number | null
+  }
+
+  export type BookingMinAggregateOutputType = {
+    id: string | null
+    studentId: string | null
+    tutorId: string | null
+    subject: string | null
+    topic: string | null
+    educationLevel: string | null
+    date: Date | null
+    startTime: string | null
+    endTime: string | null
+    durationMinutes: number | null
+    status: string | null
+    amount: number | null
+    paystackReference: string | null
+    declineReason: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type BookingMaxAggregateOutputType = {
+    id: string | null
+    studentId: string | null
+    tutorId: string | null
+    subject: string | null
+    topic: string | null
+    educationLevel: string | null
+    date: Date | null
+    startTime: string | null
+    endTime: string | null
+    durationMinutes: number | null
+    status: string | null
+    amount: number | null
+    paystackReference: string | null
+    declineReason: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type BookingCountAggregateOutputType = {
+    id: number
+    studentId: number
+    tutorId: number
+    subject: number
+    topic: number
+    educationLevel: number
+    date: number
+    startTime: number
+    endTime: number
+    durationMinutes: number
+    status: number
+    amount: number
+    paystackReference: number
+    declineReason: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type BookingAvgAggregateInputType = {
+    durationMinutes?: true
+    amount?: true
+  }
+
+  export type BookingSumAggregateInputType = {
+    durationMinutes?: true
+    amount?: true
+  }
+
+  export type BookingMinAggregateInputType = {
+    id?: true
+    studentId?: true
+    tutorId?: true
+    subject?: true
+    topic?: true
+    educationLevel?: true
+    date?: true
+    startTime?: true
+    endTime?: true
+    durationMinutes?: true
+    status?: true
+    amount?: true
+    paystackReference?: true
+    declineReason?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type BookingMaxAggregateInputType = {
+    id?: true
+    studentId?: true
+    tutorId?: true
+    subject?: true
+    topic?: true
+    educationLevel?: true
+    date?: true
+    startTime?: true
+    endTime?: true
+    durationMinutes?: true
+    status?: true
+    amount?: true
+    paystackReference?: true
+    declineReason?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type BookingCountAggregateInputType = {
+    id?: true
+    studentId?: true
+    tutorId?: true
+    subject?: true
+    topic?: true
+    educationLevel?: true
+    date?: true
+    startTime?: true
+    endTime?: true
+    durationMinutes?: true
+    status?: true
+    amount?: true
+    paystackReference?: true
+    declineReason?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type BookingAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Booking to aggregate.
+     */
+    where?: BookingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Bookings to fetch.
+     */
+    orderBy?: BookingOrderByWithRelationInput | BookingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: BookingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Bookings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Bookings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Bookings
+    **/
+    _count?: true | BookingCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: BookingAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: BookingSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: BookingMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: BookingMaxAggregateInputType
+  }
+
+  export type GetBookingAggregateType<T extends BookingAggregateArgs> = {
+        [P in keyof T & keyof AggregateBooking]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateBooking[P]>
+      : GetScalarType<T[P], AggregateBooking[P]>
+  }
+
+
+
+
+  export type BookingGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BookingWhereInput
+    orderBy?: BookingOrderByWithAggregationInput | BookingOrderByWithAggregationInput[]
+    by: BookingScalarFieldEnum[] | BookingScalarFieldEnum
+    having?: BookingScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: BookingCountAggregateInputType | true
+    _avg?: BookingAvgAggregateInputType
+    _sum?: BookingSumAggregateInputType
+    _min?: BookingMinAggregateInputType
+    _max?: BookingMaxAggregateInputType
+  }
+
+  export type BookingGroupByOutputType = {
+    id: string
+    studentId: string
+    tutorId: string
+    subject: string
+    topic: string | null
+    educationLevel: string | null
+    date: Date
+    startTime: string
+    endTime: string
+    durationMinutes: number
+    status: string
+    amount: number
+    paystackReference: string | null
+    declineReason: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: BookingCountAggregateOutputType | null
+    _avg: BookingAvgAggregateOutputType | null
+    _sum: BookingSumAggregateOutputType | null
+    _min: BookingMinAggregateOutputType | null
+    _max: BookingMaxAggregateOutputType | null
+  }
+
+  type GetBookingGroupByPayload<T extends BookingGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<BookingGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof BookingGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], BookingGroupByOutputType[P]>
+            : GetScalarType<T[P], BookingGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type BookingSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    studentId?: boolean
+    tutorId?: boolean
+    subject?: boolean
+    topic?: boolean
+    educationLevel?: boolean
+    date?: boolean
+    startTime?: boolean
+    endTime?: boolean
+    durationMinutes?: boolean
+    status?: boolean
+    amount?: boolean
+    paystackReference?: boolean
+    declineReason?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    student?: boolean | UserDefaultArgs<ExtArgs>
+    tutor?: boolean | UserDefaultArgs<ExtArgs>
+    reminders?: boolean | Booking$remindersArgs<ExtArgs>
+    flags?: boolean | Booking$flagsArgs<ExtArgs>
+    _count?: boolean | BookingCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["booking"]>
+
+  export type BookingSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    studentId?: boolean
+    tutorId?: boolean
+    subject?: boolean
+    topic?: boolean
+    educationLevel?: boolean
+    date?: boolean
+    startTime?: boolean
+    endTime?: boolean
+    durationMinutes?: boolean
+    status?: boolean
+    amount?: boolean
+    paystackReference?: boolean
+    declineReason?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    student?: boolean | UserDefaultArgs<ExtArgs>
+    tutor?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["booking"]>
+
+  export type BookingSelectScalar = {
+    id?: boolean
+    studentId?: boolean
+    tutorId?: boolean
+    subject?: boolean
+    topic?: boolean
+    educationLevel?: boolean
+    date?: boolean
+    startTime?: boolean
+    endTime?: boolean
+    durationMinutes?: boolean
+    status?: boolean
+    amount?: boolean
+    paystackReference?: boolean
+    declineReason?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type BookingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    student?: boolean | UserDefaultArgs<ExtArgs>
+    tutor?: boolean | UserDefaultArgs<ExtArgs>
+    reminders?: boolean | Booking$remindersArgs<ExtArgs>
+    flags?: boolean | Booking$flagsArgs<ExtArgs>
+    _count?: boolean | BookingCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type BookingIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    student?: boolean | UserDefaultArgs<ExtArgs>
+    tutor?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $BookingPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Booking"
+    objects: {
+      student: Prisma.$UserPayload<ExtArgs>
+      tutor: Prisma.$UserPayload<ExtArgs>
+      reminders: Prisma.$BookingReminderPayload<ExtArgs>[]
+      flags: Prisma.$SessionFlagPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      studentId: string
+      tutorId: string
+      subject: string
+      topic: string | null
+      educationLevel: string | null
+      date: Date
+      startTime: string
+      endTime: string
+      durationMinutes: number
+      status: string
+      amount: number
+      paystackReference: string | null
+      declineReason: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["booking"]>
+    composites: {}
+  }
+
+  type BookingGetPayload<S extends boolean | null | undefined | BookingDefaultArgs> = $Result.GetResult<Prisma.$BookingPayload, S>
+
+  type BookingCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<BookingFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: BookingCountAggregateInputType | true
+    }
+
+  export interface BookingDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Booking'], meta: { name: 'Booking' } }
+    /**
+     * Find zero or one Booking that matches the filter.
+     * @param {BookingFindUniqueArgs} args - Arguments to find a Booking
+     * @example
+     * // Get one Booking
+     * const booking = await prisma.booking.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends BookingFindUniqueArgs>(args: SelectSubset<T, BookingFindUniqueArgs<ExtArgs>>): Prisma__BookingClient<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one Booking that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {BookingFindUniqueOrThrowArgs} args - Arguments to find a Booking
+     * @example
+     * // Get one Booking
+     * const booking = await prisma.booking.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends BookingFindUniqueOrThrowArgs>(args: SelectSubset<T, BookingFindUniqueOrThrowArgs<ExtArgs>>): Prisma__BookingClient<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first Booking that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BookingFindFirstArgs} args - Arguments to find a Booking
+     * @example
+     * // Get one Booking
+     * const booking = await prisma.booking.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends BookingFindFirstArgs>(args?: SelectSubset<T, BookingFindFirstArgs<ExtArgs>>): Prisma__BookingClient<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first Booking that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BookingFindFirstOrThrowArgs} args - Arguments to find a Booking
+     * @example
+     * // Get one Booking
+     * const booking = await prisma.booking.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends BookingFindFirstOrThrowArgs>(args?: SelectSubset<T, BookingFindFirstOrThrowArgs<ExtArgs>>): Prisma__BookingClient<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more Bookings that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BookingFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Bookings
+     * const bookings = await prisma.booking.findMany()
+     * 
+     * // Get first 10 Bookings
+     * const bookings = await prisma.booking.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const bookingWithIdOnly = await prisma.booking.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends BookingFindManyArgs>(args?: SelectSubset<T, BookingFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a Booking.
+     * @param {BookingCreateArgs} args - Arguments to create a Booking.
+     * @example
+     * // Create one Booking
+     * const Booking = await prisma.booking.create({
+     *   data: {
+     *     // ... data to create a Booking
+     *   }
+     * })
+     * 
+     */
+    create<T extends BookingCreateArgs>(args: SelectSubset<T, BookingCreateArgs<ExtArgs>>): Prisma__BookingClient<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many Bookings.
+     * @param {BookingCreateManyArgs} args - Arguments to create many Bookings.
+     * @example
+     * // Create many Bookings
+     * const booking = await prisma.booking.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends BookingCreateManyArgs>(args?: SelectSubset<T, BookingCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Bookings and returns the data saved in the database.
+     * @param {BookingCreateManyAndReturnArgs} args - Arguments to create many Bookings.
+     * @example
+     * // Create many Bookings
+     * const booking = await prisma.booking.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Bookings and only return the `id`
+     * const bookingWithIdOnly = await prisma.booking.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends BookingCreateManyAndReturnArgs>(args?: SelectSubset<T, BookingCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a Booking.
+     * @param {BookingDeleteArgs} args - Arguments to delete one Booking.
+     * @example
+     * // Delete one Booking
+     * const Booking = await prisma.booking.delete({
+     *   where: {
+     *     // ... filter to delete one Booking
+     *   }
+     * })
+     * 
+     */
+    delete<T extends BookingDeleteArgs>(args: SelectSubset<T, BookingDeleteArgs<ExtArgs>>): Prisma__BookingClient<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one Booking.
+     * @param {BookingUpdateArgs} args - Arguments to update one Booking.
+     * @example
+     * // Update one Booking
+     * const booking = await prisma.booking.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends BookingUpdateArgs>(args: SelectSubset<T, BookingUpdateArgs<ExtArgs>>): Prisma__BookingClient<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more Bookings.
+     * @param {BookingDeleteManyArgs} args - Arguments to filter Bookings to delete.
+     * @example
+     * // Delete a few Bookings
+     * const { count } = await prisma.booking.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends BookingDeleteManyArgs>(args?: SelectSubset<T, BookingDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Bookings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BookingUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Bookings
+     * const booking = await prisma.booking.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends BookingUpdateManyArgs>(args: SelectSubset<T, BookingUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Booking.
+     * @param {BookingUpsertArgs} args - Arguments to update or create a Booking.
+     * @example
+     * // Update or create a Booking
+     * const booking = await prisma.booking.upsert({
+     *   create: {
+     *     // ... data to create a Booking
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Booking we want to update
+     *   }
+     * })
+     */
+    upsert<T extends BookingUpsertArgs>(args: SelectSubset<T, BookingUpsertArgs<ExtArgs>>): Prisma__BookingClient<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of Bookings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BookingCountArgs} args - Arguments to filter Bookings to count.
+     * @example
+     * // Count the number of Bookings
+     * const count = await prisma.booking.count({
+     *   where: {
+     *     // ... the filter for the Bookings we want to count
+     *   }
+     * })
+    **/
+    count<T extends BookingCountArgs>(
+      args?: Subset<T, BookingCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], BookingCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Booking.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BookingAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends BookingAggregateArgs>(args: Subset<T, BookingAggregateArgs>): Prisma.PrismaPromise<GetBookingAggregateType<T>>
+
+    /**
+     * Group by Booking.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BookingGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends BookingGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: BookingGroupByArgs['orderBy'] }
+        : { orderBy?: BookingGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, BookingGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetBookingGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Booking model
+   */
+  readonly fields: BookingFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Booking.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__BookingClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    student<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    tutor<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    reminders<T extends Booking$remindersArgs<ExtArgs> = {}>(args?: Subset<T, Booking$remindersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BookingReminderPayload<ExtArgs>, T, "findMany"> | Null>
+    flags<T extends Booking$flagsArgs<ExtArgs> = {}>(args?: Subset<T, Booking$flagsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionFlagPayload<ExtArgs>, T, "findMany"> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Booking model
+   */ 
+  interface BookingFieldRefs {
+    readonly id: FieldRef<"Booking", 'String'>
+    readonly studentId: FieldRef<"Booking", 'String'>
+    readonly tutorId: FieldRef<"Booking", 'String'>
+    readonly subject: FieldRef<"Booking", 'String'>
+    readonly topic: FieldRef<"Booking", 'String'>
+    readonly educationLevel: FieldRef<"Booking", 'String'>
+    readonly date: FieldRef<"Booking", 'DateTime'>
+    readonly startTime: FieldRef<"Booking", 'String'>
+    readonly endTime: FieldRef<"Booking", 'String'>
+    readonly durationMinutes: FieldRef<"Booking", 'Int'>
+    readonly status: FieldRef<"Booking", 'String'>
+    readonly amount: FieldRef<"Booking", 'Int'>
+    readonly paystackReference: FieldRef<"Booking", 'String'>
+    readonly declineReason: FieldRef<"Booking", 'String'>
+    readonly createdAt: FieldRef<"Booking", 'DateTime'>
+    readonly updatedAt: FieldRef<"Booking", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Booking findUnique
+   */
+  export type BookingFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Booking
+     */
+    select?: BookingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingInclude<ExtArgs> | null
+    /**
+     * Filter, which Booking to fetch.
+     */
+    where: BookingWhereUniqueInput
+  }
+
+  /**
+   * Booking findUniqueOrThrow
+   */
+  export type BookingFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Booking
+     */
+    select?: BookingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingInclude<ExtArgs> | null
+    /**
+     * Filter, which Booking to fetch.
+     */
+    where: BookingWhereUniqueInput
+  }
+
+  /**
+   * Booking findFirst
+   */
+  export type BookingFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Booking
+     */
+    select?: BookingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingInclude<ExtArgs> | null
+    /**
+     * Filter, which Booking to fetch.
+     */
+    where?: BookingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Bookings to fetch.
+     */
+    orderBy?: BookingOrderByWithRelationInput | BookingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Bookings.
+     */
+    cursor?: BookingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Bookings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Bookings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Bookings.
+     */
+    distinct?: BookingScalarFieldEnum | BookingScalarFieldEnum[]
+  }
+
+  /**
+   * Booking findFirstOrThrow
+   */
+  export type BookingFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Booking
+     */
+    select?: BookingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingInclude<ExtArgs> | null
+    /**
+     * Filter, which Booking to fetch.
+     */
+    where?: BookingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Bookings to fetch.
+     */
+    orderBy?: BookingOrderByWithRelationInput | BookingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Bookings.
+     */
+    cursor?: BookingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Bookings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Bookings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Bookings.
+     */
+    distinct?: BookingScalarFieldEnum | BookingScalarFieldEnum[]
+  }
+
+  /**
+   * Booking findMany
+   */
+  export type BookingFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Booking
+     */
+    select?: BookingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingInclude<ExtArgs> | null
+    /**
+     * Filter, which Bookings to fetch.
+     */
+    where?: BookingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Bookings to fetch.
+     */
+    orderBy?: BookingOrderByWithRelationInput | BookingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Bookings.
+     */
+    cursor?: BookingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Bookings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Bookings.
+     */
+    skip?: number
+    distinct?: BookingScalarFieldEnum | BookingScalarFieldEnum[]
+  }
+
+  /**
+   * Booking create
+   */
+  export type BookingCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Booking
+     */
+    select?: BookingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Booking.
+     */
+    data: XOR<BookingCreateInput, BookingUncheckedCreateInput>
+  }
+
+  /**
+   * Booking createMany
+   */
+  export type BookingCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Bookings.
+     */
+    data: BookingCreateManyInput | BookingCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Booking createManyAndReturn
+   */
+  export type BookingCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Booking
+     */
+    select?: BookingSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many Bookings.
+     */
+    data: BookingCreateManyInput | BookingCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Booking update
+   */
+  export type BookingUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Booking
+     */
+    select?: BookingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Booking.
+     */
+    data: XOR<BookingUpdateInput, BookingUncheckedUpdateInput>
+    /**
+     * Choose, which Booking to update.
+     */
+    where: BookingWhereUniqueInput
+  }
+
+  /**
+   * Booking updateMany
+   */
+  export type BookingUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Bookings.
+     */
+    data: XOR<BookingUpdateManyMutationInput, BookingUncheckedUpdateManyInput>
+    /**
+     * Filter which Bookings to update
+     */
+    where?: BookingWhereInput
+  }
+
+  /**
+   * Booking upsert
+   */
+  export type BookingUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Booking
+     */
+    select?: BookingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Booking to update in case it exists.
+     */
+    where: BookingWhereUniqueInput
+    /**
+     * In case the Booking found by the `where` argument doesn't exist, create a new Booking with this data.
+     */
+    create: XOR<BookingCreateInput, BookingUncheckedCreateInput>
+    /**
+     * In case the Booking was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<BookingUpdateInput, BookingUncheckedUpdateInput>
+  }
+
+  /**
+   * Booking delete
+   */
+  export type BookingDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Booking
+     */
+    select?: BookingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingInclude<ExtArgs> | null
+    /**
+     * Filter which Booking to delete.
+     */
+    where: BookingWhereUniqueInput
+  }
+
+  /**
+   * Booking deleteMany
+   */
+  export type BookingDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Bookings to delete
+     */
+    where?: BookingWhereInput
+  }
+
+  /**
+   * Booking.reminders
+   */
+  export type Booking$remindersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BookingReminder
+     */
+    select?: BookingReminderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingReminderInclude<ExtArgs> | null
+    where?: BookingReminderWhereInput
+    orderBy?: BookingReminderOrderByWithRelationInput | BookingReminderOrderByWithRelationInput[]
+    cursor?: BookingReminderWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: BookingReminderScalarFieldEnum | BookingReminderScalarFieldEnum[]
+  }
+
+  /**
+   * Booking.flags
+   */
+  export type Booking$flagsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionFlag
+     */
+    select?: SessionFlagSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SessionFlagInclude<ExtArgs> | null
+    where?: SessionFlagWhereInput
+    orderBy?: SessionFlagOrderByWithRelationInput | SessionFlagOrderByWithRelationInput[]
+    cursor?: SessionFlagWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: SessionFlagScalarFieldEnum | SessionFlagScalarFieldEnum[]
+  }
+
+  /**
+   * Booking without action
+   */
+  export type BookingDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Booking
+     */
+    select?: BookingSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model BookingReminder
+   */
+
+  export type AggregateBookingReminder = {
+    _count: BookingReminderCountAggregateOutputType | null
+    _min: BookingReminderMinAggregateOutputType | null
+    _max: BookingReminderMaxAggregateOutputType | null
+  }
+
+  export type BookingReminderMinAggregateOutputType = {
+    id: string | null
+    bookingId: string | null
+    userId: string | null
+    reminderType: string | null
+    scheduledFor: Date | null
+    sentAt: Date | null
+    channel: string | null
+  }
+
+  export type BookingReminderMaxAggregateOutputType = {
+    id: string | null
+    bookingId: string | null
+    userId: string | null
+    reminderType: string | null
+    scheduledFor: Date | null
+    sentAt: Date | null
+    channel: string | null
+  }
+
+  export type BookingReminderCountAggregateOutputType = {
+    id: number
+    bookingId: number
+    userId: number
+    reminderType: number
+    scheduledFor: number
+    sentAt: number
+    channel: number
+    _all: number
+  }
+
+
+  export type BookingReminderMinAggregateInputType = {
+    id?: true
+    bookingId?: true
+    userId?: true
+    reminderType?: true
+    scheduledFor?: true
+    sentAt?: true
+    channel?: true
+  }
+
+  export type BookingReminderMaxAggregateInputType = {
+    id?: true
+    bookingId?: true
+    userId?: true
+    reminderType?: true
+    scheduledFor?: true
+    sentAt?: true
+    channel?: true
+  }
+
+  export type BookingReminderCountAggregateInputType = {
+    id?: true
+    bookingId?: true
+    userId?: true
+    reminderType?: true
+    scheduledFor?: true
+    sentAt?: true
+    channel?: true
+    _all?: true
+  }
+
+  export type BookingReminderAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which BookingReminder to aggregate.
+     */
+    where?: BookingReminderWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BookingReminders to fetch.
+     */
+    orderBy?: BookingReminderOrderByWithRelationInput | BookingReminderOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: BookingReminderWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BookingReminders from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BookingReminders.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned BookingReminders
+    **/
+    _count?: true | BookingReminderCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: BookingReminderMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: BookingReminderMaxAggregateInputType
+  }
+
+  export type GetBookingReminderAggregateType<T extends BookingReminderAggregateArgs> = {
+        [P in keyof T & keyof AggregateBookingReminder]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateBookingReminder[P]>
+      : GetScalarType<T[P], AggregateBookingReminder[P]>
+  }
+
+
+
+
+  export type BookingReminderGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BookingReminderWhereInput
+    orderBy?: BookingReminderOrderByWithAggregationInput | BookingReminderOrderByWithAggregationInput[]
+    by: BookingReminderScalarFieldEnum[] | BookingReminderScalarFieldEnum
+    having?: BookingReminderScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: BookingReminderCountAggregateInputType | true
+    _min?: BookingReminderMinAggregateInputType
+    _max?: BookingReminderMaxAggregateInputType
+  }
+
+  export type BookingReminderGroupByOutputType = {
+    id: string
+    bookingId: string
+    userId: string
+    reminderType: string
+    scheduledFor: Date
+    sentAt: Date | null
+    channel: string
+    _count: BookingReminderCountAggregateOutputType | null
+    _min: BookingReminderMinAggregateOutputType | null
+    _max: BookingReminderMaxAggregateOutputType | null
+  }
+
+  type GetBookingReminderGroupByPayload<T extends BookingReminderGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<BookingReminderGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof BookingReminderGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], BookingReminderGroupByOutputType[P]>
+            : GetScalarType<T[P], BookingReminderGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type BookingReminderSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    bookingId?: boolean
+    userId?: boolean
+    reminderType?: boolean
+    scheduledFor?: boolean
+    sentAt?: boolean
+    channel?: boolean
+    booking?: boolean | BookingDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["bookingReminder"]>
+
+  export type BookingReminderSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    bookingId?: boolean
+    userId?: boolean
+    reminderType?: boolean
+    scheduledFor?: boolean
+    sentAt?: boolean
+    channel?: boolean
+    booking?: boolean | BookingDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["bookingReminder"]>
+
+  export type BookingReminderSelectScalar = {
+    id?: boolean
+    bookingId?: boolean
+    userId?: boolean
+    reminderType?: boolean
+    scheduledFor?: boolean
+    sentAt?: boolean
+    channel?: boolean
+  }
+
+  export type BookingReminderInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    booking?: boolean | BookingDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type BookingReminderIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    booking?: boolean | BookingDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $BookingReminderPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "BookingReminder"
+    objects: {
+      booking: Prisma.$BookingPayload<ExtArgs>
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      bookingId: string
+      userId: string
+      reminderType: string
+      scheduledFor: Date
+      sentAt: Date | null
+      channel: string
+    }, ExtArgs["result"]["bookingReminder"]>
+    composites: {}
+  }
+
+  type BookingReminderGetPayload<S extends boolean | null | undefined | BookingReminderDefaultArgs> = $Result.GetResult<Prisma.$BookingReminderPayload, S>
+
+  type BookingReminderCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<BookingReminderFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: BookingReminderCountAggregateInputType | true
+    }
+
+  export interface BookingReminderDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['BookingReminder'], meta: { name: 'BookingReminder' } }
+    /**
+     * Find zero or one BookingReminder that matches the filter.
+     * @param {BookingReminderFindUniqueArgs} args - Arguments to find a BookingReminder
+     * @example
+     * // Get one BookingReminder
+     * const bookingReminder = await prisma.bookingReminder.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends BookingReminderFindUniqueArgs>(args: SelectSubset<T, BookingReminderFindUniqueArgs<ExtArgs>>): Prisma__BookingReminderClient<$Result.GetResult<Prisma.$BookingReminderPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one BookingReminder that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {BookingReminderFindUniqueOrThrowArgs} args - Arguments to find a BookingReminder
+     * @example
+     * // Get one BookingReminder
+     * const bookingReminder = await prisma.bookingReminder.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends BookingReminderFindUniqueOrThrowArgs>(args: SelectSubset<T, BookingReminderFindUniqueOrThrowArgs<ExtArgs>>): Prisma__BookingReminderClient<$Result.GetResult<Prisma.$BookingReminderPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first BookingReminder that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BookingReminderFindFirstArgs} args - Arguments to find a BookingReminder
+     * @example
+     * // Get one BookingReminder
+     * const bookingReminder = await prisma.bookingReminder.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends BookingReminderFindFirstArgs>(args?: SelectSubset<T, BookingReminderFindFirstArgs<ExtArgs>>): Prisma__BookingReminderClient<$Result.GetResult<Prisma.$BookingReminderPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first BookingReminder that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BookingReminderFindFirstOrThrowArgs} args - Arguments to find a BookingReminder
+     * @example
+     * // Get one BookingReminder
+     * const bookingReminder = await prisma.bookingReminder.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends BookingReminderFindFirstOrThrowArgs>(args?: SelectSubset<T, BookingReminderFindFirstOrThrowArgs<ExtArgs>>): Prisma__BookingReminderClient<$Result.GetResult<Prisma.$BookingReminderPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more BookingReminders that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BookingReminderFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all BookingReminders
+     * const bookingReminders = await prisma.bookingReminder.findMany()
+     * 
+     * // Get first 10 BookingReminders
+     * const bookingReminders = await prisma.bookingReminder.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const bookingReminderWithIdOnly = await prisma.bookingReminder.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends BookingReminderFindManyArgs>(args?: SelectSubset<T, BookingReminderFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BookingReminderPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a BookingReminder.
+     * @param {BookingReminderCreateArgs} args - Arguments to create a BookingReminder.
+     * @example
+     * // Create one BookingReminder
+     * const BookingReminder = await prisma.bookingReminder.create({
+     *   data: {
+     *     // ... data to create a BookingReminder
+     *   }
+     * })
+     * 
+     */
+    create<T extends BookingReminderCreateArgs>(args: SelectSubset<T, BookingReminderCreateArgs<ExtArgs>>): Prisma__BookingReminderClient<$Result.GetResult<Prisma.$BookingReminderPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many BookingReminders.
+     * @param {BookingReminderCreateManyArgs} args - Arguments to create many BookingReminders.
+     * @example
+     * // Create many BookingReminders
+     * const bookingReminder = await prisma.bookingReminder.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends BookingReminderCreateManyArgs>(args?: SelectSubset<T, BookingReminderCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many BookingReminders and returns the data saved in the database.
+     * @param {BookingReminderCreateManyAndReturnArgs} args - Arguments to create many BookingReminders.
+     * @example
+     * // Create many BookingReminders
+     * const bookingReminder = await prisma.bookingReminder.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many BookingReminders and only return the `id`
+     * const bookingReminderWithIdOnly = await prisma.bookingReminder.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends BookingReminderCreateManyAndReturnArgs>(args?: SelectSubset<T, BookingReminderCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BookingReminderPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a BookingReminder.
+     * @param {BookingReminderDeleteArgs} args - Arguments to delete one BookingReminder.
+     * @example
+     * // Delete one BookingReminder
+     * const BookingReminder = await prisma.bookingReminder.delete({
+     *   where: {
+     *     // ... filter to delete one BookingReminder
+     *   }
+     * })
+     * 
+     */
+    delete<T extends BookingReminderDeleteArgs>(args: SelectSubset<T, BookingReminderDeleteArgs<ExtArgs>>): Prisma__BookingReminderClient<$Result.GetResult<Prisma.$BookingReminderPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one BookingReminder.
+     * @param {BookingReminderUpdateArgs} args - Arguments to update one BookingReminder.
+     * @example
+     * // Update one BookingReminder
+     * const bookingReminder = await prisma.bookingReminder.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends BookingReminderUpdateArgs>(args: SelectSubset<T, BookingReminderUpdateArgs<ExtArgs>>): Prisma__BookingReminderClient<$Result.GetResult<Prisma.$BookingReminderPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more BookingReminders.
+     * @param {BookingReminderDeleteManyArgs} args - Arguments to filter BookingReminders to delete.
+     * @example
+     * // Delete a few BookingReminders
+     * const { count } = await prisma.bookingReminder.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends BookingReminderDeleteManyArgs>(args?: SelectSubset<T, BookingReminderDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more BookingReminders.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BookingReminderUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many BookingReminders
+     * const bookingReminder = await prisma.bookingReminder.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends BookingReminderUpdateManyArgs>(args: SelectSubset<T, BookingReminderUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one BookingReminder.
+     * @param {BookingReminderUpsertArgs} args - Arguments to update or create a BookingReminder.
+     * @example
+     * // Update or create a BookingReminder
+     * const bookingReminder = await prisma.bookingReminder.upsert({
+     *   create: {
+     *     // ... data to create a BookingReminder
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the BookingReminder we want to update
+     *   }
+     * })
+     */
+    upsert<T extends BookingReminderUpsertArgs>(args: SelectSubset<T, BookingReminderUpsertArgs<ExtArgs>>): Prisma__BookingReminderClient<$Result.GetResult<Prisma.$BookingReminderPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of BookingReminders.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BookingReminderCountArgs} args - Arguments to filter BookingReminders to count.
+     * @example
+     * // Count the number of BookingReminders
+     * const count = await prisma.bookingReminder.count({
+     *   where: {
+     *     // ... the filter for the BookingReminders we want to count
+     *   }
+     * })
+    **/
+    count<T extends BookingReminderCountArgs>(
+      args?: Subset<T, BookingReminderCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], BookingReminderCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a BookingReminder.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BookingReminderAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends BookingReminderAggregateArgs>(args: Subset<T, BookingReminderAggregateArgs>): Prisma.PrismaPromise<GetBookingReminderAggregateType<T>>
+
+    /**
+     * Group by BookingReminder.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BookingReminderGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends BookingReminderGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: BookingReminderGroupByArgs['orderBy'] }
+        : { orderBy?: BookingReminderGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, BookingReminderGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetBookingReminderGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the BookingReminder model
+   */
+  readonly fields: BookingReminderFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for BookingReminder.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__BookingReminderClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    booking<T extends BookingDefaultArgs<ExtArgs> = {}>(args?: Subset<T, BookingDefaultArgs<ExtArgs>>): Prisma__BookingClient<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the BookingReminder model
+   */ 
+  interface BookingReminderFieldRefs {
+    readonly id: FieldRef<"BookingReminder", 'String'>
+    readonly bookingId: FieldRef<"BookingReminder", 'String'>
+    readonly userId: FieldRef<"BookingReminder", 'String'>
+    readonly reminderType: FieldRef<"BookingReminder", 'String'>
+    readonly scheduledFor: FieldRef<"BookingReminder", 'DateTime'>
+    readonly sentAt: FieldRef<"BookingReminder", 'DateTime'>
+    readonly channel: FieldRef<"BookingReminder", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * BookingReminder findUnique
+   */
+  export type BookingReminderFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BookingReminder
+     */
+    select?: BookingReminderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingReminderInclude<ExtArgs> | null
+    /**
+     * Filter, which BookingReminder to fetch.
+     */
+    where: BookingReminderWhereUniqueInput
+  }
+
+  /**
+   * BookingReminder findUniqueOrThrow
+   */
+  export type BookingReminderFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BookingReminder
+     */
+    select?: BookingReminderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingReminderInclude<ExtArgs> | null
+    /**
+     * Filter, which BookingReminder to fetch.
+     */
+    where: BookingReminderWhereUniqueInput
+  }
+
+  /**
+   * BookingReminder findFirst
+   */
+  export type BookingReminderFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BookingReminder
+     */
+    select?: BookingReminderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingReminderInclude<ExtArgs> | null
+    /**
+     * Filter, which BookingReminder to fetch.
+     */
+    where?: BookingReminderWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BookingReminders to fetch.
+     */
+    orderBy?: BookingReminderOrderByWithRelationInput | BookingReminderOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for BookingReminders.
+     */
+    cursor?: BookingReminderWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BookingReminders from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BookingReminders.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BookingReminders.
+     */
+    distinct?: BookingReminderScalarFieldEnum | BookingReminderScalarFieldEnum[]
+  }
+
+  /**
+   * BookingReminder findFirstOrThrow
+   */
+  export type BookingReminderFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BookingReminder
+     */
+    select?: BookingReminderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingReminderInclude<ExtArgs> | null
+    /**
+     * Filter, which BookingReminder to fetch.
+     */
+    where?: BookingReminderWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BookingReminders to fetch.
+     */
+    orderBy?: BookingReminderOrderByWithRelationInput | BookingReminderOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for BookingReminders.
+     */
+    cursor?: BookingReminderWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BookingReminders from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BookingReminders.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BookingReminders.
+     */
+    distinct?: BookingReminderScalarFieldEnum | BookingReminderScalarFieldEnum[]
+  }
+
+  /**
+   * BookingReminder findMany
+   */
+  export type BookingReminderFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BookingReminder
+     */
+    select?: BookingReminderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingReminderInclude<ExtArgs> | null
+    /**
+     * Filter, which BookingReminders to fetch.
+     */
+    where?: BookingReminderWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BookingReminders to fetch.
+     */
+    orderBy?: BookingReminderOrderByWithRelationInput | BookingReminderOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing BookingReminders.
+     */
+    cursor?: BookingReminderWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BookingReminders from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BookingReminders.
+     */
+    skip?: number
+    distinct?: BookingReminderScalarFieldEnum | BookingReminderScalarFieldEnum[]
+  }
+
+  /**
+   * BookingReminder create
+   */
+  export type BookingReminderCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BookingReminder
+     */
+    select?: BookingReminderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingReminderInclude<ExtArgs> | null
+    /**
+     * The data needed to create a BookingReminder.
+     */
+    data: XOR<BookingReminderCreateInput, BookingReminderUncheckedCreateInput>
+  }
+
+  /**
+   * BookingReminder createMany
+   */
+  export type BookingReminderCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many BookingReminders.
+     */
+    data: BookingReminderCreateManyInput | BookingReminderCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * BookingReminder createManyAndReturn
+   */
+  export type BookingReminderCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BookingReminder
+     */
+    select?: BookingReminderSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many BookingReminders.
+     */
+    data: BookingReminderCreateManyInput | BookingReminderCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingReminderIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * BookingReminder update
+   */
+  export type BookingReminderUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BookingReminder
+     */
+    select?: BookingReminderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingReminderInclude<ExtArgs> | null
+    /**
+     * The data needed to update a BookingReminder.
+     */
+    data: XOR<BookingReminderUpdateInput, BookingReminderUncheckedUpdateInput>
+    /**
+     * Choose, which BookingReminder to update.
+     */
+    where: BookingReminderWhereUniqueInput
+  }
+
+  /**
+   * BookingReminder updateMany
+   */
+  export type BookingReminderUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update BookingReminders.
+     */
+    data: XOR<BookingReminderUpdateManyMutationInput, BookingReminderUncheckedUpdateManyInput>
+    /**
+     * Filter which BookingReminders to update
+     */
+    where?: BookingReminderWhereInput
+  }
+
+  /**
+   * BookingReminder upsert
+   */
+  export type BookingReminderUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BookingReminder
+     */
+    select?: BookingReminderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingReminderInclude<ExtArgs> | null
+    /**
+     * The filter to search for the BookingReminder to update in case it exists.
+     */
+    where: BookingReminderWhereUniqueInput
+    /**
+     * In case the BookingReminder found by the `where` argument doesn't exist, create a new BookingReminder with this data.
+     */
+    create: XOR<BookingReminderCreateInput, BookingReminderUncheckedCreateInput>
+    /**
+     * In case the BookingReminder was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<BookingReminderUpdateInput, BookingReminderUncheckedUpdateInput>
+  }
+
+  /**
+   * BookingReminder delete
+   */
+  export type BookingReminderDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BookingReminder
+     */
+    select?: BookingReminderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingReminderInclude<ExtArgs> | null
+    /**
+     * Filter which BookingReminder to delete.
+     */
+    where: BookingReminderWhereUniqueInput
+  }
+
+  /**
+   * BookingReminder deleteMany
+   */
+  export type BookingReminderDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which BookingReminders to delete
+     */
+    where?: BookingReminderWhereInput
+  }
+
+  /**
+   * BookingReminder without action
+   */
+  export type BookingReminderDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BookingReminder
+     */
+    select?: BookingReminderSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BookingReminderInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model SessionFlag
+   */
+
+  export type AggregateSessionFlag = {
+    _count: SessionFlagCountAggregateOutputType | null
+    _min: SessionFlagMinAggregateOutputType | null
+    _max: SessionFlagMaxAggregateOutputType | null
+  }
+
+  export type SessionFlagMinAggregateOutputType = {
+    id: string | null
+    tutorId: string | null
+    flagType: string | null
+    bookingId: string | null
+    createdAt: Date | null
+  }
+
+  export type SessionFlagMaxAggregateOutputType = {
+    id: string | null
+    tutorId: string | null
+    flagType: string | null
+    bookingId: string | null
+    createdAt: Date | null
+  }
+
+  export type SessionFlagCountAggregateOutputType = {
+    id: number
+    tutorId: number
+    flagType: number
+    bookingId: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type SessionFlagMinAggregateInputType = {
+    id?: true
+    tutorId?: true
+    flagType?: true
+    bookingId?: true
+    createdAt?: true
+  }
+
+  export type SessionFlagMaxAggregateInputType = {
+    id?: true
+    tutorId?: true
+    flagType?: true
+    bookingId?: true
+    createdAt?: true
+  }
+
+  export type SessionFlagCountAggregateInputType = {
+    id?: true
+    tutorId?: true
+    flagType?: true
+    bookingId?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type SessionFlagAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SessionFlag to aggregate.
+     */
+    where?: SessionFlagWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SessionFlags to fetch.
+     */
+    orderBy?: SessionFlagOrderByWithRelationInput | SessionFlagOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: SessionFlagWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SessionFlags from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SessionFlags.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned SessionFlags
+    **/
+    _count?: true | SessionFlagCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: SessionFlagMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: SessionFlagMaxAggregateInputType
+  }
+
+  export type GetSessionFlagAggregateType<T extends SessionFlagAggregateArgs> = {
+        [P in keyof T & keyof AggregateSessionFlag]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateSessionFlag[P]>
+      : GetScalarType<T[P], AggregateSessionFlag[P]>
+  }
+
+
+
+
+  export type SessionFlagGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SessionFlagWhereInput
+    orderBy?: SessionFlagOrderByWithAggregationInput | SessionFlagOrderByWithAggregationInput[]
+    by: SessionFlagScalarFieldEnum[] | SessionFlagScalarFieldEnum
+    having?: SessionFlagScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: SessionFlagCountAggregateInputType | true
+    _min?: SessionFlagMinAggregateInputType
+    _max?: SessionFlagMaxAggregateInputType
+  }
+
+  export type SessionFlagGroupByOutputType = {
+    id: string
+    tutorId: string
+    flagType: string
+    bookingId: string
+    createdAt: Date
+    _count: SessionFlagCountAggregateOutputType | null
+    _min: SessionFlagMinAggregateOutputType | null
+    _max: SessionFlagMaxAggregateOutputType | null
+  }
+
+  type GetSessionFlagGroupByPayload<T extends SessionFlagGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<SessionFlagGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof SessionFlagGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], SessionFlagGroupByOutputType[P]>
+            : GetScalarType<T[P], SessionFlagGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type SessionFlagSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tutorId?: boolean
+    flagType?: boolean
+    bookingId?: boolean
+    createdAt?: boolean
+    tutor?: boolean | UserDefaultArgs<ExtArgs>
+    booking?: boolean | BookingDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["sessionFlag"]>
+
+  export type SessionFlagSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    tutorId?: boolean
+    flagType?: boolean
+    bookingId?: boolean
+    createdAt?: boolean
+    tutor?: boolean | UserDefaultArgs<ExtArgs>
+    booking?: boolean | BookingDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["sessionFlag"]>
+
+  export type SessionFlagSelectScalar = {
+    id?: boolean
+    tutorId?: boolean
+    flagType?: boolean
+    bookingId?: boolean
+    createdAt?: boolean
+  }
+
+  export type SessionFlagInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tutor?: boolean | UserDefaultArgs<ExtArgs>
+    booking?: boolean | BookingDefaultArgs<ExtArgs>
+  }
+  export type SessionFlagIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    tutor?: boolean | UserDefaultArgs<ExtArgs>
+    booking?: boolean | BookingDefaultArgs<ExtArgs>
+  }
+
+  export type $SessionFlagPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "SessionFlag"
+    objects: {
+      tutor: Prisma.$UserPayload<ExtArgs>
+      booking: Prisma.$BookingPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      tutorId: string
+      flagType: string
+      bookingId: string
+      createdAt: Date
+    }, ExtArgs["result"]["sessionFlag"]>
+    composites: {}
+  }
+
+  type SessionFlagGetPayload<S extends boolean | null | undefined | SessionFlagDefaultArgs> = $Result.GetResult<Prisma.$SessionFlagPayload, S>
+
+  type SessionFlagCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<SessionFlagFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: SessionFlagCountAggregateInputType | true
+    }
+
+  export interface SessionFlagDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SessionFlag'], meta: { name: 'SessionFlag' } }
+    /**
+     * Find zero or one SessionFlag that matches the filter.
+     * @param {SessionFlagFindUniqueArgs} args - Arguments to find a SessionFlag
+     * @example
+     * // Get one SessionFlag
+     * const sessionFlag = await prisma.sessionFlag.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends SessionFlagFindUniqueArgs>(args: SelectSubset<T, SessionFlagFindUniqueArgs<ExtArgs>>): Prisma__SessionFlagClient<$Result.GetResult<Prisma.$SessionFlagPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one SessionFlag that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {SessionFlagFindUniqueOrThrowArgs} args - Arguments to find a SessionFlag
+     * @example
+     * // Get one SessionFlag
+     * const sessionFlag = await prisma.sessionFlag.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends SessionFlagFindUniqueOrThrowArgs>(args: SelectSubset<T, SessionFlagFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SessionFlagClient<$Result.GetResult<Prisma.$SessionFlagPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first SessionFlag that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionFlagFindFirstArgs} args - Arguments to find a SessionFlag
+     * @example
+     * // Get one SessionFlag
+     * const sessionFlag = await prisma.sessionFlag.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends SessionFlagFindFirstArgs>(args?: SelectSubset<T, SessionFlagFindFirstArgs<ExtArgs>>): Prisma__SessionFlagClient<$Result.GetResult<Prisma.$SessionFlagPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first SessionFlag that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionFlagFindFirstOrThrowArgs} args - Arguments to find a SessionFlag
+     * @example
+     * // Get one SessionFlag
+     * const sessionFlag = await prisma.sessionFlag.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends SessionFlagFindFirstOrThrowArgs>(args?: SelectSubset<T, SessionFlagFindFirstOrThrowArgs<ExtArgs>>): Prisma__SessionFlagClient<$Result.GetResult<Prisma.$SessionFlagPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more SessionFlags that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionFlagFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all SessionFlags
+     * const sessionFlags = await prisma.sessionFlag.findMany()
+     * 
+     * // Get first 10 SessionFlags
+     * const sessionFlags = await prisma.sessionFlag.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const sessionFlagWithIdOnly = await prisma.sessionFlag.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends SessionFlagFindManyArgs>(args?: SelectSubset<T, SessionFlagFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionFlagPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a SessionFlag.
+     * @param {SessionFlagCreateArgs} args - Arguments to create a SessionFlag.
+     * @example
+     * // Create one SessionFlag
+     * const SessionFlag = await prisma.sessionFlag.create({
+     *   data: {
+     *     // ... data to create a SessionFlag
+     *   }
+     * })
+     * 
+     */
+    create<T extends SessionFlagCreateArgs>(args: SelectSubset<T, SessionFlagCreateArgs<ExtArgs>>): Prisma__SessionFlagClient<$Result.GetResult<Prisma.$SessionFlagPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many SessionFlags.
+     * @param {SessionFlagCreateManyArgs} args - Arguments to create many SessionFlags.
+     * @example
+     * // Create many SessionFlags
+     * const sessionFlag = await prisma.sessionFlag.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends SessionFlagCreateManyArgs>(args?: SelectSubset<T, SessionFlagCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many SessionFlags and returns the data saved in the database.
+     * @param {SessionFlagCreateManyAndReturnArgs} args - Arguments to create many SessionFlags.
+     * @example
+     * // Create many SessionFlags
+     * const sessionFlag = await prisma.sessionFlag.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many SessionFlags and only return the `id`
+     * const sessionFlagWithIdOnly = await prisma.sessionFlag.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends SessionFlagCreateManyAndReturnArgs>(args?: SelectSubset<T, SessionFlagCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionFlagPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a SessionFlag.
+     * @param {SessionFlagDeleteArgs} args - Arguments to delete one SessionFlag.
+     * @example
+     * // Delete one SessionFlag
+     * const SessionFlag = await prisma.sessionFlag.delete({
+     *   where: {
+     *     // ... filter to delete one SessionFlag
+     *   }
+     * })
+     * 
+     */
+    delete<T extends SessionFlagDeleteArgs>(args: SelectSubset<T, SessionFlagDeleteArgs<ExtArgs>>): Prisma__SessionFlagClient<$Result.GetResult<Prisma.$SessionFlagPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one SessionFlag.
+     * @param {SessionFlagUpdateArgs} args - Arguments to update one SessionFlag.
+     * @example
+     * // Update one SessionFlag
+     * const sessionFlag = await prisma.sessionFlag.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends SessionFlagUpdateArgs>(args: SelectSubset<T, SessionFlagUpdateArgs<ExtArgs>>): Prisma__SessionFlagClient<$Result.GetResult<Prisma.$SessionFlagPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more SessionFlags.
+     * @param {SessionFlagDeleteManyArgs} args - Arguments to filter SessionFlags to delete.
+     * @example
+     * // Delete a few SessionFlags
+     * const { count } = await prisma.sessionFlag.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends SessionFlagDeleteManyArgs>(args?: SelectSubset<T, SessionFlagDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more SessionFlags.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionFlagUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many SessionFlags
+     * const sessionFlag = await prisma.sessionFlag.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends SessionFlagUpdateManyArgs>(args: SelectSubset<T, SessionFlagUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one SessionFlag.
+     * @param {SessionFlagUpsertArgs} args - Arguments to update or create a SessionFlag.
+     * @example
+     * // Update or create a SessionFlag
+     * const sessionFlag = await prisma.sessionFlag.upsert({
+     *   create: {
+     *     // ... data to create a SessionFlag
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the SessionFlag we want to update
+     *   }
+     * })
+     */
+    upsert<T extends SessionFlagUpsertArgs>(args: SelectSubset<T, SessionFlagUpsertArgs<ExtArgs>>): Prisma__SessionFlagClient<$Result.GetResult<Prisma.$SessionFlagPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of SessionFlags.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionFlagCountArgs} args - Arguments to filter SessionFlags to count.
+     * @example
+     * // Count the number of SessionFlags
+     * const count = await prisma.sessionFlag.count({
+     *   where: {
+     *     // ... the filter for the SessionFlags we want to count
+     *   }
+     * })
+    **/
+    count<T extends SessionFlagCountArgs>(
+      args?: Subset<T, SessionFlagCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], SessionFlagCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a SessionFlag.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionFlagAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends SessionFlagAggregateArgs>(args: Subset<T, SessionFlagAggregateArgs>): Prisma.PrismaPromise<GetSessionFlagAggregateType<T>>
+
+    /**
+     * Group by SessionFlag.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionFlagGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends SessionFlagGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: SessionFlagGroupByArgs['orderBy'] }
+        : { orderBy?: SessionFlagGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, SessionFlagGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSessionFlagGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the SessionFlag model
+   */
+  readonly fields: SessionFlagFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for SessionFlag.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__SessionFlagClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    tutor<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    booking<T extends BookingDefaultArgs<ExtArgs> = {}>(args?: Subset<T, BookingDefaultArgs<ExtArgs>>): Prisma__BookingClient<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the SessionFlag model
+   */ 
+  interface SessionFlagFieldRefs {
+    readonly id: FieldRef<"SessionFlag", 'String'>
+    readonly tutorId: FieldRef<"SessionFlag", 'String'>
+    readonly flagType: FieldRef<"SessionFlag", 'String'>
+    readonly bookingId: FieldRef<"SessionFlag", 'String'>
+    readonly createdAt: FieldRef<"SessionFlag", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * SessionFlag findUnique
+   */
+  export type SessionFlagFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionFlag
+     */
+    select?: SessionFlagSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SessionFlagInclude<ExtArgs> | null
+    /**
+     * Filter, which SessionFlag to fetch.
+     */
+    where: SessionFlagWhereUniqueInput
+  }
+
+  /**
+   * SessionFlag findUniqueOrThrow
+   */
+  export type SessionFlagFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionFlag
+     */
+    select?: SessionFlagSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SessionFlagInclude<ExtArgs> | null
+    /**
+     * Filter, which SessionFlag to fetch.
+     */
+    where: SessionFlagWhereUniqueInput
+  }
+
+  /**
+   * SessionFlag findFirst
+   */
+  export type SessionFlagFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionFlag
+     */
+    select?: SessionFlagSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SessionFlagInclude<ExtArgs> | null
+    /**
+     * Filter, which SessionFlag to fetch.
+     */
+    where?: SessionFlagWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SessionFlags to fetch.
+     */
+    orderBy?: SessionFlagOrderByWithRelationInput | SessionFlagOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SessionFlags.
+     */
+    cursor?: SessionFlagWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SessionFlags from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SessionFlags.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SessionFlags.
+     */
+    distinct?: SessionFlagScalarFieldEnum | SessionFlagScalarFieldEnum[]
+  }
+
+  /**
+   * SessionFlag findFirstOrThrow
+   */
+  export type SessionFlagFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionFlag
+     */
+    select?: SessionFlagSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SessionFlagInclude<ExtArgs> | null
+    /**
+     * Filter, which SessionFlag to fetch.
+     */
+    where?: SessionFlagWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SessionFlags to fetch.
+     */
+    orderBy?: SessionFlagOrderByWithRelationInput | SessionFlagOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SessionFlags.
+     */
+    cursor?: SessionFlagWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SessionFlags from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SessionFlags.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SessionFlags.
+     */
+    distinct?: SessionFlagScalarFieldEnum | SessionFlagScalarFieldEnum[]
+  }
+
+  /**
+   * SessionFlag findMany
+   */
+  export type SessionFlagFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionFlag
+     */
+    select?: SessionFlagSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SessionFlagInclude<ExtArgs> | null
+    /**
+     * Filter, which SessionFlags to fetch.
+     */
+    where?: SessionFlagWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SessionFlags to fetch.
+     */
+    orderBy?: SessionFlagOrderByWithRelationInput | SessionFlagOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing SessionFlags.
+     */
+    cursor?: SessionFlagWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SessionFlags from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SessionFlags.
+     */
+    skip?: number
+    distinct?: SessionFlagScalarFieldEnum | SessionFlagScalarFieldEnum[]
+  }
+
+  /**
+   * SessionFlag create
+   */
+  export type SessionFlagCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionFlag
+     */
+    select?: SessionFlagSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SessionFlagInclude<ExtArgs> | null
+    /**
+     * The data needed to create a SessionFlag.
+     */
+    data: XOR<SessionFlagCreateInput, SessionFlagUncheckedCreateInput>
+  }
+
+  /**
+   * SessionFlag createMany
+   */
+  export type SessionFlagCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many SessionFlags.
+     */
+    data: SessionFlagCreateManyInput | SessionFlagCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * SessionFlag createManyAndReturn
+   */
+  export type SessionFlagCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionFlag
+     */
+    select?: SessionFlagSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many SessionFlags.
+     */
+    data: SessionFlagCreateManyInput | SessionFlagCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SessionFlagIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * SessionFlag update
+   */
+  export type SessionFlagUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionFlag
+     */
+    select?: SessionFlagSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SessionFlagInclude<ExtArgs> | null
+    /**
+     * The data needed to update a SessionFlag.
+     */
+    data: XOR<SessionFlagUpdateInput, SessionFlagUncheckedUpdateInput>
+    /**
+     * Choose, which SessionFlag to update.
+     */
+    where: SessionFlagWhereUniqueInput
+  }
+
+  /**
+   * SessionFlag updateMany
+   */
+  export type SessionFlagUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update SessionFlags.
+     */
+    data: XOR<SessionFlagUpdateManyMutationInput, SessionFlagUncheckedUpdateManyInput>
+    /**
+     * Filter which SessionFlags to update
+     */
+    where?: SessionFlagWhereInput
+  }
+
+  /**
+   * SessionFlag upsert
+   */
+  export type SessionFlagUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionFlag
+     */
+    select?: SessionFlagSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SessionFlagInclude<ExtArgs> | null
+    /**
+     * The filter to search for the SessionFlag to update in case it exists.
+     */
+    where: SessionFlagWhereUniqueInput
+    /**
+     * In case the SessionFlag found by the `where` argument doesn't exist, create a new SessionFlag with this data.
+     */
+    create: XOR<SessionFlagCreateInput, SessionFlagUncheckedCreateInput>
+    /**
+     * In case the SessionFlag was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<SessionFlagUpdateInput, SessionFlagUncheckedUpdateInput>
+  }
+
+  /**
+   * SessionFlag delete
+   */
+  export type SessionFlagDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionFlag
+     */
+    select?: SessionFlagSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SessionFlagInclude<ExtArgs> | null
+    /**
+     * Filter which SessionFlag to delete.
+     */
+    where: SessionFlagWhereUniqueInput
+  }
+
+  /**
+   * SessionFlag deleteMany
+   */
+  export type SessionFlagDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SessionFlags to delete
+     */
+    where?: SessionFlagWhereInput
+  }
+
+  /**
+   * SessionFlag without action
+   */
+  export type SessionFlagDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionFlag
+     */
+    select?: SessionFlagSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SessionFlagInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -51225,6 +55850,67 @@ export namespace Prisma {
   export type InstitutionDocumentScalarFieldEnum = (typeof InstitutionDocumentScalarFieldEnum)[keyof typeof InstitutionDocumentScalarFieldEnum]
 
 
+  export const TutorAvailabilityScalarFieldEnum: {
+    id: 'id',
+    tutorId: 'tutorId',
+    dayOfWeek: 'dayOfWeek',
+    startTime: 'startTime',
+    endTime: 'endTime',
+    isRecurring: 'isRecurring',
+    specificDate: 'specificDate',
+    isBlocked: 'isBlocked',
+    createdAt: 'createdAt'
+  };
+
+  export type TutorAvailabilityScalarFieldEnum = (typeof TutorAvailabilityScalarFieldEnum)[keyof typeof TutorAvailabilityScalarFieldEnum]
+
+
+  export const BookingScalarFieldEnum: {
+    id: 'id',
+    studentId: 'studentId',
+    tutorId: 'tutorId',
+    subject: 'subject',
+    topic: 'topic',
+    educationLevel: 'educationLevel',
+    date: 'date',
+    startTime: 'startTime',
+    endTime: 'endTime',
+    durationMinutes: 'durationMinutes',
+    status: 'status',
+    amount: 'amount',
+    paystackReference: 'paystackReference',
+    declineReason: 'declineReason',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type BookingScalarFieldEnum = (typeof BookingScalarFieldEnum)[keyof typeof BookingScalarFieldEnum]
+
+
+  export const BookingReminderScalarFieldEnum: {
+    id: 'id',
+    bookingId: 'bookingId',
+    userId: 'userId',
+    reminderType: 'reminderType',
+    scheduledFor: 'scheduledFor',
+    sentAt: 'sentAt',
+    channel: 'channel'
+  };
+
+  export type BookingReminderScalarFieldEnum = (typeof BookingReminderScalarFieldEnum)[keyof typeof BookingReminderScalarFieldEnum]
+
+
+  export const SessionFlagScalarFieldEnum: {
+    id: 'id',
+    tutorId: 'tutorId',
+    flagType: 'flagType',
+    bookingId: 'bookingId',
+    createdAt: 'createdAt'
+  };
+
+  export type SessionFlagScalarFieldEnum = (typeof SessionFlagScalarFieldEnum)[keyof typeof SessionFlagScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -51533,6 +56219,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberListRelationFilter
     uploadedDocuments?: InstitutionDocumentListRelationFilter
     pushSubscriptions?: PushSubscriptionListRelationFilter
+    tutorAvailabilities?: TutorAvailabilityListRelationFilter
+    studentBookings?: BookingListRelationFilter
+    tutorBookings?: BookingListRelationFilter
+    bookingReminders?: BookingReminderListRelationFilter
+    sessionFlags?: SessionFlagListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -51596,6 +56287,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberOrderByRelationAggregateInput
     uploadedDocuments?: InstitutionDocumentOrderByRelationAggregateInput
     pushSubscriptions?: PushSubscriptionOrderByRelationAggregateInput
+    tutorAvailabilities?: TutorAvailabilityOrderByRelationAggregateInput
+    studentBookings?: BookingOrderByRelationAggregateInput
+    tutorBookings?: BookingOrderByRelationAggregateInput
+    bookingReminders?: BookingReminderOrderByRelationAggregateInput
+    sessionFlags?: SessionFlagOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -51662,6 +56358,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberListRelationFilter
     uploadedDocuments?: InstitutionDocumentListRelationFilter
     pushSubscriptions?: PushSubscriptionListRelationFilter
+    tutorAvailabilities?: TutorAvailabilityListRelationFilter
+    studentBookings?: BookingListRelationFilter
+    tutorBookings?: BookingListRelationFilter
+    bookingReminders?: BookingReminderListRelationFilter
+    sessionFlags?: SessionFlagListRelationFilter
   }, "id" | "email" | "phone">
 
   export type UserOrderByWithAggregationInput = {
@@ -54960,6 +59661,330 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"InstitutionDocument"> | Date | string
   }
 
+  export type TutorAvailabilityWhereInput = {
+    AND?: TutorAvailabilityWhereInput | TutorAvailabilityWhereInput[]
+    OR?: TutorAvailabilityWhereInput[]
+    NOT?: TutorAvailabilityWhereInput | TutorAvailabilityWhereInput[]
+    id?: StringFilter<"TutorAvailability"> | string
+    tutorId?: StringFilter<"TutorAvailability"> | string
+    dayOfWeek?: IntFilter<"TutorAvailability"> | number
+    startTime?: StringFilter<"TutorAvailability"> | string
+    endTime?: StringFilter<"TutorAvailability"> | string
+    isRecurring?: BoolFilter<"TutorAvailability"> | boolean
+    specificDate?: DateTimeNullableFilter<"TutorAvailability"> | Date | string | null
+    isBlocked?: BoolFilter<"TutorAvailability"> | boolean
+    createdAt?: DateTimeFilter<"TutorAvailability"> | Date | string
+    tutor?: XOR<UserRelationFilter, UserWhereInput>
+  }
+
+  export type TutorAvailabilityOrderByWithRelationInput = {
+    id?: SortOrder
+    tutorId?: SortOrder
+    dayOfWeek?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    isRecurring?: SortOrder
+    specificDate?: SortOrderInput | SortOrder
+    isBlocked?: SortOrder
+    createdAt?: SortOrder
+    tutor?: UserOrderByWithRelationInput
+  }
+
+  export type TutorAvailabilityWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: TutorAvailabilityWhereInput | TutorAvailabilityWhereInput[]
+    OR?: TutorAvailabilityWhereInput[]
+    NOT?: TutorAvailabilityWhereInput | TutorAvailabilityWhereInput[]
+    tutorId?: StringFilter<"TutorAvailability"> | string
+    dayOfWeek?: IntFilter<"TutorAvailability"> | number
+    startTime?: StringFilter<"TutorAvailability"> | string
+    endTime?: StringFilter<"TutorAvailability"> | string
+    isRecurring?: BoolFilter<"TutorAvailability"> | boolean
+    specificDate?: DateTimeNullableFilter<"TutorAvailability"> | Date | string | null
+    isBlocked?: BoolFilter<"TutorAvailability"> | boolean
+    createdAt?: DateTimeFilter<"TutorAvailability"> | Date | string
+    tutor?: XOR<UserRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type TutorAvailabilityOrderByWithAggregationInput = {
+    id?: SortOrder
+    tutorId?: SortOrder
+    dayOfWeek?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    isRecurring?: SortOrder
+    specificDate?: SortOrderInput | SortOrder
+    isBlocked?: SortOrder
+    createdAt?: SortOrder
+    _count?: TutorAvailabilityCountOrderByAggregateInput
+    _avg?: TutorAvailabilityAvgOrderByAggregateInput
+    _max?: TutorAvailabilityMaxOrderByAggregateInput
+    _min?: TutorAvailabilityMinOrderByAggregateInput
+    _sum?: TutorAvailabilitySumOrderByAggregateInput
+  }
+
+  export type TutorAvailabilityScalarWhereWithAggregatesInput = {
+    AND?: TutorAvailabilityScalarWhereWithAggregatesInput | TutorAvailabilityScalarWhereWithAggregatesInput[]
+    OR?: TutorAvailabilityScalarWhereWithAggregatesInput[]
+    NOT?: TutorAvailabilityScalarWhereWithAggregatesInput | TutorAvailabilityScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"TutorAvailability"> | string
+    tutorId?: StringWithAggregatesFilter<"TutorAvailability"> | string
+    dayOfWeek?: IntWithAggregatesFilter<"TutorAvailability"> | number
+    startTime?: StringWithAggregatesFilter<"TutorAvailability"> | string
+    endTime?: StringWithAggregatesFilter<"TutorAvailability"> | string
+    isRecurring?: BoolWithAggregatesFilter<"TutorAvailability"> | boolean
+    specificDate?: DateTimeNullableWithAggregatesFilter<"TutorAvailability"> | Date | string | null
+    isBlocked?: BoolWithAggregatesFilter<"TutorAvailability"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"TutorAvailability"> | Date | string
+  }
+
+  export type BookingWhereInput = {
+    AND?: BookingWhereInput | BookingWhereInput[]
+    OR?: BookingWhereInput[]
+    NOT?: BookingWhereInput | BookingWhereInput[]
+    id?: StringFilter<"Booking"> | string
+    studentId?: StringFilter<"Booking"> | string
+    tutorId?: StringFilter<"Booking"> | string
+    subject?: StringFilter<"Booking"> | string
+    topic?: StringNullableFilter<"Booking"> | string | null
+    educationLevel?: StringNullableFilter<"Booking"> | string | null
+    date?: DateTimeFilter<"Booking"> | Date | string
+    startTime?: StringFilter<"Booking"> | string
+    endTime?: StringFilter<"Booking"> | string
+    durationMinutes?: IntFilter<"Booking"> | number
+    status?: StringFilter<"Booking"> | string
+    amount?: IntFilter<"Booking"> | number
+    paystackReference?: StringNullableFilter<"Booking"> | string | null
+    declineReason?: StringNullableFilter<"Booking"> | string | null
+    createdAt?: DateTimeFilter<"Booking"> | Date | string
+    updatedAt?: DateTimeFilter<"Booking"> | Date | string
+    student?: XOR<UserRelationFilter, UserWhereInput>
+    tutor?: XOR<UserRelationFilter, UserWhereInput>
+    reminders?: BookingReminderListRelationFilter
+    flags?: SessionFlagListRelationFilter
+  }
+
+  export type BookingOrderByWithRelationInput = {
+    id?: SortOrder
+    studentId?: SortOrder
+    tutorId?: SortOrder
+    subject?: SortOrder
+    topic?: SortOrderInput | SortOrder
+    educationLevel?: SortOrderInput | SortOrder
+    date?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    durationMinutes?: SortOrder
+    status?: SortOrder
+    amount?: SortOrder
+    paystackReference?: SortOrderInput | SortOrder
+    declineReason?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    student?: UserOrderByWithRelationInput
+    tutor?: UserOrderByWithRelationInput
+    reminders?: BookingReminderOrderByRelationAggregateInput
+    flags?: SessionFlagOrderByRelationAggregateInput
+  }
+
+  export type BookingWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: BookingWhereInput | BookingWhereInput[]
+    OR?: BookingWhereInput[]
+    NOT?: BookingWhereInput | BookingWhereInput[]
+    studentId?: StringFilter<"Booking"> | string
+    tutorId?: StringFilter<"Booking"> | string
+    subject?: StringFilter<"Booking"> | string
+    topic?: StringNullableFilter<"Booking"> | string | null
+    educationLevel?: StringNullableFilter<"Booking"> | string | null
+    date?: DateTimeFilter<"Booking"> | Date | string
+    startTime?: StringFilter<"Booking"> | string
+    endTime?: StringFilter<"Booking"> | string
+    durationMinutes?: IntFilter<"Booking"> | number
+    status?: StringFilter<"Booking"> | string
+    amount?: IntFilter<"Booking"> | number
+    paystackReference?: StringNullableFilter<"Booking"> | string | null
+    declineReason?: StringNullableFilter<"Booking"> | string | null
+    createdAt?: DateTimeFilter<"Booking"> | Date | string
+    updatedAt?: DateTimeFilter<"Booking"> | Date | string
+    student?: XOR<UserRelationFilter, UserWhereInput>
+    tutor?: XOR<UserRelationFilter, UserWhereInput>
+    reminders?: BookingReminderListRelationFilter
+    flags?: SessionFlagListRelationFilter
+  }, "id">
+
+  export type BookingOrderByWithAggregationInput = {
+    id?: SortOrder
+    studentId?: SortOrder
+    tutorId?: SortOrder
+    subject?: SortOrder
+    topic?: SortOrderInput | SortOrder
+    educationLevel?: SortOrderInput | SortOrder
+    date?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    durationMinutes?: SortOrder
+    status?: SortOrder
+    amount?: SortOrder
+    paystackReference?: SortOrderInput | SortOrder
+    declineReason?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: BookingCountOrderByAggregateInput
+    _avg?: BookingAvgOrderByAggregateInput
+    _max?: BookingMaxOrderByAggregateInput
+    _min?: BookingMinOrderByAggregateInput
+    _sum?: BookingSumOrderByAggregateInput
+  }
+
+  export type BookingScalarWhereWithAggregatesInput = {
+    AND?: BookingScalarWhereWithAggregatesInput | BookingScalarWhereWithAggregatesInput[]
+    OR?: BookingScalarWhereWithAggregatesInput[]
+    NOT?: BookingScalarWhereWithAggregatesInput | BookingScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Booking"> | string
+    studentId?: StringWithAggregatesFilter<"Booking"> | string
+    tutorId?: StringWithAggregatesFilter<"Booking"> | string
+    subject?: StringWithAggregatesFilter<"Booking"> | string
+    topic?: StringNullableWithAggregatesFilter<"Booking"> | string | null
+    educationLevel?: StringNullableWithAggregatesFilter<"Booking"> | string | null
+    date?: DateTimeWithAggregatesFilter<"Booking"> | Date | string
+    startTime?: StringWithAggregatesFilter<"Booking"> | string
+    endTime?: StringWithAggregatesFilter<"Booking"> | string
+    durationMinutes?: IntWithAggregatesFilter<"Booking"> | number
+    status?: StringWithAggregatesFilter<"Booking"> | string
+    amount?: IntWithAggregatesFilter<"Booking"> | number
+    paystackReference?: StringNullableWithAggregatesFilter<"Booking"> | string | null
+    declineReason?: StringNullableWithAggregatesFilter<"Booking"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"Booking"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Booking"> | Date | string
+  }
+
+  export type BookingReminderWhereInput = {
+    AND?: BookingReminderWhereInput | BookingReminderWhereInput[]
+    OR?: BookingReminderWhereInput[]
+    NOT?: BookingReminderWhereInput | BookingReminderWhereInput[]
+    id?: StringFilter<"BookingReminder"> | string
+    bookingId?: StringFilter<"BookingReminder"> | string
+    userId?: StringFilter<"BookingReminder"> | string
+    reminderType?: StringFilter<"BookingReminder"> | string
+    scheduledFor?: DateTimeFilter<"BookingReminder"> | Date | string
+    sentAt?: DateTimeNullableFilter<"BookingReminder"> | Date | string | null
+    channel?: StringFilter<"BookingReminder"> | string
+    booking?: XOR<BookingRelationFilter, BookingWhereInput>
+    user?: XOR<UserRelationFilter, UserWhereInput>
+  }
+
+  export type BookingReminderOrderByWithRelationInput = {
+    id?: SortOrder
+    bookingId?: SortOrder
+    userId?: SortOrder
+    reminderType?: SortOrder
+    scheduledFor?: SortOrder
+    sentAt?: SortOrderInput | SortOrder
+    channel?: SortOrder
+    booking?: BookingOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type BookingReminderWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: BookingReminderWhereInput | BookingReminderWhereInput[]
+    OR?: BookingReminderWhereInput[]
+    NOT?: BookingReminderWhereInput | BookingReminderWhereInput[]
+    bookingId?: StringFilter<"BookingReminder"> | string
+    userId?: StringFilter<"BookingReminder"> | string
+    reminderType?: StringFilter<"BookingReminder"> | string
+    scheduledFor?: DateTimeFilter<"BookingReminder"> | Date | string
+    sentAt?: DateTimeNullableFilter<"BookingReminder"> | Date | string | null
+    channel?: StringFilter<"BookingReminder"> | string
+    booking?: XOR<BookingRelationFilter, BookingWhereInput>
+    user?: XOR<UserRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type BookingReminderOrderByWithAggregationInput = {
+    id?: SortOrder
+    bookingId?: SortOrder
+    userId?: SortOrder
+    reminderType?: SortOrder
+    scheduledFor?: SortOrder
+    sentAt?: SortOrderInput | SortOrder
+    channel?: SortOrder
+    _count?: BookingReminderCountOrderByAggregateInput
+    _max?: BookingReminderMaxOrderByAggregateInput
+    _min?: BookingReminderMinOrderByAggregateInput
+  }
+
+  export type BookingReminderScalarWhereWithAggregatesInput = {
+    AND?: BookingReminderScalarWhereWithAggregatesInput | BookingReminderScalarWhereWithAggregatesInput[]
+    OR?: BookingReminderScalarWhereWithAggregatesInput[]
+    NOT?: BookingReminderScalarWhereWithAggregatesInput | BookingReminderScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"BookingReminder"> | string
+    bookingId?: StringWithAggregatesFilter<"BookingReminder"> | string
+    userId?: StringWithAggregatesFilter<"BookingReminder"> | string
+    reminderType?: StringWithAggregatesFilter<"BookingReminder"> | string
+    scheduledFor?: DateTimeWithAggregatesFilter<"BookingReminder"> | Date | string
+    sentAt?: DateTimeNullableWithAggregatesFilter<"BookingReminder"> | Date | string | null
+    channel?: StringWithAggregatesFilter<"BookingReminder"> | string
+  }
+
+  export type SessionFlagWhereInput = {
+    AND?: SessionFlagWhereInput | SessionFlagWhereInput[]
+    OR?: SessionFlagWhereInput[]
+    NOT?: SessionFlagWhereInput | SessionFlagWhereInput[]
+    id?: StringFilter<"SessionFlag"> | string
+    tutorId?: StringFilter<"SessionFlag"> | string
+    flagType?: StringFilter<"SessionFlag"> | string
+    bookingId?: StringFilter<"SessionFlag"> | string
+    createdAt?: DateTimeFilter<"SessionFlag"> | Date | string
+    tutor?: XOR<UserRelationFilter, UserWhereInput>
+    booking?: XOR<BookingRelationFilter, BookingWhereInput>
+  }
+
+  export type SessionFlagOrderByWithRelationInput = {
+    id?: SortOrder
+    tutorId?: SortOrder
+    flagType?: SortOrder
+    bookingId?: SortOrder
+    createdAt?: SortOrder
+    tutor?: UserOrderByWithRelationInput
+    booking?: BookingOrderByWithRelationInput
+  }
+
+  export type SessionFlagWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: SessionFlagWhereInput | SessionFlagWhereInput[]
+    OR?: SessionFlagWhereInput[]
+    NOT?: SessionFlagWhereInput | SessionFlagWhereInput[]
+    tutorId?: StringFilter<"SessionFlag"> | string
+    flagType?: StringFilter<"SessionFlag"> | string
+    bookingId?: StringFilter<"SessionFlag"> | string
+    createdAt?: DateTimeFilter<"SessionFlag"> | Date | string
+    tutor?: XOR<UserRelationFilter, UserWhereInput>
+    booking?: XOR<BookingRelationFilter, BookingWhereInput>
+  }, "id">
+
+  export type SessionFlagOrderByWithAggregationInput = {
+    id?: SortOrder
+    tutorId?: SortOrder
+    flagType?: SortOrder
+    bookingId?: SortOrder
+    createdAt?: SortOrder
+    _count?: SessionFlagCountOrderByAggregateInput
+    _max?: SessionFlagMaxOrderByAggregateInput
+    _min?: SessionFlagMinOrderByAggregateInput
+  }
+
+  export type SessionFlagScalarWhereWithAggregatesInput = {
+    AND?: SessionFlagScalarWhereWithAggregatesInput | SessionFlagScalarWhereWithAggregatesInput[]
+    OR?: SessionFlagScalarWhereWithAggregatesInput[]
+    NOT?: SessionFlagScalarWhereWithAggregatesInput | SessionFlagScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"SessionFlag"> | string
+    tutorId?: StringWithAggregatesFilter<"SessionFlag"> | string
+    flagType?: StringWithAggregatesFilter<"SessionFlag"> | string
+    bookingId?: StringWithAggregatesFilter<"SessionFlag"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"SessionFlag"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     email: string
@@ -55021,6 +60046,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -55084,6 +60114,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserUpdateInput = {
@@ -55147,6 +60182,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -55210,6 +60250,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -58784,6 +63829,350 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type TutorAvailabilityCreateInput = {
+    id?: string
+    dayOfWeek: number
+    startTime: string
+    endTime: string
+    isRecurring?: boolean
+    specificDate?: Date | string | null
+    isBlocked?: boolean
+    createdAt?: Date | string
+    tutor: UserCreateNestedOneWithoutTutorAvailabilitiesInput
+  }
+
+  export type TutorAvailabilityUncheckedCreateInput = {
+    id?: string
+    tutorId: string
+    dayOfWeek: number
+    startTime: string
+    endTime: string
+    isRecurring?: boolean
+    specificDate?: Date | string | null
+    isBlocked?: boolean
+    createdAt?: Date | string
+  }
+
+  export type TutorAvailabilityUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    dayOfWeek?: IntFieldUpdateOperationsInput | number
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    specificDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tutor?: UserUpdateOneRequiredWithoutTutorAvailabilitiesNestedInput
+  }
+
+  export type TutorAvailabilityUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tutorId?: StringFieldUpdateOperationsInput | string
+    dayOfWeek?: IntFieldUpdateOperationsInput | number
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    specificDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TutorAvailabilityCreateManyInput = {
+    id?: string
+    tutorId: string
+    dayOfWeek: number
+    startTime: string
+    endTime: string
+    isRecurring?: boolean
+    specificDate?: Date | string | null
+    isBlocked?: boolean
+    createdAt?: Date | string
+  }
+
+  export type TutorAvailabilityUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    dayOfWeek?: IntFieldUpdateOperationsInput | number
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    specificDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TutorAvailabilityUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tutorId?: StringFieldUpdateOperationsInput | string
+    dayOfWeek?: IntFieldUpdateOperationsInput | number
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    specificDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BookingCreateInput = {
+    id?: string
+    subject: string
+    topic?: string | null
+    educationLevel?: string | null
+    date: Date | string
+    startTime: string
+    endTime: string
+    durationMinutes: number
+    status?: string
+    amount?: number
+    paystackReference?: string | null
+    declineReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    student: UserCreateNestedOneWithoutStudentBookingsInput
+    tutor: UserCreateNestedOneWithoutTutorBookingsInput
+    reminders?: BookingReminderCreateNestedManyWithoutBookingInput
+    flags?: SessionFlagCreateNestedManyWithoutBookingInput
+  }
+
+  export type BookingUncheckedCreateInput = {
+    id?: string
+    studentId: string
+    tutorId: string
+    subject: string
+    topic?: string | null
+    educationLevel?: string | null
+    date: Date | string
+    startTime: string
+    endTime: string
+    durationMinutes: number
+    status?: string
+    amount?: number
+    paystackReference?: string | null
+    declineReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    reminders?: BookingReminderUncheckedCreateNestedManyWithoutBookingInput
+    flags?: SessionFlagUncheckedCreateNestedManyWithoutBookingInput
+  }
+
+  export type BookingUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    topic?: NullableStringFieldUpdateOperationsInput | string | null
+    educationLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    paystackReference?: NullableStringFieldUpdateOperationsInput | string | null
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    student?: UserUpdateOneRequiredWithoutStudentBookingsNestedInput
+    tutor?: UserUpdateOneRequiredWithoutTutorBookingsNestedInput
+    reminders?: BookingReminderUpdateManyWithoutBookingNestedInput
+    flags?: SessionFlagUpdateManyWithoutBookingNestedInput
+  }
+
+  export type BookingUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    studentId?: StringFieldUpdateOperationsInput | string
+    tutorId?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    topic?: NullableStringFieldUpdateOperationsInput | string | null
+    educationLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    paystackReference?: NullableStringFieldUpdateOperationsInput | string | null
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reminders?: BookingReminderUncheckedUpdateManyWithoutBookingNestedInput
+    flags?: SessionFlagUncheckedUpdateManyWithoutBookingNestedInput
+  }
+
+  export type BookingCreateManyInput = {
+    id?: string
+    studentId: string
+    tutorId: string
+    subject: string
+    topic?: string | null
+    educationLevel?: string | null
+    date: Date | string
+    startTime: string
+    endTime: string
+    durationMinutes: number
+    status?: string
+    amount?: number
+    paystackReference?: string | null
+    declineReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BookingUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    topic?: NullableStringFieldUpdateOperationsInput | string | null
+    educationLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    paystackReference?: NullableStringFieldUpdateOperationsInput | string | null
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BookingUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    studentId?: StringFieldUpdateOperationsInput | string
+    tutorId?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    topic?: NullableStringFieldUpdateOperationsInput | string | null
+    educationLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    paystackReference?: NullableStringFieldUpdateOperationsInput | string | null
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BookingReminderCreateInput = {
+    id?: string
+    reminderType: string
+    scheduledFor: Date | string
+    sentAt?: Date | string | null
+    channel?: string
+    booking: BookingCreateNestedOneWithoutRemindersInput
+    user: UserCreateNestedOneWithoutBookingRemindersInput
+  }
+
+  export type BookingReminderUncheckedCreateInput = {
+    id?: string
+    bookingId: string
+    userId: string
+    reminderType: string
+    scheduledFor: Date | string
+    sentAt?: Date | string | null
+    channel?: string
+  }
+
+  export type BookingReminderUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reminderType?: StringFieldUpdateOperationsInput | string
+    scheduledFor?: DateTimeFieldUpdateOperationsInput | Date | string
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    channel?: StringFieldUpdateOperationsInput | string
+    booking?: BookingUpdateOneRequiredWithoutRemindersNestedInput
+    user?: UserUpdateOneRequiredWithoutBookingRemindersNestedInput
+  }
+
+  export type BookingReminderUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bookingId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    reminderType?: StringFieldUpdateOperationsInput | string
+    scheduledFor?: DateTimeFieldUpdateOperationsInput | Date | string
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    channel?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type BookingReminderCreateManyInput = {
+    id?: string
+    bookingId: string
+    userId: string
+    reminderType: string
+    scheduledFor: Date | string
+    sentAt?: Date | string | null
+    channel?: string
+  }
+
+  export type BookingReminderUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reminderType?: StringFieldUpdateOperationsInput | string
+    scheduledFor?: DateTimeFieldUpdateOperationsInput | Date | string
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    channel?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type BookingReminderUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bookingId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    reminderType?: StringFieldUpdateOperationsInput | string
+    scheduledFor?: DateTimeFieldUpdateOperationsInput | Date | string
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    channel?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type SessionFlagCreateInput = {
+    id?: string
+    flagType: string
+    createdAt?: Date | string
+    tutor: UserCreateNestedOneWithoutSessionFlagsInput
+    booking: BookingCreateNestedOneWithoutFlagsInput
+  }
+
+  export type SessionFlagUncheckedCreateInput = {
+    id?: string
+    tutorId: string
+    flagType: string
+    bookingId: string
+    createdAt?: Date | string
+  }
+
+  export type SessionFlagUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    flagType?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tutor?: UserUpdateOneRequiredWithoutSessionFlagsNestedInput
+    booking?: BookingUpdateOneRequiredWithoutFlagsNestedInput
+  }
+
+  export type SessionFlagUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tutorId?: StringFieldUpdateOperationsInput | string
+    flagType?: StringFieldUpdateOperationsInput | string
+    bookingId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SessionFlagCreateManyInput = {
+    id?: string
+    tutorId: string
+    flagType: string
+    bookingId: string
+    createdAt?: Date | string
+  }
+
+  export type SessionFlagUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    flagType?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SessionFlagUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tutorId?: StringFieldUpdateOperationsInput | string
+    flagType?: StringFieldUpdateOperationsInput | string
+    bookingId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -59070,6 +64459,30 @@ export namespace Prisma {
     none?: PushSubscriptionWhereInput
   }
 
+  export type TutorAvailabilityListRelationFilter = {
+    every?: TutorAvailabilityWhereInput
+    some?: TutorAvailabilityWhereInput
+    none?: TutorAvailabilityWhereInput
+  }
+
+  export type BookingListRelationFilter = {
+    every?: BookingWhereInput
+    some?: BookingWhereInput
+    none?: BookingWhereInput
+  }
+
+  export type BookingReminderListRelationFilter = {
+    every?: BookingReminderWhereInput
+    some?: BookingReminderWhereInput
+    none?: BookingReminderWhereInput
+  }
+
+  export type SessionFlagListRelationFilter = {
+    every?: SessionFlagWhereInput
+    some?: SessionFlagWhereInput
+    none?: SessionFlagWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -59160,6 +64573,22 @@ export namespace Prisma {
   }
 
   export type PushSubscriptionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type TutorAvailabilityOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type BookingOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type BookingReminderOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type SessionFlagOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -61406,6 +66835,176 @@ export namespace Prisma {
     fileSize?: SortOrder
   }
 
+  export type TutorAvailabilityCountOrderByAggregateInput = {
+    id?: SortOrder
+    tutorId?: SortOrder
+    dayOfWeek?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    isRecurring?: SortOrder
+    specificDate?: SortOrder
+    isBlocked?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type TutorAvailabilityAvgOrderByAggregateInput = {
+    dayOfWeek?: SortOrder
+  }
+
+  export type TutorAvailabilityMaxOrderByAggregateInput = {
+    id?: SortOrder
+    tutorId?: SortOrder
+    dayOfWeek?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    isRecurring?: SortOrder
+    specificDate?: SortOrder
+    isBlocked?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type TutorAvailabilityMinOrderByAggregateInput = {
+    id?: SortOrder
+    tutorId?: SortOrder
+    dayOfWeek?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    isRecurring?: SortOrder
+    specificDate?: SortOrder
+    isBlocked?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type TutorAvailabilitySumOrderByAggregateInput = {
+    dayOfWeek?: SortOrder
+  }
+
+  export type BookingCountOrderByAggregateInput = {
+    id?: SortOrder
+    studentId?: SortOrder
+    tutorId?: SortOrder
+    subject?: SortOrder
+    topic?: SortOrder
+    educationLevel?: SortOrder
+    date?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    durationMinutes?: SortOrder
+    status?: SortOrder
+    amount?: SortOrder
+    paystackReference?: SortOrder
+    declineReason?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BookingAvgOrderByAggregateInput = {
+    durationMinutes?: SortOrder
+    amount?: SortOrder
+  }
+
+  export type BookingMaxOrderByAggregateInput = {
+    id?: SortOrder
+    studentId?: SortOrder
+    tutorId?: SortOrder
+    subject?: SortOrder
+    topic?: SortOrder
+    educationLevel?: SortOrder
+    date?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    durationMinutes?: SortOrder
+    status?: SortOrder
+    amount?: SortOrder
+    paystackReference?: SortOrder
+    declineReason?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BookingMinOrderByAggregateInput = {
+    id?: SortOrder
+    studentId?: SortOrder
+    tutorId?: SortOrder
+    subject?: SortOrder
+    topic?: SortOrder
+    educationLevel?: SortOrder
+    date?: SortOrder
+    startTime?: SortOrder
+    endTime?: SortOrder
+    durationMinutes?: SortOrder
+    status?: SortOrder
+    amount?: SortOrder
+    paystackReference?: SortOrder
+    declineReason?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BookingSumOrderByAggregateInput = {
+    durationMinutes?: SortOrder
+    amount?: SortOrder
+  }
+
+  export type BookingRelationFilter = {
+    is?: BookingWhereInput
+    isNot?: BookingWhereInput
+  }
+
+  export type BookingReminderCountOrderByAggregateInput = {
+    id?: SortOrder
+    bookingId?: SortOrder
+    userId?: SortOrder
+    reminderType?: SortOrder
+    scheduledFor?: SortOrder
+    sentAt?: SortOrder
+    channel?: SortOrder
+  }
+
+  export type BookingReminderMaxOrderByAggregateInput = {
+    id?: SortOrder
+    bookingId?: SortOrder
+    userId?: SortOrder
+    reminderType?: SortOrder
+    scheduledFor?: SortOrder
+    sentAt?: SortOrder
+    channel?: SortOrder
+  }
+
+  export type BookingReminderMinOrderByAggregateInput = {
+    id?: SortOrder
+    bookingId?: SortOrder
+    userId?: SortOrder
+    reminderType?: SortOrder
+    scheduledFor?: SortOrder
+    sentAt?: SortOrder
+    channel?: SortOrder
+  }
+
+  export type SessionFlagCountOrderByAggregateInput = {
+    id?: SortOrder
+    tutorId?: SortOrder
+    flagType?: SortOrder
+    bookingId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type SessionFlagMaxOrderByAggregateInput = {
+    id?: SortOrder
+    tutorId?: SortOrder
+    flagType?: SortOrder
+    bookingId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type SessionFlagMinOrderByAggregateInput = {
+    id?: SortOrder
+    tutorId?: SortOrder
+    flagType?: SortOrder
+    bookingId?: SortOrder
+    createdAt?: SortOrder
+  }
+
   export type AchievementCreateNestedManyWithoutUserInput = {
     create?: XOR<AchievementCreateWithoutUserInput, AchievementUncheckedCreateWithoutUserInput> | AchievementCreateWithoutUserInput[] | AchievementUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AchievementCreateOrConnectWithoutUserInput | AchievementCreateOrConnectWithoutUserInput[]
@@ -61611,6 +67210,41 @@ export namespace Prisma {
     connect?: PushSubscriptionWhereUniqueInput | PushSubscriptionWhereUniqueInput[]
   }
 
+  export type TutorAvailabilityCreateNestedManyWithoutTutorInput = {
+    create?: XOR<TutorAvailabilityCreateWithoutTutorInput, TutorAvailabilityUncheckedCreateWithoutTutorInput> | TutorAvailabilityCreateWithoutTutorInput[] | TutorAvailabilityUncheckedCreateWithoutTutorInput[]
+    connectOrCreate?: TutorAvailabilityCreateOrConnectWithoutTutorInput | TutorAvailabilityCreateOrConnectWithoutTutorInput[]
+    createMany?: TutorAvailabilityCreateManyTutorInputEnvelope
+    connect?: TutorAvailabilityWhereUniqueInput | TutorAvailabilityWhereUniqueInput[]
+  }
+
+  export type BookingCreateNestedManyWithoutStudentInput = {
+    create?: XOR<BookingCreateWithoutStudentInput, BookingUncheckedCreateWithoutStudentInput> | BookingCreateWithoutStudentInput[] | BookingUncheckedCreateWithoutStudentInput[]
+    connectOrCreate?: BookingCreateOrConnectWithoutStudentInput | BookingCreateOrConnectWithoutStudentInput[]
+    createMany?: BookingCreateManyStudentInputEnvelope
+    connect?: BookingWhereUniqueInput | BookingWhereUniqueInput[]
+  }
+
+  export type BookingCreateNestedManyWithoutTutorInput = {
+    create?: XOR<BookingCreateWithoutTutorInput, BookingUncheckedCreateWithoutTutorInput> | BookingCreateWithoutTutorInput[] | BookingUncheckedCreateWithoutTutorInput[]
+    connectOrCreate?: BookingCreateOrConnectWithoutTutorInput | BookingCreateOrConnectWithoutTutorInput[]
+    createMany?: BookingCreateManyTutorInputEnvelope
+    connect?: BookingWhereUniqueInput | BookingWhereUniqueInput[]
+  }
+
+  export type BookingReminderCreateNestedManyWithoutUserInput = {
+    create?: XOR<BookingReminderCreateWithoutUserInput, BookingReminderUncheckedCreateWithoutUserInput> | BookingReminderCreateWithoutUserInput[] | BookingReminderUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: BookingReminderCreateOrConnectWithoutUserInput | BookingReminderCreateOrConnectWithoutUserInput[]
+    createMany?: BookingReminderCreateManyUserInputEnvelope
+    connect?: BookingReminderWhereUniqueInput | BookingReminderWhereUniqueInput[]
+  }
+
+  export type SessionFlagCreateNestedManyWithoutTutorInput = {
+    create?: XOR<SessionFlagCreateWithoutTutorInput, SessionFlagUncheckedCreateWithoutTutorInput> | SessionFlagCreateWithoutTutorInput[] | SessionFlagUncheckedCreateWithoutTutorInput[]
+    connectOrCreate?: SessionFlagCreateOrConnectWithoutTutorInput | SessionFlagCreateOrConnectWithoutTutorInput[]
+    createMany?: SessionFlagCreateManyTutorInputEnvelope
+    connect?: SessionFlagWhereUniqueInput | SessionFlagWhereUniqueInput[]
+  }
+
   export type AchievementUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AchievementCreateWithoutUserInput, AchievementUncheckedCreateWithoutUserInput> | AchievementCreateWithoutUserInput[] | AchievementUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AchievementCreateOrConnectWithoutUserInput | AchievementCreateOrConnectWithoutUserInput[]
@@ -61814,6 +67448,41 @@ export namespace Prisma {
     connectOrCreate?: PushSubscriptionCreateOrConnectWithoutUserInput | PushSubscriptionCreateOrConnectWithoutUserInput[]
     createMany?: PushSubscriptionCreateManyUserInputEnvelope
     connect?: PushSubscriptionWhereUniqueInput | PushSubscriptionWhereUniqueInput[]
+  }
+
+  export type TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput = {
+    create?: XOR<TutorAvailabilityCreateWithoutTutorInput, TutorAvailabilityUncheckedCreateWithoutTutorInput> | TutorAvailabilityCreateWithoutTutorInput[] | TutorAvailabilityUncheckedCreateWithoutTutorInput[]
+    connectOrCreate?: TutorAvailabilityCreateOrConnectWithoutTutorInput | TutorAvailabilityCreateOrConnectWithoutTutorInput[]
+    createMany?: TutorAvailabilityCreateManyTutorInputEnvelope
+    connect?: TutorAvailabilityWhereUniqueInput | TutorAvailabilityWhereUniqueInput[]
+  }
+
+  export type BookingUncheckedCreateNestedManyWithoutStudentInput = {
+    create?: XOR<BookingCreateWithoutStudentInput, BookingUncheckedCreateWithoutStudentInput> | BookingCreateWithoutStudentInput[] | BookingUncheckedCreateWithoutStudentInput[]
+    connectOrCreate?: BookingCreateOrConnectWithoutStudentInput | BookingCreateOrConnectWithoutStudentInput[]
+    createMany?: BookingCreateManyStudentInputEnvelope
+    connect?: BookingWhereUniqueInput | BookingWhereUniqueInput[]
+  }
+
+  export type BookingUncheckedCreateNestedManyWithoutTutorInput = {
+    create?: XOR<BookingCreateWithoutTutorInput, BookingUncheckedCreateWithoutTutorInput> | BookingCreateWithoutTutorInput[] | BookingUncheckedCreateWithoutTutorInput[]
+    connectOrCreate?: BookingCreateOrConnectWithoutTutorInput | BookingCreateOrConnectWithoutTutorInput[]
+    createMany?: BookingCreateManyTutorInputEnvelope
+    connect?: BookingWhereUniqueInput | BookingWhereUniqueInput[]
+  }
+
+  export type BookingReminderUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<BookingReminderCreateWithoutUserInput, BookingReminderUncheckedCreateWithoutUserInput> | BookingReminderCreateWithoutUserInput[] | BookingReminderUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: BookingReminderCreateOrConnectWithoutUserInput | BookingReminderCreateOrConnectWithoutUserInput[]
+    createMany?: BookingReminderCreateManyUserInputEnvelope
+    connect?: BookingReminderWhereUniqueInput | BookingReminderWhereUniqueInput[]
+  }
+
+  export type SessionFlagUncheckedCreateNestedManyWithoutTutorInput = {
+    create?: XOR<SessionFlagCreateWithoutTutorInput, SessionFlagUncheckedCreateWithoutTutorInput> | SessionFlagCreateWithoutTutorInput[] | SessionFlagUncheckedCreateWithoutTutorInput[]
+    connectOrCreate?: SessionFlagCreateOrConnectWithoutTutorInput | SessionFlagCreateOrConnectWithoutTutorInput[]
+    createMany?: SessionFlagCreateManyTutorInputEnvelope
+    connect?: SessionFlagWhereUniqueInput | SessionFlagWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -62268,6 +67937,76 @@ export namespace Prisma {
     deleteMany?: PushSubscriptionScalarWhereInput | PushSubscriptionScalarWhereInput[]
   }
 
+  export type TutorAvailabilityUpdateManyWithoutTutorNestedInput = {
+    create?: XOR<TutorAvailabilityCreateWithoutTutorInput, TutorAvailabilityUncheckedCreateWithoutTutorInput> | TutorAvailabilityCreateWithoutTutorInput[] | TutorAvailabilityUncheckedCreateWithoutTutorInput[]
+    connectOrCreate?: TutorAvailabilityCreateOrConnectWithoutTutorInput | TutorAvailabilityCreateOrConnectWithoutTutorInput[]
+    upsert?: TutorAvailabilityUpsertWithWhereUniqueWithoutTutorInput | TutorAvailabilityUpsertWithWhereUniqueWithoutTutorInput[]
+    createMany?: TutorAvailabilityCreateManyTutorInputEnvelope
+    set?: TutorAvailabilityWhereUniqueInput | TutorAvailabilityWhereUniqueInput[]
+    disconnect?: TutorAvailabilityWhereUniqueInput | TutorAvailabilityWhereUniqueInput[]
+    delete?: TutorAvailabilityWhereUniqueInput | TutorAvailabilityWhereUniqueInput[]
+    connect?: TutorAvailabilityWhereUniqueInput | TutorAvailabilityWhereUniqueInput[]
+    update?: TutorAvailabilityUpdateWithWhereUniqueWithoutTutorInput | TutorAvailabilityUpdateWithWhereUniqueWithoutTutorInput[]
+    updateMany?: TutorAvailabilityUpdateManyWithWhereWithoutTutorInput | TutorAvailabilityUpdateManyWithWhereWithoutTutorInput[]
+    deleteMany?: TutorAvailabilityScalarWhereInput | TutorAvailabilityScalarWhereInput[]
+  }
+
+  export type BookingUpdateManyWithoutStudentNestedInput = {
+    create?: XOR<BookingCreateWithoutStudentInput, BookingUncheckedCreateWithoutStudentInput> | BookingCreateWithoutStudentInput[] | BookingUncheckedCreateWithoutStudentInput[]
+    connectOrCreate?: BookingCreateOrConnectWithoutStudentInput | BookingCreateOrConnectWithoutStudentInput[]
+    upsert?: BookingUpsertWithWhereUniqueWithoutStudentInput | BookingUpsertWithWhereUniqueWithoutStudentInput[]
+    createMany?: BookingCreateManyStudentInputEnvelope
+    set?: BookingWhereUniqueInput | BookingWhereUniqueInput[]
+    disconnect?: BookingWhereUniqueInput | BookingWhereUniqueInput[]
+    delete?: BookingWhereUniqueInput | BookingWhereUniqueInput[]
+    connect?: BookingWhereUniqueInput | BookingWhereUniqueInput[]
+    update?: BookingUpdateWithWhereUniqueWithoutStudentInput | BookingUpdateWithWhereUniqueWithoutStudentInput[]
+    updateMany?: BookingUpdateManyWithWhereWithoutStudentInput | BookingUpdateManyWithWhereWithoutStudentInput[]
+    deleteMany?: BookingScalarWhereInput | BookingScalarWhereInput[]
+  }
+
+  export type BookingUpdateManyWithoutTutorNestedInput = {
+    create?: XOR<BookingCreateWithoutTutorInput, BookingUncheckedCreateWithoutTutorInput> | BookingCreateWithoutTutorInput[] | BookingUncheckedCreateWithoutTutorInput[]
+    connectOrCreate?: BookingCreateOrConnectWithoutTutorInput | BookingCreateOrConnectWithoutTutorInput[]
+    upsert?: BookingUpsertWithWhereUniqueWithoutTutorInput | BookingUpsertWithWhereUniqueWithoutTutorInput[]
+    createMany?: BookingCreateManyTutorInputEnvelope
+    set?: BookingWhereUniqueInput | BookingWhereUniqueInput[]
+    disconnect?: BookingWhereUniqueInput | BookingWhereUniqueInput[]
+    delete?: BookingWhereUniqueInput | BookingWhereUniqueInput[]
+    connect?: BookingWhereUniqueInput | BookingWhereUniqueInput[]
+    update?: BookingUpdateWithWhereUniqueWithoutTutorInput | BookingUpdateWithWhereUniqueWithoutTutorInput[]
+    updateMany?: BookingUpdateManyWithWhereWithoutTutorInput | BookingUpdateManyWithWhereWithoutTutorInput[]
+    deleteMany?: BookingScalarWhereInput | BookingScalarWhereInput[]
+  }
+
+  export type BookingReminderUpdateManyWithoutUserNestedInput = {
+    create?: XOR<BookingReminderCreateWithoutUserInput, BookingReminderUncheckedCreateWithoutUserInput> | BookingReminderCreateWithoutUserInput[] | BookingReminderUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: BookingReminderCreateOrConnectWithoutUserInput | BookingReminderCreateOrConnectWithoutUserInput[]
+    upsert?: BookingReminderUpsertWithWhereUniqueWithoutUserInput | BookingReminderUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: BookingReminderCreateManyUserInputEnvelope
+    set?: BookingReminderWhereUniqueInput | BookingReminderWhereUniqueInput[]
+    disconnect?: BookingReminderWhereUniqueInput | BookingReminderWhereUniqueInput[]
+    delete?: BookingReminderWhereUniqueInput | BookingReminderWhereUniqueInput[]
+    connect?: BookingReminderWhereUniqueInput | BookingReminderWhereUniqueInput[]
+    update?: BookingReminderUpdateWithWhereUniqueWithoutUserInput | BookingReminderUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: BookingReminderUpdateManyWithWhereWithoutUserInput | BookingReminderUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: BookingReminderScalarWhereInput | BookingReminderScalarWhereInput[]
+  }
+
+  export type SessionFlagUpdateManyWithoutTutorNestedInput = {
+    create?: XOR<SessionFlagCreateWithoutTutorInput, SessionFlagUncheckedCreateWithoutTutorInput> | SessionFlagCreateWithoutTutorInput[] | SessionFlagUncheckedCreateWithoutTutorInput[]
+    connectOrCreate?: SessionFlagCreateOrConnectWithoutTutorInput | SessionFlagCreateOrConnectWithoutTutorInput[]
+    upsert?: SessionFlagUpsertWithWhereUniqueWithoutTutorInput | SessionFlagUpsertWithWhereUniqueWithoutTutorInput[]
+    createMany?: SessionFlagCreateManyTutorInputEnvelope
+    set?: SessionFlagWhereUniqueInput | SessionFlagWhereUniqueInput[]
+    disconnect?: SessionFlagWhereUniqueInput | SessionFlagWhereUniqueInput[]
+    delete?: SessionFlagWhereUniqueInput | SessionFlagWhereUniqueInput[]
+    connect?: SessionFlagWhereUniqueInput | SessionFlagWhereUniqueInput[]
+    update?: SessionFlagUpdateWithWhereUniqueWithoutTutorInput | SessionFlagUpdateWithWhereUniqueWithoutTutorInput[]
+    updateMany?: SessionFlagUpdateManyWithWhereWithoutTutorInput | SessionFlagUpdateManyWithWhereWithoutTutorInput[]
+    deleteMany?: SessionFlagScalarWhereInput | SessionFlagScalarWhereInput[]
+  }
+
   export type AchievementUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AchievementCreateWithoutUserInput, AchievementUncheckedCreateWithoutUserInput> | AchievementCreateWithoutUserInput[] | AchievementUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AchievementCreateOrConnectWithoutUserInput | AchievementCreateOrConnectWithoutUserInput[]
@@ -62666,6 +68405,76 @@ export namespace Prisma {
     update?: PushSubscriptionUpdateWithWhereUniqueWithoutUserInput | PushSubscriptionUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: PushSubscriptionUpdateManyWithWhereWithoutUserInput | PushSubscriptionUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: PushSubscriptionScalarWhereInput | PushSubscriptionScalarWhereInput[]
+  }
+
+  export type TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput = {
+    create?: XOR<TutorAvailabilityCreateWithoutTutorInput, TutorAvailabilityUncheckedCreateWithoutTutorInput> | TutorAvailabilityCreateWithoutTutorInput[] | TutorAvailabilityUncheckedCreateWithoutTutorInput[]
+    connectOrCreate?: TutorAvailabilityCreateOrConnectWithoutTutorInput | TutorAvailabilityCreateOrConnectWithoutTutorInput[]
+    upsert?: TutorAvailabilityUpsertWithWhereUniqueWithoutTutorInput | TutorAvailabilityUpsertWithWhereUniqueWithoutTutorInput[]
+    createMany?: TutorAvailabilityCreateManyTutorInputEnvelope
+    set?: TutorAvailabilityWhereUniqueInput | TutorAvailabilityWhereUniqueInput[]
+    disconnect?: TutorAvailabilityWhereUniqueInput | TutorAvailabilityWhereUniqueInput[]
+    delete?: TutorAvailabilityWhereUniqueInput | TutorAvailabilityWhereUniqueInput[]
+    connect?: TutorAvailabilityWhereUniqueInput | TutorAvailabilityWhereUniqueInput[]
+    update?: TutorAvailabilityUpdateWithWhereUniqueWithoutTutorInput | TutorAvailabilityUpdateWithWhereUniqueWithoutTutorInput[]
+    updateMany?: TutorAvailabilityUpdateManyWithWhereWithoutTutorInput | TutorAvailabilityUpdateManyWithWhereWithoutTutorInput[]
+    deleteMany?: TutorAvailabilityScalarWhereInput | TutorAvailabilityScalarWhereInput[]
+  }
+
+  export type BookingUncheckedUpdateManyWithoutStudentNestedInput = {
+    create?: XOR<BookingCreateWithoutStudentInput, BookingUncheckedCreateWithoutStudentInput> | BookingCreateWithoutStudentInput[] | BookingUncheckedCreateWithoutStudentInput[]
+    connectOrCreate?: BookingCreateOrConnectWithoutStudentInput | BookingCreateOrConnectWithoutStudentInput[]
+    upsert?: BookingUpsertWithWhereUniqueWithoutStudentInput | BookingUpsertWithWhereUniqueWithoutStudentInput[]
+    createMany?: BookingCreateManyStudentInputEnvelope
+    set?: BookingWhereUniqueInput | BookingWhereUniqueInput[]
+    disconnect?: BookingWhereUniqueInput | BookingWhereUniqueInput[]
+    delete?: BookingWhereUniqueInput | BookingWhereUniqueInput[]
+    connect?: BookingWhereUniqueInput | BookingWhereUniqueInput[]
+    update?: BookingUpdateWithWhereUniqueWithoutStudentInput | BookingUpdateWithWhereUniqueWithoutStudentInput[]
+    updateMany?: BookingUpdateManyWithWhereWithoutStudentInput | BookingUpdateManyWithWhereWithoutStudentInput[]
+    deleteMany?: BookingScalarWhereInput | BookingScalarWhereInput[]
+  }
+
+  export type BookingUncheckedUpdateManyWithoutTutorNestedInput = {
+    create?: XOR<BookingCreateWithoutTutorInput, BookingUncheckedCreateWithoutTutorInput> | BookingCreateWithoutTutorInput[] | BookingUncheckedCreateWithoutTutorInput[]
+    connectOrCreate?: BookingCreateOrConnectWithoutTutorInput | BookingCreateOrConnectWithoutTutorInput[]
+    upsert?: BookingUpsertWithWhereUniqueWithoutTutorInput | BookingUpsertWithWhereUniqueWithoutTutorInput[]
+    createMany?: BookingCreateManyTutorInputEnvelope
+    set?: BookingWhereUniqueInput | BookingWhereUniqueInput[]
+    disconnect?: BookingWhereUniqueInput | BookingWhereUniqueInput[]
+    delete?: BookingWhereUniqueInput | BookingWhereUniqueInput[]
+    connect?: BookingWhereUniqueInput | BookingWhereUniqueInput[]
+    update?: BookingUpdateWithWhereUniqueWithoutTutorInput | BookingUpdateWithWhereUniqueWithoutTutorInput[]
+    updateMany?: BookingUpdateManyWithWhereWithoutTutorInput | BookingUpdateManyWithWhereWithoutTutorInput[]
+    deleteMany?: BookingScalarWhereInput | BookingScalarWhereInput[]
+  }
+
+  export type BookingReminderUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<BookingReminderCreateWithoutUserInput, BookingReminderUncheckedCreateWithoutUserInput> | BookingReminderCreateWithoutUserInput[] | BookingReminderUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: BookingReminderCreateOrConnectWithoutUserInput | BookingReminderCreateOrConnectWithoutUserInput[]
+    upsert?: BookingReminderUpsertWithWhereUniqueWithoutUserInput | BookingReminderUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: BookingReminderCreateManyUserInputEnvelope
+    set?: BookingReminderWhereUniqueInput | BookingReminderWhereUniqueInput[]
+    disconnect?: BookingReminderWhereUniqueInput | BookingReminderWhereUniqueInput[]
+    delete?: BookingReminderWhereUniqueInput | BookingReminderWhereUniqueInput[]
+    connect?: BookingReminderWhereUniqueInput | BookingReminderWhereUniqueInput[]
+    update?: BookingReminderUpdateWithWhereUniqueWithoutUserInput | BookingReminderUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: BookingReminderUpdateManyWithWhereWithoutUserInput | BookingReminderUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: BookingReminderScalarWhereInput | BookingReminderScalarWhereInput[]
+  }
+
+  export type SessionFlagUncheckedUpdateManyWithoutTutorNestedInput = {
+    create?: XOR<SessionFlagCreateWithoutTutorInput, SessionFlagUncheckedCreateWithoutTutorInput> | SessionFlagCreateWithoutTutorInput[] | SessionFlagUncheckedCreateWithoutTutorInput[]
+    connectOrCreate?: SessionFlagCreateOrConnectWithoutTutorInput | SessionFlagCreateOrConnectWithoutTutorInput[]
+    upsert?: SessionFlagUpsertWithWhereUniqueWithoutTutorInput | SessionFlagUpsertWithWhereUniqueWithoutTutorInput[]
+    createMany?: SessionFlagCreateManyTutorInputEnvelope
+    set?: SessionFlagWhereUniqueInput | SessionFlagWhereUniqueInput[]
+    disconnect?: SessionFlagWhereUniqueInput | SessionFlagWhereUniqueInput[]
+    delete?: SessionFlagWhereUniqueInput | SessionFlagWhereUniqueInput[]
+    connect?: SessionFlagWhereUniqueInput | SessionFlagWhereUniqueInput[]
+    update?: SessionFlagUpdateWithWhereUniqueWithoutTutorInput | SessionFlagUpdateWithWhereUniqueWithoutTutorInput[]
+    updateMany?: SessionFlagUpdateManyWithWhereWithoutTutorInput | SessionFlagUpdateManyWithWhereWithoutTutorInput[]
+    deleteMany?: SessionFlagScalarWhereInput | SessionFlagScalarWhereInput[]
   }
 
   export type StudentProfileCreatesubjectsInput = {
@@ -64056,6 +69865,188 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutUploadedDocumentsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutUploadedDocumentsInput, UserUpdateWithoutUploadedDocumentsInput>, UserUncheckedUpdateWithoutUploadedDocumentsInput>
+  }
+
+  export type UserCreateNestedOneWithoutTutorAvailabilitiesInput = {
+    create?: XOR<UserCreateWithoutTutorAvailabilitiesInput, UserUncheckedCreateWithoutTutorAvailabilitiesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTutorAvailabilitiesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutTutorAvailabilitiesNestedInput = {
+    create?: XOR<UserCreateWithoutTutorAvailabilitiesInput, UserUncheckedCreateWithoutTutorAvailabilitiesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTutorAvailabilitiesInput
+    upsert?: UserUpsertWithoutTutorAvailabilitiesInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTutorAvailabilitiesInput, UserUpdateWithoutTutorAvailabilitiesInput>, UserUncheckedUpdateWithoutTutorAvailabilitiesInput>
+  }
+
+  export type UserCreateNestedOneWithoutStudentBookingsInput = {
+    create?: XOR<UserCreateWithoutStudentBookingsInput, UserUncheckedCreateWithoutStudentBookingsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutStudentBookingsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutTutorBookingsInput = {
+    create?: XOR<UserCreateWithoutTutorBookingsInput, UserUncheckedCreateWithoutTutorBookingsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTutorBookingsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type BookingReminderCreateNestedManyWithoutBookingInput = {
+    create?: XOR<BookingReminderCreateWithoutBookingInput, BookingReminderUncheckedCreateWithoutBookingInput> | BookingReminderCreateWithoutBookingInput[] | BookingReminderUncheckedCreateWithoutBookingInput[]
+    connectOrCreate?: BookingReminderCreateOrConnectWithoutBookingInput | BookingReminderCreateOrConnectWithoutBookingInput[]
+    createMany?: BookingReminderCreateManyBookingInputEnvelope
+    connect?: BookingReminderWhereUniqueInput | BookingReminderWhereUniqueInput[]
+  }
+
+  export type SessionFlagCreateNestedManyWithoutBookingInput = {
+    create?: XOR<SessionFlagCreateWithoutBookingInput, SessionFlagUncheckedCreateWithoutBookingInput> | SessionFlagCreateWithoutBookingInput[] | SessionFlagUncheckedCreateWithoutBookingInput[]
+    connectOrCreate?: SessionFlagCreateOrConnectWithoutBookingInput | SessionFlagCreateOrConnectWithoutBookingInput[]
+    createMany?: SessionFlagCreateManyBookingInputEnvelope
+    connect?: SessionFlagWhereUniqueInput | SessionFlagWhereUniqueInput[]
+  }
+
+  export type BookingReminderUncheckedCreateNestedManyWithoutBookingInput = {
+    create?: XOR<BookingReminderCreateWithoutBookingInput, BookingReminderUncheckedCreateWithoutBookingInput> | BookingReminderCreateWithoutBookingInput[] | BookingReminderUncheckedCreateWithoutBookingInput[]
+    connectOrCreate?: BookingReminderCreateOrConnectWithoutBookingInput | BookingReminderCreateOrConnectWithoutBookingInput[]
+    createMany?: BookingReminderCreateManyBookingInputEnvelope
+    connect?: BookingReminderWhereUniqueInput | BookingReminderWhereUniqueInput[]
+  }
+
+  export type SessionFlagUncheckedCreateNestedManyWithoutBookingInput = {
+    create?: XOR<SessionFlagCreateWithoutBookingInput, SessionFlagUncheckedCreateWithoutBookingInput> | SessionFlagCreateWithoutBookingInput[] | SessionFlagUncheckedCreateWithoutBookingInput[]
+    connectOrCreate?: SessionFlagCreateOrConnectWithoutBookingInput | SessionFlagCreateOrConnectWithoutBookingInput[]
+    createMany?: SessionFlagCreateManyBookingInputEnvelope
+    connect?: SessionFlagWhereUniqueInput | SessionFlagWhereUniqueInput[]
+  }
+
+  export type UserUpdateOneRequiredWithoutStudentBookingsNestedInput = {
+    create?: XOR<UserCreateWithoutStudentBookingsInput, UserUncheckedCreateWithoutStudentBookingsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutStudentBookingsInput
+    upsert?: UserUpsertWithoutStudentBookingsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutStudentBookingsInput, UserUpdateWithoutStudentBookingsInput>, UserUncheckedUpdateWithoutStudentBookingsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutTutorBookingsNestedInput = {
+    create?: XOR<UserCreateWithoutTutorBookingsInput, UserUncheckedCreateWithoutTutorBookingsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTutorBookingsInput
+    upsert?: UserUpsertWithoutTutorBookingsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTutorBookingsInput, UserUpdateWithoutTutorBookingsInput>, UserUncheckedUpdateWithoutTutorBookingsInput>
+  }
+
+  export type BookingReminderUpdateManyWithoutBookingNestedInput = {
+    create?: XOR<BookingReminderCreateWithoutBookingInput, BookingReminderUncheckedCreateWithoutBookingInput> | BookingReminderCreateWithoutBookingInput[] | BookingReminderUncheckedCreateWithoutBookingInput[]
+    connectOrCreate?: BookingReminderCreateOrConnectWithoutBookingInput | BookingReminderCreateOrConnectWithoutBookingInput[]
+    upsert?: BookingReminderUpsertWithWhereUniqueWithoutBookingInput | BookingReminderUpsertWithWhereUniqueWithoutBookingInput[]
+    createMany?: BookingReminderCreateManyBookingInputEnvelope
+    set?: BookingReminderWhereUniqueInput | BookingReminderWhereUniqueInput[]
+    disconnect?: BookingReminderWhereUniqueInput | BookingReminderWhereUniqueInput[]
+    delete?: BookingReminderWhereUniqueInput | BookingReminderWhereUniqueInput[]
+    connect?: BookingReminderWhereUniqueInput | BookingReminderWhereUniqueInput[]
+    update?: BookingReminderUpdateWithWhereUniqueWithoutBookingInput | BookingReminderUpdateWithWhereUniqueWithoutBookingInput[]
+    updateMany?: BookingReminderUpdateManyWithWhereWithoutBookingInput | BookingReminderUpdateManyWithWhereWithoutBookingInput[]
+    deleteMany?: BookingReminderScalarWhereInput | BookingReminderScalarWhereInput[]
+  }
+
+  export type SessionFlagUpdateManyWithoutBookingNestedInput = {
+    create?: XOR<SessionFlagCreateWithoutBookingInput, SessionFlagUncheckedCreateWithoutBookingInput> | SessionFlagCreateWithoutBookingInput[] | SessionFlagUncheckedCreateWithoutBookingInput[]
+    connectOrCreate?: SessionFlagCreateOrConnectWithoutBookingInput | SessionFlagCreateOrConnectWithoutBookingInput[]
+    upsert?: SessionFlagUpsertWithWhereUniqueWithoutBookingInput | SessionFlagUpsertWithWhereUniqueWithoutBookingInput[]
+    createMany?: SessionFlagCreateManyBookingInputEnvelope
+    set?: SessionFlagWhereUniqueInput | SessionFlagWhereUniqueInput[]
+    disconnect?: SessionFlagWhereUniqueInput | SessionFlagWhereUniqueInput[]
+    delete?: SessionFlagWhereUniqueInput | SessionFlagWhereUniqueInput[]
+    connect?: SessionFlagWhereUniqueInput | SessionFlagWhereUniqueInput[]
+    update?: SessionFlagUpdateWithWhereUniqueWithoutBookingInput | SessionFlagUpdateWithWhereUniqueWithoutBookingInput[]
+    updateMany?: SessionFlagUpdateManyWithWhereWithoutBookingInput | SessionFlagUpdateManyWithWhereWithoutBookingInput[]
+    deleteMany?: SessionFlagScalarWhereInput | SessionFlagScalarWhereInput[]
+  }
+
+  export type BookingReminderUncheckedUpdateManyWithoutBookingNestedInput = {
+    create?: XOR<BookingReminderCreateWithoutBookingInput, BookingReminderUncheckedCreateWithoutBookingInput> | BookingReminderCreateWithoutBookingInput[] | BookingReminderUncheckedCreateWithoutBookingInput[]
+    connectOrCreate?: BookingReminderCreateOrConnectWithoutBookingInput | BookingReminderCreateOrConnectWithoutBookingInput[]
+    upsert?: BookingReminderUpsertWithWhereUniqueWithoutBookingInput | BookingReminderUpsertWithWhereUniqueWithoutBookingInput[]
+    createMany?: BookingReminderCreateManyBookingInputEnvelope
+    set?: BookingReminderWhereUniqueInput | BookingReminderWhereUniqueInput[]
+    disconnect?: BookingReminderWhereUniqueInput | BookingReminderWhereUniqueInput[]
+    delete?: BookingReminderWhereUniqueInput | BookingReminderWhereUniqueInput[]
+    connect?: BookingReminderWhereUniqueInput | BookingReminderWhereUniqueInput[]
+    update?: BookingReminderUpdateWithWhereUniqueWithoutBookingInput | BookingReminderUpdateWithWhereUniqueWithoutBookingInput[]
+    updateMany?: BookingReminderUpdateManyWithWhereWithoutBookingInput | BookingReminderUpdateManyWithWhereWithoutBookingInput[]
+    deleteMany?: BookingReminderScalarWhereInput | BookingReminderScalarWhereInput[]
+  }
+
+  export type SessionFlagUncheckedUpdateManyWithoutBookingNestedInput = {
+    create?: XOR<SessionFlagCreateWithoutBookingInput, SessionFlagUncheckedCreateWithoutBookingInput> | SessionFlagCreateWithoutBookingInput[] | SessionFlagUncheckedCreateWithoutBookingInput[]
+    connectOrCreate?: SessionFlagCreateOrConnectWithoutBookingInput | SessionFlagCreateOrConnectWithoutBookingInput[]
+    upsert?: SessionFlagUpsertWithWhereUniqueWithoutBookingInput | SessionFlagUpsertWithWhereUniqueWithoutBookingInput[]
+    createMany?: SessionFlagCreateManyBookingInputEnvelope
+    set?: SessionFlagWhereUniqueInput | SessionFlagWhereUniqueInput[]
+    disconnect?: SessionFlagWhereUniqueInput | SessionFlagWhereUniqueInput[]
+    delete?: SessionFlagWhereUniqueInput | SessionFlagWhereUniqueInput[]
+    connect?: SessionFlagWhereUniqueInput | SessionFlagWhereUniqueInput[]
+    update?: SessionFlagUpdateWithWhereUniqueWithoutBookingInput | SessionFlagUpdateWithWhereUniqueWithoutBookingInput[]
+    updateMany?: SessionFlagUpdateManyWithWhereWithoutBookingInput | SessionFlagUpdateManyWithWhereWithoutBookingInput[]
+    deleteMany?: SessionFlagScalarWhereInput | SessionFlagScalarWhereInput[]
+  }
+
+  export type BookingCreateNestedOneWithoutRemindersInput = {
+    create?: XOR<BookingCreateWithoutRemindersInput, BookingUncheckedCreateWithoutRemindersInput>
+    connectOrCreate?: BookingCreateOrConnectWithoutRemindersInput
+    connect?: BookingWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutBookingRemindersInput = {
+    create?: XOR<UserCreateWithoutBookingRemindersInput, UserUncheckedCreateWithoutBookingRemindersInput>
+    connectOrCreate?: UserCreateOrConnectWithoutBookingRemindersInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type BookingUpdateOneRequiredWithoutRemindersNestedInput = {
+    create?: XOR<BookingCreateWithoutRemindersInput, BookingUncheckedCreateWithoutRemindersInput>
+    connectOrCreate?: BookingCreateOrConnectWithoutRemindersInput
+    upsert?: BookingUpsertWithoutRemindersInput
+    connect?: BookingWhereUniqueInput
+    update?: XOR<XOR<BookingUpdateToOneWithWhereWithoutRemindersInput, BookingUpdateWithoutRemindersInput>, BookingUncheckedUpdateWithoutRemindersInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutBookingRemindersNestedInput = {
+    create?: XOR<UserCreateWithoutBookingRemindersInput, UserUncheckedCreateWithoutBookingRemindersInput>
+    connectOrCreate?: UserCreateOrConnectWithoutBookingRemindersInput
+    upsert?: UserUpsertWithoutBookingRemindersInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutBookingRemindersInput, UserUpdateWithoutBookingRemindersInput>, UserUncheckedUpdateWithoutBookingRemindersInput>
+  }
+
+  export type UserCreateNestedOneWithoutSessionFlagsInput = {
+    create?: XOR<UserCreateWithoutSessionFlagsInput, UserUncheckedCreateWithoutSessionFlagsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutSessionFlagsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type BookingCreateNestedOneWithoutFlagsInput = {
+    create?: XOR<BookingCreateWithoutFlagsInput, BookingUncheckedCreateWithoutFlagsInput>
+    connectOrCreate?: BookingCreateOrConnectWithoutFlagsInput
+    connect?: BookingWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutSessionFlagsNestedInput = {
+    create?: XOR<UserCreateWithoutSessionFlagsInput, UserUncheckedCreateWithoutSessionFlagsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutSessionFlagsInput
+    upsert?: UserUpsertWithoutSessionFlagsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSessionFlagsInput, UserUpdateWithoutSessionFlagsInput>, UserUncheckedUpdateWithoutSessionFlagsInput>
+  }
+
+  export type BookingUpdateOneRequiredWithoutFlagsNestedInput = {
+    create?: XOR<BookingCreateWithoutFlagsInput, BookingUncheckedCreateWithoutFlagsInput>
+    connectOrCreate?: BookingCreateOrConnectWithoutFlagsInput
+    upsert?: BookingUpsertWithoutFlagsInput
+    connect?: BookingWhereUniqueInput
+    update?: XOR<XOR<BookingUpdateToOneWithWhereWithoutFlagsInput, BookingUpdateWithoutFlagsInput>, BookingUncheckedUpdateWithoutFlagsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -65458,6 +71449,190 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type TutorAvailabilityCreateWithoutTutorInput = {
+    id?: string
+    dayOfWeek: number
+    startTime: string
+    endTime: string
+    isRecurring?: boolean
+    specificDate?: Date | string | null
+    isBlocked?: boolean
+    createdAt?: Date | string
+  }
+
+  export type TutorAvailabilityUncheckedCreateWithoutTutorInput = {
+    id?: string
+    dayOfWeek: number
+    startTime: string
+    endTime: string
+    isRecurring?: boolean
+    specificDate?: Date | string | null
+    isBlocked?: boolean
+    createdAt?: Date | string
+  }
+
+  export type TutorAvailabilityCreateOrConnectWithoutTutorInput = {
+    where: TutorAvailabilityWhereUniqueInput
+    create: XOR<TutorAvailabilityCreateWithoutTutorInput, TutorAvailabilityUncheckedCreateWithoutTutorInput>
+  }
+
+  export type TutorAvailabilityCreateManyTutorInputEnvelope = {
+    data: TutorAvailabilityCreateManyTutorInput | TutorAvailabilityCreateManyTutorInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type BookingCreateWithoutStudentInput = {
+    id?: string
+    subject: string
+    topic?: string | null
+    educationLevel?: string | null
+    date: Date | string
+    startTime: string
+    endTime: string
+    durationMinutes: number
+    status?: string
+    amount?: number
+    paystackReference?: string | null
+    declineReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tutor: UserCreateNestedOneWithoutTutorBookingsInput
+    reminders?: BookingReminderCreateNestedManyWithoutBookingInput
+    flags?: SessionFlagCreateNestedManyWithoutBookingInput
+  }
+
+  export type BookingUncheckedCreateWithoutStudentInput = {
+    id?: string
+    tutorId: string
+    subject: string
+    topic?: string | null
+    educationLevel?: string | null
+    date: Date | string
+    startTime: string
+    endTime: string
+    durationMinutes: number
+    status?: string
+    amount?: number
+    paystackReference?: string | null
+    declineReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    reminders?: BookingReminderUncheckedCreateNestedManyWithoutBookingInput
+    flags?: SessionFlagUncheckedCreateNestedManyWithoutBookingInput
+  }
+
+  export type BookingCreateOrConnectWithoutStudentInput = {
+    where: BookingWhereUniqueInput
+    create: XOR<BookingCreateWithoutStudentInput, BookingUncheckedCreateWithoutStudentInput>
+  }
+
+  export type BookingCreateManyStudentInputEnvelope = {
+    data: BookingCreateManyStudentInput | BookingCreateManyStudentInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type BookingCreateWithoutTutorInput = {
+    id?: string
+    subject: string
+    topic?: string | null
+    educationLevel?: string | null
+    date: Date | string
+    startTime: string
+    endTime: string
+    durationMinutes: number
+    status?: string
+    amount?: number
+    paystackReference?: string | null
+    declineReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    student: UserCreateNestedOneWithoutStudentBookingsInput
+    reminders?: BookingReminderCreateNestedManyWithoutBookingInput
+    flags?: SessionFlagCreateNestedManyWithoutBookingInput
+  }
+
+  export type BookingUncheckedCreateWithoutTutorInput = {
+    id?: string
+    studentId: string
+    subject: string
+    topic?: string | null
+    educationLevel?: string | null
+    date: Date | string
+    startTime: string
+    endTime: string
+    durationMinutes: number
+    status?: string
+    amount?: number
+    paystackReference?: string | null
+    declineReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    reminders?: BookingReminderUncheckedCreateNestedManyWithoutBookingInput
+    flags?: SessionFlagUncheckedCreateNestedManyWithoutBookingInput
+  }
+
+  export type BookingCreateOrConnectWithoutTutorInput = {
+    where: BookingWhereUniqueInput
+    create: XOR<BookingCreateWithoutTutorInput, BookingUncheckedCreateWithoutTutorInput>
+  }
+
+  export type BookingCreateManyTutorInputEnvelope = {
+    data: BookingCreateManyTutorInput | BookingCreateManyTutorInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type BookingReminderCreateWithoutUserInput = {
+    id?: string
+    reminderType: string
+    scheduledFor: Date | string
+    sentAt?: Date | string | null
+    channel?: string
+    booking: BookingCreateNestedOneWithoutRemindersInput
+  }
+
+  export type BookingReminderUncheckedCreateWithoutUserInput = {
+    id?: string
+    bookingId: string
+    reminderType: string
+    scheduledFor: Date | string
+    sentAt?: Date | string | null
+    channel?: string
+  }
+
+  export type BookingReminderCreateOrConnectWithoutUserInput = {
+    where: BookingReminderWhereUniqueInput
+    create: XOR<BookingReminderCreateWithoutUserInput, BookingReminderUncheckedCreateWithoutUserInput>
+  }
+
+  export type BookingReminderCreateManyUserInputEnvelope = {
+    data: BookingReminderCreateManyUserInput | BookingReminderCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type SessionFlagCreateWithoutTutorInput = {
+    id?: string
+    flagType: string
+    createdAt?: Date | string
+    booking: BookingCreateNestedOneWithoutFlagsInput
+  }
+
+  export type SessionFlagUncheckedCreateWithoutTutorInput = {
+    id?: string
+    flagType: string
+    bookingId: string
+    createdAt?: Date | string
+  }
+
+  export type SessionFlagCreateOrConnectWithoutTutorInput = {
+    where: SessionFlagWhereUniqueInput
+    create: XOR<SessionFlagCreateWithoutTutorInput, SessionFlagUncheckedCreateWithoutTutorInput>
+  }
+
+  export type SessionFlagCreateManyTutorInputEnvelope = {
+    data: SessionFlagCreateManyTutorInput | SessionFlagCreateManyTutorInput[]
+    skipDuplicates?: boolean
+  }
+
   export type AchievementUpsertWithWhereUniqueWithoutUserInput = {
     where: AchievementWhereUniqueInput
     update: XOR<AchievementUpdateWithoutUserInput, AchievementUncheckedUpdateWithoutUserInput>
@@ -66333,6 +72508,147 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"PushSubscription"> | Date | string
   }
 
+  export type TutorAvailabilityUpsertWithWhereUniqueWithoutTutorInput = {
+    where: TutorAvailabilityWhereUniqueInput
+    update: XOR<TutorAvailabilityUpdateWithoutTutorInput, TutorAvailabilityUncheckedUpdateWithoutTutorInput>
+    create: XOR<TutorAvailabilityCreateWithoutTutorInput, TutorAvailabilityUncheckedCreateWithoutTutorInput>
+  }
+
+  export type TutorAvailabilityUpdateWithWhereUniqueWithoutTutorInput = {
+    where: TutorAvailabilityWhereUniqueInput
+    data: XOR<TutorAvailabilityUpdateWithoutTutorInput, TutorAvailabilityUncheckedUpdateWithoutTutorInput>
+  }
+
+  export type TutorAvailabilityUpdateManyWithWhereWithoutTutorInput = {
+    where: TutorAvailabilityScalarWhereInput
+    data: XOR<TutorAvailabilityUpdateManyMutationInput, TutorAvailabilityUncheckedUpdateManyWithoutTutorInput>
+  }
+
+  export type TutorAvailabilityScalarWhereInput = {
+    AND?: TutorAvailabilityScalarWhereInput | TutorAvailabilityScalarWhereInput[]
+    OR?: TutorAvailabilityScalarWhereInput[]
+    NOT?: TutorAvailabilityScalarWhereInput | TutorAvailabilityScalarWhereInput[]
+    id?: StringFilter<"TutorAvailability"> | string
+    tutorId?: StringFilter<"TutorAvailability"> | string
+    dayOfWeek?: IntFilter<"TutorAvailability"> | number
+    startTime?: StringFilter<"TutorAvailability"> | string
+    endTime?: StringFilter<"TutorAvailability"> | string
+    isRecurring?: BoolFilter<"TutorAvailability"> | boolean
+    specificDate?: DateTimeNullableFilter<"TutorAvailability"> | Date | string | null
+    isBlocked?: BoolFilter<"TutorAvailability"> | boolean
+    createdAt?: DateTimeFilter<"TutorAvailability"> | Date | string
+  }
+
+  export type BookingUpsertWithWhereUniqueWithoutStudentInput = {
+    where: BookingWhereUniqueInput
+    update: XOR<BookingUpdateWithoutStudentInput, BookingUncheckedUpdateWithoutStudentInput>
+    create: XOR<BookingCreateWithoutStudentInput, BookingUncheckedCreateWithoutStudentInput>
+  }
+
+  export type BookingUpdateWithWhereUniqueWithoutStudentInput = {
+    where: BookingWhereUniqueInput
+    data: XOR<BookingUpdateWithoutStudentInput, BookingUncheckedUpdateWithoutStudentInput>
+  }
+
+  export type BookingUpdateManyWithWhereWithoutStudentInput = {
+    where: BookingScalarWhereInput
+    data: XOR<BookingUpdateManyMutationInput, BookingUncheckedUpdateManyWithoutStudentInput>
+  }
+
+  export type BookingScalarWhereInput = {
+    AND?: BookingScalarWhereInput | BookingScalarWhereInput[]
+    OR?: BookingScalarWhereInput[]
+    NOT?: BookingScalarWhereInput | BookingScalarWhereInput[]
+    id?: StringFilter<"Booking"> | string
+    studentId?: StringFilter<"Booking"> | string
+    tutorId?: StringFilter<"Booking"> | string
+    subject?: StringFilter<"Booking"> | string
+    topic?: StringNullableFilter<"Booking"> | string | null
+    educationLevel?: StringNullableFilter<"Booking"> | string | null
+    date?: DateTimeFilter<"Booking"> | Date | string
+    startTime?: StringFilter<"Booking"> | string
+    endTime?: StringFilter<"Booking"> | string
+    durationMinutes?: IntFilter<"Booking"> | number
+    status?: StringFilter<"Booking"> | string
+    amount?: IntFilter<"Booking"> | number
+    paystackReference?: StringNullableFilter<"Booking"> | string | null
+    declineReason?: StringNullableFilter<"Booking"> | string | null
+    createdAt?: DateTimeFilter<"Booking"> | Date | string
+    updatedAt?: DateTimeFilter<"Booking"> | Date | string
+  }
+
+  export type BookingUpsertWithWhereUniqueWithoutTutorInput = {
+    where: BookingWhereUniqueInput
+    update: XOR<BookingUpdateWithoutTutorInput, BookingUncheckedUpdateWithoutTutorInput>
+    create: XOR<BookingCreateWithoutTutorInput, BookingUncheckedCreateWithoutTutorInput>
+  }
+
+  export type BookingUpdateWithWhereUniqueWithoutTutorInput = {
+    where: BookingWhereUniqueInput
+    data: XOR<BookingUpdateWithoutTutorInput, BookingUncheckedUpdateWithoutTutorInput>
+  }
+
+  export type BookingUpdateManyWithWhereWithoutTutorInput = {
+    where: BookingScalarWhereInput
+    data: XOR<BookingUpdateManyMutationInput, BookingUncheckedUpdateManyWithoutTutorInput>
+  }
+
+  export type BookingReminderUpsertWithWhereUniqueWithoutUserInput = {
+    where: BookingReminderWhereUniqueInput
+    update: XOR<BookingReminderUpdateWithoutUserInput, BookingReminderUncheckedUpdateWithoutUserInput>
+    create: XOR<BookingReminderCreateWithoutUserInput, BookingReminderUncheckedCreateWithoutUserInput>
+  }
+
+  export type BookingReminderUpdateWithWhereUniqueWithoutUserInput = {
+    where: BookingReminderWhereUniqueInput
+    data: XOR<BookingReminderUpdateWithoutUserInput, BookingReminderUncheckedUpdateWithoutUserInput>
+  }
+
+  export type BookingReminderUpdateManyWithWhereWithoutUserInput = {
+    where: BookingReminderScalarWhereInput
+    data: XOR<BookingReminderUpdateManyMutationInput, BookingReminderUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type BookingReminderScalarWhereInput = {
+    AND?: BookingReminderScalarWhereInput | BookingReminderScalarWhereInput[]
+    OR?: BookingReminderScalarWhereInput[]
+    NOT?: BookingReminderScalarWhereInput | BookingReminderScalarWhereInput[]
+    id?: StringFilter<"BookingReminder"> | string
+    bookingId?: StringFilter<"BookingReminder"> | string
+    userId?: StringFilter<"BookingReminder"> | string
+    reminderType?: StringFilter<"BookingReminder"> | string
+    scheduledFor?: DateTimeFilter<"BookingReminder"> | Date | string
+    sentAt?: DateTimeNullableFilter<"BookingReminder"> | Date | string | null
+    channel?: StringFilter<"BookingReminder"> | string
+  }
+
+  export type SessionFlagUpsertWithWhereUniqueWithoutTutorInput = {
+    where: SessionFlagWhereUniqueInput
+    update: XOR<SessionFlagUpdateWithoutTutorInput, SessionFlagUncheckedUpdateWithoutTutorInput>
+    create: XOR<SessionFlagCreateWithoutTutorInput, SessionFlagUncheckedCreateWithoutTutorInput>
+  }
+
+  export type SessionFlagUpdateWithWhereUniqueWithoutTutorInput = {
+    where: SessionFlagWhereUniqueInput
+    data: XOR<SessionFlagUpdateWithoutTutorInput, SessionFlagUncheckedUpdateWithoutTutorInput>
+  }
+
+  export type SessionFlagUpdateManyWithWhereWithoutTutorInput = {
+    where: SessionFlagScalarWhereInput
+    data: XOR<SessionFlagUpdateManyMutationInput, SessionFlagUncheckedUpdateManyWithoutTutorInput>
+  }
+
+  export type SessionFlagScalarWhereInput = {
+    AND?: SessionFlagScalarWhereInput | SessionFlagScalarWhereInput[]
+    OR?: SessionFlagScalarWhereInput[]
+    NOT?: SessionFlagScalarWhereInput | SessionFlagScalarWhereInput[]
+    id?: StringFilter<"SessionFlag"> | string
+    tutorId?: StringFilter<"SessionFlag"> | string
+    flagType?: StringFilter<"SessionFlag"> | string
+    bookingId?: StringFilter<"SessionFlag"> | string
+    createdAt?: DateTimeFilter<"SessionFlag"> | Date | string
+  }
+
   export type UserCreateWithoutStudentProfileInput = {
     id?: string
     email: string
@@ -66393,6 +72709,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutStudentProfileInput = {
@@ -66455,6 +72776,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutStudentProfileInput = {
@@ -66533,6 +72859,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutStudentProfileInput = {
@@ -66595,6 +72926,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type UserCreateWithoutTutorProfileInput = {
@@ -66657,6 +72993,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutTutorProfileInput = {
@@ -66719,6 +73060,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutTutorProfileInput = {
@@ -66797,6 +73143,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTutorProfileInput = {
@@ -66859,6 +73210,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type UserCreateWithoutMatchRequestsInput = {
@@ -66921,6 +73277,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutMatchRequestsInput = {
@@ -66983,6 +73344,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutMatchRequestsInput = {
@@ -67061,6 +73427,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMatchRequestsInput = {
@@ -67123,6 +73494,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type MessageCreateWithoutSessionInput = {
@@ -67236,6 +73612,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutSessionsAsTutorInput = {
@@ -67298,6 +73679,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutSessionsAsTutorInput = {
@@ -67365,6 +73751,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutSessionsAsStudentInput = {
@@ -67427,6 +73818,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutSessionsAsStudentInput = {
@@ -67586,6 +73982,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsAsTutorInput = {
@@ -67648,6 +74049,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUpsertWithoutSessionsAsStudentInput = {
@@ -67721,6 +74127,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsAsStudentInput = {
@@ -67783,6 +74194,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type SessionPaymentUpsertWithWhereUniqueWithoutSessionInput = {
@@ -67861,6 +74277,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutMessagesInput = {
@@ -67923,6 +74344,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutMessagesInput = {
@@ -68046,6 +74472,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMessagesInput = {
@@ -68108,6 +74539,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type SessionUpsertWithoutMessagesInput = {
@@ -68221,6 +74657,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutReviewsRecvInput = {
@@ -68283,6 +74724,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutReviewsRecvInput = {
@@ -68350,6 +74796,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutReviewsGivenInput = {
@@ -68412,6 +74863,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutReviewsGivenInput = {
@@ -68535,6 +74991,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReviewsRecvInput = {
@@ -68597,6 +75058,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUpsertWithoutReviewsGivenInput = {
@@ -68670,6 +75136,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReviewsGivenInput = {
@@ -68732,6 +75203,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type SessionUpsertWithoutReviewInput = {
@@ -68916,6 +75392,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutChallengesInput = {
@@ -68978,6 +75459,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutChallengesInput = {
@@ -69091,6 +75577,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutChallengesInput = {
@@ -69153,6 +75644,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type GroupMessageCreateWithoutGroupInput = {
@@ -69330,6 +75826,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutTutorApplicationInput = {
@@ -69392,6 +75893,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutTutorApplicationInput = {
@@ -69470,6 +75976,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTutorApplicationInput = {
@@ -69532,6 +76043,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type UserCreateWithoutNotificationsInput = {
@@ -69594,6 +76110,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -69656,6 +76177,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -69734,6 +76260,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -69796,6 +76327,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type CommentCreateWithoutPostInput = {
@@ -69882,6 +76418,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutFeedPostsInput = {
@@ -69944,6 +76485,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutFeedPostsInput = {
@@ -70060,6 +76606,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFeedPostsInput = {
@@ -70122,6 +76673,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type PostLikeUpsertWithWhereUniqueWithoutPostInput = {
@@ -70229,6 +76785,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutPostLikesInput = {
@@ -70291,6 +76852,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutPostLikesInput = {
@@ -70404,6 +76970,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPostLikesInput = {
@@ -70466,6 +77037,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type FeedPostCreateWithoutCommentsInput = {
@@ -70557,6 +77133,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutCommentsInput = {
@@ -70619,6 +77200,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutCommentsInput = {
@@ -70732,6 +77318,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCommentsInput = {
@@ -70794,6 +77385,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type UserCreateWithoutAchievementsInput = {
@@ -70856,6 +77452,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutAchievementsInput = {
@@ -70918,6 +77519,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutAchievementsInput = {
@@ -70996,6 +77602,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAchievementsInput = {
@@ -71058,6 +77669,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type UserCreateWithoutNewsArticlesInput = {
@@ -71120,6 +77736,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutNewsArticlesInput = {
@@ -71182,6 +77803,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutNewsArticlesInput = {
@@ -71260,6 +77886,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNewsArticlesInput = {
@@ -71322,6 +77953,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type UserCreateWithoutUserCreditsInput = {
@@ -71384,6 +78020,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutUserCreditsInput = {
@@ -71446,6 +78087,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutUserCreditsInput = {
@@ -71524,6 +78170,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUserCreditsInput = {
@@ -71586,6 +78237,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type UserCreateWithoutCreditTransactionsInput = {
@@ -71648,6 +78304,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutCreditTransactionsInput = {
@@ -71710,6 +78371,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutCreditTransactionsInput = {
@@ -71788,6 +78454,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreditTransactionsInput = {
@@ -71850,6 +78521,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type UserCreateWithoutPushSubscriptionsInput = {
@@ -71912,6 +78588,11 @@ export namespace Prisma {
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutPushSubscriptionsInput = {
@@ -71974,6 +78655,11 @@ export namespace Prisma {
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutPushSubscriptionsInput = {
@@ -72052,6 +78738,11 @@ export namespace Prisma {
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPushSubscriptionsInput = {
@@ -72114,6 +78805,11 @@ export namespace Prisma {
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type ChallengeCompletionCreateWithoutChallengeInput = {
@@ -72299,6 +78995,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutPaymentsInput = {
@@ -72361,6 +79062,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutPaymentsInput = {
@@ -72439,6 +79145,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPaymentsInput = {
@@ -72501,6 +79212,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type SessionCreateWithoutPaymentsInput = {
@@ -72608,6 +79324,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutSessionPaymentsAsStudentInput = {
@@ -72670,6 +79391,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutSessionPaymentsAsStudentInput = {
@@ -72737,6 +79463,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutSessionPaymentsAsTutorInput = {
@@ -72799,6 +79530,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutSessionPaymentsAsTutorInput = {
@@ -72928,6 +79664,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionPaymentsAsStudentInput = {
@@ -72990,6 +79731,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUpsertWithoutSessionPaymentsAsTutorInput = {
@@ -73063,6 +79809,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionPaymentsAsTutorInput = {
@@ -73125,6 +79876,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type UserCreateWithoutPayoutsInput = {
@@ -73187,6 +79943,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutPayoutsInput = {
@@ -73249,6 +80010,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutPayoutsInput = {
@@ -73327,6 +80093,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPayoutsInput = {
@@ -73389,6 +80160,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type ResourceCreateWithoutSellerEarningsInput = {
@@ -73492,6 +80268,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutSellerEarningsInput = {
@@ -73554,6 +80335,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutSellerEarningsInput = {
@@ -73679,6 +80465,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSellerEarningsInput = {
@@ -73741,6 +80532,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type ResourcePurchaseCreateWithoutResourceInput = {
@@ -73861,6 +80657,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutResourcesInput = {
@@ -73923,6 +80724,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutResourcesInput = {
@@ -74033,6 +80839,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutResourcesInput = {
@@ -74095,6 +80906,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type ResourceCreateWithoutPurchasesInput = {
@@ -74198,6 +81014,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutResourcePurchasesInput = {
@@ -74260,6 +81081,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutResourcePurchasesInput = {
@@ -74385,6 +81211,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutResourcePurchasesInput = {
@@ -74447,6 +81278,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type InstitutionStaffCreateWithoutInstitutionInput = {
@@ -74911,6 +81747,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutInstitutionStudentInput = {
@@ -74973,6 +81814,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutInstitutionStudentInput = {
@@ -75108,6 +81954,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutInstitutionStudentInput = {
@@ -75170,6 +82021,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type InstitutionCreateWithoutTutorsInput = {
@@ -75283,6 +82139,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutInstitutionTutorsInput = {
@@ -75345,6 +82206,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutInstitutionTutorsInput = {
@@ -75480,6 +82346,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutInstitutionTutorsInput = {
@@ -75542,6 +82413,11 @@ export namespace Prisma {
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type InstitutionCreateWithoutMembersInput = {
@@ -75655,6 +82531,11 @@ export namespace Prisma {
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutInstitutionMembersInput = {
@@ -75717,6 +82598,11 @@ export namespace Prisma {
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutInstitutionMembersInput = {
@@ -75852,6 +82738,11 @@ export namespace Prisma {
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutInstitutionMembersInput = {
@@ -75914,6 +82805,11 @@ export namespace Prisma {
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type InstitutionCreateWithoutDocumentsInput = {
@@ -76027,6 +82923,11 @@ export namespace Prisma {
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
   }
 
   export type UserUncheckedCreateWithoutUploadedDocumentsInput = {
@@ -76089,6 +82990,11 @@ export namespace Prisma {
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
   }
 
   export type UserCreateOrConnectWithoutUploadedDocumentsInput = {
@@ -76224,6 +83130,11 @@ export namespace Prisma {
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUploadedDocumentsInput = {
@@ -76286,6 +83197,1707 @@ export namespace Prisma {
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
+  }
+
+  export type UserCreateWithoutTutorAvailabilitiesInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    avatar?: string | null
+    gender?: $Enums.Gender | null
+    role?: $Enums.Role
+    educationLevel?: $Enums.EduLevel | null
+    formYear?: number | null
+    county: string
+    points?: number
+    tier?: $Enums.Tier
+    streakDays?: number
+    lastActiveAt?: Date | string | null
+    isUnder18?: boolean
+    strikes?: number
+    createdAt?: Date | string
+    bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: string | null
+    dailyMessageCount?: number
+    dailySearchCount?: number
+    lastCountReset?: Date | string | null
+    subscriptionTier?: string | null
+    banned?: boolean
+    suspended?: boolean
+    plan?: string
+    planStartedAt?: Date | string | null
+    planExpiresAt?: Date | string | null
+    planBillingCycle?: string | null
+    achievements?: AchievementCreateNestedManyWithoutUserInput
+    comments?: CommentCreateNestedManyWithoutUserInput
+    challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
+    feedPosts?: FeedPostCreateNestedManyWithoutUserInput
+    messages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    postLikes?: PostLikeCreateNestedManyWithoutUserInput
+    reviewsRecv?: ReviewCreateNestedManyWithoutRevieweeInput
+    reviewsGiven?: ReviewCreateNestedManyWithoutReviewerInput
+    sessionsAsTutor?: SessionCreateNestedManyWithoutPartnerInput
+    sessionsAsStudent?: SessionCreateNestedManyWithoutStudentInput
+    studentProfile?: StudentProfileCreateNestedOneWithoutUserInput
+    tutorApplication?: TutorApplicationCreateNestedOneWithoutUserInput
+    tutorProfile?: TutorProfileCreateNestedOneWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
+    resourcePurchases?: ResourcePurchaseCreateNestedManyWithoutUserInput
+    resources?: ResourceCreateNestedManyWithoutSellerInput
+    sessionPaymentsAsStudent?: SessionPaymentCreateNestedManyWithoutStudentInput
+    sessionPaymentsAsTutor?: SessionPaymentCreateNestedManyWithoutTutorInput
+    payouts?: TutorPayoutCreateNestedManyWithoutTutorInput
+    matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
+    newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
+    userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
+    sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
+    institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
+    institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
+  }
+
+  export type UserUncheckedCreateWithoutTutorAvailabilitiesInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    avatar?: string | null
+    gender?: $Enums.Gender | null
+    role?: $Enums.Role
+    educationLevel?: $Enums.EduLevel | null
+    formYear?: number | null
+    county: string
+    points?: number
+    tier?: $Enums.Tier
+    streakDays?: number
+    lastActiveAt?: Date | string | null
+    isUnder18?: boolean
+    strikes?: number
+    createdAt?: Date | string
+    bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: string | null
+    dailyMessageCount?: number
+    dailySearchCount?: number
+    lastCountReset?: Date | string | null
+    subscriptionTier?: string | null
+    banned?: boolean
+    suspended?: boolean
+    plan?: string
+    planStartedAt?: Date | string | null
+    planExpiresAt?: Date | string | null
+    planBillingCycle?: string | null
+    achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
+    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
+    challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
+    feedPosts?: FeedPostUncheckedCreateNestedManyWithoutUserInput
+    messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
+    reviewsRecv?: ReviewUncheckedCreateNestedManyWithoutRevieweeInput
+    reviewsGiven?: ReviewUncheckedCreateNestedManyWithoutReviewerInput
+    sessionsAsTutor?: SessionUncheckedCreateNestedManyWithoutPartnerInput
+    sessionsAsStudent?: SessionUncheckedCreateNestedManyWithoutStudentInput
+    studentProfile?: StudentProfileUncheckedCreateNestedOneWithoutUserInput
+    tutorApplication?: TutorApplicationUncheckedCreateNestedOneWithoutUserInput
+    tutorProfile?: TutorProfileUncheckedCreateNestedOneWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
+    resourcePurchases?: ResourcePurchaseUncheckedCreateNestedManyWithoutUserInput
+    resources?: ResourceUncheckedCreateNestedManyWithoutSellerInput
+    sessionPaymentsAsStudent?: SessionPaymentUncheckedCreateNestedManyWithoutStudentInput
+    sessionPaymentsAsTutor?: SessionPaymentUncheckedCreateNestedManyWithoutTutorInput
+    payouts?: TutorPayoutUncheckedCreateNestedManyWithoutTutorInput
+    matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
+    newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
+    userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
+    sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
+    institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
+    institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
+  }
+
+  export type UserCreateOrConnectWithoutTutorAvailabilitiesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutTutorAvailabilitiesInput, UserUncheckedCreateWithoutTutorAvailabilitiesInput>
+  }
+
+  export type UserUpsertWithoutTutorAvailabilitiesInput = {
+    update: XOR<UserUpdateWithoutTutorAvailabilitiesInput, UserUncheckedUpdateWithoutTutorAvailabilitiesInput>
+    create: XOR<UserCreateWithoutTutorAvailabilitiesInput, UserUncheckedCreateWithoutTutorAvailabilitiesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutTutorAvailabilitiesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutTutorAvailabilitiesInput, UserUncheckedUpdateWithoutTutorAvailabilitiesInput>
+  }
+
+  export type UserUpdateWithoutTutorAvailabilitiesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
+    formYear?: NullableIntFieldUpdateOperationsInput | number | null
+    county?: StringFieldUpdateOperationsInput | string
+    points?: IntFieldUpdateOperationsInput | number
+    tier?: EnumTierFieldUpdateOperationsInput | $Enums.Tier
+    streakDays?: IntFieldUpdateOperationsInput | number
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isUnder18?: BoolFieldUpdateOperationsInput | boolean
+    strikes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: NullableStringFieldUpdateOperationsInput | string | null
+    dailyMessageCount?: IntFieldUpdateOperationsInput | number
+    dailySearchCount?: IntFieldUpdateOperationsInput | number
+    lastCountReset?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    banned?: BoolFieldUpdateOperationsInput | boolean
+    suspended?: BoolFieldUpdateOperationsInput | boolean
+    plan?: StringFieldUpdateOperationsInput | string
+    planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    achievements?: AchievementUpdateManyWithoutUserNestedInput
+    comments?: CommentUpdateManyWithoutUserNestedInput
+    challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
+    feedPosts?: FeedPostUpdateManyWithoutUserNestedInput
+    messages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    postLikes?: PostLikeUpdateManyWithoutUserNestedInput
+    reviewsRecv?: ReviewUpdateManyWithoutRevieweeNestedInput
+    reviewsGiven?: ReviewUpdateManyWithoutReviewerNestedInput
+    sessionsAsTutor?: SessionUpdateManyWithoutPartnerNestedInput
+    sessionsAsStudent?: SessionUpdateManyWithoutStudentNestedInput
+    studentProfile?: StudentProfileUpdateOneWithoutUserNestedInput
+    tutorApplication?: TutorApplicationUpdateOneWithoutUserNestedInput
+    tutorProfile?: TutorProfileUpdateOneWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
+    resourcePurchases?: ResourcePurchaseUpdateManyWithoutUserNestedInput
+    resources?: ResourceUpdateManyWithoutSellerNestedInput
+    sessionPaymentsAsStudent?: SessionPaymentUpdateManyWithoutStudentNestedInput
+    sessionPaymentsAsTutor?: SessionPaymentUpdateManyWithoutTutorNestedInput
+    payouts?: TutorPayoutUpdateManyWithoutTutorNestedInput
+    matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
+    newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
+    userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
+    sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
+    institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
+    institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutTutorAvailabilitiesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
+    formYear?: NullableIntFieldUpdateOperationsInput | number | null
+    county?: StringFieldUpdateOperationsInput | string
+    points?: IntFieldUpdateOperationsInput | number
+    tier?: EnumTierFieldUpdateOperationsInput | $Enums.Tier
+    streakDays?: IntFieldUpdateOperationsInput | number
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isUnder18?: BoolFieldUpdateOperationsInput | boolean
+    strikes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: NullableStringFieldUpdateOperationsInput | string | null
+    dailyMessageCount?: IntFieldUpdateOperationsInput | number
+    dailySearchCount?: IntFieldUpdateOperationsInput | number
+    lastCountReset?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    banned?: BoolFieldUpdateOperationsInput | boolean
+    suspended?: BoolFieldUpdateOperationsInput | boolean
+    plan?: StringFieldUpdateOperationsInput | string
+    planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
+    challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
+    feedPosts?: FeedPostUncheckedUpdateManyWithoutUserNestedInput
+    messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
+    reviewsRecv?: ReviewUncheckedUpdateManyWithoutRevieweeNestedInput
+    reviewsGiven?: ReviewUncheckedUpdateManyWithoutReviewerNestedInput
+    sessionsAsTutor?: SessionUncheckedUpdateManyWithoutPartnerNestedInput
+    sessionsAsStudent?: SessionUncheckedUpdateManyWithoutStudentNestedInput
+    studentProfile?: StudentProfileUncheckedUpdateOneWithoutUserNestedInput
+    tutorApplication?: TutorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    tutorProfile?: TutorProfileUncheckedUpdateOneWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
+    resourcePurchases?: ResourcePurchaseUncheckedUpdateManyWithoutUserNestedInput
+    resources?: ResourceUncheckedUpdateManyWithoutSellerNestedInput
+    sessionPaymentsAsStudent?: SessionPaymentUncheckedUpdateManyWithoutStudentNestedInput
+    sessionPaymentsAsTutor?: SessionPaymentUncheckedUpdateManyWithoutTutorNestedInput
+    payouts?: TutorPayoutUncheckedUpdateManyWithoutTutorNestedInput
+    matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
+    newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
+    userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
+    sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
+    institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
+    institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
+  }
+
+  export type UserCreateWithoutStudentBookingsInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    avatar?: string | null
+    gender?: $Enums.Gender | null
+    role?: $Enums.Role
+    educationLevel?: $Enums.EduLevel | null
+    formYear?: number | null
+    county: string
+    points?: number
+    tier?: $Enums.Tier
+    streakDays?: number
+    lastActiveAt?: Date | string | null
+    isUnder18?: boolean
+    strikes?: number
+    createdAt?: Date | string
+    bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: string | null
+    dailyMessageCount?: number
+    dailySearchCount?: number
+    lastCountReset?: Date | string | null
+    subscriptionTier?: string | null
+    banned?: boolean
+    suspended?: boolean
+    plan?: string
+    planStartedAt?: Date | string | null
+    planExpiresAt?: Date | string | null
+    planBillingCycle?: string | null
+    achievements?: AchievementCreateNestedManyWithoutUserInput
+    comments?: CommentCreateNestedManyWithoutUserInput
+    challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
+    feedPosts?: FeedPostCreateNestedManyWithoutUserInput
+    messages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    postLikes?: PostLikeCreateNestedManyWithoutUserInput
+    reviewsRecv?: ReviewCreateNestedManyWithoutRevieweeInput
+    reviewsGiven?: ReviewCreateNestedManyWithoutReviewerInput
+    sessionsAsTutor?: SessionCreateNestedManyWithoutPartnerInput
+    sessionsAsStudent?: SessionCreateNestedManyWithoutStudentInput
+    studentProfile?: StudentProfileCreateNestedOneWithoutUserInput
+    tutorApplication?: TutorApplicationCreateNestedOneWithoutUserInput
+    tutorProfile?: TutorProfileCreateNestedOneWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
+    resourcePurchases?: ResourcePurchaseCreateNestedManyWithoutUserInput
+    resources?: ResourceCreateNestedManyWithoutSellerInput
+    sessionPaymentsAsStudent?: SessionPaymentCreateNestedManyWithoutStudentInput
+    sessionPaymentsAsTutor?: SessionPaymentCreateNestedManyWithoutTutorInput
+    payouts?: TutorPayoutCreateNestedManyWithoutTutorInput
+    matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
+    newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
+    userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
+    sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
+    institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
+    institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
+  }
+
+  export type UserUncheckedCreateWithoutStudentBookingsInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    avatar?: string | null
+    gender?: $Enums.Gender | null
+    role?: $Enums.Role
+    educationLevel?: $Enums.EduLevel | null
+    formYear?: number | null
+    county: string
+    points?: number
+    tier?: $Enums.Tier
+    streakDays?: number
+    lastActiveAt?: Date | string | null
+    isUnder18?: boolean
+    strikes?: number
+    createdAt?: Date | string
+    bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: string | null
+    dailyMessageCount?: number
+    dailySearchCount?: number
+    lastCountReset?: Date | string | null
+    subscriptionTier?: string | null
+    banned?: boolean
+    suspended?: boolean
+    plan?: string
+    planStartedAt?: Date | string | null
+    planExpiresAt?: Date | string | null
+    planBillingCycle?: string | null
+    achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
+    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
+    challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
+    feedPosts?: FeedPostUncheckedCreateNestedManyWithoutUserInput
+    messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
+    reviewsRecv?: ReviewUncheckedCreateNestedManyWithoutRevieweeInput
+    reviewsGiven?: ReviewUncheckedCreateNestedManyWithoutReviewerInput
+    sessionsAsTutor?: SessionUncheckedCreateNestedManyWithoutPartnerInput
+    sessionsAsStudent?: SessionUncheckedCreateNestedManyWithoutStudentInput
+    studentProfile?: StudentProfileUncheckedCreateNestedOneWithoutUserInput
+    tutorApplication?: TutorApplicationUncheckedCreateNestedOneWithoutUserInput
+    tutorProfile?: TutorProfileUncheckedCreateNestedOneWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
+    resourcePurchases?: ResourcePurchaseUncheckedCreateNestedManyWithoutUserInput
+    resources?: ResourceUncheckedCreateNestedManyWithoutSellerInput
+    sessionPaymentsAsStudent?: SessionPaymentUncheckedCreateNestedManyWithoutStudentInput
+    sessionPaymentsAsTutor?: SessionPaymentUncheckedCreateNestedManyWithoutTutorInput
+    payouts?: TutorPayoutUncheckedCreateNestedManyWithoutTutorInput
+    matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
+    newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
+    userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
+    sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
+    institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
+    institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
+  }
+
+  export type UserCreateOrConnectWithoutStudentBookingsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutStudentBookingsInput, UserUncheckedCreateWithoutStudentBookingsInput>
+  }
+
+  export type UserCreateWithoutTutorBookingsInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    avatar?: string | null
+    gender?: $Enums.Gender | null
+    role?: $Enums.Role
+    educationLevel?: $Enums.EduLevel | null
+    formYear?: number | null
+    county: string
+    points?: number
+    tier?: $Enums.Tier
+    streakDays?: number
+    lastActiveAt?: Date | string | null
+    isUnder18?: boolean
+    strikes?: number
+    createdAt?: Date | string
+    bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: string | null
+    dailyMessageCount?: number
+    dailySearchCount?: number
+    lastCountReset?: Date | string | null
+    subscriptionTier?: string | null
+    banned?: boolean
+    suspended?: boolean
+    plan?: string
+    planStartedAt?: Date | string | null
+    planExpiresAt?: Date | string | null
+    planBillingCycle?: string | null
+    achievements?: AchievementCreateNestedManyWithoutUserInput
+    comments?: CommentCreateNestedManyWithoutUserInput
+    challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
+    feedPosts?: FeedPostCreateNestedManyWithoutUserInput
+    messages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    postLikes?: PostLikeCreateNestedManyWithoutUserInput
+    reviewsRecv?: ReviewCreateNestedManyWithoutRevieweeInput
+    reviewsGiven?: ReviewCreateNestedManyWithoutReviewerInput
+    sessionsAsTutor?: SessionCreateNestedManyWithoutPartnerInput
+    sessionsAsStudent?: SessionCreateNestedManyWithoutStudentInput
+    studentProfile?: StudentProfileCreateNestedOneWithoutUserInput
+    tutorApplication?: TutorApplicationCreateNestedOneWithoutUserInput
+    tutorProfile?: TutorProfileCreateNestedOneWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
+    resourcePurchases?: ResourcePurchaseCreateNestedManyWithoutUserInput
+    resources?: ResourceCreateNestedManyWithoutSellerInput
+    sessionPaymentsAsStudent?: SessionPaymentCreateNestedManyWithoutStudentInput
+    sessionPaymentsAsTutor?: SessionPaymentCreateNestedManyWithoutTutorInput
+    payouts?: TutorPayoutCreateNestedManyWithoutTutorInput
+    matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
+    newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
+    userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
+    sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
+    institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
+    institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
+  }
+
+  export type UserUncheckedCreateWithoutTutorBookingsInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    avatar?: string | null
+    gender?: $Enums.Gender | null
+    role?: $Enums.Role
+    educationLevel?: $Enums.EduLevel | null
+    formYear?: number | null
+    county: string
+    points?: number
+    tier?: $Enums.Tier
+    streakDays?: number
+    lastActiveAt?: Date | string | null
+    isUnder18?: boolean
+    strikes?: number
+    createdAt?: Date | string
+    bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: string | null
+    dailyMessageCount?: number
+    dailySearchCount?: number
+    lastCountReset?: Date | string | null
+    subscriptionTier?: string | null
+    banned?: boolean
+    suspended?: boolean
+    plan?: string
+    planStartedAt?: Date | string | null
+    planExpiresAt?: Date | string | null
+    planBillingCycle?: string | null
+    achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
+    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
+    challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
+    feedPosts?: FeedPostUncheckedCreateNestedManyWithoutUserInput
+    messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
+    reviewsRecv?: ReviewUncheckedCreateNestedManyWithoutRevieweeInput
+    reviewsGiven?: ReviewUncheckedCreateNestedManyWithoutReviewerInput
+    sessionsAsTutor?: SessionUncheckedCreateNestedManyWithoutPartnerInput
+    sessionsAsStudent?: SessionUncheckedCreateNestedManyWithoutStudentInput
+    studentProfile?: StudentProfileUncheckedCreateNestedOneWithoutUserInput
+    tutorApplication?: TutorApplicationUncheckedCreateNestedOneWithoutUserInput
+    tutorProfile?: TutorProfileUncheckedCreateNestedOneWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
+    resourcePurchases?: ResourcePurchaseUncheckedCreateNestedManyWithoutUserInput
+    resources?: ResourceUncheckedCreateNestedManyWithoutSellerInput
+    sessionPaymentsAsStudent?: SessionPaymentUncheckedCreateNestedManyWithoutStudentInput
+    sessionPaymentsAsTutor?: SessionPaymentUncheckedCreateNestedManyWithoutTutorInput
+    payouts?: TutorPayoutUncheckedCreateNestedManyWithoutTutorInput
+    matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
+    newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
+    userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
+    sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
+    institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
+    institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
+  }
+
+  export type UserCreateOrConnectWithoutTutorBookingsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutTutorBookingsInput, UserUncheckedCreateWithoutTutorBookingsInput>
+  }
+
+  export type BookingReminderCreateWithoutBookingInput = {
+    id?: string
+    reminderType: string
+    scheduledFor: Date | string
+    sentAt?: Date | string | null
+    channel?: string
+    user: UserCreateNestedOneWithoutBookingRemindersInput
+  }
+
+  export type BookingReminderUncheckedCreateWithoutBookingInput = {
+    id?: string
+    userId: string
+    reminderType: string
+    scheduledFor: Date | string
+    sentAt?: Date | string | null
+    channel?: string
+  }
+
+  export type BookingReminderCreateOrConnectWithoutBookingInput = {
+    where: BookingReminderWhereUniqueInput
+    create: XOR<BookingReminderCreateWithoutBookingInput, BookingReminderUncheckedCreateWithoutBookingInput>
+  }
+
+  export type BookingReminderCreateManyBookingInputEnvelope = {
+    data: BookingReminderCreateManyBookingInput | BookingReminderCreateManyBookingInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type SessionFlagCreateWithoutBookingInput = {
+    id?: string
+    flagType: string
+    createdAt?: Date | string
+    tutor: UserCreateNestedOneWithoutSessionFlagsInput
+  }
+
+  export type SessionFlagUncheckedCreateWithoutBookingInput = {
+    id?: string
+    tutorId: string
+    flagType: string
+    createdAt?: Date | string
+  }
+
+  export type SessionFlagCreateOrConnectWithoutBookingInput = {
+    where: SessionFlagWhereUniqueInput
+    create: XOR<SessionFlagCreateWithoutBookingInput, SessionFlagUncheckedCreateWithoutBookingInput>
+  }
+
+  export type SessionFlagCreateManyBookingInputEnvelope = {
+    data: SessionFlagCreateManyBookingInput | SessionFlagCreateManyBookingInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserUpsertWithoutStudentBookingsInput = {
+    update: XOR<UserUpdateWithoutStudentBookingsInput, UserUncheckedUpdateWithoutStudentBookingsInput>
+    create: XOR<UserCreateWithoutStudentBookingsInput, UserUncheckedCreateWithoutStudentBookingsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutStudentBookingsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutStudentBookingsInput, UserUncheckedUpdateWithoutStudentBookingsInput>
+  }
+
+  export type UserUpdateWithoutStudentBookingsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
+    formYear?: NullableIntFieldUpdateOperationsInput | number | null
+    county?: StringFieldUpdateOperationsInput | string
+    points?: IntFieldUpdateOperationsInput | number
+    tier?: EnumTierFieldUpdateOperationsInput | $Enums.Tier
+    streakDays?: IntFieldUpdateOperationsInput | number
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isUnder18?: BoolFieldUpdateOperationsInput | boolean
+    strikes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: NullableStringFieldUpdateOperationsInput | string | null
+    dailyMessageCount?: IntFieldUpdateOperationsInput | number
+    dailySearchCount?: IntFieldUpdateOperationsInput | number
+    lastCountReset?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    banned?: BoolFieldUpdateOperationsInput | boolean
+    suspended?: BoolFieldUpdateOperationsInput | boolean
+    plan?: StringFieldUpdateOperationsInput | string
+    planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    achievements?: AchievementUpdateManyWithoutUserNestedInput
+    comments?: CommentUpdateManyWithoutUserNestedInput
+    challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
+    feedPosts?: FeedPostUpdateManyWithoutUserNestedInput
+    messages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    postLikes?: PostLikeUpdateManyWithoutUserNestedInput
+    reviewsRecv?: ReviewUpdateManyWithoutRevieweeNestedInput
+    reviewsGiven?: ReviewUpdateManyWithoutReviewerNestedInput
+    sessionsAsTutor?: SessionUpdateManyWithoutPartnerNestedInput
+    sessionsAsStudent?: SessionUpdateManyWithoutStudentNestedInput
+    studentProfile?: StudentProfileUpdateOneWithoutUserNestedInput
+    tutorApplication?: TutorApplicationUpdateOneWithoutUserNestedInput
+    tutorProfile?: TutorProfileUpdateOneWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
+    resourcePurchases?: ResourcePurchaseUpdateManyWithoutUserNestedInput
+    resources?: ResourceUpdateManyWithoutSellerNestedInput
+    sessionPaymentsAsStudent?: SessionPaymentUpdateManyWithoutStudentNestedInput
+    sessionPaymentsAsTutor?: SessionPaymentUpdateManyWithoutTutorNestedInput
+    payouts?: TutorPayoutUpdateManyWithoutTutorNestedInput
+    matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
+    newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
+    userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
+    sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
+    institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
+    institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutStudentBookingsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
+    formYear?: NullableIntFieldUpdateOperationsInput | number | null
+    county?: StringFieldUpdateOperationsInput | string
+    points?: IntFieldUpdateOperationsInput | number
+    tier?: EnumTierFieldUpdateOperationsInput | $Enums.Tier
+    streakDays?: IntFieldUpdateOperationsInput | number
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isUnder18?: BoolFieldUpdateOperationsInput | boolean
+    strikes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: NullableStringFieldUpdateOperationsInput | string | null
+    dailyMessageCount?: IntFieldUpdateOperationsInput | number
+    dailySearchCount?: IntFieldUpdateOperationsInput | number
+    lastCountReset?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    banned?: BoolFieldUpdateOperationsInput | boolean
+    suspended?: BoolFieldUpdateOperationsInput | boolean
+    plan?: StringFieldUpdateOperationsInput | string
+    planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
+    challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
+    feedPosts?: FeedPostUncheckedUpdateManyWithoutUserNestedInput
+    messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
+    reviewsRecv?: ReviewUncheckedUpdateManyWithoutRevieweeNestedInput
+    reviewsGiven?: ReviewUncheckedUpdateManyWithoutReviewerNestedInput
+    sessionsAsTutor?: SessionUncheckedUpdateManyWithoutPartnerNestedInput
+    sessionsAsStudent?: SessionUncheckedUpdateManyWithoutStudentNestedInput
+    studentProfile?: StudentProfileUncheckedUpdateOneWithoutUserNestedInput
+    tutorApplication?: TutorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    tutorProfile?: TutorProfileUncheckedUpdateOneWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
+    resourcePurchases?: ResourcePurchaseUncheckedUpdateManyWithoutUserNestedInput
+    resources?: ResourceUncheckedUpdateManyWithoutSellerNestedInput
+    sessionPaymentsAsStudent?: SessionPaymentUncheckedUpdateManyWithoutStudentNestedInput
+    sessionPaymentsAsTutor?: SessionPaymentUncheckedUpdateManyWithoutTutorNestedInput
+    payouts?: TutorPayoutUncheckedUpdateManyWithoutTutorNestedInput
+    matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
+    newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
+    userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
+    sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
+    institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
+    institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
+  }
+
+  export type UserUpsertWithoutTutorBookingsInput = {
+    update: XOR<UserUpdateWithoutTutorBookingsInput, UserUncheckedUpdateWithoutTutorBookingsInput>
+    create: XOR<UserCreateWithoutTutorBookingsInput, UserUncheckedCreateWithoutTutorBookingsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutTutorBookingsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutTutorBookingsInput, UserUncheckedUpdateWithoutTutorBookingsInput>
+  }
+
+  export type UserUpdateWithoutTutorBookingsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
+    formYear?: NullableIntFieldUpdateOperationsInput | number | null
+    county?: StringFieldUpdateOperationsInput | string
+    points?: IntFieldUpdateOperationsInput | number
+    tier?: EnumTierFieldUpdateOperationsInput | $Enums.Tier
+    streakDays?: IntFieldUpdateOperationsInput | number
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isUnder18?: BoolFieldUpdateOperationsInput | boolean
+    strikes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: NullableStringFieldUpdateOperationsInput | string | null
+    dailyMessageCount?: IntFieldUpdateOperationsInput | number
+    dailySearchCount?: IntFieldUpdateOperationsInput | number
+    lastCountReset?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    banned?: BoolFieldUpdateOperationsInput | boolean
+    suspended?: BoolFieldUpdateOperationsInput | boolean
+    plan?: StringFieldUpdateOperationsInput | string
+    planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    achievements?: AchievementUpdateManyWithoutUserNestedInput
+    comments?: CommentUpdateManyWithoutUserNestedInput
+    challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
+    feedPosts?: FeedPostUpdateManyWithoutUserNestedInput
+    messages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    postLikes?: PostLikeUpdateManyWithoutUserNestedInput
+    reviewsRecv?: ReviewUpdateManyWithoutRevieweeNestedInput
+    reviewsGiven?: ReviewUpdateManyWithoutReviewerNestedInput
+    sessionsAsTutor?: SessionUpdateManyWithoutPartnerNestedInput
+    sessionsAsStudent?: SessionUpdateManyWithoutStudentNestedInput
+    studentProfile?: StudentProfileUpdateOneWithoutUserNestedInput
+    tutorApplication?: TutorApplicationUpdateOneWithoutUserNestedInput
+    tutorProfile?: TutorProfileUpdateOneWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
+    resourcePurchases?: ResourcePurchaseUpdateManyWithoutUserNestedInput
+    resources?: ResourceUpdateManyWithoutSellerNestedInput
+    sessionPaymentsAsStudent?: SessionPaymentUpdateManyWithoutStudentNestedInput
+    sessionPaymentsAsTutor?: SessionPaymentUpdateManyWithoutTutorNestedInput
+    payouts?: TutorPayoutUpdateManyWithoutTutorNestedInput
+    matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
+    newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
+    userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
+    sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
+    institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
+    institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutTutorBookingsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
+    formYear?: NullableIntFieldUpdateOperationsInput | number | null
+    county?: StringFieldUpdateOperationsInput | string
+    points?: IntFieldUpdateOperationsInput | number
+    tier?: EnumTierFieldUpdateOperationsInput | $Enums.Tier
+    streakDays?: IntFieldUpdateOperationsInput | number
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isUnder18?: BoolFieldUpdateOperationsInput | boolean
+    strikes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: NullableStringFieldUpdateOperationsInput | string | null
+    dailyMessageCount?: IntFieldUpdateOperationsInput | number
+    dailySearchCount?: IntFieldUpdateOperationsInput | number
+    lastCountReset?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    banned?: BoolFieldUpdateOperationsInput | boolean
+    suspended?: BoolFieldUpdateOperationsInput | boolean
+    plan?: StringFieldUpdateOperationsInput | string
+    planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
+    challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
+    feedPosts?: FeedPostUncheckedUpdateManyWithoutUserNestedInput
+    messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
+    reviewsRecv?: ReviewUncheckedUpdateManyWithoutRevieweeNestedInput
+    reviewsGiven?: ReviewUncheckedUpdateManyWithoutReviewerNestedInput
+    sessionsAsTutor?: SessionUncheckedUpdateManyWithoutPartnerNestedInput
+    sessionsAsStudent?: SessionUncheckedUpdateManyWithoutStudentNestedInput
+    studentProfile?: StudentProfileUncheckedUpdateOneWithoutUserNestedInput
+    tutorApplication?: TutorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    tutorProfile?: TutorProfileUncheckedUpdateOneWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
+    resourcePurchases?: ResourcePurchaseUncheckedUpdateManyWithoutUserNestedInput
+    resources?: ResourceUncheckedUpdateManyWithoutSellerNestedInput
+    sessionPaymentsAsStudent?: SessionPaymentUncheckedUpdateManyWithoutStudentNestedInput
+    sessionPaymentsAsTutor?: SessionPaymentUncheckedUpdateManyWithoutTutorNestedInput
+    payouts?: TutorPayoutUncheckedUpdateManyWithoutTutorNestedInput
+    matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
+    newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
+    userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
+    sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
+    institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
+    institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
+  }
+
+  export type BookingReminderUpsertWithWhereUniqueWithoutBookingInput = {
+    where: BookingReminderWhereUniqueInput
+    update: XOR<BookingReminderUpdateWithoutBookingInput, BookingReminderUncheckedUpdateWithoutBookingInput>
+    create: XOR<BookingReminderCreateWithoutBookingInput, BookingReminderUncheckedCreateWithoutBookingInput>
+  }
+
+  export type BookingReminderUpdateWithWhereUniqueWithoutBookingInput = {
+    where: BookingReminderWhereUniqueInput
+    data: XOR<BookingReminderUpdateWithoutBookingInput, BookingReminderUncheckedUpdateWithoutBookingInput>
+  }
+
+  export type BookingReminderUpdateManyWithWhereWithoutBookingInput = {
+    where: BookingReminderScalarWhereInput
+    data: XOR<BookingReminderUpdateManyMutationInput, BookingReminderUncheckedUpdateManyWithoutBookingInput>
+  }
+
+  export type SessionFlagUpsertWithWhereUniqueWithoutBookingInput = {
+    where: SessionFlagWhereUniqueInput
+    update: XOR<SessionFlagUpdateWithoutBookingInput, SessionFlagUncheckedUpdateWithoutBookingInput>
+    create: XOR<SessionFlagCreateWithoutBookingInput, SessionFlagUncheckedCreateWithoutBookingInput>
+  }
+
+  export type SessionFlagUpdateWithWhereUniqueWithoutBookingInput = {
+    where: SessionFlagWhereUniqueInput
+    data: XOR<SessionFlagUpdateWithoutBookingInput, SessionFlagUncheckedUpdateWithoutBookingInput>
+  }
+
+  export type SessionFlagUpdateManyWithWhereWithoutBookingInput = {
+    where: SessionFlagScalarWhereInput
+    data: XOR<SessionFlagUpdateManyMutationInput, SessionFlagUncheckedUpdateManyWithoutBookingInput>
+  }
+
+  export type BookingCreateWithoutRemindersInput = {
+    id?: string
+    subject: string
+    topic?: string | null
+    educationLevel?: string | null
+    date: Date | string
+    startTime: string
+    endTime: string
+    durationMinutes: number
+    status?: string
+    amount?: number
+    paystackReference?: string | null
+    declineReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    student: UserCreateNestedOneWithoutStudentBookingsInput
+    tutor: UserCreateNestedOneWithoutTutorBookingsInput
+    flags?: SessionFlagCreateNestedManyWithoutBookingInput
+  }
+
+  export type BookingUncheckedCreateWithoutRemindersInput = {
+    id?: string
+    studentId: string
+    tutorId: string
+    subject: string
+    topic?: string | null
+    educationLevel?: string | null
+    date: Date | string
+    startTime: string
+    endTime: string
+    durationMinutes: number
+    status?: string
+    amount?: number
+    paystackReference?: string | null
+    declineReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    flags?: SessionFlagUncheckedCreateNestedManyWithoutBookingInput
+  }
+
+  export type BookingCreateOrConnectWithoutRemindersInput = {
+    where: BookingWhereUniqueInput
+    create: XOR<BookingCreateWithoutRemindersInput, BookingUncheckedCreateWithoutRemindersInput>
+  }
+
+  export type UserCreateWithoutBookingRemindersInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    avatar?: string | null
+    gender?: $Enums.Gender | null
+    role?: $Enums.Role
+    educationLevel?: $Enums.EduLevel | null
+    formYear?: number | null
+    county: string
+    points?: number
+    tier?: $Enums.Tier
+    streakDays?: number
+    lastActiveAt?: Date | string | null
+    isUnder18?: boolean
+    strikes?: number
+    createdAt?: Date | string
+    bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: string | null
+    dailyMessageCount?: number
+    dailySearchCount?: number
+    lastCountReset?: Date | string | null
+    subscriptionTier?: string | null
+    banned?: boolean
+    suspended?: boolean
+    plan?: string
+    planStartedAt?: Date | string | null
+    planExpiresAt?: Date | string | null
+    planBillingCycle?: string | null
+    achievements?: AchievementCreateNestedManyWithoutUserInput
+    comments?: CommentCreateNestedManyWithoutUserInput
+    challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
+    feedPosts?: FeedPostCreateNestedManyWithoutUserInput
+    messages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    postLikes?: PostLikeCreateNestedManyWithoutUserInput
+    reviewsRecv?: ReviewCreateNestedManyWithoutRevieweeInput
+    reviewsGiven?: ReviewCreateNestedManyWithoutReviewerInput
+    sessionsAsTutor?: SessionCreateNestedManyWithoutPartnerInput
+    sessionsAsStudent?: SessionCreateNestedManyWithoutStudentInput
+    studentProfile?: StudentProfileCreateNestedOneWithoutUserInput
+    tutorApplication?: TutorApplicationCreateNestedOneWithoutUserInput
+    tutorProfile?: TutorProfileCreateNestedOneWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
+    resourcePurchases?: ResourcePurchaseCreateNestedManyWithoutUserInput
+    resources?: ResourceCreateNestedManyWithoutSellerInput
+    sessionPaymentsAsStudent?: SessionPaymentCreateNestedManyWithoutStudentInput
+    sessionPaymentsAsTutor?: SessionPaymentCreateNestedManyWithoutTutorInput
+    payouts?: TutorPayoutCreateNestedManyWithoutTutorInput
+    matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
+    newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
+    userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
+    sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
+    institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
+    institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
+  }
+
+  export type UserUncheckedCreateWithoutBookingRemindersInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    avatar?: string | null
+    gender?: $Enums.Gender | null
+    role?: $Enums.Role
+    educationLevel?: $Enums.EduLevel | null
+    formYear?: number | null
+    county: string
+    points?: number
+    tier?: $Enums.Tier
+    streakDays?: number
+    lastActiveAt?: Date | string | null
+    isUnder18?: boolean
+    strikes?: number
+    createdAt?: Date | string
+    bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: string | null
+    dailyMessageCount?: number
+    dailySearchCount?: number
+    lastCountReset?: Date | string | null
+    subscriptionTier?: string | null
+    banned?: boolean
+    suspended?: boolean
+    plan?: string
+    planStartedAt?: Date | string | null
+    planExpiresAt?: Date | string | null
+    planBillingCycle?: string | null
+    achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
+    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
+    challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
+    feedPosts?: FeedPostUncheckedCreateNestedManyWithoutUserInput
+    messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
+    reviewsRecv?: ReviewUncheckedCreateNestedManyWithoutRevieweeInput
+    reviewsGiven?: ReviewUncheckedCreateNestedManyWithoutReviewerInput
+    sessionsAsTutor?: SessionUncheckedCreateNestedManyWithoutPartnerInput
+    sessionsAsStudent?: SessionUncheckedCreateNestedManyWithoutStudentInput
+    studentProfile?: StudentProfileUncheckedCreateNestedOneWithoutUserInput
+    tutorApplication?: TutorApplicationUncheckedCreateNestedOneWithoutUserInput
+    tutorProfile?: TutorProfileUncheckedCreateNestedOneWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
+    resourcePurchases?: ResourcePurchaseUncheckedCreateNestedManyWithoutUserInput
+    resources?: ResourceUncheckedCreateNestedManyWithoutSellerInput
+    sessionPaymentsAsStudent?: SessionPaymentUncheckedCreateNestedManyWithoutStudentInput
+    sessionPaymentsAsTutor?: SessionPaymentUncheckedCreateNestedManyWithoutTutorInput
+    payouts?: TutorPayoutUncheckedCreateNestedManyWithoutTutorInput
+    matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
+    newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
+    userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
+    sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
+    institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
+    institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
+  }
+
+  export type UserCreateOrConnectWithoutBookingRemindersInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutBookingRemindersInput, UserUncheckedCreateWithoutBookingRemindersInput>
+  }
+
+  export type BookingUpsertWithoutRemindersInput = {
+    update: XOR<BookingUpdateWithoutRemindersInput, BookingUncheckedUpdateWithoutRemindersInput>
+    create: XOR<BookingCreateWithoutRemindersInput, BookingUncheckedCreateWithoutRemindersInput>
+    where?: BookingWhereInput
+  }
+
+  export type BookingUpdateToOneWithWhereWithoutRemindersInput = {
+    where?: BookingWhereInput
+    data: XOR<BookingUpdateWithoutRemindersInput, BookingUncheckedUpdateWithoutRemindersInput>
+  }
+
+  export type BookingUpdateWithoutRemindersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    topic?: NullableStringFieldUpdateOperationsInput | string | null
+    educationLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    paystackReference?: NullableStringFieldUpdateOperationsInput | string | null
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    student?: UserUpdateOneRequiredWithoutStudentBookingsNestedInput
+    tutor?: UserUpdateOneRequiredWithoutTutorBookingsNestedInput
+    flags?: SessionFlagUpdateManyWithoutBookingNestedInput
+  }
+
+  export type BookingUncheckedUpdateWithoutRemindersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    studentId?: StringFieldUpdateOperationsInput | string
+    tutorId?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    topic?: NullableStringFieldUpdateOperationsInput | string | null
+    educationLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    paystackReference?: NullableStringFieldUpdateOperationsInput | string | null
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    flags?: SessionFlagUncheckedUpdateManyWithoutBookingNestedInput
+  }
+
+  export type UserUpsertWithoutBookingRemindersInput = {
+    update: XOR<UserUpdateWithoutBookingRemindersInput, UserUncheckedUpdateWithoutBookingRemindersInput>
+    create: XOR<UserCreateWithoutBookingRemindersInput, UserUncheckedCreateWithoutBookingRemindersInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutBookingRemindersInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutBookingRemindersInput, UserUncheckedUpdateWithoutBookingRemindersInput>
+  }
+
+  export type UserUpdateWithoutBookingRemindersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
+    formYear?: NullableIntFieldUpdateOperationsInput | number | null
+    county?: StringFieldUpdateOperationsInput | string
+    points?: IntFieldUpdateOperationsInput | number
+    tier?: EnumTierFieldUpdateOperationsInput | $Enums.Tier
+    streakDays?: IntFieldUpdateOperationsInput | number
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isUnder18?: BoolFieldUpdateOperationsInput | boolean
+    strikes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: NullableStringFieldUpdateOperationsInput | string | null
+    dailyMessageCount?: IntFieldUpdateOperationsInput | number
+    dailySearchCount?: IntFieldUpdateOperationsInput | number
+    lastCountReset?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    banned?: BoolFieldUpdateOperationsInput | boolean
+    suspended?: BoolFieldUpdateOperationsInput | boolean
+    plan?: StringFieldUpdateOperationsInput | string
+    planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    achievements?: AchievementUpdateManyWithoutUserNestedInput
+    comments?: CommentUpdateManyWithoutUserNestedInput
+    challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
+    feedPosts?: FeedPostUpdateManyWithoutUserNestedInput
+    messages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    postLikes?: PostLikeUpdateManyWithoutUserNestedInput
+    reviewsRecv?: ReviewUpdateManyWithoutRevieweeNestedInput
+    reviewsGiven?: ReviewUpdateManyWithoutReviewerNestedInput
+    sessionsAsTutor?: SessionUpdateManyWithoutPartnerNestedInput
+    sessionsAsStudent?: SessionUpdateManyWithoutStudentNestedInput
+    studentProfile?: StudentProfileUpdateOneWithoutUserNestedInput
+    tutorApplication?: TutorApplicationUpdateOneWithoutUserNestedInput
+    tutorProfile?: TutorProfileUpdateOneWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
+    resourcePurchases?: ResourcePurchaseUpdateManyWithoutUserNestedInput
+    resources?: ResourceUpdateManyWithoutSellerNestedInput
+    sessionPaymentsAsStudent?: SessionPaymentUpdateManyWithoutStudentNestedInput
+    sessionPaymentsAsTutor?: SessionPaymentUpdateManyWithoutTutorNestedInput
+    payouts?: TutorPayoutUpdateManyWithoutTutorNestedInput
+    matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
+    newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
+    userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
+    sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
+    institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
+    institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutBookingRemindersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
+    formYear?: NullableIntFieldUpdateOperationsInput | number | null
+    county?: StringFieldUpdateOperationsInput | string
+    points?: IntFieldUpdateOperationsInput | number
+    tier?: EnumTierFieldUpdateOperationsInput | $Enums.Tier
+    streakDays?: IntFieldUpdateOperationsInput | number
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isUnder18?: BoolFieldUpdateOperationsInput | boolean
+    strikes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: NullableStringFieldUpdateOperationsInput | string | null
+    dailyMessageCount?: IntFieldUpdateOperationsInput | number
+    dailySearchCount?: IntFieldUpdateOperationsInput | number
+    lastCountReset?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    banned?: BoolFieldUpdateOperationsInput | boolean
+    suspended?: BoolFieldUpdateOperationsInput | boolean
+    plan?: StringFieldUpdateOperationsInput | string
+    planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
+    challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
+    feedPosts?: FeedPostUncheckedUpdateManyWithoutUserNestedInput
+    messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
+    reviewsRecv?: ReviewUncheckedUpdateManyWithoutRevieweeNestedInput
+    reviewsGiven?: ReviewUncheckedUpdateManyWithoutReviewerNestedInput
+    sessionsAsTutor?: SessionUncheckedUpdateManyWithoutPartnerNestedInput
+    sessionsAsStudent?: SessionUncheckedUpdateManyWithoutStudentNestedInput
+    studentProfile?: StudentProfileUncheckedUpdateOneWithoutUserNestedInput
+    tutorApplication?: TutorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    tutorProfile?: TutorProfileUncheckedUpdateOneWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
+    resourcePurchases?: ResourcePurchaseUncheckedUpdateManyWithoutUserNestedInput
+    resources?: ResourceUncheckedUpdateManyWithoutSellerNestedInput
+    sessionPaymentsAsStudent?: SessionPaymentUncheckedUpdateManyWithoutStudentNestedInput
+    sessionPaymentsAsTutor?: SessionPaymentUncheckedUpdateManyWithoutTutorNestedInput
+    payouts?: TutorPayoutUncheckedUpdateManyWithoutTutorNestedInput
+    matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
+    newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
+    userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
+    sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
+    institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
+    institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
+  }
+
+  export type UserCreateWithoutSessionFlagsInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    avatar?: string | null
+    gender?: $Enums.Gender | null
+    role?: $Enums.Role
+    educationLevel?: $Enums.EduLevel | null
+    formYear?: number | null
+    county: string
+    points?: number
+    tier?: $Enums.Tier
+    streakDays?: number
+    lastActiveAt?: Date | string | null
+    isUnder18?: boolean
+    strikes?: number
+    createdAt?: Date | string
+    bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: string | null
+    dailyMessageCount?: number
+    dailySearchCount?: number
+    lastCountReset?: Date | string | null
+    subscriptionTier?: string | null
+    banned?: boolean
+    suspended?: boolean
+    plan?: string
+    planStartedAt?: Date | string | null
+    planExpiresAt?: Date | string | null
+    planBillingCycle?: string | null
+    achievements?: AchievementCreateNestedManyWithoutUserInput
+    comments?: CommentCreateNestedManyWithoutUserInput
+    challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
+    feedPosts?: FeedPostCreateNestedManyWithoutUserInput
+    messages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    postLikes?: PostLikeCreateNestedManyWithoutUserInput
+    reviewsRecv?: ReviewCreateNestedManyWithoutRevieweeInput
+    reviewsGiven?: ReviewCreateNestedManyWithoutReviewerInput
+    sessionsAsTutor?: SessionCreateNestedManyWithoutPartnerInput
+    sessionsAsStudent?: SessionCreateNestedManyWithoutStudentInput
+    studentProfile?: StudentProfileCreateNestedOneWithoutUserInput
+    tutorApplication?: TutorApplicationCreateNestedOneWithoutUserInput
+    tutorProfile?: TutorProfileCreateNestedOneWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
+    resourcePurchases?: ResourcePurchaseCreateNestedManyWithoutUserInput
+    resources?: ResourceCreateNestedManyWithoutSellerInput
+    sessionPaymentsAsStudent?: SessionPaymentCreateNestedManyWithoutStudentInput
+    sessionPaymentsAsTutor?: SessionPaymentCreateNestedManyWithoutTutorInput
+    payouts?: TutorPayoutCreateNestedManyWithoutTutorInput
+    matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
+    newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
+    userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
+    sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
+    institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
+    institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutSessionFlagsInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    avatar?: string | null
+    gender?: $Enums.Gender | null
+    role?: $Enums.Role
+    educationLevel?: $Enums.EduLevel | null
+    formYear?: number | null
+    county: string
+    points?: number
+    tier?: $Enums.Tier
+    streakDays?: number
+    lastActiveAt?: Date | string | null
+    isUnder18?: boolean
+    strikes?: number
+    createdAt?: Date | string
+    bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: string | null
+    dailyMessageCount?: number
+    dailySearchCount?: number
+    lastCountReset?: Date | string | null
+    subscriptionTier?: string | null
+    banned?: boolean
+    suspended?: boolean
+    plan?: string
+    planStartedAt?: Date | string | null
+    planExpiresAt?: Date | string | null
+    planBillingCycle?: string | null
+    achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
+    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
+    challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
+    feedPosts?: FeedPostUncheckedCreateNestedManyWithoutUserInput
+    messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
+    reviewsRecv?: ReviewUncheckedCreateNestedManyWithoutRevieweeInput
+    reviewsGiven?: ReviewUncheckedCreateNestedManyWithoutReviewerInput
+    sessionsAsTutor?: SessionUncheckedCreateNestedManyWithoutPartnerInput
+    sessionsAsStudent?: SessionUncheckedCreateNestedManyWithoutStudentInput
+    studentProfile?: StudentProfileUncheckedCreateNestedOneWithoutUserInput
+    tutorApplication?: TutorApplicationUncheckedCreateNestedOneWithoutUserInput
+    tutorProfile?: TutorProfileUncheckedCreateNestedOneWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
+    resourcePurchases?: ResourcePurchaseUncheckedCreateNestedManyWithoutUserInput
+    resources?: ResourceUncheckedCreateNestedManyWithoutSellerInput
+    sessionPaymentsAsStudent?: SessionPaymentUncheckedCreateNestedManyWithoutStudentInput
+    sessionPaymentsAsTutor?: SessionPaymentUncheckedCreateNestedManyWithoutTutorInput
+    payouts?: TutorPayoutUncheckedCreateNestedManyWithoutTutorInput
+    matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
+    newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
+    userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
+    sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
+    institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
+    institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutSessionFlagsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutSessionFlagsInput, UserUncheckedCreateWithoutSessionFlagsInput>
+  }
+
+  export type BookingCreateWithoutFlagsInput = {
+    id?: string
+    subject: string
+    topic?: string | null
+    educationLevel?: string | null
+    date: Date | string
+    startTime: string
+    endTime: string
+    durationMinutes: number
+    status?: string
+    amount?: number
+    paystackReference?: string | null
+    declineReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    student: UserCreateNestedOneWithoutStudentBookingsInput
+    tutor: UserCreateNestedOneWithoutTutorBookingsInput
+    reminders?: BookingReminderCreateNestedManyWithoutBookingInput
+  }
+
+  export type BookingUncheckedCreateWithoutFlagsInput = {
+    id?: string
+    studentId: string
+    tutorId: string
+    subject: string
+    topic?: string | null
+    educationLevel?: string | null
+    date: Date | string
+    startTime: string
+    endTime: string
+    durationMinutes: number
+    status?: string
+    amount?: number
+    paystackReference?: string | null
+    declineReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    reminders?: BookingReminderUncheckedCreateNestedManyWithoutBookingInput
+  }
+
+  export type BookingCreateOrConnectWithoutFlagsInput = {
+    where: BookingWhereUniqueInput
+    create: XOR<BookingCreateWithoutFlagsInput, BookingUncheckedCreateWithoutFlagsInput>
+  }
+
+  export type UserUpsertWithoutSessionFlagsInput = {
+    update: XOR<UserUpdateWithoutSessionFlagsInput, UserUncheckedUpdateWithoutSessionFlagsInput>
+    create: XOR<UserCreateWithoutSessionFlagsInput, UserUncheckedCreateWithoutSessionFlagsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutSessionFlagsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutSessionFlagsInput, UserUncheckedUpdateWithoutSessionFlagsInput>
+  }
+
+  export type UserUpdateWithoutSessionFlagsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
+    formYear?: NullableIntFieldUpdateOperationsInput | number | null
+    county?: StringFieldUpdateOperationsInput | string
+    points?: IntFieldUpdateOperationsInput | number
+    tier?: EnumTierFieldUpdateOperationsInput | $Enums.Tier
+    streakDays?: IntFieldUpdateOperationsInput | number
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isUnder18?: BoolFieldUpdateOperationsInput | boolean
+    strikes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: NullableStringFieldUpdateOperationsInput | string | null
+    dailyMessageCount?: IntFieldUpdateOperationsInput | number
+    dailySearchCount?: IntFieldUpdateOperationsInput | number
+    lastCountReset?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    banned?: BoolFieldUpdateOperationsInput | boolean
+    suspended?: BoolFieldUpdateOperationsInput | boolean
+    plan?: StringFieldUpdateOperationsInput | string
+    planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    achievements?: AchievementUpdateManyWithoutUserNestedInput
+    comments?: CommentUpdateManyWithoutUserNestedInput
+    challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
+    feedPosts?: FeedPostUpdateManyWithoutUserNestedInput
+    messages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    postLikes?: PostLikeUpdateManyWithoutUserNestedInput
+    reviewsRecv?: ReviewUpdateManyWithoutRevieweeNestedInput
+    reviewsGiven?: ReviewUpdateManyWithoutReviewerNestedInput
+    sessionsAsTutor?: SessionUpdateManyWithoutPartnerNestedInput
+    sessionsAsStudent?: SessionUpdateManyWithoutStudentNestedInput
+    studentProfile?: StudentProfileUpdateOneWithoutUserNestedInput
+    tutorApplication?: TutorApplicationUpdateOneWithoutUserNestedInput
+    tutorProfile?: TutorProfileUpdateOneWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
+    resourcePurchases?: ResourcePurchaseUpdateManyWithoutUserNestedInput
+    resources?: ResourceUpdateManyWithoutSellerNestedInput
+    sessionPaymentsAsStudent?: SessionPaymentUpdateManyWithoutStudentNestedInput
+    sessionPaymentsAsTutor?: SessionPaymentUpdateManyWithoutTutorNestedInput
+    payouts?: TutorPayoutUpdateManyWithoutTutorNestedInput
+    matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
+    newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
+    userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
+    sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
+    institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
+    institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutSessionFlagsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
+    formYear?: NullableIntFieldUpdateOperationsInput | number | null
+    county?: StringFieldUpdateOperationsInput | string
+    points?: IntFieldUpdateOperationsInput | number
+    tier?: EnumTierFieldUpdateOperationsInput | $Enums.Tier
+    streakDays?: IntFieldUpdateOperationsInput | number
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isUnder18?: BoolFieldUpdateOperationsInput | boolean
+    strikes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: NullableStringFieldUpdateOperationsInput | string | null
+    dailyMessageCount?: IntFieldUpdateOperationsInput | number
+    dailySearchCount?: IntFieldUpdateOperationsInput | number
+    lastCountReset?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    banned?: BoolFieldUpdateOperationsInput | boolean
+    suspended?: BoolFieldUpdateOperationsInput | boolean
+    plan?: StringFieldUpdateOperationsInput | string
+    planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
+    challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
+    feedPosts?: FeedPostUncheckedUpdateManyWithoutUserNestedInput
+    messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
+    reviewsRecv?: ReviewUncheckedUpdateManyWithoutRevieweeNestedInput
+    reviewsGiven?: ReviewUncheckedUpdateManyWithoutReviewerNestedInput
+    sessionsAsTutor?: SessionUncheckedUpdateManyWithoutPartnerNestedInput
+    sessionsAsStudent?: SessionUncheckedUpdateManyWithoutStudentNestedInput
+    studentProfile?: StudentProfileUncheckedUpdateOneWithoutUserNestedInput
+    tutorApplication?: TutorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    tutorProfile?: TutorProfileUncheckedUpdateOneWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
+    resourcePurchases?: ResourcePurchaseUncheckedUpdateManyWithoutUserNestedInput
+    resources?: ResourceUncheckedUpdateManyWithoutSellerNestedInput
+    sessionPaymentsAsStudent?: SessionPaymentUncheckedUpdateManyWithoutStudentNestedInput
+    sessionPaymentsAsTutor?: SessionPaymentUncheckedUpdateManyWithoutTutorNestedInput
+    payouts?: TutorPayoutUncheckedUpdateManyWithoutTutorNestedInput
+    matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
+    newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
+    userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
+    sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
+    institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
+    institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type BookingUpsertWithoutFlagsInput = {
+    update: XOR<BookingUpdateWithoutFlagsInput, BookingUncheckedUpdateWithoutFlagsInput>
+    create: XOR<BookingCreateWithoutFlagsInput, BookingUncheckedCreateWithoutFlagsInput>
+    where?: BookingWhereInput
+  }
+
+  export type BookingUpdateToOneWithWhereWithoutFlagsInput = {
+    where?: BookingWhereInput
+    data: XOR<BookingUpdateWithoutFlagsInput, BookingUncheckedUpdateWithoutFlagsInput>
+  }
+
+  export type BookingUpdateWithoutFlagsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    topic?: NullableStringFieldUpdateOperationsInput | string | null
+    educationLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    paystackReference?: NullableStringFieldUpdateOperationsInput | string | null
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    student?: UserUpdateOneRequiredWithoutStudentBookingsNestedInput
+    tutor?: UserUpdateOneRequiredWithoutTutorBookingsNestedInput
+    reminders?: BookingReminderUpdateManyWithoutBookingNestedInput
+  }
+
+  export type BookingUncheckedUpdateWithoutFlagsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    studentId?: StringFieldUpdateOperationsInput | string
+    tutorId?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    topic?: NullableStringFieldUpdateOperationsInput | string | null
+    educationLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    paystackReference?: NullableStringFieldUpdateOperationsInput | string | null
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reminders?: BookingReminderUncheckedUpdateManyWithoutBookingNestedInput
   }
 
   export type AchievementCreateManyUserInput = {
@@ -76552,6 +85164,69 @@ export namespace Prisma {
     endpoint: string
     p256dh: string
     auth: string
+    createdAt?: Date | string
+  }
+
+  export type TutorAvailabilityCreateManyTutorInput = {
+    id?: string
+    dayOfWeek: number
+    startTime: string
+    endTime: string
+    isRecurring?: boolean
+    specificDate?: Date | string | null
+    isBlocked?: boolean
+    createdAt?: Date | string
+  }
+
+  export type BookingCreateManyStudentInput = {
+    id?: string
+    tutorId: string
+    subject: string
+    topic?: string | null
+    educationLevel?: string | null
+    date: Date | string
+    startTime: string
+    endTime: string
+    durationMinutes: number
+    status?: string
+    amount?: number
+    paystackReference?: string | null
+    declineReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BookingCreateManyTutorInput = {
+    id?: string
+    studentId: string
+    subject: string
+    topic?: string | null
+    educationLevel?: string | null
+    date: Date | string
+    startTime: string
+    endTime: string
+    durationMinutes: number
+    status?: string
+    amount?: number
+    paystackReference?: string | null
+    declineReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BookingReminderCreateManyUserInput = {
+    id?: string
+    bookingId: string
+    reminderType: string
+    scheduledFor: Date | string
+    sentAt?: Date | string | null
+    channel?: string
+  }
+
+  export type SessionFlagCreateManyTutorInput = {
+    id?: string
+    flagType: string
+    bookingId: string
     createdAt?: Date | string
   }
 
@@ -77376,6 +86051,203 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type TutorAvailabilityUpdateWithoutTutorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    dayOfWeek?: IntFieldUpdateOperationsInput | number
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    specificDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TutorAvailabilityUncheckedUpdateWithoutTutorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    dayOfWeek?: IntFieldUpdateOperationsInput | number
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    specificDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TutorAvailabilityUncheckedUpdateManyWithoutTutorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    dayOfWeek?: IntFieldUpdateOperationsInput | number
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
+    isRecurring?: BoolFieldUpdateOperationsInput | boolean
+    specificDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BookingUpdateWithoutStudentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    topic?: NullableStringFieldUpdateOperationsInput | string | null
+    educationLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    paystackReference?: NullableStringFieldUpdateOperationsInput | string | null
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tutor?: UserUpdateOneRequiredWithoutTutorBookingsNestedInput
+    reminders?: BookingReminderUpdateManyWithoutBookingNestedInput
+    flags?: SessionFlagUpdateManyWithoutBookingNestedInput
+  }
+
+  export type BookingUncheckedUpdateWithoutStudentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tutorId?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    topic?: NullableStringFieldUpdateOperationsInput | string | null
+    educationLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    paystackReference?: NullableStringFieldUpdateOperationsInput | string | null
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reminders?: BookingReminderUncheckedUpdateManyWithoutBookingNestedInput
+    flags?: SessionFlagUncheckedUpdateManyWithoutBookingNestedInput
+  }
+
+  export type BookingUncheckedUpdateManyWithoutStudentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tutorId?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    topic?: NullableStringFieldUpdateOperationsInput | string | null
+    educationLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    paystackReference?: NullableStringFieldUpdateOperationsInput | string | null
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BookingUpdateWithoutTutorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    topic?: NullableStringFieldUpdateOperationsInput | string | null
+    educationLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    paystackReference?: NullableStringFieldUpdateOperationsInput | string | null
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    student?: UserUpdateOneRequiredWithoutStudentBookingsNestedInput
+    reminders?: BookingReminderUpdateManyWithoutBookingNestedInput
+    flags?: SessionFlagUpdateManyWithoutBookingNestedInput
+  }
+
+  export type BookingUncheckedUpdateWithoutTutorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    studentId?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    topic?: NullableStringFieldUpdateOperationsInput | string | null
+    educationLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    paystackReference?: NullableStringFieldUpdateOperationsInput | string | null
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    reminders?: BookingReminderUncheckedUpdateManyWithoutBookingNestedInput
+    flags?: SessionFlagUncheckedUpdateManyWithoutBookingNestedInput
+  }
+
+  export type BookingUncheckedUpdateManyWithoutTutorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    studentId?: StringFieldUpdateOperationsInput | string
+    subject?: StringFieldUpdateOperationsInput | string
+    topic?: NullableStringFieldUpdateOperationsInput | string | null
+    educationLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    startTime?: StringFieldUpdateOperationsInput | string
+    endTime?: StringFieldUpdateOperationsInput | string
+    durationMinutes?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    paystackReference?: NullableStringFieldUpdateOperationsInput | string | null
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BookingReminderUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reminderType?: StringFieldUpdateOperationsInput | string
+    scheduledFor?: DateTimeFieldUpdateOperationsInput | Date | string
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    channel?: StringFieldUpdateOperationsInput | string
+    booking?: BookingUpdateOneRequiredWithoutRemindersNestedInput
+  }
+
+  export type BookingReminderUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bookingId?: StringFieldUpdateOperationsInput | string
+    reminderType?: StringFieldUpdateOperationsInput | string
+    scheduledFor?: DateTimeFieldUpdateOperationsInput | Date | string
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    channel?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type BookingReminderUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bookingId?: StringFieldUpdateOperationsInput | string
+    reminderType?: StringFieldUpdateOperationsInput | string
+    scheduledFor?: DateTimeFieldUpdateOperationsInput | Date | string
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    channel?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type SessionFlagUpdateWithoutTutorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    flagType?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    booking?: BookingUpdateOneRequiredWithoutFlagsNestedInput
+  }
+
+  export type SessionFlagUncheckedUpdateWithoutTutorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    flagType?: StringFieldUpdateOperationsInput | string
+    bookingId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SessionFlagUncheckedUpdateManyWithoutTutorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    flagType?: StringFieldUpdateOperationsInput | string
+    bookingId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type MessageCreateManySessionInput = {
     id?: string
     senderId?: string | null
@@ -77856,6 +86728,70 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type BookingReminderCreateManyBookingInput = {
+    id?: string
+    userId: string
+    reminderType: string
+    scheduledFor: Date | string
+    sentAt?: Date | string | null
+    channel?: string
+  }
+
+  export type SessionFlagCreateManyBookingInput = {
+    id?: string
+    tutorId: string
+    flagType: string
+    createdAt?: Date | string
+  }
+
+  export type BookingReminderUpdateWithoutBookingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    reminderType?: StringFieldUpdateOperationsInput | string
+    scheduledFor?: DateTimeFieldUpdateOperationsInput | Date | string
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    channel?: StringFieldUpdateOperationsInput | string
+    user?: UserUpdateOneRequiredWithoutBookingRemindersNestedInput
+  }
+
+  export type BookingReminderUncheckedUpdateWithoutBookingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    reminderType?: StringFieldUpdateOperationsInput | string
+    scheduledFor?: DateTimeFieldUpdateOperationsInput | Date | string
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    channel?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type BookingReminderUncheckedUpdateManyWithoutBookingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    reminderType?: StringFieldUpdateOperationsInput | string
+    scheduledFor?: DateTimeFieldUpdateOperationsInput | Date | string
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    channel?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type SessionFlagUpdateWithoutBookingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    flagType?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tutor?: UserUpdateOneRequiredWithoutSessionFlagsNestedInput
+  }
+
+  export type SessionFlagUncheckedUpdateWithoutBookingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tutorId?: StringFieldUpdateOperationsInput | string
+    flagType?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SessionFlagUncheckedUpdateManyWithoutBookingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tutorId?: StringFieldUpdateOperationsInput | string
+    flagType?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
 
 
   /**
@@ -77893,6 +86829,10 @@ export namespace Prisma {
      * @deprecated Use InstitutionCountOutputTypeDefaultArgs instead
      */
     export type InstitutionCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = InstitutionCountOutputTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use BookingCountOutputTypeDefaultArgs instead
+     */
+    export type BookingCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = BookingCountOutputTypeDefaultArgs<ExtArgs>
     /**
      * @deprecated Use UserDefaultArgs instead
      */
@@ -78073,6 +87013,22 @@ export namespace Prisma {
      * @deprecated Use InstitutionDocumentDefaultArgs instead
      */
     export type InstitutionDocumentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = InstitutionDocumentDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use TutorAvailabilityDefaultArgs instead
+     */
+    export type TutorAvailabilityArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = TutorAvailabilityDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use BookingDefaultArgs instead
+     */
+    export type BookingArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = BookingDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use BookingReminderDefaultArgs instead
+     */
+    export type BookingReminderArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = BookingReminderDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use SessionFlagDefaultArgs instead
+     */
+    export type SessionFlagArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = SessionFlagDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany
