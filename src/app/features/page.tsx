@@ -115,39 +115,39 @@ export default function FeaturesPage() {
           ))}
         </div>
 
-        <div className="rounded-[3rem] bg-black p-8 md:p-24 relative overflow-hidden text-center space-y-12">
+        <div className="rounded-[3rem] bg-foreground p-8 md:p-24 relative overflow-hidden text-center space-y-12">
           <div className="absolute inset-0 bg-primary/5 blur-[120px]" />
           <div className="relative z-10 max-w-2xl mx-auto space-y-6">
-            <h2 className="text-4xl md:text-6xl font-black tracking-tightest text-white leading-none">
+            <h2 className="text-4xl md:text-6xl font-black tracking-tightest text-background leading-none">
               Learning works better when the whole system lines up.
             </h2>
-            <p className="text-white/60 font-medium text-lg">
+            <p className="text-background/60 font-medium text-lg">
               Students get support, tutors stay visible, and institutions get a clearer picture of progress.
             </p>
           </div>
           <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
             {stats.length > 0 ? stats.map((s) => (
-              <div key={s.label} className="p-6 rounded-2xl bg-white/5 border border-white/10 text-center space-y-2">
-                <p className="text-4xl font-black text-white">{s.value > 0 ? s.value.toLocaleString() : "Growing Daily"}</p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/40">{s.label}</p>
+              <div key={s.label} className="p-6 rounded-2xl bg-background/5 border border-background/10 text-center space-y-2">
+                <p className="text-4xl font-black text-background">{s.value > 0 ? s.value.toLocaleString() : "Growing Daily"}</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-background/40">{s.label}</p>
               </div>
             )) : (
               <>
-                <div className="p-6 rounded-2xl bg-white/5 border border-white/10 text-center space-y-2">
-                  <TrendingUp className="h-8 w-8 mx-auto text-white/40" />
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Growing Daily</p>
+                <div className="p-6 rounded-2xl bg-background/5 border border-background/10 text-center space-y-2">
+                  <TrendingUp className="h-8 w-8 mx-auto text-background/40" />
+                  <p className="text-[10px] font-black uppercase tracking-widest text-background/40">Growing Daily</p>
                 </div>
-                <div className="p-6 rounded-2xl bg-white/5 border border-white/10 text-center space-y-2">
-                  <TrendingUp className="h-8 w-8 mx-auto text-white/40" />
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Growing Daily</p>
+                <div className="p-6 rounded-2xl bg-background/5 border border-background/10 text-center space-y-2">
+                  <TrendingUp className="h-8 w-8 mx-auto text-background/40" />
+                  <p className="text-[10px] font-black uppercase tracking-widest text-background/40">Growing Daily</p>
                 </div>
-                <div className="p-6 rounded-2xl bg-white/5 border border-white/10 text-center space-y-2">
-                  <TrendingUp className="h-8 w-8 mx-auto text-white/40" />
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Growing Daily</p>
+                <div className="p-6 rounded-2xl bg-background/5 border border-background/10 text-center space-y-2">
+                  <TrendingUp className="h-8 w-8 mx-auto text-background/40" />
+                  <p className="text-[10px] font-black uppercase tracking-widest text-background/40">Growing Daily</p>
                 </div>
-                <div className="p-6 rounded-2xl bg-white/5 border border-white/10 text-center space-y-2">
-                  <TrendingUp className="h-8 w-8 mx-auto text-white/40" />
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Growing Daily</p>
+                <div className="p-6 rounded-2xl bg-background/5 border border-background/10 text-center space-y-2">
+                  <TrendingUp className="h-8 w-8 mx-auto text-background/40" />
+                  <p className="text-[10px] font-black uppercase tracking-widest text-background/40">Growing Daily</p>
                 </div>
               </>
             )}

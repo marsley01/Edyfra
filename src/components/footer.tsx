@@ -197,20 +197,7 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="pt-12 border-t border-border flex flex-col md:flex-row justify-between items-center gap-8">
-          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-            Copyright {new Date().getFullYear()} Edyfra Platforms. Learning support for every serious scholar.
-          </p>
-          <div className="flex items-center gap-8 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-            <Link href="/privacy" className="hover:text-primary transition-colors">Privacy & Cookies</Link>
-            <Link href="/terms" className="hover:text-primary transition-colors">Terms & Security</Link>
-            <Link href="/institution" className="hover:text-primary transition-colors">Institutions</Link>
-            <div className="flex items-center gap-2 px-3 py-1 bg-secondary rounded-full border border-border">
-              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-green-500">Systems Active</span>
-            </div>
-          </div>
-        </div>
+
       </div>
     </footer>
   );

@@ -38,7 +38,7 @@ function Counter({ value, label }: CounterProps) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="text-5xl md:text-6xl font-black tracking-tightest tabular-nums text-white"
+        className="text-5xl md:text-6xl font-black tracking-tightest tabular-nums text-background"
       >
         {isEmpty ? (
           <span className="text-3xl md:text-4xl font-black tracking-tight text-primary/70">
@@ -58,7 +58,7 @@ function Counter({ value, label }: CounterProps) {
 // Accepts real stats from the server component — no client-side fetch needed
 export function HomeStats({ stats }: { stats: Stat[] }) {
   return (
-    <section className="bg-black py-32 md:py-48 overflow-hidden relative">
+    <section className="bg-foreground py-32 md:py-48 overflow-hidden relative">
       <div className="container-max grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-8">
         {stats.map((stat) => (
           <Counter key={stat.label} value={stat.value} label={stat.label} />

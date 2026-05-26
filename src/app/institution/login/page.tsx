@@ -32,29 +32,29 @@ export default function InstitutionLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col justify-center py-12 sm:px-6 lg:px-8 selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-background flex flex-col justify-center py-12 sm:px-6 lg:px-8 selection:bg-indigo-500/30">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
           <div className="w-16 h-16 bg-indigo-500/10 rounded-2xl flex items-center justify-center border border-indigo-500/20">
             <Building2 className="h-8 w-8 text-indigo-400" />
           </div>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-black tracking-tight text-white">
+        <h2 className="mt-6 text-center text-3xl font-black tracking-tight text-foreground">
           Institution Portal
         </h2>
-        <p className="mt-2 text-center text-sm text-white/50">
+        <p className="mt-2 text-center text-sm text-muted-foreground">
           Sign in to manage your school's private network
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-[#111] py-8 px-4 shadow-2xl sm:rounded-3xl sm:px-10 border border-white/5 relative overflow-hidden">
+        <div className="bg-secondary/50 py-8 px-4 shadow-2xl sm:rounded-3xl sm:px-10 border border-border relative overflow-hidden">
           {/* Subtle background glow */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-50" />
           
           <form className="space-y-6" onSubmit={handleLogin}>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-white/70">
+              <label htmlFor="email" className="block text-sm font-medium text-muted-foreground">
                 School Email Address
               </label>
               <div className="mt-2">
@@ -66,14 +66,14 @@ export default function InstitutionLogin() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full px-4 py-3 border border-white/10 rounded-xl shadow-sm placeholder-white/30 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-black text-white h-12"
+                  className="appearance-none block w-full px-4 py-3 border border-border rounded-xl shadow-sm placeholder-muted-foreground focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-background text-foreground h-12"
                   placeholder="admin@school.ac.ke"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-white/70">
+              <label htmlFor="password" className="block text-sm font-medium text-muted-foreground">
                 Password
               </label>
               <div className="mt-2">
@@ -85,7 +85,7 @@ export default function InstitutionLogin() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full px-4 py-3 border border-white/10 rounded-xl shadow-sm placeholder-white/30 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-black text-white h-12"
+                  className="appearance-none block w-full px-4 py-3 border border-border rounded-xl shadow-sm placeholder-muted-foreground focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-background text-foreground h-12"
                   placeholder="••••••••"
                 />
               </div>
@@ -97,9 +97,9 @@ export default function InstitutionLogin() {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-white/10 rounded bg-black"
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-border rounded bg-background"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-white/70">
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-muted-foreground">
                   Remember me
                 </label>
               </div>
@@ -115,7 +115,7 @@ export default function InstitutionLogin() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-black transition-colors"
+                className="w-full h-12 flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-background transition-colors"
               >
                 {loading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
@@ -130,7 +130,7 @@ export default function InstitutionLogin() {
           </form>
 
           <div className="mt-6 text-center">
-             <p className="text-sm text-white/50">
+             <p className="text-sm text-muted-foreground">
                Not registered yet? <Link href="/institution" className="text-indigo-400 font-medium hover:text-indigo-300">Contact sales for onboarding</Link>
              </p>
           </div>
