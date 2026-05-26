@@ -21,7 +21,10 @@ export async function getTutorAvailability(tutorId?: string) {
 export async function saveTutorAvailability(tutorId: string, slots: any[]) {
   try {
     const user = await getUserData();
-    if (!user || user.id !== tutorId) throw new Error("Unauthorized");
+    if (!user) throw new Error("Unauthorized");
+    
+    const targetId = tutorId || user.id;
+    if (user.id !== targetId && user.role !== "ADMIN") throw new Error("Unauthorized");
 
     // Start a transaction: clear existing recurring availability and insert new ones
     await prisma.$transaction([
