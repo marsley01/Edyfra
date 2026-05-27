@@ -4,19 +4,25 @@ import { Role } from "@/generated/client";
 import { getUserData } from "@/app/actions/user";
 
 // List all challenges (for admin)
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const user = await getUserData();
     if (!user || user.role !== Role.ADMIN) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
+    const now = new Date();
     const challenges = await prisma.dailyChallenge.findMany({
       orderBy: { date: "desc" },
       take: 100
     });
 
-    return NextResponse.json({ challenges });
+    return NextResponse.json({
+      challenges: challenges.map((challenge) => ({
+        ...challenge,
+        scheduled: challenge.date > now,
+      })),
+    });
   } catch (error) {
     console.error("Error fetching challenges:", error);
     return NextResponse.json({ error: "Failed to fetch challenges" }, { status: 500 });

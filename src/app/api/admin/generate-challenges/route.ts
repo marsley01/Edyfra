@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { level, subject, topic, count = 1 } = body;
+    const { level, subject, topic, count = 1, scheduledDate } = body;
 
     // Validate required fields
     if (!level || !["HIGH_SCHOOL", "UNIVERSITY"].includes(level)) {
@@ -30,7 +30,8 @@ export async function POST(req: NextRequest) {
       level,
       subject,
       topic,
-      count: Math.min(count, 10) // Limit to 10 at a time
+      count: Math.min(count, 10), // Limit to 10 at a time
+      scheduledDate,
     });
 
     return NextResponse.json({
