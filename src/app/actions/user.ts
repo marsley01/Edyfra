@@ -1,6 +1,6 @@
 "use server";
 
-import { Role, EduLevel, Tier, VerifPath, Prisma, User, StudentProfile, TutorProfile, Gender } from "@/generated/client";
+import { Role, EduLevel, Tier, VerifPath, Prisma, User, StudentProfile, TutorProfile, Gender, UserPreferences } from "@/generated/client";
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
@@ -25,7 +25,11 @@ async function syncSupabaseRoleFromPrisma(supabase: Awaited<ReturnType<typeof cr
   }
 }
 
-export async function getUserData(): Promise<(User & { studentProfile: StudentProfile | null, tutorProfile: TutorProfile | null }) | null> {
+export async function getUserData(): Promise<(User & { 
+  studentProfile: StudentProfile | null, 
+  tutorProfile: TutorProfile | null,
+  preferences: UserPreferences | null
+}) | null> {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -41,7 +45,8 @@ export async function getUserData(): Promise<(User & { studentProfile: StudentPr
       },
       include: {
         studentProfile: true,
-        tutorProfile: true
+        tutorProfile: true,
+        preferences: true
       }
     });
 
@@ -61,10 +66,14 @@ export async function getUserData(): Promise<(User & { studentProfile: StudentPr
           lastActiveAt: new Date(),
           avatar: user.user_metadata?.avatar || null,
           gender: metaGender === "MALE" ? Gender.MALE : metaGender === "FEMALE" ? Gender.FEMALE : undefined,
+          preferences: {
+            create: {} // Use defaults defined in schema
+          }
         },
         include: {
           studentProfile: true,
-          tutorProfile: true
+          tutorProfile: true,
+          preferences: true
         }
       });
     } else {
@@ -85,7 +94,8 @@ export async function getUserData(): Promise<(User & { studentProfile: StudentPr
           },
           include: {
             studentProfile: true,
-            tutorProfile: true
+            tutorProfile: true,
+            preferences: true
           }
         });
       }
@@ -97,7 +107,7 @@ export async function getUserData(): Promise<(User & { studentProfile: StudentPr
       prismaUser = await prisma.user.update({
         where: { id: prismaUser.id },
         data: { tier: correctTier as Tier },
-        include: { studentProfile: true, tutorProfile: true }
+        include: { studentProfile: true, tutorProfile: true, preferences: true }
       });
     }
 
@@ -244,25 +254,6 @@ export async function updateUserRole(role: "STUDENT" | "TUTOR") {
   }
 }
 
-export async function updateUserSettings(settings: Prisma.InputJsonValue) {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Unauthorized");
-
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { settings }
-    });
-
-    revalidatePath("/dashboard/settings");
-    return { success: true };
-  } catch (error) {
-    console.error("Error in updateUserSettings:", error);
-    throw error;
-  }
-}
-
 export async function updateUserPreferences(prefs: {
   theme?: string;
   accentColor?: string;
@@ -276,6 +267,7 @@ export async function updateUserPreferences(prefs: {
   showOnlineStatus?: boolean;
   allowTutorRequests?: boolean;
   enableMashFallback?: boolean;
+  studyHoursPerWeek?: number;
 }) {
   try {
     const supabase = await createClient();
@@ -286,6 +278,7 @@ export async function updateUserPreferences(prefs: {
       "theme", "accentColor", "layout", "fontSize", "preferredLanguage",
       "studyTime", "sessionLength", "sessionTypePref", "showProfile",
       "showOnlineStatus", "allowTutorRequests", "enableMashFallback",
+      "studyHoursPerWeek"
     ];
     const cleanPrefs = Object.fromEntries(
       Object.entries(prefs).filter(([k]) => allowed.includes(k) && prefs[k as keyof typeof prefs] !== undefined)
@@ -434,9 +427,7 @@ export async function updateStudentProfile(data: {
     }
 
     if (data.studyHoursPerWeek !== undefined) {
-      const existingSettings = await prisma.user.findUnique({ where: { id: user.id }, select: { settings: true } });
-      const settings = { ...((existingSettings?.settings as any) || {}), studyHoursPerWeek: data.studyHoursPerWeek };
-      await prisma.user.update({ where: { id: user.id }, data: { settings } });
+      await updateUserPreferences({ studyHoursPerWeek: data.studyHoursPerWeek });
     }
 
     revalidatePath("/dashboard/settings");
