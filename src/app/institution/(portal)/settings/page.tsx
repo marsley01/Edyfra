@@ -27,7 +27,7 @@ export default function SettingsPage() {
           const inst = membership.institution;
           setForm({
             name: inst.name,
-            code: inst.code,
+            code: inst.code || "",
             email: inst.email || "",
             description: inst.description || "",
             location: inst.location || "",

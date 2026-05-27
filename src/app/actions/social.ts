@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 import prisma from "@/lib/prisma";
+import { notifyUser } from "@/app/actions/notifications";
 import { revalidatePath } from "next/cache";
 
 export async function toggleFollow(targetUserId: string) {
@@ -28,13 +29,10 @@ export async function toggleFollow(targetUserId: string) {
       following_id: targetUserId,
     });
 
-    await prisma.notification.create({
-      data: {
-        userId: targetUserId,
-        type: "FOLLOW",
-        title: "New Follower",
-        body: "Someone just started following your academic journey.",
-      },
+    await notifyUser(targetUserId, {
+      type: "FOLLOW",
+      title: "New Follower",
+      body: "Someone just started following your academic journey.",
     });
   }
 

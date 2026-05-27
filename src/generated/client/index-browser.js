@@ -583,19 +583,47 @@ exports.Prisma.Newsletter_subscribersScalarFieldEnum = {
 exports.Prisma.InstitutionScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  type: 'type',
   code: 'code',
-  description: 'description',
   logo: 'logo',
-  banner: 'banner',
+  description: 'description',
   location: 'location',
   email: 'email',
   phone: 'phone',
   website: 'website',
-  verified: 'verified',
-  plan: 'plan',
   allowedDomains: 'allowedDomains',
+  branding: 'branding',
+  plan: 'plan',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  isActive: 'isActive'
+};
+
+exports.Prisma.InstitutionStaffScalarFieldEnum = {
+  id: 'id',
+  institutionId: 'institutionId',
+  userId: 'userId',
+  email: 'email',
+  name: 'name',
+  role: 'role',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.InstitutionStudentScalarFieldEnum = {
+  id: 'id',
+  institutionId: 'institutionId',
+  userId: 'userId',
+  studentIdStr: 'studentIdStr',
+  classYear: 'classYear',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.InstitutionTutorScalarFieldEnum = {
+  id: 'id',
+  institutionId: 'institutionId',
+  userId: 'userId',
+  status: 'status',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.InstitutionMemberScalarFieldEnum = {
@@ -604,7 +632,8 @@ exports.Prisma.InstitutionMemberScalarFieldEnum = {
   userId: 'userId',
   role: 'role',
   status: 'status',
-  joinedAt: 'joinedAt'
+  joinedAt: 'joinedAt',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.InstitutionDocumentScalarFieldEnum = {
@@ -616,6 +645,55 @@ exports.Prisma.InstitutionDocumentScalarFieldEnum = {
   fileType: 'fileType',
   fileSize: 'fileSize',
   uploadedBy: 'uploadedBy',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.TutorAvailabilityScalarFieldEnum = {
+  id: 'id',
+  tutorId: 'tutorId',
+  dayOfWeek: 'dayOfWeek',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  isRecurring: 'isRecurring',
+  specificDate: 'specificDate',
+  isBlocked: 'isBlocked',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.BookingScalarFieldEnum = {
+  id: 'id',
+  studentId: 'studentId',
+  tutorId: 'tutorId',
+  subject: 'subject',
+  topic: 'topic',
+  educationLevel: 'educationLevel',
+  date: 'date',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  durationMinutes: 'durationMinutes',
+  status: 'status',
+  amount: 'amount',
+  paystackReference: 'paystackReference',
+  declineReason: 'declineReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.BookingReminderScalarFieldEnum = {
+  id: 'id',
+  bookingId: 'bookingId',
+  userId: 'userId',
+  reminderType: 'reminderType',
+  scheduledFor: 'scheduledFor',
+  sentAt: 'sentAt',
+  channel: 'channel'
+};
+
+exports.Prisma.SessionFlagScalarFieldEnum = {
+  id: 'id',
+  tutorId: 'tutorId',
+  flagType: 'flagType',
+  bookingId: 'bookingId',
   createdAt: 'createdAt'
 };
 
@@ -698,13 +776,6 @@ exports.AppStatus = exports.$Enums.AppStatus = {
   REJECTED: 'REJECTED'
 };
 
-exports.InstitutionRole = exports.$Enums.InstitutionRole = {
-  INSTITUTION_ADMIN: 'INSTITUTION_ADMIN',
-  DEPARTMENT_HEAD: 'DEPARTMENT_HEAD',
-  INSTRUCTOR: 'INSTRUCTOR',
-  STUDENT: 'STUDENT'
-};
-
 exports.Prisma.ModelName = {
   User: 'User',
   StudentProfile: 'StudentProfile',
@@ -746,8 +817,15 @@ exports.Prisma.ModelName = {
   ResourcePurchase: 'ResourcePurchase',
   newsletter_subscribers: 'newsletter_subscribers',
   Institution: 'Institution',
+  InstitutionStaff: 'InstitutionStaff',
+  InstitutionStudent: 'InstitutionStudent',
+  InstitutionTutor: 'InstitutionTutor',
   InstitutionMember: 'InstitutionMember',
-  InstitutionDocument: 'InstitutionDocument'
+  InstitutionDocument: 'InstitutionDocument',
+  TutorAvailability: 'TutorAvailability',
+  Booking: 'Booking',
+  BookingReminder: 'BookingReminder',
+  SessionFlag: 'SessionFlag'
 };
 
 /**

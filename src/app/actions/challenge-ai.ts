@@ -25,6 +25,53 @@ interface GeneratedChallenge {
   date?: string;
 }
 
+function normalizeOptions(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((o) => String(o).trim())
+    .filter(Boolean)
+    .slice(0, 4);
+}
+
+/** Map letter answers (A–D) to the matching option text for grading. */
+function normalizeChallengeAnswer(options: string[], answer: string): string {
+  const trimmed = answer.trim();
+  const letter = trimmed.match(/^([A-D])$/i)?.[1]?.toUpperCase();
+  if (letter) {
+    const idx = letter.charCodeAt(0) - 65;
+    if (options[idx]) return options[idx];
+  }
+  const exact = options.find((o) => o.toLowerCase() === trimmed.toLowerCase());
+  return exact || trimmed;
+}
+
+function parseChallengesFromAI(aiResponse: string): GeneratedChallenge[] {
+  const jsonMatch =
+    aiResponse.match(/```json\s*([\s\S]*?)\s*```/) ||
+    aiResponse.match(/\[[\s\S]*\]/) ||
+    aiResponse.match(/\{[\s\S]*\}/);
+
+  let jsonString = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : aiResponse;
+  if (!jsonString.trim().startsWith("[")) jsonString = `[${jsonString}]`;
+  const parsed = JSON.parse(jsonString);
+  const list = Array.isArray(parsed) ? parsed : [parsed];
+
+  return list.map((item: GeneratedChallenge) => {
+    const options = normalizeOptions(item.options);
+    if (options.length < 2) {
+      throw new Error("AI challenge missing valid options");
+    }
+    return {
+      subject: item.subject || "General",
+      level: item.level || "HIGH_SCHOOL",
+      question: item.question,
+      options,
+      answer: normalizeChallengeAnswer(options, item.answer),
+      explanation: item.explanation || "Review the correct reasoning above.",
+    };
+  });
+}
+
 export async function generateChallenges(request: ChallengeGenerationRequest): Promise<GeneratedChallenge[]> {
   try {
     const { level, subject, topic, count = 1 } = request;
@@ -61,23 +108,11 @@ Make the questions:
 - Include practical examples where relevant`;
 
     const aiResponse = await generateAIResponse(prompt, subject, topic);
-    if (!aiResponse || aiResponse.includes("taking a break")) {
+    if (!aiResponse?.trim()) {
       throw new Error("AI generation failed");
     }
 
-    let challenges: GeneratedChallenge[] = [];
-    try {
-      const jsonMatch = aiResponse.match(/```json\n([\s\S]*?)\n```/) ||
-                         aiResponse.match(/\[([\s\S]*?)\]/) ||
-                         aiResponse.match(/\{[\s\S]*\}/);
-
-      let jsonString = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : aiResponse;
-      if (!jsonString.trim().startsWith('[')) jsonString = `[${jsonString}]`;
-      challenges = JSON.parse(jsonString);
-    } catch (parseError) {
-      console.error("Failed to parse AI response:", parseError);
-      throw new Error("Failed to parse AI-generated challenges");
-    }
+    const challenges = parseChallengesFromAI(aiResponse);
 
     const baseDate = request.scheduledDate ? new Date(request.scheduledDate) : new Date();
     baseDate.setHours(0, 0, 0, 0);
@@ -144,76 +179,66 @@ export async function getOrCreateDailyChallenge(level: string, subject?: string)
       scheduledDate: today.toISOString(),
     });
 
-    if (challenges.length === 0) throw new Error("Failed to generate challenge");
-    return challenges[0];
+    if (challenges.length === 0 || !challenges[0].id) throw new Error("Failed to generate challenge");
+    return prisma.dailyChallenge.findUnique({ where: { id: challenges[0].id } });
   } catch (error) {
     console.error("Error getting/creating daily challenge:", error);
-    // Enhanced fallback: try multiple subjects and retry AI generation
-    try {
-      const fallbackSubjects = ["Mathematics", "Science", "English", "History"];
-      const randomSubject = fallbackSubjects[Math.floor(Math.random() * fallbackSubjects.length)];
-      
-      // Retry AI generation with simpler prompt
-      const retryPrompt = `Create a simple multiple-choice question for ${level === "UNIVERSITY" ? "university" : "high school"} level ${randomSubject}. 
-      Format: {"question": "...", "options": ["A", "B", "C", "D"], "answer": "A", "explanation": "..."}`;
-      
-      const aiResponse = await generateAIResponse(retryPrompt, randomSubject);
-      if (aiResponse && !aiResponse.includes("taking a break")) {
-        try {
-          const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
-          const jsonString = jsonMatch ? jsonMatch[0] : aiResponse;
-          const parsed = JSON.parse(jsonString);
-          
-          return await prisma.dailyChallenge.create({
-            data: {
-              subject: randomSubject,
-              level: level as EduLevel,
-              question: parsed.question,
-              options: parsed.options,
-              answer: parsed.answer,
-              explanation: parsed.explanation,
-              date: new Date(),
-            },
-          });
-        } catch (parseError) {
-          console.error("Failed to parse retry AI response:", parseError);
-        }
-      }
-      
-      // Final fallback: create a basic challenge template
-      const templates = [
-        {
-          question: `Solve this ${randomSubject.toLowerCase()} problem: What is 15% of 200?`,
-          options: ["25", "30", "35", "40"],
-          answer: "30",
-          explanation: "15% of 200 = 0.15 × 200 = 30",
-          subject: randomSubject,
+    return null;
+  }
+}
+
+export async function getChallengesForUser(userId: string, level: string) {
+  try {
+    const eduLevel = level as EduLevel;
+    let challenges = await prisma.dailyChallenge.findMany({
+      where: {
+        level: eduLevel,
+        date: { lte: new Date() },
+      },
+      orderBy: { date: "desc" },
+      take: 10,
+      include: {
+        attempts: {
+          where: { userId },
+          select: { id: true, correct: true },
         },
-        {
-          question: `Which of these is the correct formula for calculating area of a circle?`,
-          options: ["πr²", "2πr", "πd", "r²"],
-          answer: "πr²",
-          explanation: "The area of a circle is calculated using the formula A = πr²",
-          subject: randomSubject,
-        }
-      ];
-      
-      const template = templates[Math.floor(Math.random() * templates.length)];
-      return await prisma.dailyChallenge.create({
-        data: {
-          subject: template.subject,
-          level: level as EduLevel,
-          question: template.question,
-          options: template.options,
-          answer: template.answer,
-          explanation: template.explanation,
-          date: new Date(),
+      },
+    });
+
+    if (challenges.length === 0) {
+      await getOrCreateDailyChallenge(level);
+      challenges = await prisma.dailyChallenge.findMany({
+        where: { level: eduLevel, date: { lte: new Date() } },
+        orderBy: { date: "desc" },
+        take: 10,
+        include: {
+          attempts: {
+            where: { userId },
+            select: { id: true, correct: true },
+          },
         },
       });
-    } catch (fallbackError) {
-      console.error("All fallback methods failed:", fallbackError);
-      return null;
     }
+
+    return challenges.map((c) => {
+      const attempt = c.attempts[0];
+      const options = (c.options as string[]) || [];
+      return {
+        id: c.id,
+        subject: c.subject,
+        level: c.level,
+        question: c.question,
+        options,
+        answer: c.answer,
+        explanation: c.explanation,
+        date: c.date.toISOString(),
+        completed: attempt?.correct === true,
+        hasAttempt: !!attempt,
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching challenges for user:", error);
+    return [];
   }
 }
 
@@ -247,10 +272,13 @@ Respond with a JSON object:
       const jsonString = jsonMatch ? jsonMatch[0] : aiResponse;
       result = JSON.parse(jsonString);
     } catch {
+      const options = (challenge.options as string[]) || [];
+      const normalizedUser = normalizeChallengeAnswer(options, userAnswer);
+      const normalizedCorrect = normalizeChallengeAnswer(options, challenge.answer);
       result = {
-        correct: userAnswer.toLowerCase().trim() === challenge.answer.toLowerCase().trim(),
+        correct: normalizedUser.toLowerCase().trim() === normalizedCorrect.toLowerCase().trim(),
         explanation: challenge.explanation,
-        correctAnswer: challenge.answer,
+        correctAnswer: normalizedCorrect,
       };
     }
 
@@ -419,30 +447,25 @@ Generate a question for ${weakestSubject} that:
 Format: {"question": "...", "options": ["A", "B", "C", "D"], "answer": "A", "explanation": "..."}`;
 
     const aiResponse = await generateAIResponse(adaptivePrompt, weakestSubject);
-    if (!aiResponse || aiResponse.includes("taking a break")) {
+    if (!aiResponse?.trim()) {
       throw new Error("AI generation failed");
     }
 
-    try {
-      const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
-      const jsonString = jsonMatch ? jsonMatch[0] : aiResponse;
-      const parsed = JSON.parse(jsonString);
+    const [parsed] = parseChallengesFromAI(
+      aiResponse.trim().startsWith("[") ? aiResponse : `[${aiResponse.match(/\{[\s\S]*\}/)?.[0] || aiResponse}]`
+    );
 
-      return await prisma.dailyChallenge.create({
-        data: {
-          subject: weakestSubject,
-          level: level as EduLevel,
-          question: parsed.question,
-          options: parsed.options,
-          answer: parsed.answer,
-          explanation: parsed.explanation,
-          date: new Date(),
-        },
-      });
-    } catch (parseError) {
-      console.error("Failed to parse personalized AI response:", parseError);
-      throw new Error("Failed to parse AI-generated challenge");
-    }
+    return await prisma.dailyChallenge.create({
+      data: {
+        subject: weakestSubject,
+        level: level as EduLevel,
+        question: parsed.question,
+        options: parsed.options,
+        answer: parsed.answer,
+        explanation: parsed.explanation,
+        date: new Date(),
+      },
+    });
   } catch (error) {
     console.error("Error generating personalized challenge:", error);
     throw error instanceof Error ? error : new Error("Failed to generate personalized challenge");

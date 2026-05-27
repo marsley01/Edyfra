@@ -106,166 +106,56 @@ export default function UpgradePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background py-20 px-4">
-      <div className="max-w-5xl mx-auto space-y-12">
-        <div className="text-center space-y-4">
+    <div className="min-h-screen bg-background py-20 px-4 flex items-center justify-center">
+      <div className="max-w-3xl mx-auto text-center space-y-12">
+        <div className="space-y-6">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="w-24 h-24 bg-primary/10 rounded-3xl mx-auto flex items-center justify-center shadow-2xl shadow-primary/20 mb-8"
+          >
+            <Crown className="h-12 w-12 text-primary" />
+          </motion.div>
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-4xl md:text-6xl font-black tracking-tightest"
           >
-            Level up your <span className="text-primary">learning.</span>
+            Edyfra is currently in <span className="text-primary">Closed Beta.</span>
           </motion.h1>
-          <p className="text-muted-foreground text-lg font-medium max-w-2xl mx-auto">
-            Choose the plan that fits your academic goals. Secure institutional checkout.
+          <p className="text-muted-foreground text-xl font-medium max-w-2xl mx-auto leading-relaxed">
+            We are currently rolling out institutional access exclusively to select early-adopter schools. 
+            General premium upgrades and study credits will be available soon.
           </p>
         </div>
 
-        {/* Toggle */}
-        <div className="flex justify-center items-center gap-4">
-          <span className={`text-sm font-bold ${billingCycle === "monthly" ? "text-foreground" : "text-muted-foreground"}`}>Monthly</span>
-          <button 
-            onClick={() => setBillingCycle(billingCycle === "monthly" ? "yearly" : "monthly")}
-            className="w-14 h-8 bg-secondary rounded-full p-1 transition-all relative"
-          >
-            <div className={`w-6 h-6 bg-primary rounded-full transition-all ${billingCycle === "yearly" ? "translate-x-6" : "translate-x-0"}`} />
-          </button>
-          <div className="flex items-center gap-2">
-            <span className={`text-sm font-bold ${billingCycle === "yearly" ? "text-foreground" : "text-muted-foreground"}`}>Yearly</span>
-            <span className="bg-primary/10 text-primary text-[10px] font-black px-2 py-1 rounded-full uppercase">Save KES 1,089</span>
-          </div>
-        </div>
-
-        {/* Plans Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-{plans.map((plan) => {
-  // For Study Credits plan, we'll handle it differently
-  if (plan.name === "Study Credits") {
-    return (
-      <div 
-        key={plan.name}
-        className={`p-8 rounded-[2.5rem] border border-border bg-secondary/20 space-y-8 relative overflow-hidden`}
-      >
-        <div className="space-y-2">
-          <h3 className="text-2xl font-black tracking-tightest">{plan.name}</h3>
-          <p className="text-muted-foreground text-sm font-medium">{plan.description}</p>
-        </div>
-        
-        <div className="space-y-4">
-          {plan.features.map((feature) => (
-            <li key={feature} className="flex items-center gap-3 text-sm font-medium text-foreground/80">
-              <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                <Check className="h-3 w-3 text-primary" />
-              </div>
-              {feature}
-            </li>
-          ))}
-        </div>
-        
-        {/* Credit purchase options */}
-        <div className="space-y-4">
-          <div className="border rounded-xl p-4">
-            <p className="font-medium mb-2">Choose credit pack:</p>
-            <div className="space-y-3">
-              <Button 
-                onClick={() => handleUpgrade("credit", 500, "credits_500")}
-                className="w-full flex items-center justify-between px-4 py-3 bg-secondary/50 hover:bg-secondary/100 rounded-lg transition-colors"
-              >
-                <span className="text-left w-1/2">
-                  500 Credits
-                </span>
-                <span className="text-right font-semibold">KES 500</span>
-              </Button>
-              
-              <Button 
-                onClick={() => handleUpgrade("credit", 1000, "credits_1000")}
-                className="w-full flex items-center justify-between px-4 py-3 bg-secondary/50 hover:bg-secondary/100 rounded-lg transition-colors"
-              >
-                <span className="text-left w-1/2">
-                  1,000 Credits
-                </span>
-                <span className="text-right font-semibold">KES 1,000</span>
-              </Button>
-              
-              <Button 
-                onClick={() => handleUpgrade("credit", 2000, "credits_2000")}
-                className="w-full flex items-center justify-between px-4 py-3 bg-secondary/50 hover:bg-secondary/100 rounded-lg transition-colors"
-              >
-                <span className="text-left w-1/2">
-                  2,000 Credits
-                </span>
-                <span className="text-right font-semibold">KES 2,000</span>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  
-  // For subscription plans (Free and Plus)
-  return (
-    <div 
-      key={plan.name}
-      className={`p-8 rounded-[2.5rem] border ${plan.popular ? "border-primary bg-primary/5 ring-1 ring-primary/20" : "border-border bg-secondary/20"} space-y-8 relative overflow-hidden`}
-    >
-      {plan.popular && (
-        <div className="absolute top-6 right-6 bg-primary text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-lg shadow-primary/20 flex items-center gap-1.5">
-          <Crown className="h-3 w-3" /> Most Popular
-        </div>
-      )}
-      
-      <div className="space-y-2">
-        <h3 className="text-2xl font-black tracking-tightest">{plan.name}</h3>
-        <p className="text-muted-foreground text-sm font-medium">{plan.description}</p>
-      </div>
-      
-      <div className="flex items-baseline gap-1">
-        <span className="text-4xl font-black tracking-tightest">KES {billingCycle === "yearly" && plan.yearlyPrice ? plan.yearlyPrice : plan.price}</span>
-        <span className="text-muted-foreground font-medium text-sm">/{billingCycle === "yearly" ? "year" : "month"}</span>
-      </div>
-      
-      <ul className="space-y-4">
-        {plan.features.map((feature) => (
-          <li key={feature} className="flex items-center gap-3 text-sm font-medium text-foreground/80">
-            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <Check className="h-3 w-3 text-primary" />
-            </div>
-            {feature}
-          </li>
-        ))}
-      </ul>
-      
-      {plan.current ? (
-        <Button disabled variant="outline" className="w-full h-14 rounded-2xl border-2 font-black text-xs uppercase tracking-widest">
-          Current Plan
-        </Button>
-      ) : (
-        <Button 
-          onClick={() => handleUpgrade(
-            "subscription", 
-            billingCycle === "monthly" ? 299 : 2499, 
-            billingCycle === "monthly" ? "plus_monthly" : "plus_yearly"
-          )}
-          disabled={loading}
-          className="w-full h-14 rounded-2xl bg-primary text-white hover:bg-primary/90 font-black text-xs uppercase tracking-widest shadow-xl shadow-primary/20 transition-all active:scale-95"
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="p-8 rounded-[2.5rem] border border-border bg-secondary/20 max-w-xl mx-auto"
         >
-          {loading ? "Preparing..." : "Confirm Upgrade"}
-        </Button>
-      )}
-    </div>
-  );
-})}
-        </div>
+          <h3 className="text-2xl font-black tracking-tightest mb-4">Are you an Institution?</h3>
+          <p className="text-muted-foreground font-medium mb-8">
+            Get your entire school onboarded with custom rosters, advanced analytics, and priority tutor matching.
+          </p>
+          <Button 
+            onClick={() => window.location.href = "/contact"}
+            className="w-full h-14 rounded-2xl bg-foreground text-background hover:bg-foreground/90 font-black text-sm uppercase tracking-widest shadow-xl active:scale-95 transition-all"
+          >
+            Contact Sales for Access
+          </Button>
+        </motion.div>
 
-        <div className="flex items-center justify-center gap-6 opacity-40">
+        <div className="flex items-center justify-center gap-6 opacity-40 pt-8">
            <div className="flex items-center gap-2">
              <Shield className="h-4 w-4" />
-             <span className="text-[10px] font-black uppercase tracking-widest">PCI-DSS Compliant</span>
+             <span className="text-[10px] font-black uppercase tracking-widest">Enterprise Security</span>
            </div>
            <div className="flex items-center gap-2">
              <Star className="h-4 w-4" />
-             <span className="text-[10px] font-black uppercase tracking-widest">Verified Merchant</span>
+             <span className="text-[10px] font-black uppercase tracking-widest">Priority Support</span>
            </div>
         </div>
       </div>

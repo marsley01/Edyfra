@@ -1,12 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ChevronRight, Library, BookOpen, GraduationCap, MessageSquare, CheckCircle2 } from "lucide-react";
+import { ChevronRight, Library, BookOpen, GraduationCap, CheckCircle2, Building2 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 const FeatureVisuals = [
-  // Resource Library visual
   <div key="discovery" className="w-full h-full bg-gradient-to-br from-primary/5 to-background flex flex-col items-center justify-center gap-6 p-8">
     <div className="w-full max-w-xs space-y-3">
       <div className="h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center px-5 gap-3">
@@ -31,7 +30,6 @@ const FeatureVisuals = [
     </div>
   </div>,
 
-  // Community visual
   <div key="community" className="w-full h-full bg-gradient-to-br from-blue-500/5 to-background flex flex-col gap-4 p-8 justify-center">
     {[
       { name: "University Expert", role: "Mentor" },
@@ -39,7 +37,7 @@ const FeatureVisuals = [
       { name: "Mash AI", role: "Intelligence" }
     ].map((p, i) => (
       <motion.div key={i} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
-        className={`p-4 rounded-2xl border border-border bg-secondary/50 flex items-start gap-3 shadow-sm`}>
+        className="p-4 rounded-2xl border border-border bg-secondary/50 flex items-start gap-3 shadow-sm">
         <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center font-black text-[11px] flex-shrink-0 text-primary">
           <GraduationCap className="h-4 w-4" />
         </div>
@@ -51,12 +49,11 @@ const FeatureVisuals = [
     ))}
   </div>,
 
-  // Progress visual
   <div key="analytics" className="w-full h-full bg-gradient-to-br from-emerald-500/5 to-background flex flex-col gap-6 p-8 justify-center">
     {[
-      { label: "Study Rooms", pct: 82, color: "bg-primary" },
-      { label: "Collaboration", pct: 65, color: "bg-blue-500" },
-      { label: "Growth", pct: 91, color: "bg-emerald-500" },
+      { label: "School Adoption", pct: 82, color: "bg-primary" },
+      { label: "Tutor Coverage", pct: 65, color: "bg-blue-500" },
+      { label: "Learner Progress", pct: 91, color: "bg-emerald-500" },
     ].map((s, i) => (
       <div key={s.label} className="space-y-2">
         <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
@@ -88,10 +85,10 @@ const features = [
     visualIndex: 1,
   },
   {
-    title: "Group Sync",
-    description: "Start focused study rooms, share questions, and keep a record of what you worked through with tutors, peers, or Mash AI.",
-    icon: MessageSquare,
-    link: "/dashboard/study",
+    title: "Institution Hubs",
+    description: "Schools can onboard cohorts, manage private tutor rosters, and follow student engagement without leaving the same Edyfra ecosystem.",
+    icon: Building2,
+    link: "/institution",
     visualIndex: 2,
   },
 ];
@@ -101,10 +98,10 @@ export function HomeFeatures() {
     <section className="py-32 md:py-48 space-y-32 md:space-y-48 font-sans">
       <div className="container-max text-center space-y-6">
         <h2 className="text-4xl md:text-6xl font-black tracking-tightest leading-none">
-          Built for the way students <br className="hidden md:block" /> actually learn.
+          Built for the way students, tutors, <br className="hidden md:block" /> and institutions actually grow.
         </h2>
         <p className="text-muted-foreground text-lg md:text-xl font-medium max-w-2xl mx-auto">
-          Every section is built around a simple question: what do you need next to keep learning?
+          Every section is built around a simple question: what do you need next to keep learning moving?
         </p>
       </div>
 

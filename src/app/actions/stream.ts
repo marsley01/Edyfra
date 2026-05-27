@@ -50,6 +50,17 @@ export async function getStreamToken(userId: string) {
     role: "user",
   });
 
+  // Ensure mash-ai user exists in Stream (required for channel membership)
+  try {
+    await client.upsertUser({
+      id: "mash-ai",
+      name: "Mash AI",
+      role: "user",
+    });
+  } catch {
+    // Non-blocking — mash-ai might already exist
+  }
+
   console.log(`[Stream] Token generated for user: ${userId}`);
   return client.createToken(userId);
 }
@@ -321,4 +332,60 @@ export async function upsertAIUser() {
     image: undefined,
     role: "user",
   });
+}
+
+// ─── Mash AI Mention Handler ─────────────────────────────────────────────────
+/**
+ * Called directly from the client when a user mentions @mash in a session chat.
+ * This bypasses the Stream webhook (which requires a public URL) and works
+ * in any environment (localhost, preview, production).
+ */
+export async function handleMashMention(
+  channelId: string,
+  messageText: string,
+  sessionSubject: string,
+  sessionTopic?: string,
+  sessionTier?: string
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) throw new Error("Unauthorized");
+
+  const prompt = messageText
+    .replace(/@(?:Mash|AI|mash|ai|mash-ai|MASH)\b/gi, "")
+    .trim();
+
+  // Import AIService dynamically to avoid circular deps
+  const { AIService } = await import("@/utils/ai-service");
+
+  const systemPrompt = `
+    You are Mash AI, a supportive and expert Kenyan tutor on the Edyfra platform.
+    Session Context:
+    - Subject: ${sessionSubject}
+    - Topic: ${sessionTopic || "General"}
+    - Session Type: ${sessionTier === "MASH" ? "One-on-one AI tutoring" : "Study group with human participants"}
+
+    Guidelines:
+    - Be encouraging, professional, and clear.
+    - Do NOT just give the final answer. Guide the student with questions and hints.
+    - Use standard Kenyan English (professional tone).
+    - If they ask something outside of ${sessionSubject}, gently remind them to stay on topic.
+  `;
+
+  const actualPrompt = prompt || `Greet me and ask how you can help with ${sessionSubject}${sessionTopic ? ` (${sessionTopic})` : ""}.`;
+
+  const aiResponse = await AIService.generateCompletion(actualPrompt, systemPrompt);
+
+  // Send response as mash-ai on the channel
+  const client = getServerClient();
+  await client.upsertUser({ id: "mash-ai", name: "Mash AI", role: "user" });
+
+  const channel = client.channel("messaging", channelId);
+  await channel.sendMessage({
+    text: aiResponse,
+    user_id: "mash-ai",
+  });
+
+  return { success: true };
 }

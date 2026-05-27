@@ -6,6 +6,7 @@ import { Role, VerifPath, TutorApplication, User, TutorProfile } from "@/generat
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { getUserData } from "./user";
+import { notifyUser } from "@/app/actions/notifications";
 
 async function requireAdminUser() {
   const adminUser = await getUserData();
@@ -132,14 +133,11 @@ export async function approveTutorApplicationEnhanced(applicationId: string) {
 
     // Add notification to tutor
     try {
-      await prisma.notification.create({
-        data: {
-          userId: app.userId,
-          type: "TUTOR_APPROVED",
-          title: "Application Approved!",
-          body: "Congratulations! Your expert dashboard has been activated. You can now start accepting study sessions.",
-          actionUrl: "/tutor"
-        }
+      await notifyUser(app.userId, {
+        type: "TUTOR_APPROVED",
+        title: "Application Approved!",
+        body: "Congratulations! Your expert dashboard has been activated. You can now start accepting study sessions.",
+        actionUrl: "/tutor"
       });
     } catch (e) {
       console.error("Failed to send notification:", e);
@@ -179,14 +177,11 @@ export async function rejectTutorApplication(applicationId: string, reason?: str
 
     // Add notification to applicant
     try {
-      await prisma.notification.create({
-        data: {
-          userId: app.userId,
-          type: "TUTOR_REJECTED",
-          title: "Application Update",
-          body: reason || "Your tutor application was not approved at this time. Please contact support for more information.",
-          actionUrl: "/dashboard"
-        }
+      await notifyUser(app.userId, {
+        type: "TUTOR_REJECTED",
+        title: "Application Update",
+        body: reason || "Your tutor application was not approved at this time. Please contact support for more information.",
+        actionUrl: "/dashboard"
       });
     } catch (e) {
       console.error("Failed to send notification:", e);

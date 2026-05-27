@@ -2,22 +2,37 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/client";
 import {
-  ChevronLeft, Menu, Activity, Globe, Users, LayoutDashboard, GraduationCap, ShieldCheck, FileText, BookMarked, Bell, Newspaper, Star, MessageSquare, Award, TrendingUp, Cpu, Settings, Search, Terminal, LogOut 
+  ChevronLeft, Menu, Activity, Globe, Users, LayoutDashboard, GraduationCap, ShieldCheck, FileText, BookMarked, Bell, Newspaper, Star, MessageSquare, Award, TrendingUp, Settings, Search, Terminal, LogOut, Cpu
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
+
+type NavItem = {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+};
+
+type AdminSidebarContentProps = {
+  pathname: string;
+  navItems: NavItem[];
+  adminUser: User;
+  supabase: ReturnType<typeof createClient>;
+  router: ReturnType<typeof useRouter>;
+  onClose?: () => void;
+};
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const supabase = createClient();
   const [loading, setLoading] = useState(true);
-  const [adminUser, setAdminUser] = useState<any>(null);
+  const [adminUser, setAdminUser] = useState<User | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -67,9 +82,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!adminUser) return null;
 
-  if (!adminUser) return null;
-
-  const navItems = [
+  const navItems: NavItem[] = [
     { href: "/admin", label: "Overview", icon: LayoutDashboard },
     { href: "/admin/users", label: "User Management", icon: Users },
     { href: "/admin/tutors", label: "Tutor Management", icon: GraduationCap },
@@ -82,14 +95,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin/feedback", label: "Tutor Feedback", icon: MessageSquare },
     { href: "/admin/challenges", label: "AI Challenges", icon: Award },
     { href: "/admin/insights", label: "Site Insights", icon: TrendingUp },
-    { href: "/admin/ai-settings", label: "AI Engine", icon: Cpu },
     { href: "/admin/settings", label: "Settings", icon: Settings },
+    { href: "/admin/ai-settings", label: "AI Settings", icon: Cpu },
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#050505] text-white selection:bg-primary/30">
+    <div className="flex flex-col min-h-screen bg-background text-foreground selection:bg-primary/30">
       {/* Global OS Status Bar */}
-      <div className="h-8 bg-black border-b border-white/5 flex items-center justify-between px-4 text-[8px] font-black uppercase tracking-[0.3em] z-[60] relative overflow-hidden">
+      <div className="h-8 bg-background border-b border-border flex items-center justify-between px-4 text-[8px] font-black uppercase tracking-[0.3em] z-[60] relative overflow-hidden">
         <div className="flex items-center gap-4 overflow-hidden">
           <div className="flex items-center gap-2 flex-shrink-0">
             <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
@@ -111,7 +124,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
 
       {/* Mobile Header */}
-      <header className="lg:hidden h-20 bg-black/40 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-6 sticky top-8 z-40">
+      <header className="lg:hidden h-20 bg-background/40 backdrop-blur-md border-b border-border flex items-center justify-between px-6 sticky top-8 z-40">
         <div className="flex items-center gap-3">
           {pathname !== "/admin" && (
             <button
@@ -182,7 +195,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       <div className="flex flex-1">
         {/* Sleek Glass Sidebar (Desktop) */}
-        <aside className="w-72 bg-black/40 backdrop-blur-2xl border-r border-white/5 hidden lg:flex flex-col fixed top-8 bottom-0 z-50">
+        <aside className="w-72 bg-background/40 backdrop-blur-2xl border-r border-border hidden lg:flex flex-col fixed top-8 bottom-0 z-50">
           <AdminSidebarContent
             pathname={pathname}
             navItems={navItems}
@@ -193,7 +206,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </aside>
 
         {/* Futuristic Main Content */}
-        <main className="flex-1 lg:ml-72 bg-gradient-to-br from-[#050505] to-[#0a0a0a]">
+        <main className="flex-1 lg:ml-72 bg-gradient-to-br from-background to-secondary">
           <header className="h-20 bg-black/40 backdrop-blur-md border-b border-white/5 hidden lg:flex items-center justify-between px-6 xl:px-10 sticky top-8 z-40">
             <div className="flex items-center gap-4 xl:gap-8">
               <div className="flex items-center gap-2 text-muted-foreground text-xs font-bold">
@@ -240,7 +253,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   );
 }
 
-function AdminSidebarContent({ pathname, navItems, adminUser, supabase, router, onClose }: any) {
+function AdminSidebarContent({ pathname, navItems, adminUser, supabase, router, onClose }: AdminSidebarContentProps) {
   return (
     <>
       <div className="p-8 border-b border-white/5 flex items-center gap-4">
@@ -257,7 +270,7 @@ function AdminSidebarContent({ pathname, navItems, adminUser, supabase, router, 
 
       <nav className="flex-1 p-6 space-y-2 overflow-y-auto custom-scrollbar">
         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-4 mb-4">Operations</p>
-        {navItems.map((item: any) => {
+        {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link
@@ -285,7 +298,7 @@ function AdminSidebarContent({ pathname, navItems, adminUser, supabase, router, 
         })}
       </nav>
 
-      <div className="p-6 border-t border-white/5 bg-black/20 space-y-4">
+      <div className="p-6 border-t border-border bg-background/20 space-y-4">
         <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary/20 to-primary/5 text-primary flex items-center justify-center font-black border border-primary/10">

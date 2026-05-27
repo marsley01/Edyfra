@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import prisma from "@/lib/prisma";
+import { notifyUser } from "@/app/actions/notifications";
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 
@@ -69,13 +70,10 @@ export async function POST(req: NextRequest) {
            },
          });
 
-         await prisma.notification.create({
-           data: {
-             userId: userId,
-             type: "SYSTEM",
-             title: "Welcome to Edyfra Plus!",
-             body: `Your account has been upgraded via Paystack. Enjoy unlimited Mash AI!`,
-           },
+         await notifyUser(userId, {
+           type: "SYSTEM",
+           title: "Welcome to Edyfra Plus!",
+           body: `Your account has been upgraded via Paystack. Enjoy unlimited Mash AI!`,
          });
        } else if (paymentType === "credit") {
          // Handle credit purchase
@@ -101,13 +99,10 @@ export async function POST(req: NextRequest) {
            });
          });
 
-         await prisma.notification.create({
-           data: {
-             userId: userId,
-             type: "SYSTEM",
-             title: "Credits Added!",
-             body: `${creditsPurchased} study credits have been added to your account.`,
-           },
+         await notifyUser(userId, {
+           type: "SYSTEM",
+           title: "Credits Added!",
+           body: `${creditsPurchased} study credits have been added to your account.`,
          });
        } else if (paymentType === "session") {
          const session = await prisma.session.findUnique({
@@ -139,13 +134,10 @@ export async function POST(req: NextRequest) {
            });
 
            // Notifications...
-           await prisma.notification.create({
-             data: {
-               userId: session.partnerId!,
-               type: "SESSION",
-               title: "Session Paid",
-               body: `${session.student.name} has paid for the session. You can now start.`,
-             }
+           await notifyUser(session.partnerId!, {
+             type: "SESSION",
+             title: "Session Paid",
+             body: `${session.student.name} has paid for the session. You can now start.`,
            });
          }
        } else if (paymentType === "resource") {

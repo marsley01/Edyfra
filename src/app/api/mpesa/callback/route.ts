@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { notifyUser } from "@/app/actions/notifications";
 
 export async function POST(req: NextRequest) {
   try {
@@ -58,13 +59,10 @@ export async function POST(req: NextRequest) {
         });
 
         // Notify user (In-app notification)
-        await prisma.notification.create({
-          data: {
-            userId: payment.userId,
-            type: "SYSTEM",
-            title: "Welcome to Edyfra Plus!",
-            body: `Your account has been upgraded to Edyfra Plus. Enjoy unlimited Mash AI and more!`,
-          },
+        await notifyUser(payment.userId, {
+          type: "SYSTEM",
+          title: "Welcome to Edyfra Plus!",
+          body: `Your account has been upgraded to Edyfra Plus. Enjoy unlimited Mash AI and more!`,
         });
       } else if (payment.paymentType === "session") {
         // Handle Session Payment
@@ -97,25 +95,19 @@ export async function POST(req: NextRequest) {
           });
 
           // Notify Tutor
-          await prisma.notification.create({
-            data: {
-              userId: session.partnerId!,
-              type: "SESSION",
-              title: "Session Paid",
-              body: `${session.student.name} has paid for your ${session.subject} session. You can now start the call.`,
-              actionUrl: `/study-room/${session.roomId}`
-            }
+          await notifyUser(session.partnerId!, {
+            type: "SESSION",
+            title: "Session Paid",
+            body: `${session.student.name} has paid for your ${session.subject} session. You can now start the call.`,
+            actionUrl: `/study-room/${session.roomId}`,
           });
 
           // Notify Student
-          await prisma.notification.create({
-            data: {
-              userId: session.studentId,
-              type: "SESSION",
-              title: "Payment Confirmed",
-              body: `Your payment of KES ${gross} has been received. Your tutor has been notified.`,
-              actionUrl: `/study-room/${session.roomId}`
-            }
+          await notifyUser(session.studentId, {
+            type: "SESSION",
+            title: "Payment Confirmed",
+            body: `Your payment of KES ${gross} has been received. Your tutor has been notified.`,
+            actionUrl: `/study-room/${session.roomId}`,
           });
         }
       } else if (payment.paymentType === "resource") {
@@ -142,14 +134,11 @@ export async function POST(req: NextRequest) {
           });
 
           // Notify Buyer
-          await prisma.notification.create({
-            data: {
-              userId: payment.userId,
-              type: "MARKETPLACE",
-              title: "Resource Purchased",
-              body: `You have successfully purchased "${resource.title}". You can now download it from the marketplace.`,
-              actionUrl: `/dashboard/resources`
-            }
+          await notifyUser(payment.userId, {
+            type: "MARKETPLACE",
+            title: "Resource Purchased",
+            body: `You have successfully purchased "${resource.title}". You can now download it from the marketplace.`,
+            actionUrl: `/dashboard/resources`,
           });
         }
       }

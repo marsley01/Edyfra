@@ -210,7 +210,7 @@ export default function TutorResourcesPage() {
                       </div>
                       <div className="space-y-1">
                         <h3 className="font-black tracking-tight leading-tight">{r.title}</h3>
-                        <p className="text-xs text-muted-foreground font-medium">{r.subject} · {r.education_level}</p>
+                        <p className="text-xs text-muted-foreground font-medium">{r.subject} · {r.educationLevel}</p>
                       </div>
                       <div className="flex items-center justify-between pt-3 border-t border-border/50">
                         <span className="text-xs font-bold text-muted-foreground">{r.downloads || 0} downloads</span>

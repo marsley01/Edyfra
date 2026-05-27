@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
 import Link from "next/link";
-import { createClient } from "@/utils/supabase/client";
+import { getCommunityScholars } from "@/app/actions/user";
 import { Badge } from "@/components/ui/badge";
 
 interface Scholar {
@@ -24,34 +24,19 @@ interface Scholar {
 export default function CommunityPage() {
   const [scholars, setScholars] = useState<Scholar[]>([]);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
-
   useEffect(() => {
     fetchTopScholars();
   }, []);
 
   const fetchTopScholars = async () => {
     try {
-      const { data, error } = await supabase
-        .from("User")
-        .select("id, name, county, points, tier")
-        .eq("role", "STUDENT")
-        .eq("tier", "LEGEND")
-        .order("points", { ascending: false })
-        .limit(3);
-
-      if (!error && data && data.length > 0) {
-        setScholars(data);
-      } else {
-        // Fallback: get any top scholars
-        const { data: fallback } = await supabase
-          .from("User")
-          .select("id, name, county, points, tier")
-          .eq("role", "STUDENT")
-          .order("points", { ascending: false })
-          .limit(4);
-        if (fallback) setScholars(fallback);
-      }
+      const data = await getCommunityScholars();
+      setScholars(
+        data.map((row) => ({
+          ...row,
+          tier: String(row.tier),
+        }))
+      );
     } catch (e) {
       console.error("Error fetching scholars:", e);
     } finally {

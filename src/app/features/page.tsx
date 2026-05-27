@@ -3,24 +3,49 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import {
-  Zap, Shield, Users, Target,
-  MessageSquare, BarChart3, Globe,
-  Search, BookOpen, GraduationCap,
-  Sparkles, Layers, ShieldCheck, Brain,
-  TrendingUp
+  Zap,
+  Users,
+  Target,
+  MessageSquare,
+  BarChart3,
+  Globe,
+  BookOpen,
+  Sparkles,
+  ShieldCheck,
+  Brain,
+  TrendingUp,
+  Building2,
+  Layers,
 } from "lucide-react";
 
 const allFeatures = [
-  { title: "Smart Matching", description: "We connect you with the right tutors and study partners based on what you're learning and how you like to study.", icon: Target },
+  { title: "Smart Matching", description: "We connect you with the right tutors and study partners based on what you are learning and how you like to study.", icon: Target },
   { title: "Knowledge Feed", description: "A space built just for students to ask questions, share notes, and learn from each other.", icon: MessageSquare },
-  { title: "Progress Tracking", description: "See how far you've come with clear, simple dashboards that show your growth over time.", icon: BarChart3 },
-  { title: "Verified Tutors", description: "Every tutor on Edyfra has been checked and approved so you know you're in good hands.", icon: ShieldCheck },
-  { title: "Connect Anywhere", description: "Study with people across Kenya — no matter where you are.", icon: Globe },
+  { title: "Progress Tracking", description: "See how far you have come with clear, simple dashboards that show your growth over time.", icon: BarChart3 },
+  { title: "Verified Tutors", description: "Every tutor on Edyfra has been checked and approved so you know you are in good hands.", icon: ShieldCheck },
+  { title: "Institution Portals", description: "Schools can launch a dedicated Edyfra space for their learners, staff, and approved tutor networks.", icon: Building2 },
   { title: "Study Resources", description: "Access helpful guides, notes, and materials curated by tutors and students.", icon: BookOpen },
   { title: "Live Study Rooms", description: "Jump into real-time study sessions with chat, AI help, and collaborative tools.", icon: Zap },
   { title: "Rewards & Badges", description: "Earn points as you study and unlock badges that celebrate your progress.", icon: Sparkles },
-  { title: "Peer Matching", description: "Find study partners at your level — matched by subject, topic, and learning style.", icon: Users },
+  { title: "Peer Matching", description: "Find study partners at your level - matched by subject, topic, and learning style.", icon: Users },
+  { title: "Roster Analytics", description: "Track how cohorts are engaging, where support is needed, and which subjects need more attention.", icon: Layers },
+  { title: "Connect Anywhere", description: "Study with people across Kenya - no matter where you are.", icon: Globe },
   { title: "Daily Challenges", description: "Keep your skills sharp with daily problems that build streaks and reward consistency.", icon: Brain },
+];
+
+const audienceGroups = [
+  {
+    title: "Students",
+    description: "Get matched, revise faster, join live rooms, and keep your progress visible every week.",
+  },
+  {
+    title: "Tutors",
+    description: "Support learners with verified profiles, structured sessions, and a clearer way to stay discoverable.",
+  },
+  {
+    title: "Institutions",
+    description: "Onboard school communities, manage private tutor access, and see how support is landing across cohorts.",
+  },
 ];
 
 export default function FeaturesPage() {
@@ -42,18 +67,16 @@ export default function FeaturesPage() {
   return (
     <div className="bg-background pt-32 pb-48">
       <div className="container-max space-y-32">
-        {/* Header */}
         <div className="max-w-3xl space-y-6">
           <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">What you get</p>
           <h1 className="text-6xl md:text-8xl font-black tracking-tightest leading-none">
             Everything you need <br /><span className="text-muted-foreground">to learn better.</span>
           </h1>
           <p className="text-lg md:text-2xl text-muted-foreground font-medium leading-relaxed">
-            Simple tools that make studying easier, more fun, and actually something you look forward to.
+            One platform for students, tutors, and institutions that want learning support to feel organized, responsive, and human.
           </p>
         </div>
 
-        {/* Feature Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {allFeatures.map((feature, i) => (
             <motion.div
@@ -75,41 +98,56 @@ export default function FeaturesPage() {
           ))}
         </div>
 
-        {/* Branded Highlight — NO stock photos */}
-        <div className="rounded-[3rem] bg-black p-8 md:p-24 relative overflow-hidden text-center space-y-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {audienceGroups.map((group, i) => (
+            <motion.div
+              key={group.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.08 }}
+              className="rounded-[2rem] border border-border/60 bg-background p-8 shadow-sm"
+            >
+              <p className="text-[10px] font-black uppercase tracking-[0.35em] text-primary">{group.title}</p>
+              <h2 className="mt-4 text-2xl font-black tracking-tight">{group.title} stay in motion</h2>
+              <p className="mt-4 text-sm font-medium leading-relaxed text-muted-foreground">{group.description}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="rounded-[3rem] bg-foreground p-8 md:p-24 relative overflow-hidden text-center space-y-12">
           <div className="absolute inset-0 bg-primary/5 blur-[120px]" />
           <div className="relative z-10 max-w-2xl mx-auto space-y-6">
-            <h2 className="text-4xl md:text-6xl font-black tracking-tightest text-white leading-none">
-              Just you and your studies.
+            <h2 className="text-4xl md:text-6xl font-black tracking-tightest text-background leading-none">
+              Learning works better when the whole system lines up.
             </h2>
-            <p className="text-white/60 font-medium text-lg">
-              We kept it simple so you can focus on what matters — learning.
+            <p className="text-background/60 font-medium text-lg">
+              Students get support, tutors stay visible, and institutions get a clearer picture of progress.
             </p>
           </div>
-          {/* Real platform stats */}
           <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
-            {stats.length > 0 ? stats.map(s => (
-              <div key={s.label} className="p-6 rounded-2xl bg-white/5 border border-white/10 text-center space-y-2">
-                <p className="text-4xl font-black text-white">{s.value > 0 ? s.value.toLocaleString() : "Growing Daily"}</p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/40">{s.label}</p>
+            {stats.length > 0 ? stats.map((s) => (
+              <div key={s.label} className="p-6 rounded-2xl bg-background/5 border border-background/10 text-center space-y-2">
+                <p className="text-4xl font-black text-background">{s.value > 0 ? s.value.toLocaleString() : "Growing Daily"}</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-background/40">{s.label}</p>
               </div>
             )) : (
               <>
-                <div className="p-6 rounded-2xl bg-white/5 border border-white/10 text-center space-y-2">
-                  <TrendingUp className="h-8 w-8 mx-auto text-white/40" />
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Growing Daily</p>
+                <div className="p-6 rounded-2xl bg-background/5 border border-background/10 text-center space-y-2">
+                  <TrendingUp className="h-8 w-8 mx-auto text-background/40" />
+                  <p className="text-[10px] font-black uppercase tracking-widest text-background/40">Growing Daily</p>
                 </div>
-                <div className="p-6 rounded-2xl bg-white/5 border border-white/10 text-center space-y-2">
-                  <TrendingUp className="h-8 w-8 mx-auto text-white/40" />
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Growing Daily</p>
+                <div className="p-6 rounded-2xl bg-background/5 border border-background/10 text-center space-y-2">
+                  <TrendingUp className="h-8 w-8 mx-auto text-background/40" />
+                  <p className="text-[10px] font-black uppercase tracking-widest text-background/40">Growing Daily</p>
                 </div>
-                <div className="p-6 rounded-2xl bg-white/5 border border-white/10 text-center space-y-2">
-                  <TrendingUp className="h-8 w-8 mx-auto text-white/40" />
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Growing Daily</p>
+                <div className="p-6 rounded-2xl bg-background/5 border border-background/10 text-center space-y-2">
+                  <TrendingUp className="h-8 w-8 mx-auto text-background/40" />
+                  <p className="text-[10px] font-black uppercase tracking-widest text-background/40">Growing Daily</p>
                 </div>
-                <div className="p-6 rounded-2xl bg-white/5 border border-white/10 text-center space-y-2">
-                  <TrendingUp className="h-8 w-8 mx-auto text-white/40" />
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Growing Daily</p>
+                <div className="p-6 rounded-2xl bg-background/5 border border-background/10 text-center space-y-2">
+                  <TrendingUp className="h-8 w-8 mx-auto text-background/40" />
+                  <p className="text-[10px] font-black uppercase tracking-widest text-background/40">Growing Daily</p>
                 </div>
               </>
             )}

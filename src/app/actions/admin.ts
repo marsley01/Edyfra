@@ -1,11 +1,30 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { Role } from "@/generated/client";
+import { Prisma, Role } from "@/generated/client";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { TUTOR_CONFIG } from "@/lib/config";
 import { isFounderEmail } from "@/utils/admin-guard";
+import { notifyUser } from "@/app/actions/notifications";
+
+export type AdminGlobalSettings = {
+  googleAiKey?: string;
+  accentColor?: string;
+  maintenanceMode?: boolean;
+  registrationGate?: boolean;
+  dataCluster?: string;
+  aiProvider?: string;
+  aiMatchmaking?: boolean;
+  pointsMultiplier?: string;
+  tutorEarnings?: boolean;
+  updatedAt?: string;
+  [key: string]: unknown;
+};
+
+function toAdminSettingsJson(settings: AdminGlobalSettings): Prisma.InputJsonValue {
+  return JSON.parse(JSON.stringify(settings)) as Prisma.InputJsonValue;
+}
 
 // Helper: check if current user is an admin (used by server-only contexts)
 async function isAdmin(): Promise<boolean> {
@@ -105,25 +124,8 @@ export async function deleteUser(userId: string) {
       return { error: "Cannot delete your own admin account" };
     }
 
-    // 1. Delete associated records manually to satisfy Prisma foreign key constraints
-    // Since we don't have onDelete: Cascade enabled in schema.prisma, we must do this first.
-    await prisma.$transaction(async (tx) => {
-      // Delete profiles and user-specific metadata
-      await tx.studentProfile.deleteMany({ where: { userId } });
-      await tx.tutorProfile.deleteMany({ where: { userId } });
-      await tx.tutorApplication.deleteMany({ where: { userId } });
-      await tx.notification.deleteMany({ where: { userId } });
-      await tx.userPreferences.deleteMany({ where: { userId } });
-      await tx.userCredits.deleteMany({ where: { userId } });
-      await tx.achievement.deleteMany({ where: { userId } });
-      await tx.creditTransaction.deleteMany({ where: { userId } });
-      
-      // Delete match requests they started
-      await tx.matchRequest.deleteMany({ where: { studentId: userId } });
-      
-      // Finally, delete the user itself
-      await tx.user.delete({ where: { id: userId } });
-    });
+    // 1. Delete from Prisma first
+    await prisma.user.delete({ where: { id: userId } });
 
     // 2. Try to delete from Supabase Auth (Requires Service Role Key)
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -199,6 +201,105 @@ export async function getActiveSessions() {
     return [];
   }
 }
+
+export async function getAdminBookings(filter?: "all" | "pending" | "confirmed" | "declined" | "completed" | "tutor_no_show") {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || !(await isAdmin())) return [];
+
+    const where = filter && filter !== "all" ? { status: filter } : {};
+
+    return await prisma.booking.findMany({
+      where,
+      include: {
+        student: { select: { id: true, name: true, email: true, avatar: true } },
+        tutor: { select: { id: true, name: true, email: true, avatar: true } },
+        flags: true,
+      },
+      orderBy: [{ date: "desc" }, { startTime: "desc" }],
+      take: 100,
+    });
+  } catch (error) {
+    console.error("Error in getAdminBookings:", error);
+    return [];
+  }
+}
+
+export async function adminCancelBooking(bookingId: string, reason?: string) {
+  try {
+    const supabase = await createClient();
+    const { data: { user: admin } } = await supabase.auth.getUser();
+    if (!admin || !(await isAdmin())) return { error: "Unauthorized" };
+
+    const booking = await prisma.booking.update({
+      where: { id: bookingId },
+      data: { status: "cancelled", declineReason: reason || "Cancelled by admin" },
+      include: {
+        student: { select: { id: true, name: true } },
+        tutor: { select: { id: true, name: true } },
+      },
+    });
+
+    try {
+      await notifyUser(booking.studentId, {
+        type: "BOOKING_CANCELLED",
+        title: "Booking Cancelled",
+        body: `Your ${booking.subject} booking has been cancelled by admin.`,
+        actionUrl: "/dashboard/sessions",
+      });
+      await notifyUser(booking.tutorId, {
+        type: "BOOKING_CANCELLED",
+        title: "Booking Cancelled",
+        body: `A ${booking.subject} booking was cancelled by admin.`,
+        actionUrl: "/tutor",
+      });
+    } catch (e) {
+      console.error("Failed to send cancellation notifications:", e);
+    }
+
+    revalidatePath("/admin/bookings");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error in adminCancelBooking:", error);
+    return { error: error.message || "Failed to cancel booking" };
+  }
+}
+
+export async function adminConfirmBooking(bookingId: string) {
+  try {
+    const supabase = await createClient();
+    const { data: { user: admin } } = await supabase.auth.getUser();
+    if (!admin || !(await isAdmin())) return { error: "Unauthorized" };
+
+    const booking = await prisma.booking.update({
+      where: { id: bookingId },
+      data: { status: "confirmed" },
+      include: {
+        student: { select: { id: true } },
+        tutor: { select: { id: true } },
+      },
+    });
+
+    try {
+      await notifyUser(booking.studentId, {
+        type: "BOOKING_CONFIRMED",
+        title: "Booking Confirmed!",
+        body: `Your ${booking.subject} session has been confirmed.`,
+        actionUrl: `/study-room/${booking.id}`,
+      });
+    } catch (e) {
+      console.error("Failed to send confirmation notification:", e);
+    }
+
+    revalidatePath("/admin/bookings");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error in adminConfirmBooking:", error);
+    return { error: error.message || "Failed to confirm booking" };
+  }
+}
+
 
 export async function closeSession(sessionId: string) {
   try {
@@ -292,14 +393,11 @@ export async function approveTutorApplication(applicationId: string) {
 
     // Add Notification
     try {
-      await prisma.notification.create({
-        data: {
-          userId: app.userId,
-          type: "TUTOR_APPROVED",
-          title: "Application Approved!",
-          body: "Congratulations! Your expert dashboard has been activated.",
-          actionUrl: "/tutor"
-        }
+      await notifyUser(app.userId, {
+        type: "TUTOR_APPROVED",
+        title: "Application Approved!",
+        body: "Congratulations! Your expert dashboard has been activated.",
+        actionUrl: "/tutor"
       });
     } catch (e) {
       console.error("Failed to send notification:", e);
@@ -367,14 +465,11 @@ export async function approveResource(resourceId: string) {
     });
 
     try {
-      await prisma.notification.create({
-        data: {
-          userId: resource.sellerId,
-          type: "RESOURCE_APPROVED",
-          title: "Resource Approved!",
-          body: `Your resource "${resource.title}" has been approved and is now live.`,
-          actionUrl: "/dashboard/resources",
-        },
+      await notifyUser(resource.sellerId, {
+        type: "RESOURCE_APPROVED",
+        title: "Resource Approved!",
+        body: `Your resource "${resource.title}" has been approved and is now live.`,
+        actionUrl: "/dashboard/resources",
       });
     } catch (e) {
       console.error("Failed to send notification:", e);
@@ -403,14 +498,11 @@ export async function rejectResource(resourceId: string) {
     });
 
     try {
-      await prisma.notification.create({
-        data: {
-          userId: resource.sellerId,
-          type: "RESOURCE_REJECTED",
-          title: "Resource Not Approved",
-          body: `Your resource "${resource.title}" was not approved. Please review and resubmit.`,
-          actionUrl: "/dashboard/resources",
-        },
+      await notifyUser(resource.sellerId, {
+        type: "RESOURCE_REJECTED",
+        title: "Resource Not Approved",
+        body: `Your resource "${resource.title}" was not approved. Please review and resubmit.`,
+        actionUrl: "/dashboard/resources",
       });
     } catch (e) {
       console.error("Failed to send notification:", e);
@@ -467,7 +559,7 @@ export async function clearGlobalCache() {
   }
 }
 
-export async function saveAdminGlobalSettings(settings: any) {
+export async function saveAdminGlobalSettings(settings: AdminGlobalSettings) {
   try {
     const supabase = await createClient();
     const { data: { user: admin } } = await supabase.auth.getUser();
@@ -476,13 +568,16 @@ export async function saveAdminGlobalSettings(settings: any) {
       return { error: "Unauthorized: Admin access required" };
     }
 
+    const settingsJson = toAdminSettingsJson(settings);
+
     await prisma.platformSettings.upsert({
       where: { key: "global" },
-      create: { key: "global", value: settings },
-      update: { value: settings },
+      create: { key: "global", value: settingsJson },
+      update: { value: settingsJson },
     });
 
     revalidatePath("/admin/settings");
+    revalidatePath("/admin/ai-settings");
     return { success: true };
   } catch (error: any) {
     console.error("Error saving global settings:", error);
@@ -490,13 +585,20 @@ export async function saveAdminGlobalSettings(settings: any) {
   }
 }
 
-export async function getAdminGlobalSettings() {
+export async function getAdminGlobalSettings(): Promise<AdminGlobalSettings> {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user || !(await isAdmin())) {
+      return {};
+    }
+
     const entry = await prisma.platformSettings.findUnique({
       where: { key: "global" },
     });
 
-    return (entry?.value as any) || {};
+    return (entry?.value as AdminGlobalSettings) || {};
   } catch (error) {
     console.error("Error fetching global settings:", error);
     return {};

@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { createMatchRequest, forceAIFallback, checkMatchStatus } from "@/app/actions/match";
-import { Zap, Search, Users, Cpu, Loader2, Sparkles } from "lucide-react";
+import { Zap, Search, Users, Cpu, Loader2, Sparkles, Calendar as CalendarIcon } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/utils/supabase/client";
 
@@ -57,31 +57,35 @@ export default function StudyPage() {
 
     try {
       const result = await createMatchRequest(formData);
-      if (result.success) {
-        setCurrentRequestId(result.matchRequestId);
-        
-        // Broadcast the request to all online users/tutors
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          try {
-            await supabase.channel('global-matches').send({
-              type: 'broadcast',
-              event: 'new-request',
-              payload: {
-                requestId: result.matchRequestId,
-                studentId: user.id,
-                studentName: user.user_metadata?.name || 'A student',
-                subject: formData.subject,
-                topic: formData.topic || 'General'
-              }
-            });
-          } catch (broadcastErr) {
-            console.error('Broadcast failed, but matching continues:', broadcastErr);
-          }
-        }
-        
-        toast.success("Request submitted! Searching for help...");
+      if (!result.success) {
+        toast.error(result.error || "Failed to start matching. Please try again.");
+        setIsMatching(false);
+        return;
       }
+      
+      setCurrentRequestId(result.matchRequestId || null);
+      
+      // Broadcast the request to all online users/tutors
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        try {
+          await supabase.channel('global-matches').send({
+            type: 'broadcast',
+            event: 'new-request',
+            payload: {
+              requestId: result.matchRequestId,
+              studentId: user.id,
+              studentName: user.user_metadata?.name || 'A student',
+              subject: formData.subject,
+              topic: formData.topic || 'General'
+            }
+          });
+        } catch (broadcastErr) {
+          console.error('Broadcast failed, but matching continues:', broadcastErr);
+        }
+      }
+      
+      toast.success("Request submitted! Searching for help...");
     } catch (error) {
       console.error("Matching error:", error);
       toast.error("Failed to start matching. Please try again.");
@@ -168,14 +172,25 @@ export default function StudyPage() {
 
   return (
     <div className="p-4 md:p-12 max-w-5xl mx-auto space-y-12 animate-in fade-in duration-700 font-sans">
-      <div className="space-y-4 text-center md:text-left">
-        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Start a session</p>
-        <h1 className="text-5xl md:text-7xl font-black tracking-tightest leading-[0.9]">
-          Let&apos;s find you <br /> <span className="text-muted-foreground">some help.</span>
-        </h1>
-        <p className="text-muted-foreground text-lg md:text-xl font-medium max-w-2xl leading-relaxed">
-          Pick a subject and we&apos;ll find someone to help — a tutor, a study buddy, or Mash AI. <span className="text-emerald-500">Mash AI is always available in your room.</span>
-        </p>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="space-y-4 text-center md:text-left">
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Start a session</p>
+          <h1 className="text-5xl md:text-7xl font-black tracking-tightest leading-[0.9]">
+            Let&apos;s find you <br /> <span className="text-muted-foreground">some help.</span>
+          </h1>
+          <p className="text-muted-foreground text-lg md:text-xl font-medium max-w-2xl leading-relaxed">
+            Pick a subject and we&apos;ll find someone to help — a tutor, a study buddy, or Mash AI. <span className="text-emerald-500">Mash AI is always available in your room.</span>
+          </p>
+        </div>
+        
+        <div className="flex items-center justify-center bg-secondary/50 p-1.5 rounded-full border border-border">
+          <Button variant="ghost" className="rounded-full bg-background shadow-md px-6 font-bold text-sm h-12 hover:bg-background">
+            <Zap className="mr-2 h-4 w-4 text-primary" /> Instant Match
+          </Button>
+          <Button variant="ghost" onClick={() => router.push("/dashboard/tutors")} className="rounded-full px-6 font-bold text-sm h-12 text-muted-foreground hover:text-foreground">
+            <CalendarIcon className="mr-2 h-4 w-4" /> Book a Session
+          </Button>
+        </div>
       </div>
 
       {!isMatching ? (

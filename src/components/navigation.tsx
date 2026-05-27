@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, GraduationCap, ChevronRight, ChevronLeft } from "lucide-react";
+import { Menu, X, ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
@@ -13,9 +14,9 @@ import { createClient } from "@/utils/supabase/client";
 const navLinks = [
   { name: "Home", href: "/" },
   { name: "Features", href: "/features" },
-  { name: "Institution", href: "/institution/login" },
   { name: "Community", href: "/community" },
   { name: "Roadmap", href: "/roadmap" },
+  { name: "Institutions", href: "/institution" },
   { name: "News", href: "/news" },
   { name: "About", href: "/about" },
 ];
@@ -50,7 +51,6 @@ export function Navigation() {
   }, [isOpen]);
 
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchUser() {
@@ -61,14 +61,14 @@ export function Navigation() {
       } catch (error) {
         console.error("Error fetching user:", error);
         setUser(null);
-      } finally {
-        setLoading(false);
       }
     }
     fetchUser();
   }, []);
 
   const showBackButton = pathname !== "/" && !isOpen;
+  const isLinkActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <>
@@ -82,7 +82,7 @@ export function Navigation() {
       <div className="container mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
         {/* Logo — icon + text */}
         <Link href="/" className="flex items-center gap-2.5 group" aria-label="Edyfra Home">
-          <img src="/image.png" alt="Edyfra Logo" className="w-9 h-9 rounded-xl shadow-lg group-hover:scale-105 transition-transform object-cover" />
+          <Image src="/image.png" alt="Edyfra Logo" width={36} height={36} className="w-9 h-9 rounded-xl shadow-lg group-hover:scale-105 transition-transform object-cover" />
           <span className="text-xl font-black tracking-tight text-foreground group-hover:text-primary transition-colors">
             Edyfra
           </span>
@@ -94,16 +94,16 @@ export function Navigation() {
             <Link
               key={link.name}
               href={link.href}
-              aria-current={pathname === link.href ? "page" : undefined}
+              aria-current={isLinkActive(link.href) ? "page" : undefined}
               className={cn(
                 "text-sm font-medium transition-colors relative group",
-                pathname === link.href ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                isLinkActive(link.href) ? "text-primary" : "text-muted-foreground hover:text-foreground"
               )}
             >
               {link.name}
               <span className={cn(
                 "absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300",
-                pathname === link.href ? "w-full" : "w-0 group-hover:w-full"
+                isLinkActive(link.href) ? "w-full" : "w-0 group-hover:w-full"
               )} />
             </Link>
           ))}
@@ -180,7 +180,7 @@ export function Navigation() {
           >
             <div className="flex items-center justify-between mb-12">
               <Link href="/" onClick={() => setIsOpen(false)} className="flex items-center gap-2.5">
-                <img src="/image.png" alt="Edyfra Logo" className="w-10 h-10 rounded-xl shadow-lg object-cover" />
+                <Image src="/image.png" alt="Edyfra Logo" width={40} height={40} className="w-10 h-10 rounded-xl shadow-lg object-cover" />
                 <span className="text-2xl font-black tracking-tight text-foreground">
                   Edyfra
                 </span>
@@ -202,13 +202,13 @@ export function Navigation() {
                     onClick={() => setIsOpen(false)}
                     className={cn(
                       "flex items-center justify-between py-4 px-6 rounded-2xl transition-all group",
-                      pathname === link.href ? "bg-primary/10 text-primary" : "hover:bg-secondary text-foreground hover:translate-x-1"
+                      isLinkActive(link.href) ? "bg-primary/10 text-primary" : "hover:bg-secondary text-foreground hover:translate-x-1"
                     )}
                   >
                     <span className="text-xl font-bold tracking-tight">{link.name}</span>
                     <ChevronRight className={cn(
                       "h-5 w-5 transition-all opacity-0 group-hover:opacity-100",
-                      pathname === link.href && "opacity-100"
+                      isLinkActive(link.href) && "opacity-100"
                     )} />
                   </Link>
                 ))}

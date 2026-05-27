@@ -6,10 +6,13 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { SESSION_CONFIG } from "@/lib/config";
 import { recalibrateTier } from "./user";
-import { MatchTier, Role } from "@/generated/client";
+import { MatchTier, Role, EduLevel, Tier } from "@/generated/client";
 import { randomBytes } from "crypto";
 import { executeSmartMatching, sweepAndAIFallback } from "./match-algorithm";
 import { StreamChat } from "stream-chat";
+import { notifyUser } from "@/app/actions/notifications";
+import { getUserData } from "@/app/actions/user";
+import { withRateLimit } from "@/lib/rate-limit";
 
 const STREAM_KEY = process.env.NEXT_PUBLIC_STREAM_KEY!;
 const STREAM_SECRET = process.env.STREAM_SECRET!;
@@ -26,36 +29,61 @@ async function upsertStreamUsers(users: { id: string; name: string; image?: stri
 }
 
 export async function createMatchRequest(data: { subject: string; topic: string }) {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll(cookiesToSet: any) {
-          try { cookiesToSet.forEach(({ name, value, options }: any) => cookieStore.set(name, value, options)); } catch {}
-        },
-      },
+  try {
+    const supabase = await (await import("@/utils/supabase/server")).createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: "Please sign in to start matching." };
     }
-  );
 
-  const { data: { user } } = await supabase.auth.getUser();
+    const limited = await withRateLimit("createMatchRequest", user.id, async () => {
+      // Find by Supabase ID first, then by email (user may exist with different ID)
+      let prismaUser = await prisma.user.findUnique({ where: { id: user.id } });
 
-  if (!user) {
-    throw new Error("Unauthorized");
+      if (!prismaUser && user.email) {
+        prismaUser = await prisma.user.findFirst({ where: { email: user.email } });
+      }
+
+      if (!prismaUser) {
+        const meta = user.user_metadata || {};
+        prismaUser = await prisma.user.create({
+          data: {
+            id: user.id,
+            email: user.email!,
+            name: meta.name || meta.full_name || "User",
+            role: "STUDENT" as Role,
+            educationLevel: "HIGH_SCHOOL" as EduLevel,
+            county: "Nairobi",
+            tier: "BRONZE" as Tier,
+            points: SESSION_CONFIG.NEW_USER_WELCOME_BONUS,
+            lastActiveAt: new Date(),
+            avatar: meta.avatar || null,
+          },
+        });
+      }
+
+      const matchRequest = await prisma.matchRequest.create({
+        data: {
+          studentId: prismaUser.id,
+          subject: data.subject,
+          topic: data.topic,
+        },
+      });
+
+      revalidatePath("/tutor/requests");
+      return { matchRequestId: matchRequest.id };
+    }, { interval: 60_000, maxRequests: 10 });
+
+    if (!limited.success) {
+      return { success: false, error: limited.error };
+    }
+
+    return { success: true, matchRequestId: limited.data.matchRequestId };
+  } catch (err: any) {
+    console.error("[createMatchRequest] Error:", err);
+    return { success: false, error: err?.message || "Failed to create match request" };
   }
-
-  const matchRequest = await prisma.matchRequest.create({
-    data: {
-      studentId: user.id,
-      subject: data.subject,
-      topic: data.topic,
-    },
-  });
-
-  revalidatePath("/tutor/requests");
-  return { success: true, matchRequestId: matchRequest.id };
 }
 
 export async function acceptMatchRequest(requestId: string) {
@@ -76,7 +104,7 @@ export async function acceptMatchRequest(requestId: string) {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    return { success: false, error: "Unauthorized" };
+    return { success: false, error: "Please sign in to accept a match." };
   }
 
   const matchRequest = await prisma.matchRequest.findUnique({
@@ -139,28 +167,14 @@ export async function acceptMatchRequest(requestId: string) {
   }
 
   try {
-    await prisma.notification.create({
-      data: {
-        userId: matchRequest.studentId,
-        type: "MATCH_FOUND",
-        title: "Help is here!",
-        body: `${userData?.name || 'An expert'} has accepted your request. Entering room...`,
-        actionUrl: `/study-room/${session.id}`,
-      }
+    await notifyUser(matchRequest.studentId, {
+      type: "MATCH_FOUND",
+      title: "Help is here!",
+      body: `${userData?.name || 'An expert'} has accepted your request. Entering room...`,
+      actionUrl: `/study-room/${session.id}`,
     });
   } catch (e) {
     console.error("Failed to notify student:", e);
-  }
-
-  try {
-    const { sendNotificationPush } = await import("./push");
-    await sendNotificationPush(matchRequest.studentId, {
-      title: "Help is here!",
-      body: `${userData?.name || 'An expert'} has accepted your request. Entering room...`,
-      url: `/study-room/${session.id}`,
-    });
-  } catch (e) {
-    console.error("Failed to send push notification:", e);
   }
 
   revalidatePath("/tutor/requests");
@@ -198,37 +212,19 @@ export async function initiateAutoMatch(requestId: string, options?: { skipAI?: 
             select: { name: true }
           });
 
-          await prisma.notification.create({
-            data: {
-              userId: matchRequest?.studentId || "",
-              type: "MATCH_FOUND",
-              title: "Connected!",
-              body: `You've been matched with ${partner?.name || tierName}! Starting session...`,
-              actionUrl: `/study-room/${result.sessionId}`,
-            }
+          await notifyUser(matchRequest?.studentId || "", {
+            type: "MATCH_FOUND",
+            title: "Connected!",
+            body: `You've been matched with ${partner?.name || tierName}! Starting session...`,
+            actionUrl: `/study-room/${result.sessionId}`,
           });
         } else {
-          await prisma.notification.create({
-            data: {
-              userId: matchRequest?.studentId || "",
-              type: "MATCH_FOUND",
-              title: "Ready to learn!",
-              body: "Mash AI is ready to help. Entering room...",
-              actionUrl: `/study-room/${result.sessionId}`,
-            }
+          await notifyUser(matchRequest?.studentId || "", {
+            type: "MATCH_FOUND",
+            title: "Ready to learn!",
+            body: "Mash AI is ready to help. Entering room...",
+            actionUrl: `/study-room/${result.sessionId}`,
           });
-        }
-
-        if (matchRequest?.studentId && result.sessionId) {
-          try {
-            const { sendNotificationPush } = await import("./push");
-            const name = (result.partnerId ? await prisma.user.findUnique({ where: { id: result.partnerId }, select: { name: true } }) : null);
-            await sendNotificationPush(matchRequest.studentId, {
-              title: "Connected!",
-              body: `You've been matched with ${name?.name || tierName}!`,
-              url: `/study-room/${result.sessionId}`,
-            });
-          } catch {} // Non-blocking
         }
       } catch (e) {
         console.error("Failed to notify student:", e);
@@ -375,14 +371,11 @@ export async function completeSession(sessionId: string) {
       });
       await recalibrateTier(session.studentId);
       
-      await prisma.notification.create({
-        data: {
-          userId: session.studentId,
-          type: "POINTS_EARNED",
-          title: "Session Completed!",
-          body: `You earned +${SESSION_CONFIG.POINTS_STUDENT} points for completing a study session.`,
-          actionUrl: `/dashboard/sessions`,
-        }
+      await notifyUser(session.studentId, {
+        type: "POINTS_EARNED",
+        title: "Session Completed!",
+        body: `You earned +${SESSION_CONFIG.POINTS_STUDENT} points for completing a study session.`,
+        actionUrl: `/dashboard/sessions`,
       });
 
       if (session.partnerId) {
@@ -392,14 +385,11 @@ export async function completeSession(sessionId: string) {
         });
         await recalibrateTier(session.partnerId);
         
-        await prisma.notification.create({
-          data: {
-            userId: session.partnerId,
-            type: "POINTS_EARNED",
-            title: "Session Completed!",
-            body: `You earned +${SESSION_CONFIG.POINTS_TUTOR} points for helping a peer!`,
-            actionUrl: `/dashboard/sessions`,
-          }
+        await notifyUser(session.partnerId, {
+          type: "POINTS_EARNED",
+          title: "Session Completed!",
+          body: `You earned +${SESSION_CONFIG.POINTS_TUTOR} points for helping a peer!`,
+          actionUrl: `/dashboard/sessions`,
         });
       }
     }

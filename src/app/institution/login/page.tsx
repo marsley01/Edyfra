@@ -1,162 +1,141 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { ArrowRight, Loader2, AlertCircle, Eye, EyeOff, Building2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Building2, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { institutionLogin } from "@/app/actions/institution-auth";
 
-export default function InstitutionLoginPage() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
+export default function InstitutionLogin() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
-    setError(null);
 
-    const formData = new FormData(event.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-    const code = formData.get("code") as string;
+    const formData = new FormData();
+    formData.append("email", email);
+    formData.append("password", password);
 
-    if (!code) {
-      setError("Please enter your institution access code.");
-      setLoading(false);
-      return;
-    }
+    const result = await institutionLogin(formData);
 
-    try {
-      const { login } = await import("@/app/actions/auth");
-      const result = await login(formData);
-      if (result?.error) {
-        setError(result.error);
-        setLoading(false);
-      }
-    } catch {
-      setError("Unable to sign in. Please check your credentials and try again.");
+    if (result?.error) {
+      toast.error(result.error);
       setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc] flex flex-col items-center justify-center p-6">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-[440px] space-y-10"
-      >
-        {/* Logo */}
-        <div className="flex flex-col items-center gap-4 text-center">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#3730A3] text-white text-lg font-bold">
-              E
-            </div>
-            <span className="text-3xl font-black text-gray-900 tracking-tighter">
-              Edyfra
-            </span>
+    <div className="min-h-screen bg-background flex flex-col justify-center py-12 sm:px-6 lg:px-8 selection:bg-indigo-500/30">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="flex justify-center">
+          <div className="w-16 h-16 bg-indigo-500/10 rounded-2xl flex items-center justify-center border border-indigo-500/20">
+            <Building2 className="h-8 w-8 text-indigo-400" />
           </div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-[#3730A3]/10 px-4 py-1.5 text-xs font-semibold text-[#3730A3]">
-            <Building2 className="h-3.5 w-3.5" />
-            Institution Portal
-          </div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tightest mt-2">
-            Welcome back.
-          </h1>
-          <p className="text-gray-500 font-medium">
-            Sign in to your institution dashboard to manage students, tutors, and resources.
-          </p>
         </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-600"
-            >
-              <AlertCircle className="h-5 w-5 shrink-0" />
-              {error}
-            </motion.div>
-          )}
-
-          <div className="space-y-2">
-            <label className="ml-1 text-xs font-semibold text-gray-500">
-              Institution Code
-            </label>
-            <Input
-              name="code"
-              type="text"
-              required
-              placeholder="e.g. KU-2026"
-              className="h-12 rounded-xl border-gray-200 bg-white px-5 text-sm font-medium focus-visible:ring-[#3730A3]"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="ml-1 text-xs font-semibold text-gray-500">
-              Email Address
-            </label>
-            <Input
-              name="email"
-              type="email"
-              required
-              placeholder="admin@institution.ac.ke"
-              className="h-12 rounded-xl border-gray-200 bg-white px-5 text-sm font-medium focus-visible:ring-[#3730A3]"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="ml-1 text-xs font-semibold text-gray-500">
-              Password
-            </label>
-            <div className="relative">
-              <Input
-                name="password"
-                type={showPassword ? "text" : "password"}
-                required
-                placeholder="••••••••"
-                className="h-12 rounded-xl border-gray-200 bg-white px-5 pr-12 text-sm font-medium focus-visible:ring-[#3730A3]"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-          </div>
-
-          <Button
-            type="submit"
-            disabled={loading}
-            className="h-12 w-full rounded-xl bg-[#3730A3] text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#3730A3]/90 active:scale-[0.98] disabled:opacity-50"
-          >
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>
-                Sign In to Institution Portal
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </>
-            )}
-          </Button>
-        </form>
-
-        <p className="text-center text-sm text-gray-500">
-          Not an institution?{" "}
-          <Link href="/login" className="font-semibold text-[#3730A3] hover:underline">
-            Student or Tutor login
-          </Link>
+        <h2 className="mt-6 text-center text-3xl font-black tracking-tight text-foreground">
+          Institution Portal
+        </h2>
+        <p className="mt-2 text-center text-sm text-muted-foreground">
+          Sign in to manage your school's private network
         </p>
-      </motion.div>
+      </div>
+
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-secondary/50 py-8 px-4 shadow-2xl sm:rounded-3xl sm:px-10 border border-border relative overflow-hidden">
+          {/* Subtle background glow */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-50" />
+          
+          <form className="space-y-6" onSubmit={handleLogin}>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-muted-foreground">
+                School Email Address
+              </label>
+              <div className="mt-2">
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="appearance-none block w-full px-4 py-3 border border-border rounded-xl shadow-sm placeholder-muted-foreground focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-background text-foreground h-12"
+                  placeholder="admin@school.ac.ke"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-muted-foreground">
+                Password
+              </label>
+              <div className="mt-2">
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="appearance-none block w-full px-4 py-3 border border-border rounded-xl shadow-sm placeholder-muted-foreground focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-background text-foreground h-12"
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <input
+                  id="remember-me"
+                  name="remember-me"
+                  type="checkbox"
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-border rounded bg-background"
+                />
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-muted-foreground">
+                  Remember me
+                </label>
+              </div>
+
+              <div className="text-sm">
+                <a href="#" className="font-medium text-indigo-400 hover:text-indigo-300">
+                  Forgot password?
+                </a>
+              </div>
+            </div>
+
+            <div>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-12 flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-background transition-colors"
+              >
+                {loading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <>
+                    Sign in to Dashboard
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+
+          <div className="mt-6 text-center">
+             <p className="text-sm text-muted-foreground">
+               Not registered yet? <Link href="/institution" className="text-indigo-400 font-medium hover:text-indigo-300">Contact sales for onboarding</Link>
+             </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

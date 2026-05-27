@@ -111,19 +111,13 @@ export default function TutorRequestsPage() {
       const { getFilteredMatchRequests } = await import("@/app/actions/match-algorithm");
       const data = await getFilteredMatchRequests(subjects);
       setRequests(data);
-    } catch {
-      const { data, error } = await supabase
-        .from("MatchRequest")
-        .select("*")
-        .is("sessionId", null)
-        .order("createdAt", { ascending: false });
-
-      if (!error && data) {
-        if (subjects.length > 0) {
-          setRequests(data.filter((r: any) => subjects.includes(r.subject)));
-        } else {
-          setRequests(data);
-        }
+    } catch (err) {
+      console.error("Failed to load match requests:", err);
+      try {
+        const { getFilteredMatchRequests } = await import("@/app/actions/match-algorithm");
+        setRequests(await getFilteredMatchRequests(subjects));
+      } catch {
+        setRequests([]);
       }
     }
     setLoading(false);

@@ -25,10 +25,22 @@ interface RecentSession {
   tier: string;
 }
 
+interface UpcomingBooking {
+  id: string;
+  subject: string;
+  topic: string | null;
+  date: string;
+  startTime: string;
+  durationMinutes: number;
+  status: string;
+  tutor: { name: string, avatar: string | null };
+}
+
 export default function DashboardPageContent() {
   const { userData, loading: userDataLoading, error: userDataError, retryCount, setRetryCount } = useSafeUserData();
   const { sessionCount, loading: sessionsLoading } = useSessionCounter(userData?.id || '');
   const [recentSessions, setRecentSessions] = useState<RecentSession[]>([]);
+  const [upcomingBookings, setUpcomingBookings] = useState<UpcomingBooking[]>([]);
   const [loadingRecent, setLoadingRecent] = useState(true);
   const [appStatus, setAppStatus] = useState<'NONE' | 'PENDING' | 'APPROVED' | 'REJECTED'>('NONE');
   const [appLoading, setAppLoading] = useState(false);
@@ -36,6 +48,7 @@ export default function DashboardPageContent() {
   const [challenge, setChallenge] = useState<any>(null);
   const [challengeLoading, setChallengeLoading] = useState(true);
   const [userAnswer, setUserAnswer] = useState("");
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ correct: boolean; explanation: string; correctAnswer: string } | null>(null);
   const [completed, setCompleted] = useState(false);
@@ -48,12 +61,15 @@ export default function DashboardPageContent() {
     const load = async () => {
       try {
         const { getUserSessions } = await import("@/app/actions/match");
+        const { getUpcomingStudentBookings } = await import("@/app/actions/bookings");
         const data = await getUserSessions(userData.id);
-         setRecentSessions(data.slice(0, 5).map(s => ({
-           ...s,
-           createdAt: s.startedAt?.toISOString() || new Date().toISOString(),
-           topic: s.topic || null
-         })));
+        const bookings = await getUpcomingStudentBookings();
+        setRecentSessions(data.slice(0, 5).map(s => ({
+          ...s,
+          createdAt: s.startedAt?.toISOString() || new Date().toISOString(),
+          topic: s.topic || null
+        })));
+        setUpcomingBookings(bookings as any[]);
        } catch (err) {
          console.error("Failed to load recent sessions:", err);
        } finally {
@@ -111,11 +127,16 @@ export default function DashboardPageContent() {
     }
   };
 
+  const challengeOptions: string[] = Array.isArray(challenge?.options)
+    ? (challenge.options as string[])
+    : [];
+
   const handleSubmitAnswer = async () => {
-    if (!challenge || !userAnswer.trim() || !userData) return;
+    const answerText = challengeOptions.length >= 2 ? selectedOption : userAnswer.trim();
+    if (!challenge || !answerText || !userData) return;
     setSubmitting(true);
     try {
-      const evaluation = await evaluateChallengeAnswer(challenge.id, userAnswer.trim());
+      const evaluation = await evaluateChallengeAnswer(challenge.id, answerText);
       setResult(evaluation);
       await saveChallengeAttempt(userData.id, challenge.id, evaluation.correct);
       if (evaluation.correct) {
@@ -257,8 +278,36 @@ export default function DashboardPageContent() {
              <div className="relative z-10 min-h-[200px] flex items-center justify-center">
                <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
              </div>
-           ) : recentSessions.length > 0 ? (
+           ) : (recentSessions.length > 0 || upcomingBookings.length > 0) ? (
              <div className="relative z-10 space-y-3">
+               {upcomingBookings.length > 0 && (
+                 <div className="space-y-3 mb-6">
+                   <h4 className="text-sm font-black uppercase tracking-widest text-primary">Upcoming Bookings</h4>
+                   {upcomingBookings.map((booking) => (
+                     <div key={booking.id} className="flex items-center gap-4 p-4 rounded-2xl bg-primary/5 border border-primary/20 transition-all">
+                       <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-white font-black text-lg shadow-lg shadow-primary/20">
+                         {booking.subject[0]}
+                       </div>
+                       <div className="flex-1 min-w-0">
+                         <p className="font-bold text-sm truncate">{booking.topic || booking.subject}</p>
+                         <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">
+                           With {booking.tutor.name} • {new Date(booking.date).toLocaleDateString()} at {booking.startTime} ({booking.durationMinutes}m)
+                         </p>
+                       </div>
+                       <div className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full ${booking.status === 'confirmed' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-yellow-500/10 text-yellow-500'}`}>
+                         {booking.status}
+                       </div>
+                       {booking.status === 'confirmed' && (
+                         <Button onClick={() => window.location.href = `/study-room/${booking.id}`} className="bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-full h-8 px-4">
+                           Join Room
+                         </Button>
+                       )}
+                     </div>
+                   ))}
+                 </div>
+               )}
+               
+               {recentSessions.length > 0 && <h4 className="text-sm font-black uppercase tracking-widest text-muted-foreground">Past Sessions</h4>}
                {recentSessions.map((session) => (
                  <Link href={`/study-room/${session.id}`} key={session.id} className="block">
                    <div className="flex items-center gap-4 p-4 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all group/item">
@@ -297,13 +346,13 @@ export default function DashboardPageContent() {
         </div>
 
         {/* Daily Challenge Card */}
-        <div className="p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] bg-black text-white space-y-6 sm:space-y-10 relative overflow-hidden group shadow-2xl">
+        <div className="p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] bg-foreground text-background space-y-6 sm:space-y-10 relative overflow-hidden group shadow-2xl">
            <div className="relative z-10 space-y-2">
               <h3 className="text-2xl sm:text-3xl font-black tracking-tightest flex items-center gap-3">
                 Daily Challenge
                 <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-primary animate-pulse" />
               </h3>
-              <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Test yourself and earn points</p>
+              <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-background/40">Test yourself and earn points</p>
            </div>
            <div className="relative z-10 space-y-4">
              {challengeLoading ? (
@@ -311,9 +360,9 @@ export default function DashboardPageContent() {
                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
                </div>
              ) : !challenge ? (
-               <div className="p-6 bg-white/5 rounded-[1.5rem] border border-white/10 text-center space-y-2">
-                 <p className="text-white/60 font-medium">No challenge available today.</p>
-                 <p className="text-white/40 text-sm">Come back tomorrow!</p>
+               <div className="p-6 bg-background/5 rounded-[1.5rem] border border-background/10 text-center space-y-2">
+                 <p className="text-background/60 font-medium">No challenge available today.</p>
+                 <p className="text-background/40 text-sm">Come back tomorrow!</p>
                </div>
              ) : completed && result ? (
                <div className="space-y-4">
@@ -324,15 +373,15 @@ export default function DashboardPageContent() {
                      </div>
                      <span className="font-bold text-lg">{result.correct ? "Correct!" : "Incorrect"}</span>
                    </div>
-                   <p className="text-white/70 text-sm leading-relaxed">{result.explanation}</p>
+                   <p className="text-background/70 text-sm leading-relaxed">{result.explanation}</p>
                    {!result.correct && (
                      <p className="text-primary font-bold mt-2 text-sm">Correct answer: {result.correctAnswer}</p>
                    )}
                  </div>
-                 <div className="p-4 bg-white/5 rounded-xl border border-white/10 text-center space-y-2">
-                   <p className="text-white/60 font-medium">Challenge completed!</p>
+                 <div className="p-4 bg-background/5 rounded-xl border border-background/10 text-center space-y-2">
+                   <p className="text-background/60 font-medium">Challenge completed!</p>
                    <p className="text-primary font-black text-sm">Come back tomorrow</p>
-                   <div className="flex items-center justify-center gap-2 text-white/40 text-xs">
+                   <div className="flex items-center justify-center gap-2 text-background/40 text-xs">
                      <Clock className="h-3 w-3" />
                      <span>Next challenge in {countdown}</span>
                    </div>
@@ -340,13 +389,13 @@ export default function DashboardPageContent() {
                </div>
              ) : completed && completedAttempt ? (
                <div className="space-y-4">
-                 <div className="p-6 bg-white/5 rounded-[1.5rem] border border-white/10 text-center space-y-3">
+                 <div className="p-6 bg-background/5 rounded-[1.5rem] border border-background/10 text-center space-y-3">
                    <CheckCircle2 className="h-10 w-10 text-primary mx-auto" />
-                   <p className="text-white font-bold text-lg">Already Completed</p>
-                   <p className="text-white/60 text-sm">
+                   <p className="text-background font-bold text-lg">Already Completed</p>
+                   <p className="text-background/60 text-sm">
                      Score: {completedAttempt.correct ? "+" : ""}{completedAttempt.pointsEarned || 0} pts
                    </p>
-                   <div className="flex items-center justify-center gap-2 text-white/40 text-xs">
+                   <div className="flex items-center justify-center gap-2 text-background/40 text-xs">
                      <Clock className="h-3 w-3" />
                      <span>Next challenge in {countdown}</span>
                    </div>
@@ -358,38 +407,66 @@ export default function DashboardPageContent() {
                    <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px] uppercase tracking-widest font-black">
                      {challenge?.subject || "General"}
                    </Badge>
-                   <Badge variant="outline" className="border-white/20 text-white/60 text-[10px] uppercase tracking-widest font-black">
+                   <Badge variant="outline" className="border-background/20 text-background/60 text-[10px] uppercase tracking-widest font-black">
                      {challenge?.level?.replace("_", " ") || "HIGH SCHOOL"}
                    </Badge>
                  </div>
-                 <p className="text-lg font-medium leading-relaxed text-white/90">
+                 <p className="text-lg font-medium leading-relaxed text-background/90">
                    {challenge?.question || "Loading challenge..."}
                  </p>
-                 <div className="flex gap-2">
-                   <Input
-                     value={userAnswer}
-                     onChange={(e) => setUserAnswer(e.target.value)}
-                     placeholder="Type your answer..."
-                     className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/40 rounded-xl h-12"
-                     disabled={submitting}
-                   />
-                   <Button
-                     onClick={handleSubmitAnswer}
-                     disabled={submitting || !userAnswer.trim()}
-                     className="bg-primary hover:bg-primary/90 text-white rounded-xl h-12 px-4"
-                   >
-                     {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                   </Button>
-                 </div>
-                 <div className="mt-4 pt-4 border-t border-white/10">
+                 {challengeOptions.length >= 2 ? (
+                   <div className="space-y-2">
+                     {challengeOptions.map((option, i) => (
+                       <button
+                         key={option}
+                         type="button"
+                         disabled={submitting}
+                         onClick={() => setSelectedOption(option)}
+                         className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                           selectedOption === option
+                             ? "border-primary bg-primary/20 text-background"
+                             : "border-background/20 bg-background/5 text-background/80 hover:border-background/40"
+                         }`}
+                       >
+                         <span className="font-black mr-3">{String.fromCharCode(65 + i)}.</span>
+                         {option}
+                       </button>
+                     ))}
+                     <Button
+                       onClick={handleSubmitAnswer}
+                       disabled={submitting || !selectedOption}
+                       className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl h-12 font-black uppercase tracking-widest text-xs"
+                     >
+                       {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit Answer"}
+                     </Button>
+                   </div>
+                 ) : (
+                   <div className="flex gap-2">
+                     <Input
+                       value={userAnswer}
+                       onChange={(e) => setUserAnswer(e.target.value)}
+                       placeholder="Type your answer..."
+                       className="flex-1 bg-background/10 border-background/20 text-background placeholder:text-background/40 rounded-xl h-12"
+                       disabled={submitting}
+                     />
+                     <Button
+                       onClick={handleSubmitAnswer}
+                       disabled={submitting || !userAnswer.trim()}
+                       className="bg-primary hover:bg-primary/90 text-white rounded-xl h-12 px-4"
+                     >
+                       {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                     </Button>
+                   </div>
+                 )}
+                 <div className="mt-4 pt-4 border-t border-background/10">
                    <Button
                      onClick={handleGeneratePersonalized}
                      disabled={generatingPersonalized}
                      variant="outline"
-                     className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20 font-black text-xs tracking-widest uppercase"
+                     className="w-full bg-background/10 border-background/20 text-background hover:bg-background/20 font-black text-xs tracking-widest uppercase"
                    >
                      {generatingPersonalized ? <Loader2 className="h-3 w-3 mr-2 animate-spin" /> : <Sparkles className="h-3 w-3 mr-2" />}
-                     Generate AI-Personalized Challenge
+                     Generate Personalized Challenge
                    </Button>
                  </div>
                </div>

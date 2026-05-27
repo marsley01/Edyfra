@@ -66,6 +66,7 @@ export default function StreamChatRoom({
   const [error, setError] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
   const [hasActiveCall, setHasActiveCall] = useState(false);
+  const [incomingCall, setIncomingCall] = useState<{ call: any; from: string } | null>(null);
   const clientRef = useRef<StreamChat | null>(null);
   const videoClientRef = useRef<StreamVideoClient | null>(null);
 
@@ -78,18 +79,13 @@ export default function StreamChatRoom({
     try {
       console.log(`[StreamChatRoom] Initializing for user: ${userId}, channel: ${channelId}`);
 
-      // Use singleton — StreamChat.getInstance returns the same instance every time
-      // for the same API key, preventing duplicate connections
       const client = StreamChat.getInstance(STREAM_KEY);
 
-      // Only connect if not already connected to avoid duplicate connections
+      let token: string;
       if (client.userID !== userId) {
-        // Token is generated server-side (secret never exposed to browser)
-        let token: string;
         try {
           token = await getStreamToken(userId);
         } catch (tokenErr: any) {
-          // If token fetch fails with auth error, try the HTTP endpoint as fallback
           console.warn("[StreamChatRoom] Server action token failed, trying HTTP endpoint:", tokenErr);
           const res = await fetch("/api/stream/token", { method: "POST" });
           if (!res.ok) throw new Error("Failed to authenticate with chat service");
@@ -106,7 +102,21 @@ export default function StreamChatRoom({
           token
         );
 
-        // Initialize Video Client
+        console.log(`[StreamChatRoom] Chat connected: ${userId}`);
+      } else {
+        console.log(`[StreamChatRoom] User already connected: ${userId}`);
+        try {
+          token = await getStreamToken(userId);
+        } catch (tokenErr: any) {
+          const res = await fetch("/api/stream/token", { method: "POST" });
+          if (!res.ok) throw new Error("Failed to authenticate with video service");
+          const data = await res.json();
+          token = data.token;
+        }
+      }
+
+      // Always create video client — fixes "Start Call" being a no-op for returning users
+      if (!videoClientRef.current) {
         const vClient = new StreamVideoClient({
           apiKey: STREAM_KEY,
           user: {
@@ -116,31 +126,23 @@ export default function StreamChatRoom({
           },
           token,
         });
-
         videoClientRef.current = vClient;
         setVideoClient(vClient);
-
-        console.log(`[StreamChatRoom] Chat & Video connected: ${userId}`);
-      } else {
-        console.log(`[StreamChatRoom] User already connected: ${userId}`);
+        console.log(`[StreamChatRoom] Video client created: ${userId}`);
       }
 
-      // Upsert user in Stream (server-side, idempotent)
       try {
         await upsertStreamUser(userId, userName, userImage || undefined);
       } catch (upsertErr) {
-        // Non-fatal — user was already upserted during token generation
         console.warn("[StreamChatRoom] upsertStreamUser non-fatal:", upsertErr);
       }
 
-      // All members including self + Mash AI (always present for on-demand help)
       const allMembers = [
         userId,
         ...(memberIds?.filter((m) => m !== userId) || []),
         "mash-ai",
       ];
 
-      // Create or connect to the channel — watch() is idempotent
       const c = client.channel("messaging", channelId, {
         members: allMembers,
       } as any);
@@ -148,9 +150,7 @@ export default function StreamChatRoom({
       if (channelName) {
         try {
           await c.update({ name: channelName } as any);
-        } catch {
-          // Non-fatal if update fails (e.g., not channel owner)
-        }
+        } catch {}
       }
 
       await c.watch();
@@ -160,7 +160,28 @@ export default function StreamChatRoom({
       setChannel(c);
       setChatClient(client);
 
-      // Auto-detect active call for this channel
+      // ─── Client-side @mash handler ─
+      c.on("message.new", async (event) => {
+        const msg = event.message;
+        if (!msg || msg.user?.id === "mash-ai") return;
+
+        const text = msg.text || "";
+        const mentionRegex = /@(?:Mash|AI|mash|ai|mash-ai|MASH)\b/;
+        if (!mentionRegex.test(text)) return;
+
+        const { handleMashMention } = await import("@/app/actions/stream");
+        handleMashMention(
+          channelId,
+          text,
+          mashAI?.subject || "General",
+          mashAI?.topic,
+          mashAI?.tier
+        ).catch((err) =>
+          console.warn("[StreamChatRoom] handleMashMention error:", err)
+        );
+      });
+
+      // ─── Auto-detect & watch for incoming calls ─
       const vc = videoClientRef.current;
       if (vc) {
         const { calls } = await vc.queryCalls({
@@ -168,7 +189,7 @@ export default function StreamChatRoom({
             id: { $eq: channelId },
           },
         });
-        
+
         if (calls.length > 0) {
           const call = calls[0];
           setHasActiveCall(true);
@@ -185,28 +206,7 @@ export default function StreamChatRoom({
 
   useEffect(() => {
     init();
-
-    // Listen for call created events to auto-join
-    let unsubscribe: () => void;
-    if (videoClient) {
-      unsubscribe = videoClient.on("all", async (event: any) => {
-        if (event.call?.id === channelId) {
-          if (event.type === "call.created" || event.type === "call.ring" || event.type === "call.session_started") {
-            setHasActiveCall(true);
-            const call = videoClient.call("default", channelId);
-            setActiveCall(call);
-          } else if (event.type === "call.ended") {
-            setHasActiveCall(false);
-            setIsVideoActive(false);
-            setActiveCall(null);
-          }
-        }
-      });
-    }
-
     return () => {
-      if (unsubscribe) unsubscribe();
-      // Disconnect only when the component unmounts
       const client = clientRef.current;
       if (client && client.userID) {
         console.log("[StreamChatRoom] Disconnecting chat user on unmount");
@@ -214,7 +214,7 @@ export default function StreamChatRoom({
           console.warn("[StreamChatRoom] Chat disconnect error:", err)
         );
       }
-      
+
       const vClient = videoClientRef.current;
       if (vClient) {
         console.log("[StreamChatRoom] Disconnecting video client on unmount");
@@ -224,6 +224,31 @@ export default function StreamChatRoom({
       }
     };
   }, [init]);
+
+  // Listen for call events once videoClient is available
+  useEffect(() => {
+    if (!videoClient) return;
+
+    const unsubscribe = videoClient.on("all", async (event: any) => {
+      if (event.call?.id === channelId) {
+        if (event.type === "call.ring") {
+          setIncomingCall({ call: event.call, from: event.user?.name || "Someone" });
+        } else if (event.type === "call.created" || event.type === "call.session_started") {
+          setHasActiveCall(true);
+          setIncomingCall(null);
+          const call = videoClient.call("default", channelId);
+          setActiveCall(call);
+        } else if (event.type === "call.ended") {
+          setHasActiveCall(false);
+          setIsVideoActive(false);
+          setIncomingCall(null);
+          setActiveCall(null);
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, [videoClient, channelId]);
 
   // ─── Error State ────────────────────────────────────────────────────────────
   if (error) {
@@ -445,11 +470,18 @@ export default function StreamChatRoom({
                 <div className="flex items-center gap-2">
                   <Button
                     onClick={async () => {
-                      if (!videoClient) return;
+                      const vc = videoClientRef.current;
+                      if (!vc) return;
                       try {
-                        const call = videoClient.call("default", channelId);
-                        await call.getOrCreate();
-                        await call.join({ create: true });
+                        const call = vc.call("default", channelId);
+                        const members = (memberIds || [])
+                          .filter((m) => m !== userId)
+                          .map((id) => ({ user_id: id }));
+                        await call.getOrCreate({
+                          ring: true,
+                          data: { members: [{ user_id: userId }, ...members] },
+                        });
+                        await call.join();
                         setActiveCall(call);
                         setIsVideoActive(true);
                         setHasActiveCall(true);
@@ -471,6 +503,61 @@ export default function StreamChatRoom({
             )}
 
             <div className="flex-1 relative overflow-hidden">
+              {/* Incoming Call Overlay */}
+              {incomingCall && !isVideoActive && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
+                  <div className="rounded-2xl bg-zinc-900 border border-white/10 p-8 text-center space-y-6 shadow-2xl">
+                    <div className="w-16 h-16 mx-auto rounded-full bg-primary/20 flex items-center justify-center animate-pulse">
+                      <Video className="h-8 w-8 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Incoming Video Call</p>
+                      <p className="text-lg font-bold mt-1">{incomingCall.from}</p>
+                    </div>
+                    <div className="flex gap-4 justify-center">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full border-red-500/30 text-red-500 hover:bg-red-500/10 h-12 px-8"
+                        onClick={async () => {
+                          try {
+                            const vc = videoClientRef.current;
+                            if (vc && incomingCall.call) {
+                              const call = vc.call("default", channelId);
+                              await call.reject();
+                            }
+                          } catch {}
+                          setIncomingCall(null);
+                        }}
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        Decline
+                      </Button>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="rounded-full bg-emerald-500 hover:bg-emerald-600 h-12 px-8"
+                        onClick={async () => {
+                          try {
+                            const vc = videoClientRef.current;
+                            if (!vc) return;
+                            const call = vc.call("default", channelId);
+                            await call.join();
+                            setActiveCall(call);
+                            setIsVideoActive(true);
+                            setHasActiveCall(true);
+                            setIncomingCall(null);
+                          } catch {}
+                        }}
+                      >
+                        <Video className="h-4 w-4 mr-2" />
+                        Accept
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Video Layer */}
               {isVideoActive && activeCall && (
                 <div className="video-call-overlay p-4">
@@ -478,6 +565,7 @@ export default function StreamChatRoom({
                     <VideoCallUI onLeave={() => {
                       setIsVideoActive(false);
                       setActiveCall(null);
+                      setHasActiveCall(false);
                     }} />
                   </StreamCall>
                 </div>
