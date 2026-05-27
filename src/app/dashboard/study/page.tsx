@@ -1,48 +1,53 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { createMatchRequest, forceAIFallback, checkMatchStatus } from "@/app/actions/match";
-import { Zap, Search, Users, Cpu, Loader2, Sparkles, Calendar as CalendarIcon } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Cpu, Search, Users, Video, Zap, Calendar as CalendarIcon } from "lucide-react";
 import { toast } from "sonner";
-import { createClient } from "@/utils/supabase/client";
-
-import { getSubjectsByLevel } from "@/utils/subjects";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cancelMatchRequest, createMatchRequest } from "@/app/actions/match";
 import { getUserData } from "@/app/actions/user";
+import { getSubjectsByLevel } from "@/utils/subjects";
+import { useMatchStore } from "@/store/matchStore";
+
+const MATCH_QUOTES = [
+  "\"Education is the most powerful weapon which you can use to change the world.\" - Nelson Mandela",
+  "\"The beautiful thing about learning is that no one can take it away from you.\" - B.B. King",
+  "\"Live as if you were to die tomorrow. Learn as if you were to live forever.\" - Mahatma Gandhi",
+  "\"An investment in knowledge pays the best interest.\" - Benjamin Franklin",
+  "\"The only person who is educated is the one who has learned how to learn and change.\" - Carl Rogers",
+];
 
 export default function StudyPage() {
   const router = useRouter();
-  const supabase = createClient();
-  const [isMatching, setIsMatching] = useState(false);
-  const [matchStep, setMatchStep] = useState(0); // 0: Idle, 1: Tutor, 2: Peer, 3: AI
-  const [timer, setTimer] = useState(30);
-  const [userData, setUserData] = useState<any>(null);
-  const [formData, setFormData] = useState({
-    subject: "",
-    topic: "",
-  });
-  const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
-  const aiFallbackRef = useRef(false);
+  const [userData, setUserData] = useState<Awaited<ReturnType<typeof getUserData>>>(null);
+  const {
+    formData,
+    isMatching,
+    matchStep,
+    quoteIndex,
+    reset,
+    currentRequestId,
+    setAiFallbackTriggered,
+    setCurrentRequestId,
+    setFormData,
+    setMatching,
+    setMatchStep,
+    setTimer,
+  } = useMatchStore();
 
   useEffect(() => {
-    getUserData().then((data) => {
-      setUserData(data);
-    }).catch(console.error);
-    
-    // Sweep unmatched requests on mount
-    import("@/app/actions/match").then(({ sweepUnmatchedRequests }) => {
-      sweepUnmatchedRequests();
-    }).catch(console.error);
+    getUserData().then(setUserData).catch(console.error);
   }, []);
 
-  const subjects = getSubjectsByLevel(userData?.educationLevel || "HIGH_SCHOOL");
+  const subjects = useMemo(
+    () => getSubjectsByLevel(userData?.educationLevel || "HIGH_SCHOOL"),
+    [userData?.educationLevel]
+  );
 
   const handleMatchMe = async () => {
     if (!formData.subject) {
@@ -50,277 +55,216 @@ export default function StudyPage() {
       return;
     }
 
-    setIsMatching(true);
+    setMatching(true);
     setMatchStep(1);
-    setTimer(30);
-    aiFallbackRef.current = false;
+    setTimer(90);
+    setAiFallbackTriggered(false);
 
     try {
       const result = await createMatchRequest(formData);
       if (!result.success) {
         toast.error(result.error || "Failed to start matching. Please try again.");
-        setIsMatching(false);
+        reset();
         return;
       }
-      
-      setCurrentRequestId(result.matchRequestId || null);
-      
-      // Broadcast the request to all online users/tutors
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        try {
-          await supabase.channel('global-matches').send({
-            type: 'broadcast',
-            event: 'new-request',
-            payload: {
-              requestId: result.matchRequestId,
-              studentId: user.id,
-              studentName: user.user_metadata?.name || 'A student',
-              subject: formData.subject,
-              topic: formData.topic || 'General'
-            }
-          });
-        } catch (broadcastErr) {
-          console.error('Broadcast failed, but matching continues:', broadcastErr);
-        }
+
+      if (result.sessionId) {
+        toast.success(result.tier === "PEER" ? "Study partner found!" : "Tutor found!");
+        reset();
+        router.push(`/study-room/${result.sessionId}`);
+        return;
       }
-      
+
+      setCurrentRequestId(result.matchRequestId || null);
       toast.success("Request submitted! Searching for help...");
     } catch (error) {
       console.error("Matching error:", error);
       toast.error("Failed to start matching. Please try again.");
-      setIsMatching(false);
+      reset();
     }
   };
 
-  const handleAIFallback = useCallback(async () => {
-    if (!currentRequestId) return;
-    
-    setMatchStep(3);
-    try {
-      const result = await forceAIFallback(currentRequestId);
-      if (result.success) {
-        toast.info("Connecting you to Mash AI...");
-        router.push(`/study-room/${result.sessionId}`);
-      } else {
-        // Already matched or not found - poll will handle redirect
-        console.log("AI fallback skipped:", result.message);
-      }
-    } catch {
-      toast.error("AI fallback failed. Please try again.");
-      setIsMatching(false);
-    }
-  }, [currentRequestId, router]);
-
-  useEffect(() => {
-    if (!currentRequestId) return;
-
-    const channel = supabase
-      .channel(`match-${currentRequestId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "MatchRequest",
-          filter: `id=eq.${currentRequestId}`,
-        },
-        (payload: any) => {
-          if (payload.new?.sessionId) {
-            toast.success("Match found! Redirecting...");
-            router.push(`/study-room/${payload.new.sessionId}`);
-          }
-        }
-      )
-      .subscribe();
-
-    pollingRef.current = setInterval(async () => {
-      const res = await checkMatchStatus(currentRequestId);
-      if (res.success && res.sessionId) {
-        if (timerRef.current) clearInterval(timerRef.current);
-        if (pollingRef.current) clearInterval(pollingRef.current);
-        toast.success("Connection established! Entering room...");
-        router.push(`/study-room/${res.sessionId}`);
-      }
-    }, 3000);
-
-    timerRef.current = setInterval(() => {
-      setTimer((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (pollingRef.current) clearInterval(pollingRef.current);
-      supabase.removeChannel(channel);
-    };
-  }, [currentRequestId, router, supabase]);
-
-  useEffect(() => {
-    if (!isMatching) return;
-    
-    if (timer === 20 && matchStep === 1) {
-      setMatchStep(2);
-    }
-    if (timer === 10 && matchStep === 2) {
-      setMatchStep(3);
-    }
-    if (timer === 0 && !aiFallbackRef.current) {
-      aiFallbackRef.current = true;
-      handleAIFallback();
-    }
-  }, [timer, isMatching, matchStep, handleAIFallback]);
-
   return (
-    <div className="p-4 md:p-12 max-w-5xl mx-auto space-y-12 animate-in fade-in duration-700 font-sans">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div className="relative mx-auto max-w-5xl space-y-12 p-4 font-sans duration-700 animate-in fade-in md:p-12">
+      <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div className="space-y-4 text-center md:text-left">
           <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Start a session</p>
-          <h1 className="text-5xl md:text-7xl font-black tracking-tightest leading-[0.9]">
-            Let&apos;s find you <br /> <span className="text-muted-foreground">some help.</span>
+          <h1 className="text-5xl font-black leading-[0.9] tracking-tight md:text-7xl">
+            Let&apos;s find you
+            <br />
+            <span className="text-muted-foreground">the right help.</span>
           </h1>
-          <p className="text-muted-foreground text-lg md:text-xl font-medium max-w-2xl leading-relaxed">
-            Pick a subject and we&apos;ll find someone to help — a tutor, a study buddy, or Mash AI. <span className="text-emerald-500">Mash AI is always available in your room.</span>
+          <p className="max-w-2xl text-lg font-medium leading-relaxed text-muted-foreground md:text-xl">
+            Choose a subject and we&apos;ll try a tutor first, then a study partner, then Mash AI if needed.
           </p>
         </div>
-        
-        <div className="flex items-center justify-center bg-secondary/50 p-1.5 rounded-full border border-border">
-          <Button variant="ghost" className="rounded-full bg-background shadow-md px-6 font-bold text-sm h-12 hover:bg-background">
+
+        <div className="flex items-center justify-center rounded-full border border-border bg-secondary/50 p-1.5">
+          <Button variant="ghost" className="h-12 rounded-full bg-background px-6 text-sm font-bold shadow-md hover:bg-background">
             <Zap className="mr-2 h-4 w-4 text-primary" /> Instant Match
           </Button>
-          <Button variant="ghost" onClick={() => router.push("/dashboard/tutors")} className="rounded-full px-6 font-bold text-sm h-12 text-muted-foreground hover:text-foreground">
+          <Button
+            variant="ghost"
+            onClick={() => router.push("/dashboard/tutors")}
+            className="h-12 rounded-full px-6 text-sm font-bold text-muted-foreground hover:text-foreground"
+          >
             <CalendarIcon className="mr-2 h-4 w-4" /> Book a Session
           </Button>
         </div>
       </div>
 
       {!isMatching ? (
-        <Card className="border-border/50 bg-secondary/30 backdrop-blur-3xl rounded-[3rem] overflow-hidden shadow-2xl relative">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 via-primary to-primary/50" />
-          <CardContent className="p-8 md:p-16 space-y-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+        <Card className="relative overflow-hidden rounded-[3rem] border-border/50 bg-secondary/30 shadow-2xl backdrop-blur-3xl">
+          <div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-primary/50 via-primary to-primary/50" />
+          <CardContent className="space-y-12 p-8 md:p-16">
+            <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
               <div className="space-y-4">
-                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">What subject?</label>
-                <Select onValueChange={(v: string | null) => v && setFormData({ ...formData, subject: v })}>
-                  <SelectTrigger className="h-20 rounded-[2rem] border-border bg-background font-black px-8 text-2xl focus:ring-primary">
+                <label className="ml-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  What subject?
+                </label>
+                <Select
+                  value={formData.subject}
+                  onValueChange={(value: string | null) => setFormData({ ...formData, subject: value || "" })}
+                >
+                  <SelectTrigger className="h-20 rounded-[2rem] border-border bg-background px-8 text-2xl font-black focus:ring-primary">
                     <SelectValue placeholder="Pick a subject" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-2xl border-border max-h-[300px]">
-                    {subjects.map((s) => (
-                      <SelectItem key={s} value={s} className="font-bold text-lg">{s}</SelectItem>
+                  <SelectContent className="max-h-[300px] rounded-2xl border-border">
+                    {subjects.map((subject) => (
+                      <SelectItem key={subject} value={subject} className="text-lg font-bold">
+                        {subject}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="space-y-4">
-                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">What are you working on? (optional)</label>
+                <label className="ml-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  What are you working on? (optional)
+                </label>
                 <Input
                   placeholder="e.g. Calculus Integration"
-                  className="h-20 rounded-[2rem] border-border bg-background font-bold px-8 text-xl focus-visible:ring-primary"
+                  className="h-20 rounded-[2rem] border-border bg-background px-8 text-xl font-bold focus-visible:ring-primary"
                   value={formData.topic}
                   onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
                 />
               </div>
             </div>
 
-            <Button 
-              onClick={handleMatchMe} 
-              className="w-full h-24 rounded-[2.5rem] bg-foreground text-background hover:bg-primary hover:text-white font-black text-xl tracking-[0.2em] uppercase shadow-2xl transition-all duration-500 active:scale-95 group"
+            <Button
+              onClick={handleMatchMe}
+              className="group h-24 w-full rounded-[2.5rem] bg-foreground text-xl font-black uppercase tracking-[0.2em] text-background shadow-2xl transition-all duration-500 active:scale-95 hover:bg-primary hover:text-white"
             >
-              <Zap className="h-8 w-8 mr-4 fill-primary text-primary group-hover:fill-white group-hover:text-white transition-colors" />
-               Find Me Someone to Help
+              <Zap className="mr-4 h-8 w-8 fill-primary text-primary transition-colors group-hover:fill-white group-hover:text-white" />
+              Find Me Someone to Help
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <Card className="min-h-[500px] flex flex-col items-center justify-center text-center p-12 md:p-20 border-border/50 bg-secondary/30 backdrop-blur-3xl rounded-[3rem] shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 left-0 h-2 bg-primary transition-all duration-1000 shadow-[0_0_20px_rgba(139,92,246,0.5)]" style={{ width: `${(timer/30)*100}%` }} />
-          
-          <AnimatePresence mode="wait">
-            {matchStep === 1 && (
-              <motion.div
-                key="tutor"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.1 }}
-                className="space-y-10"
-              >
-                <div className="relative mx-auto w-32 h-32">
-                   <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping" />
-                   <div className="relative bg-primary text-white p-8 rounded-full shadow-2xl shadow-primary/40">
-                     <Search className="h-16 w-16 animate-pulse" />
-                   </div>
-                </div>
-                <div className="space-y-4">
-                  <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Searching for a tutor...</h2>
-                  <p className="text-muted-foreground text-lg font-medium">Looking for someone who knows {formData.subject}. <span className="text-emerald-500">Mash AI is already listening in your room.</span></p>
-                  <div className="pt-6">
-                     <span className="px-6 py-2 rounded-full bg-primary/10 text-primary font-black text-xs tracking-widest uppercase">{timer}s left</span>
-                  </div>
-                </div>
-              </motion.div>
-            )}
+        <Card className="relative min-h-[540px] overflow-hidden rounded-[3rem] border-border/50 bg-secondary/30 p-12 text-center shadow-2xl backdrop-blur-3xl md:p-20">
+          <div className="mx-auto max-w-3xl space-y-10">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-white/70">
+              <Video className="h-4 w-4 text-primary" />
+              Stay on this page or keep browsing your dashboard while we search.
+            </div>
 
-            {matchStep === 2 && (
-              <motion.div
-                key="peer"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.1 }}
-                className="space-y-10"
-              >
-                <div className="relative mx-auto w-32 h-32">
-                   <div className="absolute inset-0 bg-blue-500/20 rounded-full animate-ping" />
-                   <div className="relative bg-blue-500 text-white p-8 rounded-full shadow-2xl shadow-blue-500/40">
-                     <Users className="h-16 w-16 animate-pulse" />
-                   </div>
-                </div>
-                <div className="space-y-4">
-                  <h2 className="text-4xl md:text-5xl font-black tracking-tightest text-blue-500">Searching for a study partner...</h2>
-                  <p className="text-muted-foreground text-lg font-medium">No tutor available — looking for a peer who can help with {formData.subject}. <span className="text-emerald-500">Mash AI is still listening.</span></p>
-                  <div className="pt-6">
-                     <span className="px-6 py-2 rounded-full bg-blue-500/10 text-blue-500 font-black text-xs tracking-widest uppercase">{timer}s left</span>
-                  </div>
-                </div>
-              </motion.div>
-            )}
+            <div className="rounded-[2rem] bg-background/60 p-5 shadow-inner">
+              <p className="text-sm font-medium italic text-muted-foreground">{MATCH_QUOTES[quoteIndex]}</p>
+            </div>
 
-            {matchStep === 3 && (
-              <motion.div
-                key="ai"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 1.1 }}
-                className="space-y-10"
-              >
-                <div className="relative mx-auto w-32 h-32">
-                   <div className="absolute inset-0 bg-emerald-500/20 rounded-full animate-ping" />
-                   <div className="relative bg-emerald-500 text-white p-8 rounded-full shadow-2xl shadow-emerald-500/40">
-                     <Cpu className="h-16 w-16 animate-pulse" />
-                   </div>
-                </div>
-                <div className="space-y-4">
-                  <h2 className="text-4xl md:text-5xl font-black tracking-tightest text-emerald-500">Mash AI has you covered</h2>
-                  <p className="text-muted-foreground text-lg font-medium">No one&apos;s available right now — Mash AI will guide you through {formData.subject}.</p>
-                  <div className="pt-6 flex justify-center gap-2">
-                     <Sparkles className="h-5 w-5 text-emerald-500" />
-                     <span className="text-emerald-500 font-black text-xs tracking-widest uppercase">AI Ready</span>
+            <AnimatePresence mode="wait">
+              {matchStep === 1 && (
+                <motion.div
+                  key="tutor"
+                  initial={{ opacity: 0, scale: 0.94 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.05 }}
+                  className="space-y-8"
+                >
+                  <div className="relative mx-auto h-32 w-32">
+                    <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
+                    <div className="relative rounded-full bg-primary p-8 text-white shadow-2xl shadow-primary/40">
+                      <Search className="h-16 w-16 animate-pulse" />
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                  <div className="space-y-4">
+                    <h2 className="text-4xl font-black tracking-tightest md:text-5xl">Searching for a tutor...</h2>
+                    <p className="text-lg font-medium text-muted-foreground">
+                      We&apos;re looking for a tutor who can help with {formData.subject}.
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+
+              {matchStep === 2 && (
+                <motion.div
+                  key="peer"
+                  initial={{ opacity: 0, scale: 0.94 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.05 }}
+                  className="space-y-8"
+                >
+                  <div className="relative mx-auto h-32 w-32">
+                    <div className="absolute inset-0 rounded-full bg-blue-500/20 animate-ping" />
+                    <div className="relative rounded-full bg-blue-500 p-8 text-white shadow-2xl shadow-blue-500/40">
+                      <Users className="h-16 w-16 animate-pulse" />
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <h2 className="text-4xl font-black tracking-tightest text-blue-500 md:text-5xl">
+                      Searching for a study partner...
+                    </h2>
+                    <p className="text-lg font-medium text-muted-foreground">
+                      No tutor yet. Now we&apos;re scanning for another student waiting on {formData.subject}.
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+
+              {matchStep === 3 && (
+                <motion.div
+                  key="ai"
+                  initial={{ opacity: 0, scale: 0.94 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.05 }}
+                  className="space-y-8"
+                >
+                  <div className="relative mx-auto h-32 w-32">
+                    <div className="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping" />
+                    <div className="relative rounded-full bg-emerald-500 p-8 text-white shadow-2xl shadow-emerald-500/40">
+                      <Cpu className="h-16 w-16 animate-pulse" />
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <h2 className="text-4xl font-black tracking-tightest text-emerald-500 md:text-5xl">
+                      Mash AI is ready if needed
+                    </h2>
+                    <p className="text-lg font-medium text-muted-foreground">
+                      We&apos;re still checking for a human match, and Mash AI is standing by for {formData.subject}.
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <Button
               variant="ghost"
-              onClick={() => {
-                setIsMatching(false);
-                setCurrentRequestId(null);
-                aiFallbackRef.current = false;
+              onClick={async () => {
+                if (currentRequestId) {
+                  try {
+                    await cancelMatchRequest(currentRequestId);
+                  } catch {
+                    // Non-fatal; local reset still matters.
+                  }
+                }
+                reset();
               }}
-              className="mt-16 text-muted-foreground hover:text-red-500 font-black text-[10px] tracking-widest uppercase transition-colors"
+              className="text-[10px] font-black uppercase tracking-widest text-muted-foreground transition-colors hover:text-red-500"
             >
               Cancel
             </Button>
+          </div>
         </Card>
       )}
     </div>

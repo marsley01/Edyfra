@@ -33,7 +33,10 @@ async function upsertStreamUsers(users: { id: string; name: string; image?: stri
  */
 export async function getFilteredMatchRequests(tutorSubjects: string[]) {
   try {
-    const whereClause: any = {
+    const whereClause: {
+      sessionId: null;
+      subject?: { in: string[] };
+    } = {
       sessionId: null,
     };
 
@@ -152,73 +155,63 @@ export async function findTier1Match(
  * - Prevents self-match
  */
 export async function findTier2Match(
+  requestId: string,
   studentId: string,
-  requestedSubjects: string[],
+  requestedSubject: string,
   educationLevel?: EduLevel | null
-): Promise<string | null> {
+): Promise<{ partnerId: string; partnerRequestId: string } | null> {
   try {
-    // First try: Strict matching (same education level, overlapping subjects)
-    let peer = await prisma.user.findFirst({
+    const peerRequest = await prisma.matchRequest.findFirst({
       where: {
-        id: { not: studentId },
-        role: "STUDENT",
-        ...(educationLevel ? { educationLevel: educationLevel as EduLevel } : {}),
-        studentProfile: {
-          subjects: { hasSome: requestedSubjects },
+        id: { not: requestId },
+        studentId: { not: studentId },
+        sessionId: null,
+        subject: requestedSubject,
+        student: {
+          role: "STUDENT",
+          ...(educationLevel ? { educationLevel: educationLevel as EduLevel } : {}),
+          sessionsAsStudent: { none: { status: "ACTIVE" } },
         },
-        // Not in active session
-        sessionsAsStudent: { none: { status: "ACTIVE" } },
       },
-      include: { studentProfile: true },
-      orderBy: [
-        { streakDays: "desc" }, // Engaged streaks first
-        { points: "desc" }, // Then by points
-        { createdAt: "asc" }, // Tiebreaker
-      ],
-    });
-
-    if (peer) return peer.id;
-
-    // Second try: More flexible - ignore education level, relax subject requirements
-    peer = await prisma.user.findFirst({
-      where: {
-        id: { not: studentId },
-        role: "STUDENT",
-        // Remove education level filter to increase pool
-        studentProfile: {
-          subjects: { hasSome: requestedSubjects },
+      include: {
+        student: {
+          select: {
+            id: true,
+            educationLevel: true,
+            points: true,
+            streakDays: true,
+          },
         },
-        // Not in active session
-        sessionsAsStudent: { none: { status: "ACTIVE" } },
       },
-      include: { studentProfile: true },
-      orderBy: [
-        { streakDays: "desc" },
-        { points: "desc" },
-        { createdAt: "asc" },
-      ],
+      orderBy: [{ createdAt: "asc" }],
     });
 
-    if (peer) return peer.id;
+    if (peerRequest) {
+      return {
+        partnerId: peerRequest.studentId,
+        partnerRequestId: peerRequest.id,
+      };
+    }
 
-    // Third try: Most flexible - any student peer (even without subject overlap)
-    peer = await prisma.user.findFirst({
+    const relaxedPeerRequest = await prisma.matchRequest.findFirst({
       where: {
-        id: { not: studentId },
-        role: "STUDENT",
-        // Remove subject requirement entirely
-        // Not in active session
-        sessionsAsStudent: { none: { status: "ACTIVE" } },
+        id: { not: requestId },
+        studentId: { not: studentId },
+        sessionId: null,
+        student: {
+          role: "STUDENT",
+          sessionsAsStudent: { none: { status: "ACTIVE" } },
+        },
       },
-      include: { studentProfile: true },
-      orderBy: [
-        { streakDays: "desc" },
-        { points: "desc" },
-        { createdAt: "asc" },
-      ],
+      orderBy: [{ createdAt: "asc" }],
     });
 
-    return peer?.id || null;
+    if (!relaxedPeerRequest) return null;
+
+    return {
+      partnerId: relaxedPeerRequest.studentId,
+      partnerRequestId: relaxedPeerRequest.id,
+    };
   } catch (error) {
     console.error("Error in findTier2Match:", error);
     return null;
@@ -322,12 +315,12 @@ export async function executeSmartMatching(
       },
     });
 
-    const availablePeers = await prisma.user.count({
+    const availablePeers = await prisma.matchRequest.count({
       where: {
-        id: { not: matchRequest.studentId },
-        role: "STUDENT",
-        studentProfile: { subjects: { hasSome: [matchRequest.subject] } },
-        sessionsAsStudent: { none: { status: "ACTIVE" } },
+        id: { not: matchRequest.id },
+        studentId: { not: matchRequest.studentId },
+        sessionId: null,
+        subject: matchRequest.subject,
       },
     });
 
@@ -339,7 +332,7 @@ export async function executeSmartMatching(
     };
 
     // ============ TIER 1: TUTOR MATCH ============
-    if (!matchRequest.tier1Tried) {
+    {
       const tier1Partner = await findTier1Match(
         matchRequest.studentId,
         matchRequest.subject,
@@ -349,32 +342,23 @@ export async function executeSmartMatching(
       if (tier1Partner) {
         partnerId = tier1Partner;
         tier = "TUTOR";
-      } else {
-        // Mark tier1 as attempted (no available tutors)
-        await prisma.matchRequest.update({
-          where: { id: matchRequestId },
-          data: { tier1Tried: true },
-        });
       }
     }
 
     // ============ TIER 2: PEER MATCH ============
-    if (!partnerId && !matchRequest.tier2Tried) {
+    let peerPartnerRequestId: string | null = null;
+    if (!partnerId) {
       const tier2Partner = await findTier2Match(
+        matchRequest.id,
         matchRequest.studentId,
-        student.studentProfile?.subjects || [matchRequest.subject],
+        matchRequest.subject,
         student.educationLevel
       );
 
       if (tier2Partner) {
-        partnerId = tier2Partner;
+        partnerId = tier2Partner.partnerId;
+        peerPartnerRequestId = tier2Partner.partnerRequestId;
         tier = "PEER";
-      } else {
-        // Mark tier2 as attempted (no available peers)
-        await prisma.matchRequest.update({
-          where: { id: matchRequestId },
-          data: { tier2Tried: true },
-        });
       }
     }
 
@@ -445,6 +429,20 @@ export async function executeSmartMatching(
         resolvedAt: new Date(),
       },
     });
+
+    if (tier === "PEER" && peerPartnerRequestId) {
+      await prisma.matchRequest.updateMany({
+        where: {
+          id: peerPartnerRequestId,
+          sessionId: null,
+        },
+        data: {
+          sessionId: session.id,
+          resolvedAs: "PEER",
+          resolvedAt: new Date(),
+        },
+      });
+    }
 
     return {
       success: true,

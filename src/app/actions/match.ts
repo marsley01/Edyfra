@@ -11,7 +11,6 @@ import { randomBytes } from "crypto";
 import { executeSmartMatching, sweepAndAIFallback } from "./match-algorithm";
 import { StreamChat } from "stream-chat";
 import { notifyUser } from "@/app/actions/notifications";
-import { getUserData } from "@/app/actions/user";
 import { withRateLimit } from "@/lib/rate-limit";
 
 const STREAM_KEY = process.env.NEXT_PUBLIC_STREAM_KEY!;
@@ -79,23 +78,102 @@ export async function createMatchRequest(data: { subject: string; topic: string 
       return { success: false, error: limited.error };
     }
 
-    return { success: true, matchRequestId: limited.data.matchRequestId };
-  } catch (err: any) {
+    const matchRequestId = limited.data.matchRequestId;
+    const autoMatch = await executeSmartMatching(matchRequestId, { skipAI: true });
+
+    if (autoMatch.success && autoMatch.sessionId) {
+      return {
+        success: true,
+        matchRequestId,
+        sessionId: autoMatch.sessionId,
+        tier: autoMatch.tier,
+      };
+    }
+
+    return { success: true, matchRequestId };
+  } catch (err: unknown) {
     console.error("[createMatchRequest] Error:", err);
-    return { success: false, error: err?.message || "Failed to create match request" };
+    const message = err instanceof Error ? err.message : "Failed to create match request";
+    return { success: false, error: message };
+  }
+}
+
+export async function retryMatchRequest(requestId: string) {
+  try {
+    const result = await executeSmartMatching(requestId, { skipAI: true });
+    if (!result.success) {
+      return { success: false, error: result.error };
+    }
+
+    return {
+      success: true,
+      sessionId: result.sessionId,
+      tier: result.tier,
+    };
+  } catch (error) {
+    console.error("Error retrying match request:", error);
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
+  }
+}
+
+export async function cancelMatchRequest(requestId: string) {
+  try {
+    const supabase = await (await import("@/utils/supabase/server")).createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: "Please sign in first." };
+    }
+
+    const request = await prisma.matchRequest.findUnique({
+      where: { id: requestId },
+      select: { id: true, studentId: true, sessionId: true },
+    });
+
+    if (!request) return { success: true };
+    if (request.sessionId) return { success: false, error: "Session already created." };
+
+    const prismaUser = await prisma.user.findFirst({
+      where: {
+        OR: [{ id: user.id }, ...(user.email ? [{ email: user.email }] : [])],
+      },
+      select: { id: true },
+    });
+
+    if (!prismaUser || prismaUser.id !== request.studentId) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    await prisma.matchRequest.delete({
+      where: { id: requestId },
+    });
+
+    revalidatePath("/dashboard/study");
+    revalidatePath("/tutor/requests");
+    return { success: true };
+  } catch (error) {
+    console.error("Error cancelling match request:", error);
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
   }
 }
 
 export async function acceptMatchRequest(requestId: string) {
   const cookieStore = await cookies();
+  type CookieToSet = {
+    name: string;
+    value: string;
+    options?: Parameters<typeof cookieStore.set>[2];
+  };
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() { return cookieStore.getAll(); },
-        setAll(cookiesToSet: any) {
-          try { cookiesToSet.forEach(({ name, value, options }: any) => cookieStore.set(name, value, options)); } catch {}
+        setAll(cookiesToSet: CookieToSet[]) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
+          } catch {}
         },
       },
     }
@@ -156,9 +234,9 @@ export async function acceptMatchRequest(requestId: string) {
         resolvedAt: new Date(),
       }
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     // If the student user record was deleted (P2003 Foreign Key constraint failed)
-    if (error.code === 'P2003') {
+    if (typeof error === "object" && error !== null && "code" in error && error.code === "P2003") {
       // Clean up the orphaned match request
       await prisma.matchRequest.delete({ where: { id: requestId } });
       return { success: false, error: "This student is no longer available. Request removed from feed." };
