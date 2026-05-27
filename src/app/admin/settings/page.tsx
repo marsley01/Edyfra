@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { resetAllSessions, clearGlobalCache, deleteUser, saveAdminGlobalSettings, getAdminGlobalSettings } from "@/app/actions/admin";
-import { updateUserSettings } from "@/app/actions/user";
+import { updateUserPreferences } from "@/app/actions/user";
 import { Palette, Trash2, Skull, Eye, EyeOff } from "lucide-react";
 
 export default function AdminSettingsPage() {
@@ -82,8 +82,8 @@ export default function AdminSettingsPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // 1. Save to User Settings (Local)
-      await updateUserSettings({ accentColor });
+      // 1. Save to User Preferences (Local)
+      await updateUserPreferences({ accentColor });
       
       // 2. Save to Global Settings (API Keys, etc)
       await saveAdminGlobalSettings({ 
