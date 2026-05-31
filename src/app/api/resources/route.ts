@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import prisma from "@/lib/prisma";
+import { cache, TTL } from "@/lib/cache";
 
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    await supabase.auth.getUser(); // keep auth session alive
 
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || "";
@@ -17,6 +18,16 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "12");
     const skip = (page - 1) * limit;
+
+    // Build a stable cache key from all query params
+    const cacheKey = `resources:${search}:${subject}:${level}:${type}:${topic}:${price}:p${page}:l${limit}`;
+
+    const cached = cache.get<object>(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached, {
+        headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=10" },
+      });
+    }
 
     // Build where clause
     const where: any = {
@@ -73,7 +84,7 @@ export async function GET(request: NextRequest) {
       prisma.resource.count({ where }),
     ]);
 
-    return NextResponse.json({
+    const payload = {
       resources,
       pagination: {
         page,
@@ -81,6 +92,12 @@ export async function GET(request: NextRequest) {
         total,
         pages: Math.ceil(total / limit),
       },
+    };
+
+    cache.set(cacheKey, payload, TTL.RESOURCES);
+
+    return NextResponse.json(payload, {
+      headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=10" },
     });
   } catch (error: any) {
     console.error("[Resources API] Error:", error.message);
@@ -118,9 +135,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Invalidate all cached resource listings so the new item appears promptly
+    cache.deleteByPrefix("resources:");
+
     return NextResponse.json({ success: true, resource });
   } catch (error: any) {
     console.error("[Resources API POST] Error:", error);
     return NextResponse.json({ error: error?.message || "Failed to create resource" }, { status: 500 });
   }
-}
+}

@@ -1,8 +1,19 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { cache, TTL } from "@/lib/cache";
+
+const CACHE_KEY = "api:plans";
 
 export async function GET() {
   try {
+    // Serve from cache when available (plans rarely change)
+    const cached = cache.get<object>(CACHE_KEY);
+    if (cached) {
+      return NextResponse.json(cached, {
+        headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=300" },
+      });
+    }
+
     const plans = await prisma.plan.findMany({
       orderBy: { monthlyPrice: "asc" },
     });
@@ -18,7 +29,12 @@ export async function GET() {
       buttonText: (plan.features as any)?.buttonText || "Select Plan",
     }));
 
-    return NextResponse.json({ plans: transformed });
+    const payload = { plans: transformed };
+    cache.set(CACHE_KEY, payload, TTL.PLANS);
+
+    return NextResponse.json(payload, {
+      headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=300" },
+    });
   } catch (error) {
     console.error("[Plans API] Error:", error);
     return NextResponse.json({ plans: [] });

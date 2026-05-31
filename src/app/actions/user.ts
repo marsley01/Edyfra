@@ -3,7 +3,7 @@
 import { Role, EduLevel, Tier, VerifPath, Prisma, User, StudentProfile, TutorProfile, Gender } from "@/generated/client";
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 import { SESSION_CONFIG, TUTOR_CONFIG, TIER_CONFIG } from "@/lib/config";
 
 const getRoleFromMetadata = (metadataRole: string | undefined): Role => {
@@ -550,70 +550,94 @@ export async function changeEmail(newEmail: string) {
   }
 }
 
-export async function getGlobalStats() {
-  try {
-    const [studentCount, tutorCount, sessionCount, resourceCount] = await Promise.all([
-      prisma.user.count({ where: { role: Role.STUDENT } }),
-      prisma.tutorProfile.count({ where: { isVerified: true } }),
-      prisma.session.count({ where: { status: "COMPLETED" } }),
-      prisma.resource.count({ where: { status: "approved" } }),
-    ]);
+/**
+ * Cached via Next.js data cache — refreshes every 5 minutes.
+ * Call `revalidateTag('global-stats')` to bust early (e.g. after admin actions).
+ */
+export const getGlobalStats = unstable_cache(
+  async () => {
+    try {
+      const [studentCount, tutorCount, sessionCount, resourceCount] = await Promise.all([
+        prisma.user.count({ where: { role: Role.STUDENT } }),
+        prisma.tutorProfile.count({ where: { isVerified: true } }),
+        prisma.session.count({ where: { status: "COMPLETED" } }),
+        prisma.resource.count({ where: { status: "approved" } }),
+      ]);
 
-    return [
-      { value: studentCount, label: "Students Joined" },
-      { value: tutorCount, label: "Verified Tutors" },
-      { value: sessionCount, label: "Sessions Completed" },
-      { value: resourceCount, label: "Resources Shared" },
-    ];
-  } catch (error) {
-    console.error("Error in getGlobalStats:", error);
-    return [];
-  }
-}
+      return [
+        { value: studentCount, label: "Students Joined" },
+        { value: tutorCount, label: "Verified Tutors" },
+        { value: sessionCount, label: "Sessions Completed" },
+        { value: resourceCount, label: "Resources Shared" },
+      ];
+    } catch (error) {
+      console.error("Error in getGlobalStats:", error);
+      return [];
+    }
+  },
+  ["global-stats"],
+  { revalidate: 300, tags: ["global-stats"] },
+);
 
-export async function getLeaderboard(educationLevel: EduLevel) {
-  try {
-    const leaders = await prisma.user.findMany({
-      where: { educationLevel },
-      select: {
-        id: true,
-        name: true,
-        avatar: true,
-        points: true,
-        educationLevel: true,
-        tier: true,
-      },
-      orderBy: { points: "desc" },
-      take: 20,
-    });
-    return leaders;
-  } catch (error) {
-    console.error("Error in getLeaderboard:", error);
-    return [];
-  }
-}
+/**
+ * Cached per education-level bucket — refreshes every 2 minutes.
+ * Call `revalidateTag('leaderboard')` to bust early.
+ */
+export const getLeaderboard = unstable_cache(
+  async (educationLevel: EduLevel) => {
+    try {
+      const leaders = await prisma.user.findMany({
+        where: { educationLevel },
+        select: {
+          id: true,
+          name: true,
+          avatar: true,
+          points: true,
+          educationLevel: true,
+          tier: true,
+        },
+        orderBy: { points: "desc" },
+        take: 20,
+      });
+      return leaders;
+    } catch (error) {
+      console.error("Error in getLeaderboard:", error);
+      return [];
+    }
+  },
+  ["leaderboard"],
+  { revalidate: 120, tags: ["leaderboard"] },
+);
 
-export async function getCommunityScholars() {
-  try {
-    const legends = await prisma.user.findMany({
-      where: { role: Role.STUDENT, tier: Tier.LEGEND },
-      select: { id: true, name: true, county: true, points: true, tier: true },
-      orderBy: { points: "desc" },
-      take: 3,
-    });
-    if (legends.length > 0) return legends;
+/**
+ * Cached — refreshes every 5 minutes.
+ * Call `revalidateTag('community-scholars')` to bust early.
+ */
+export const getCommunityScholars = unstable_cache(
+  async () => {
+    try {
+      const legends = await prisma.user.findMany({
+        where: { role: Role.STUDENT, tier: Tier.LEGEND },
+        select: { id: true, name: true, county: true, points: true, tier: true },
+        orderBy: { points: "desc" },
+        take: 3,
+      });
+      if (legends.length > 0) return legends;
 
-    return prisma.user.findMany({
-      where: { role: Role.STUDENT },
-      select: { id: true, name: true, county: true, points: true, tier: true },
-      orderBy: { points: "desc" },
-      take: 4,
-    });
-  } catch (error) {
-    console.error("Error in getCommunityScholars:", error);
-    return [];
-  }
-}
+      return prisma.user.findMany({
+        where: { role: Role.STUDENT },
+        select: { id: true, name: true, county: true, points: true, tier: true },
+        orderBy: { points: "desc" },
+        take: 4,
+      });
+    } catch (error) {
+      console.error("Error in getCommunityScholars:", error);
+      return [];
+    }
+  },
+  ["community-scholars"],
+  { revalidate: 300, tags: ["community-scholars"] },
+);
 
 export async function recalibrateTier(userId: string) {
   try {
