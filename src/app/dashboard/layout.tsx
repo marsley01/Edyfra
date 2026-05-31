@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import DashboardSidebar from "@/components/dashboard/Sidebar";
 import MatchNotification from "@/components/dashboard/MatchNotification";
 import MobileNav from "@/components/dashboard/MobileNav";
+import { GlobalMatchManager } from "@/components/dashboard/GlobalMatchManager";
 
 export default async function DashboardLayout({
   children,
@@ -24,6 +25,7 @@ export default async function DashboardLayout({
         {children}
       </main>
       <MatchNotification />
+      <GlobalMatchManager />
     </div>
   );
 }

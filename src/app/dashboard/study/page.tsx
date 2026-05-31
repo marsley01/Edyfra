@@ -1,35 +1,47 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { createMatchRequest, forceAIFallback, checkMatchStatus } from "@/app/actions/match";
-import { Zap, Search, Users, Cpu, Loader2, Sparkles, Calendar as CalendarIcon } from "lucide-react";
+import { createMatchRequest } from "@/app/actions/match";
+import { Zap, Search, Users, Cpu, Sparkles, Calendar as CalendarIcon } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/utils/supabase/client";
 
 import { getSubjectsByLevel } from "@/utils/subjects";
 import { getUserData } from "@/app/actions/user";
+import { useMatchStore } from "@/store/matchStore";
+
+const QUOTES = [
+  "\"Education is the most powerful weapon which you can use to change the world.\" - Nelson Mandela",
+  "\"The beautiful thing about learning is that no one can take it away from you.\" - B.B. King",
+  "\"Live as if you were to die tomorrow. Learn as if you were to live forever.\" - Mahatma Gandhi",
+  "\"An investment in knowledge pays the best interest.\" - Benjamin Franklin",
+  "\"The only person who is educated is the one who has learned how to learn and change.\" - Carl Rogers"
+];
 
 export default function StudyPage() {
   const router = useRouter();
   const supabase = createClient();
-  const [isMatching, setIsMatching] = useState(false);
-  const [matchStep, setMatchStep] = useState(0); // 0: Idle, 1: Tutor, 2: Peer, 3: AI
-  const [timer, setTimer] = useState(30);
   const [userData, setUserData] = useState<any>(null);
-  const [formData, setFormData] = useState({
-    subject: "",
-    topic: "",
-  });
-  const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
-  const aiFallbackRef = useRef(false);
+  const [quoteIndex, setQuoteIndex] = useState(0);
+
+  const {
+    isMatching,
+    matchStep,
+    timer,
+    formData,
+    setMatching,
+    setMatchStep,
+    setTimer,
+    setFormData,
+    setCurrentRequestId,
+    reset
+  } = useMatchStore();
 
   useEffect(() => {
     getUserData().then((data) => {
@@ -42,6 +54,15 @@ export default function StudyPage() {
     }).catch(console.error);
   }, []);
 
+  // Rotate quotes every 5 seconds while matching
+  useEffect(() => {
+    if (!isMatching) return;
+    const interval = setInterval(() => {
+      setQuoteIndex((prev) => (prev + 1) % QUOTES.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [isMatching]);
+
   const subjects = getSubjectsByLevel(userData?.educationLevel || "HIGH_SCHOOL");
 
   const handleMatchMe = async () => {
@@ -50,16 +71,15 @@ export default function StudyPage() {
       return;
     }
 
-    setIsMatching(true);
+    setMatching(true);
     setMatchStep(1);
-    setTimer(30);
-    aiFallbackRef.current = false;
+    setTimer(90);
 
     try {
       const result = await createMatchRequest(formData);
       if (!result.success) {
         toast.error(result.error || "Failed to start matching. Please try again.");
-        setIsMatching(false);
+        reset();
         return;
       }
       
@@ -89,89 +109,12 @@ export default function StudyPage() {
     } catch (error) {
       console.error("Matching error:", error);
       toast.error("Failed to start matching. Please try again.");
-      setIsMatching(false);
+      reset();
     }
   };
 
-  const handleAIFallback = useCallback(async () => {
-    if (!currentRequestId) return;
-    
-    setMatchStep(3);
-    try {
-      const result = await forceAIFallback(currentRequestId);
-      if (result.success) {
-        toast.info("Connecting you to Mash AI...");
-        router.push(`/study-room/${result.sessionId}`);
-      } else {
-        // Already matched or not found - poll will handle redirect
-        console.log("AI fallback skipped:", result.message);
-      }
-    } catch {
-      toast.error("AI fallback failed. Please try again.");
-      setIsMatching(false);
-    }
-  }, [currentRequestId, router]);
-
-  useEffect(() => {
-    if (!currentRequestId) return;
-
-    const channel = supabase
-      .channel(`match-${currentRequestId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "MatchRequest",
-          filter: `id=eq.${currentRequestId}`,
-        },
-        (payload: any) => {
-          if (payload.new?.sessionId) {
-            toast.success("Match found! Redirecting...");
-            router.push(`/study-room/${payload.new.sessionId}`);
-          }
-        }
-      )
-      .subscribe();
-
-    pollingRef.current = setInterval(async () => {
-      const res = await checkMatchStatus(currentRequestId);
-      if (res.success && res.sessionId) {
-        if (timerRef.current) clearInterval(timerRef.current);
-        if (pollingRef.current) clearInterval(pollingRef.current);
-        toast.success("Connection established! Entering room...");
-        router.push(`/study-room/${res.sessionId}`);
-      }
-    }, 3000);
-
-    timerRef.current = setInterval(() => {
-      setTimer((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (pollingRef.current) clearInterval(pollingRef.current);
-      supabase.removeChannel(channel);
-    };
-  }, [currentRequestId, router, supabase]);
-
-  useEffect(() => {
-    if (!isMatching) return;
-    
-    if (timer === 20 && matchStep === 1) {
-      setMatchStep(2);
-    }
-    if (timer === 10 && matchStep === 2) {
-      setMatchStep(3);
-    }
-    if (timer === 0 && !aiFallbackRef.current) {
-      aiFallbackRef.current = true;
-      handleAIFallback();
-    }
-  }, [timer, isMatching, matchStep, handleAIFallback]);
-
   return (
-    <div className="p-4 md:p-12 max-w-5xl mx-auto space-y-12 animate-in fade-in duration-700 font-sans">
+    <div className="p-4 md:p-12 max-w-5xl mx-auto space-y-12 animate-in fade-in duration-700 font-sans relative">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-4 text-center md:text-left">
           <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Start a session</p>
@@ -233,8 +176,22 @@ export default function StudyPage() {
         </Card>
       ) : (
         <Card className="min-h-[500px] flex flex-col items-center justify-center text-center p-12 md:p-20 border-border/50 bg-secondary/30 backdrop-blur-3xl rounded-[3rem] shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 left-0 h-2 bg-primary transition-all duration-1000 shadow-[0_0_20px_rgba(139,92,246,0.5)]" style={{ width: `${(timer/30)*100}%` }} />
+          <div className="absolute top-0 left-0 h-2 bg-primary transition-all duration-1000 shadow-[0_0_20px_rgba(139,92,246,0.5)]" style={{ width: `${(timer/90)*100}%` }} />
           
+          <div className="absolute top-8 left-0 w-full px-8">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={quoteIndex}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="text-muted-foreground/80 text-sm font-medium italic"
+              >
+                {QUOTES[quoteIndex]}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
           <AnimatePresence mode="wait">
             {matchStep === 1 && (
               <motion.div
@@ -242,7 +199,7 @@ export default function StudyPage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 1.1 }}
-                className="space-y-10"
+                className="space-y-10 mt-8"
               >
                 <div className="relative mx-auto w-32 h-32">
                    <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping" />
@@ -253,8 +210,9 @@ export default function StudyPage() {
                 <div className="space-y-4">
                   <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Searching for a tutor...</h2>
                   <p className="text-muted-foreground text-lg font-medium">Looking for someone who knows {formData.subject}. <span className="text-emerald-500">Mash AI is already listening in your room.</span></p>
-                  <div className="pt-6">
+                  <div className="pt-6 flex flex-col items-center gap-3">
                      <span className="px-6 py-2 rounded-full bg-primary/10 text-primary font-black text-xs tracking-widest uppercase">{timer}s left</span>
+                     <p className="text-xs text-muted-foreground font-medium">You can navigate away. We'll notify you when a match is found.</p>
                   </div>
                 </div>
               </motion.div>
@@ -266,7 +224,7 @@ export default function StudyPage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 1.1 }}
-                className="space-y-10"
+                className="space-y-10 mt-8"
               >
                 <div className="relative mx-auto w-32 h-32">
                    <div className="absolute inset-0 bg-blue-500/20 rounded-full animate-ping" />
@@ -277,8 +235,9 @@ export default function StudyPage() {
                 <div className="space-y-4">
                   <h2 className="text-4xl md:text-5xl font-black tracking-tightest text-blue-500">Searching for a study partner...</h2>
                   <p className="text-muted-foreground text-lg font-medium">No tutor available — looking for a peer who can help with {formData.subject}. <span className="text-emerald-500">Mash AI is still listening.</span></p>
-                  <div className="pt-6">
+                  <div className="pt-6 flex flex-col items-center gap-3">
                      <span className="px-6 py-2 rounded-full bg-blue-500/10 text-blue-500 font-black text-xs tracking-widest uppercase">{timer}s left</span>
+                     <p className="text-xs text-muted-foreground font-medium">You can navigate away. We'll notify you when a match is found.</p>
                   </div>
                 </div>
               </motion.div>
@@ -290,7 +249,7 @@ export default function StudyPage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 1.1 }}
-                className="space-y-10"
+                className="space-y-10 mt-8"
               >
                 <div className="relative mx-auto w-32 h-32">
                    <div className="absolute inset-0 bg-emerald-500/20 rounded-full animate-ping" />
@@ -310,17 +269,13 @@ export default function StudyPage() {
             )}
           </AnimatePresence>
 
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setIsMatching(false);
-                setCurrentRequestId(null);
-                aiFallbackRef.current = false;
-              }}
-              className="mt-16 text-muted-foreground hover:text-red-500 font-black text-[10px] tracking-widest uppercase transition-colors"
-            >
-              Cancel
-            </Button>
+          <Button
+            variant="ghost"
+            onClick={() => reset()}
+            className="mt-16 text-muted-foreground hover:text-red-500 font-black text-[10px] tracking-widest uppercase transition-colors"
+          >
+            Cancel
+          </Button>
         </Card>
       )}
     </div>

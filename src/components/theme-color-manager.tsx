@@ -8,14 +8,16 @@ export function ThemeColorManager() {
     const applyColor = async () => {
       const userData = await getUserData();
       const settings = userData?.settings as Record<string, unknown> | undefined;
-      const accentColor = settings?.accentColor as string | undefined;
+      let accentColor = settings?.accentColor as string | undefined;
+      
+      // Override old default purple with the Edyfra Blue default
+      if (accentColor === "#8b5cf6") {
+        accentColor = "#0071e3";
+      }
       
       if (accentColor) {
         document.documentElement.style.setProperty("--primary", accentColor);
         document.documentElement.style.setProperty("--ring", accentColor);
-        
-        // Also update primary-foreground for accessibility if needed
-        // For simplicity, we assume dark backgrounds for primary
       }
     };
 

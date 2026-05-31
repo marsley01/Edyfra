@@ -161,9 +161,14 @@ export default function StreamChatRoom({
       setChatClient(client);
 
       // ─── Client-side @mash handler ─
+      // IMPORTANT: Only fire for the SENDER's client.
+      // Every connected user receives "message.new", so without this
+      // check the AI would respond once per connected client.
       c.on("message.new", async (event) => {
         const msg = event.message;
         if (!msg || msg.user?.id === "mash-ai") return;
+        // Only the user who SENT the message should trigger the AI
+        if (msg.user?.id !== userId) return;
 
         const text = msg.text || "";
         const mentionRegex = /@(?:Mash|AI|mash|ai|mash-ai|MASH)\b/;

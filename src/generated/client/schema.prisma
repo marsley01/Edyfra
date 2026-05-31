@@ -28,7 +28,7 @@ model User {
   strikes                  Int                     @default(0)
   createdAt                DateTime                @default(now())
   bio                      String?
-  settings                 Json                    @default("{\"theme\": \"system\", \"fontSize\": \"medium\", \"accentColor\": \"#8b5cf6\"}")
+  settings                 Json                    @default("{\"theme\": \"system\", \"fontSize\": \"medium\", \"accentColor\": \"#0071e3\"}")
   curriculum               String?                 @default("8-4-4")
   dailyMessageCount        Int                     @default(0)
   dailySearchCount         Int                     @default(0)
