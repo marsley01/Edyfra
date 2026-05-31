@@ -90,6 +90,26 @@ export const TTL = {
   LEADERBOARD: 2 * 60 * 1000,         // 2 minutes
   /** Community scholars spotlight */
   COMMUNITY_SCHOLARS: 5 * 60 * 1000,  // 5 minutes
-  /** Per-user feature-gate checks (plan / credit balance) */
   FEATURE_GATE: 15 * 1000,            // 15 seconds
+
+  // New TTLs for Institution & Platform features
+  APPROVED_TUTORS: 5 * 60 * 1000,     // 5 minutes
+  INSTITUTION_STUDENTS: 10 * 60 * 1000, // 10 minutes
+  KNOWLEDGE_FEED: 30 * 60 * 1000,     // 30 minutes
+  PLATFORM_STATS: 5 * 60 * 1000,      // 5 minutes
+  CURRICULUM_TOPICS: 60 * 60 * 1000,  // 60 minutes
+  SUBJECT_LIST: 60 * 60 * 1000,       // 60 minutes
 } as const;
+
+export async function getCached<T>(
+  key: string,
+  ttlMs: number,
+  fetchFn: () => Promise<T>
+): Promise<T> {
+  const cached = cache.get<T>(key);
+  if (cached !== undefined) return cached;
+  
+  const data = await fetchFn();
+  cache.set(key, data, ttlMs);
+  return data;
+}

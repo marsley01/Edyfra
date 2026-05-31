@@ -48,6 +48,8 @@ export default function AnalyticsPage() {
       }
     }
     load();
+    const interval = setInterval(load, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {

@@ -5,6 +5,7 @@ import { EduLevel } from "@/generated/client";
 import { generateAIResponse } from "@/utils/openrouter";
 import { SESSION_CONFIG, CHALLENGE_CONFIG } from "@/lib/config";
 import { recalibrateTier } from "./user";
+import { notifyUser } from "./notifications";
 
 interface ChallengeGenerationRequest {
   level: string;
@@ -135,6 +136,22 @@ Make the questions:
         });
       })
     );
+
+    if (savedChallenges.length > 0) {
+      const users = await prisma.user.findMany({
+        where: { educationLevel: level as EduLevel },
+        select: { id: true },
+        take: 100,
+      });
+      for (const u of users) {
+        notifyUser(u.id, {
+          type: "DAILY_CHALLENGE",
+          title: "New Challenge Available!",
+          body: `A new ${subject || "daily"} challenge is ready. Test your knowledge!`,
+          actionUrl: "/dashboard/challenges",
+        }).catch(() => {});
+      }
+    }
 
     return savedChallenges.map((c) => ({
       id: c.id,
@@ -326,6 +343,13 @@ export async function saveChallengeAttempt(userId: string, challengeId: string, 
         data: { points: { increment: pointsEarned } },
       });
       await recalibrateTier(userId);
+
+      notifyUser(userId, {
+        type: "POINTS_EARNED",
+        title: "Challenge Complete!",
+        body: `You earned +${pointsEarned} points for completing today's challenge!`,
+        actionUrl: "/dashboard/challenges",
+      }).catch(() => {});
     }
 
     return attempt;

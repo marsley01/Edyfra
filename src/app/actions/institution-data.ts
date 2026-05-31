@@ -29,7 +29,19 @@ export async function getUserInstitution() {
   }
 }
 
+import { getCached, TTL } from "@/lib/cache";
+
 export async function getInstitutionStudents(institutionId: string, search?: string) {
+  // Use caching for generic un-searched queries
+  if (!search) {
+    return getCached(`institution:students:${institutionId}`, TTL.INSTITUTION_STUDENTS, async () => {
+      return fetchInstitutionStudents(institutionId);
+    });
+  }
+  return fetchInstitutionStudents(institutionId, search);
+}
+
+async function fetchInstitutionStudents(institutionId: string, search?: string) {
   try {
     const where: Record<string, unknown> = {
       institutionId,

@@ -61,7 +61,7 @@ export default function SignupPage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
-           {error && (
+           {error && typeof error === 'string' && (
              <motion.div 
                initial={{ opacity: 0, y: -10 }}
                animate={{ opacity: 1, y: 0 }}

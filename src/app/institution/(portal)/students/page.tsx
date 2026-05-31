@@ -37,6 +37,8 @@ export default function StudentsPage() {
       }
     }
     load();
+    const interval = setInterval(load, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const filtered = students.filter((s) => {

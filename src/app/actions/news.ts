@@ -18,7 +18,10 @@ export interface NewsArticle {
 
 import { RSSService, RSSItem } from "@/utils/rss-service";
 
+import { getCached, TTL } from "@/lib/cache";
+
 export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
+  return getCached(`news:latest:${limit}`, TTL.KNOWLEDGE_FEED, async () => {
   const supabase = await createClient();
   
   const { data, error } = await supabase
@@ -62,6 +65,7 @@ export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
     console.error("News Fallback Error:", err);
     return [];
   }
+  });
 }
 
 export async function getNewsBySlug(slug: string): Promise<NewsArticle | null> {

@@ -75,6 +75,7 @@ model User {
   tutorBookings            Booking[]               @relation("TutorBookings")
   bookingReminders         BookingReminder[]
   sessionFlags             SessionFlag[]           @relation("TutorSessionFlags")
+  scheduledNotifications   ScheduledNotification[]
 
   @@index([role])
 }
@@ -696,6 +697,10 @@ model Institution {
   tutors    InstitutionTutor[]
   members   InstitutionMember[]
   documents InstitutionDocument[]
+  limit               InstitutionLimit?
+  studentResults      StudentResult[]
+  coachingAssignments CoachingAssignment[]
+  processingJobs      ProcessingJob[]
 }
 
 model InstitutionStaff {
@@ -720,6 +725,8 @@ model InstitutionStudent {
 
   institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  results             StudentResult[]
+  coachingAssignments CoachingAssignment[]
 }
 
 model InstitutionTutor {
@@ -731,6 +738,7 @@ model InstitutionTutor {
 
   institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  coachingAssignments CoachingAssignment[]
 
   @@unique([institutionId, userId])
 }
@@ -835,4 +843,78 @@ model SessionFlag {
   booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@map("session_flags")
+}
+
+model InstitutionLimit {
+  id               String   @id @default(cuid())
+  institutionId    String   @unique @map("institution_id")
+  maxStudents      Int      @default(200) @map("max_students")
+  maxAssignments   Int      @default(5) @map("max_assignments")
+  maxTermsStored   Int      @default(3) @map("max_terms_stored")
+  tier             String   @default("free") // free/paid
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  institution      Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  @@map("institution_limits")
+}
+
+model StudentResult {
+  id             String   @id @default(cuid())
+  studentId      String   @map("student_id")
+  institutionId  String   @map("institution_id")
+  term           String
+  year           Int
+  data           Json     // the actual result payload
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  institution    Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  student        InstitutionStudent @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("student_results")
+}
+
+model CoachingAssignment {
+  id             String   @id @default(cuid())
+  institutionId  String   @map("institution_id")
+  studentId      String   @map("student_id")
+  tutorId        String   @map("tutor_id")
+  status         String   @default("active") // active/completed
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  institution    Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  student        InstitutionStudent @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  tutor          InstitutionTutor @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@map("coaching_assignments")
+}
+
+model ProcessingJob {
+  id             String    @id @default(cuid())
+  institutionId  String    @map("institution_id")
+  filePath       String    @map("file_path")
+  status         String    @default("pending") // pending/processing/completed/failed
+  error          String?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  startedAt      DateTime? @map("started_at")
+  completedAt    DateTime? @map("completed_at")
+
+  institution    Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  @@map("processing_jobs")
+}
+
+model ScheduledNotification {
+  id             String    @id @default(cuid())
+  userId         String    @map("user_id")
+  type           String
+  title          String
+  body           String
+  scheduledFor   DateTime  @map("scheduled_for")
+  sentAt         DateTime? @map("sent_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("scheduled_notifications")
 }

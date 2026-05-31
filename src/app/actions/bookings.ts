@@ -95,6 +95,16 @@ export async function updateBookingStatus(bookingId: string, status: string, rea
       });
     }
 
+    if (status === "confirmed") {
+      const { notifyUser } = await import("./notifications");
+      await notifyUser(booking.studentId, {
+        type: "TUTOR_ACCEPTED",
+        title: "Booking Confirmed!",
+        body: `Your ${booking.subject} session has been accepted. Get ready to learn!`,
+        actionUrl: `/study-room/${booking.id}`,
+      });
+    }
+
     revalidatePath("/tutor");
     return { success: true };
   } catch (error) {

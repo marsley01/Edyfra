@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { Bell, BellOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import { urlBase64ToUint8Array } from "@/lib/utils";
 
 export function PushNotificationInit() {
@@ -34,7 +33,6 @@ export function PushNotificationInit() {
       const result = await Notification.requestPermission();
       setPermission(result);
       if (result !== "granted") {
-        toast.error("Notification permission denied");
         return;
       }
 
@@ -43,7 +41,6 @@ export function PushNotificationInit() {
       const keyRes = await fetch("/api/push/vapid-public-key");
       const { publicKey } = await keyRes.json();
       if (!publicKey) {
-        toast.error("Push notifications not configured");
         return;
       }
 
@@ -68,9 +65,7 @@ export function PushNotificationInit() {
       });
 
       setSubscribed(true);
-      toast.success("Push notifications enabled");
     } catch {
-      toast.error("Failed to enable push notifications");
     } finally {
       setLoading(false);
     }
@@ -91,9 +86,7 @@ export function PushNotificationInit() {
         await sub.unsubscribe();
       }
       setSubscribed(false);
-      toast.success("Push notifications disabled");
     } catch {
-      toast.error("Failed to disable push notifications");
     } finally {
       setLoading(false);
     }

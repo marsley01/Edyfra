@@ -9,7 +9,11 @@ export interface Topic {
   description: string | null;
 }
 
+import { getCached, TTL } from "@/lib/cache";
+
 export async function getCurriculumTopics(subject: string, level?: string): Promise<Topic[]> {
+  const cacheKey = level ? `curriculum:${subject}:${level}` : `curriculum:${subject}:all`;
+  return getCached(cacheKey, TTL.CURRICULUM_TOPICS, async () => {
   const supabase = await createClient();
   
   let query = supabase
@@ -26,6 +30,7 @@ export async function getCurriculumTopics(subject: string, level?: string): Prom
   const { data, error } = await query;
   if (error || !data) return [];
   return data;
+  });
 }
 
 export function buildSubjectPrompt(subject: string, topics: Topic[]): string {

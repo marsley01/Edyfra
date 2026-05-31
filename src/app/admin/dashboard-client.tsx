@@ -9,6 +9,7 @@ import { AvatarPremium } from "@/components/ui/avatar-premium";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { AdminResourceMonitor } from "@/components/AdminResourceMonitor";
 
 
 const ICONS = [Users, GraduationCap, MessageSquare, Zap];
@@ -136,6 +137,8 @@ export function AdminDashboardClient({
           );
         })}
       </div>
+
+      <AdminResourceMonitor />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Tutor Application Queue */}

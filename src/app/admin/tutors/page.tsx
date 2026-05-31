@@ -127,7 +127,9 @@ export default function AdminTutorsPage() {
               <AlertTriangle className="h-8 w-8 text-red-500" />
               <div>
                 <h3 className="text-xl font-bold text-red-500">Connection Error</h3>
-                <p className="text-muted-foreground mt-2">{error}</p>
+                {error && typeof error === 'string' && (
+                  <p className="text-muted-foreground mt-2">{error}</p>
+                )}
                  <Button 
                    onClick={fetchData} 
                    className="mt-4 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white"

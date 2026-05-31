@@ -231,6 +231,8 @@ export default function InstitutionDashboardPage() {
 
   useEffect(() => {
     loadDashboard();
+    const interval = setInterval(loadDashboard, 30000);
+    return () => clearInterval(interval);
   }, [loadDashboard]);
 
   useEffect(() => {

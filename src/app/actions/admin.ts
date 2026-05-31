@@ -649,7 +649,10 @@ export async function bootstrapSeeds() {
 
 // --- DASHBOARD METRICS ---
 
+import { getCached, TTL } from "@/lib/cache";
+
 export async function getAdminDashboardMetrics() {
+  return getCached("admin:dashboard:metrics", TTL.PLATFORM_STATS, async () => {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -746,4 +749,5 @@ export async function getAdminDashboardMetrics() {
       systemLoad: 0,
     };
   }
+  });
 }

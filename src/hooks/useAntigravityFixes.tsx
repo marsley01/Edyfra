@@ -193,9 +193,11 @@ export function DashboardError({ error, onRetry }: { error: string; onRetry: () 
         <h2 className="text-2xl sm:text-3xl font-black text-red-500">
           Dashboard Error
         </h2>
-        <p className="text-muted-foreground">
-          {error}
-        </p>
+        {error && typeof error === 'string' && (
+          <p className="text-muted-foreground">
+            {error}
+          </p>
+        )}
         <button
           onClick={onRetry}
           className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"

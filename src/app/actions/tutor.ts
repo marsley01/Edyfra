@@ -117,7 +117,11 @@ export async function getTutorStats() {
   }
 }
 
+import { getCached, TTL } from "@/lib/cache";
+
 export async function getVerifiedTutors(level?: EduLevel) {
+  const cacheKey = level ? `tutors:verified:${level}` : `tutors:verified:all`;
+  return getCached(cacheKey, TTL.APPROVED_TUTORS, async () => {
   try {
     const whereClause: any = {
       role: Role.TUTOR,
@@ -141,6 +145,7 @@ export async function getVerifiedTutors(level?: EduLevel) {
     console.error("Error in getVerifiedTutors:", error);
     return [];
   }
+  });
 }
 
 /** Elevates the current user to Admin for setup purposes */

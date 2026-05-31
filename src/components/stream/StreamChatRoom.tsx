@@ -266,9 +266,11 @@ export default function StreamChatRoom({
           <p className="font-black text-sm uppercase tracking-widest text-foreground">
             Chat failed to load
           </p>
-          <p className="text-xs text-muted-foreground font-medium max-w-xs">
-            {error}. Refresh to try again.
-          </p>
+          {error && typeof error === 'string' && (
+            <p className="text-xs text-muted-foreground font-medium max-w-xs">
+              {error}. Refresh to try again.
+            </p>
+          )}
         </div>
         <Button
           onClick={init}
