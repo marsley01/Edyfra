@@ -36,7 +36,7 @@ export async function GET(request: Request) {
         `;
 
         try {
-          const aiData = await AIService.generateJSON(prompt);
+          const aiData = await AIService.generateJSON(prompt) as any;
           
           if (!aiData || !aiData.question) continue;
 

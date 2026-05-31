@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath, unstable_cache } from "next/cache";
 import { SESSION_CONFIG, TUTOR_CONFIG, TIER_CONFIG } from "@/lib/config";
+import { captureServerError } from "@/lib/sentry";
 
 const getRoleFromMetadata = (metadataRole: string | undefined): Role => {
   if (!metadataRole) return Role.STUDENT; // Default role if metadata is missing
@@ -107,7 +108,7 @@ export async function getUserData(): Promise<(User & { studentProfile: StudentPr
 
     return prismaUser;
   } catch (error) {
-    console.error("Error in getUserData:", error);
+    captureServerError(error, { action: "getUserData" });
     return null;
   }
 }
@@ -167,7 +168,7 @@ export async function updateProfile(data: {
     revalidatePath("/tutor");
     return { success: true };
   } catch (error) {
-    console.error("Error in updateProfile:", error);
+    captureServerError(error, { action: "updateProfile" });
     throw error;
   }
 }
@@ -239,7 +240,7 @@ export async function updateUserRole(role: "STUDENT" | "TUTOR") {
     }
     return { success: true };
   } catch (error: any) {
-    console.error("Error in updateUserRole:", error);
+    captureServerError(error, { action: "updateUserRole" });
     return { success: false, error: error.message || "Failed to update role" };
   }
 }
@@ -258,7 +259,7 @@ export async function updateUserSettings(settings: Prisma.InputJsonValue) {
     revalidatePath("/dashboard/settings");
     return { success: true };
   } catch (error) {
-    console.error("Error in updateUserSettings:", error);
+    captureServerError(error, { action: "updateUserSettings" });
     throw error;
   }
 }
@@ -310,7 +311,7 @@ export async function updateUserPreferences(prefs: {
     revalidatePath("/dashboard/settings");
     return { success: true };
   } catch (error) {
-    console.error("Error in updateUserPreferences:", error);
+    captureServerError(error, { action: "updateUserPreferences" });
     throw error;
   }
 }
@@ -336,7 +337,7 @@ export async function updateNotificationSettings(preferences: Record<string, boo
     revalidatePath("/dashboard/settings");
     return { success: true };
   } catch (error) {
-    console.error("Error in updateNotificationSettings:", error);
+    captureServerError(error, { action: "updateNotificationSettings" });
     throw error;
   }
 }
@@ -398,7 +399,7 @@ export async function updateTutorProfile(data: {
     revalidatePath("/tutor");
     return { success: true };
   } catch (error) {
-    console.error("Error in updateTutorProfile:", error);
+    captureServerError(error, { action: "updateTutorProfile" });
     throw error;
   }
 }
@@ -442,7 +443,7 @@ export async function updateStudentProfile(data: {
     revalidatePath("/dashboard/settings");
     return { success: true };
   } catch (error) {
-    console.error("Error in updateStudentProfile:", error);
+    captureServerError(error, { action: "updateStudentProfile" });
     throw error;
   }
 }
@@ -466,7 +467,7 @@ export async function updateAvatar(avatarUrl: string) {
     revalidatePath("/tutor/settings");
     return { success: true };
   } catch (error) {
-    console.error("Error in updateAvatar:", error);
+    captureServerError(error, { action: "updateAvatar" });
     throw error;
   }
 }
@@ -488,7 +489,7 @@ export async function downloadUserData() {
 
     return { success: true, data: JSON.stringify({ ...userData, userPreferences: userPrefs, notificationSettings: notifPrefs }, null, 2) };
   } catch (error) {
-    console.error("Error in downloadUserData:", error);
+    captureServerError(error, { action: "downloadUserData" });
     throw error;
   }
 }
@@ -514,7 +515,7 @@ export async function deleteUserAccount() {
 
     return { success: true };
   } catch (error) {
-    console.error("Error in deleteUserAccount:", error);
+    captureServerError(error, { action: "deleteUserAccount" });
     throw error;
   }
 }
@@ -533,7 +534,7 @@ export async function changePassword(currentPassword: string, newPassword: strin
     if (error) throw new Error(error.message);
     return { success: true };
   } catch (error) {
-    console.error("Error in changePassword:", error);
+    captureServerError(error, { action: "changePassword" });
     throw error;
   }
 }
@@ -545,7 +546,7 @@ export async function changeEmail(newEmail: string) {
     if (error) throw new Error(error.message);
     return { success: true };
   } catch (error) {
-    console.error("Error in changeEmail:", error);
+    captureServerError(error, { action: "changeEmail" });
     throw error;
   }
 }
@@ -571,7 +572,7 @@ export const getGlobalStats = unstable_cache(
         { value: resourceCount, label: "Resources Shared" },
       ];
     } catch (error) {
-      console.error("Error in getGlobalStats:", error);
+      captureServerError(error, { action: "getGlobalStats" });
       return [];
     }
   },
@@ -601,7 +602,7 @@ export const getLeaderboard = unstable_cache(
       });
       return leaders;
     } catch (error) {
-      console.error("Error in getLeaderboard:", error);
+      captureServerError(error, { action: "getLeaderboard" });
       return [];
     }
   },
@@ -631,7 +632,7 @@ export const getCommunityScholars = unstable_cache(
         take: 4,
       });
     } catch (error) {
-      console.error("Error in getCommunityScholars:", error);
+      captureServerError(error, { action: "getCommunityScholars" });
       return [];
     }
   },
@@ -648,7 +649,7 @@ export async function recalibrateTier(userId: string) {
       await prisma.user.update({ where: { id: userId }, data: { tier: correctTier as Tier } });
     }
   } catch (error) {
-    console.error("Error recalibrating tier:", error);
+    captureServerError(error, { action: "recalibrateTier" });
   }
 }
 
@@ -683,7 +684,7 @@ export async function createTestTutorAction() {
     revalidatePath('/dashboard/tutors');
     return { success: true };
   } catch (error) {
-    console.error('Error creating test tutor:', error);
+    captureServerError(error, { action: "createTestTutorAction" });
     throw error;
   }
 }

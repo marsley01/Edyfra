@@ -111,7 +111,7 @@ export async function acceptMatchRequest(requestId: string) {
     where: { id: requestId },
   });
 
-  if (!matchRequest || matchRequest.status !== "PENDING") {
+  if (!matchRequest || matchRequest.sessionId) {
     return { success: false, error: "Match request no longer available." };
   }
 

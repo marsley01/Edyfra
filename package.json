@@ -17,6 +17,7 @@
     "@next/bundle-analyzer": "^16.2.6",
     "@prisma/client": "^5.22.0",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
+    "@sentry/nextjs": "^10.55.0",
     "@stream-io/video-react-sdk": "^1.36.1",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.105.3",

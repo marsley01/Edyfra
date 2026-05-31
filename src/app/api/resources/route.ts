@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import prisma from "@/lib/prisma";
 import { cache, TTL } from "@/lib/cache";
+import { captureApiError } from "@/lib/sentry";
 
 export async function GET(request: NextRequest) {
   try {
@@ -100,7 +101,7 @@ export async function GET(request: NextRequest) {
       headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=10" },
     });
   } catch (error: any) {
-    console.error("[Resources API] Error:", error.message);
+    captureApiError(error, request, { context: "resources GET" });
     return NextResponse.json({ error: "Failed to fetch resources" }, { status: 500 });
   }
 }
@@ -140,7 +141,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, resource });
   } catch (error: any) {
-    console.error("[Resources API POST] Error:", error);
+    captureApiError(error, request, { context: "resources POST" });
     return NextResponse.json({ error: error?.message || "Failed to create resource" }, { status: 500 });
   }
 }

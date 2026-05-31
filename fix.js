@@ -1,1 +1,26 @@
-const fs=require('fs'); let code=fs.readFileSync('src/app/actions/match.ts', 'utf8'); code=code.replace('export async function sendMessage(data: { sessionId: string; senderId: string; content: string; isMash: boolean }) {\\n  try {', 'const messageRateLimits = new Map<string, { count: number, resetTime: number }>();\\n\\nexport async function sendMessage(data: { sessionId: string; senderId: string; content: string; isMash: boolean }) {\\n  try {\\n    const now = Date.now();\\n    const rateKey = msg_;\\n    const limit = messageRateLimits.get(rateKey);\\n    if (limit && now < limit.resetTime) {\\n      if (limit.count >= 15) return { success: false, error: Rate limit exceeded };\\n      limit.count++;\\n    } else {\\n      messageRateLimits.set(rateKey, { count: 1, resetTime: now + 10000 });\\n    }'); fs.writeFileSync('src/app/actions/match.ts', code);
+const fs = require('fs');
+const path = require('path');
+
+const filePath = path.join(__dirname, 'src', 'app', 'actions', 'user.ts');
+let content = fs.readFileSync(filePath, 'utf8');
+
+// Add import if not present
+if (!content.includes('captureServerError')) {
+  content = content.replace(
+    'import { SESSION_CONFIG, TUTOR_CONFIG, TIER_CONFIG } from "@/lib/config";',
+    'import { SESSION_CONFIG, TUTOR_CONFIG, TIER_CONFIG } from "@/lib/config";\nimport { captureServerError } from "@/lib/sentry";'
+  );
+}
+
+// Replace console.error calls
+content = content.replace(/console\.error\("Error in ([\w]+):", (.*?)\);/g, (match, actionName, errVar) => {
+  return `captureServerError(${errVar}, { action: "${actionName}" });`;
+});
+
+// Also replace others like console.error('Error creating test tutor:', error);
+content = content.replace(/console\.error\('Error creating test tutor:', error\);/g, `captureServerError(error, { action: "createTestTutorAction" });`);
+content = content.replace(/console\.error\("Error recalibrating tier:", error\);/g, `captureServerError(error, { action: "recalibrateTier" });`);
+
+
+fs.writeFileSync(filePath, content, 'utf8');
+console.log('Updated user.ts');
