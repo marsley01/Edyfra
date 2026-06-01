@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import OpenAI from "openai";
 
-const DEFAULT_OPENROUTER_MODEL = "deepseek/deepseek-chat";
+const DEFAULT_OPENROUTER_MODEL = "openai/gpt-4o-mini";
 const DEFAULT_GEMINI_MODEL = "gemini-2.0-flash";
 
 let openaiInstance: OpenAI | null = null;
@@ -52,12 +52,15 @@ export class AIService {
             { role: "user", content: prompt },
           ],
           temperature: 0.7,
+          max_tokens: 1024,
         });
 
         const content = completion.choices[0]?.message?.content?.trim();
         if (content) return content;
+
+        console.warn("[AIService] OpenRouter returned empty response");
       } catch (error) {
-        console.error("[AIService] OpenRouter generation error:", error);
+        console.error("[AIService] OpenRouter generation error:", error instanceof Error ? error.message : error);
       }
     } else {
       console.warn("[AIService] OPENROUTER_API_KEY is missing. Trying Gemini fallback.");
@@ -73,8 +76,10 @@ export class AIService {
         );
         const text = result.response.text().trim();
         if (text) return text;
+
+        console.warn("[AIService] Gemini returned empty response");
       } catch (error) {
-        console.error("[AIService] Gemini generation error:", error);
+        console.error("[AIService] Gemini generation error:", error instanceof Error ? error.message : error);
       }
     }
 

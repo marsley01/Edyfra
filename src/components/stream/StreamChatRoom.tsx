@@ -484,11 +484,11 @@ export default function StreamChatRoom({
                         const members = (memberIds || [])
                           .filter((m) => m !== userId)
                           .map((id) => ({ user_id: id }));
-                        await call.getOrCreate({
+                        await call.join({
+                          create: true,
                           ring: true,
                           data: { members: [{ user_id: userId }, ...members] },
                         });
-                        await call.join();
                         setActiveCall(call);
                         setIsVideoActive(true);
                         setHasActiveCall(true);
