@@ -12,23 +12,64 @@ interface LottieAnimationProps {
 
 export function LottieAnimation({ animationData, url, className, loop = true }: LottieAnimationProps) {
   const [data, setData] = useState<unknown>(animationData);
-  const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(!!url);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    if (url) {
-      fetch(url)
-        .then(res => res.json())
-        .then(json => setData(json))
-        .catch(err => console.error("Lottie fetch error:", err));
+    if (!url) {
+      setLoading(false);
+      return;
     }
+
+    let mounted = true;
+    setLoading(true);
+    setHasError(false);
+
+    fetch(url)
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(json => {
+        if (mounted) {
+          setData(json);
+          setLoading(false);
+        }
+      })
+      .catch(err => {
+        console.error("Lottie fetch error:", err);
+        if (mounted) {
+          setHasError(true);
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
   }, [url]);
 
-  if (!mounted || (!data && !animationData)) return <div className={className} />;
+  // If we have static animationData, render it immediately (SSR-friendly)
+  if (animationData && !url) {
+    return (
+      <Lottie 
+        animationData={animationData} 
+        className={className} 
+        loop={loop} 
+      />
+    );
+  }
+
+  // Show empty div while loading or if there's an error
+  if (loading || hasError || !data) {
+    return <div className={className} />;
+  }
 
   return (
     <Lottie 
-      animationData={data || animationData} 
+      animationData={data} 
       className={className} 
       loop={loop} 
     />

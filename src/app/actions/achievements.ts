@@ -1,10 +1,8 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
-
-const prisma = new PrismaClient();
 
 export async function getAchievements() {
   const supabase = await createClient();
@@ -27,11 +25,14 @@ export async function checkAndAwardAchievements() {
     where: { id: user.id },
     include: {
       sessionsAsStudent: true,
+      sessionsAsTutor: true,
       challenges: true
     }
   });
 
   if (!userData) return;
+
+  const sessionCount = userData.sessionsAsStudent.length + userData.sessionsAsTutor.length;
 
   const possibleAchievements = [
     {
@@ -39,14 +40,14 @@ export async function checkAndAwardAchievements() {
       title: "First Step to Success",
       description: "Completed your first study session.",
       icon: "Zap",
-      check: () => userData.sessionsAsStudent.length >= 1
+      check: () => sessionCount >= 1
     },
     {
       type: "SESSIONS_5",
       title: "Dedicated Scholar",
       description: "Completed 5 study sessions.",
       icon: "GraduationCap",
-      check: () => userData.sessionsAsStudent.length >= 5
+      check: () => sessionCount >= 5
     },
     {
       type: "FIRST_CHALLENGE",

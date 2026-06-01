@@ -10,6 +10,8 @@ const APP_ROUTES = [
   "/dashboard",
   "/admin",
   "/tutor",
+  "/institution/dashboard",
+  "/institution/login",
   "/study-room",
   "/onboarding",
   "/login",
@@ -18,18 +20,21 @@ const APP_ROUTES = [
 
 export function ConditionalShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-
-  const isAppRoute = APP_ROUTES.some(route => pathname.startsWith(route));
+  const normalizedPath = pathname?.toLowerCase() || "";
+  const isAppRoute = APP_ROUTES.some(route => 
+    normalizedPath === route.toLowerCase() || 
+    normalizedPath.startsWith(route.toLowerCase() + "/")
+  );
 
   if (isAppRoute) {
     // No nav, no footer, no top padding — the app has its own layout
-    return <main className="min-h-screen">{children}</main>;
+    return <main className="min-h-[100dvh] flex flex-col">{children}</main>;
   }
 
   return (
     <>
       <Navigation />
-      <main className="min-h-screen pt-20">{children}</main>
+      <main className="min-h-[100dvh] pt-20">{children}</main>
       <Footer />
     </>
   );

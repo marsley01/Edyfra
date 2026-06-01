@@ -94,8 +94,10 @@ export default function TutorEarningsPage() {
                     <TrendingUp className="h-7 w-7" />
                  </div>
                  <div>
-                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">This Month</p>
-                    <h3 className="text-2xl font-black tracking-tightest">+24%</h3>
+                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Completed</p>
+                    <h3 className="text-2xl font-black tracking-tightest">
+                    {stats?.completedSessions ? `${stats.completedSessions} sessions` : "Get started"}
+                  </h3>
                  </div>
               </CardContent>
            </Card>
@@ -105,8 +107,8 @@ export default function TutorEarningsPage() {
                     <Sparkles className="h-7 w-7" />
                  </div>
                  <div>
-                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Est. Payout</p>
-                    <h3 className="text-2xl font-black tracking-tightest">Ksh 1,200</h3>
+                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Active Now</p>
+                     <h3 className="text-2xl font-black tracking-tightest">{stats?.activeSessions || 0}</h3>
                  </div>
               </CardContent>
            </Card>
@@ -115,33 +117,12 @@ export default function TutorEarningsPage() {
 
       {/* Transaction History */}
       <div className="space-y-8">
-        <h2 className="text-3xl font-black tracking-tightest px-2">History</h2>
+        <h2 className="text-3xl font-black tracking-tightest px-2">Recent Payouts</h2>
         <Card className="border-border bg-card/50 rounded-[3rem] overflow-hidden">
-          <CardContent className="p-0">
-             <div className="divide-y divide-border">
-                {[
-                  { type: "Session Payout", student: "Mercy W.", amount: "+500", date: "Today, 2:30 PM", status: "COMPLETED" },
-                  { type: "Withdrawal", student: "M-Pesa Payout", amount: "-1,500", date: "Yesterday, 4:15 PM", status: "PROCESSING" },
-                  { type: "Session Payout", student: "Kelvin O.", amount: "+500", date: "2 days ago", status: "COMPLETED" },
-                ].map((tx, i) => (
-                  <div key={i} className="p-8 flex items-center justify-between hover:bg-secondary/30 transition-all group">
-                     <div className="flex items-center gap-6">
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 ${tx.amount.startsWith("+") ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground"}`}>
-                           {tx.amount.startsWith("+") ? <DollarSign className="h-6 w-6" /> : <CreditCard className="h-6 w-6" />}
-                        </div>
-                        <div>
-                           <p className="font-black text-lg tracking-tight">{tx.type}</p>
-                           <p className="text-xs text-muted-foreground font-medium uppercase tracking-tight">{tx.student} • {tx.date}</p>
-                        </div>
-                     </div>
-                     <div className="text-right space-y-2">
-                        <p className={`font-black text-xl tracking-tightest ${tx.amount.startsWith("+") ? "text-primary" : "text-foreground"}`}>{tx.amount} Ksh</p>
-                        <Badge variant="outline" className={`text-[9px] font-black border-none px-3 py-1 uppercase tracking-widest ${tx.status === "COMPLETED" ? "bg-emerald-500/10 text-emerald-500" : "bg-orange-500/10 text-orange-500"}`}>
-                          {tx.status}
-                        </Badge>
-                     </div>
-                  </div>
-                ))}
+          <CardContent className="p-12">
+             <div className="flex flex-col items-center justify-center text-center space-y-4 py-12">
+                <History className="h-10 w-10 text-muted-foreground/20" />
+                <p className="text-muted-foreground font-medium max-w-xs mx-auto">Your session history and payouts will appear here once you start teaching.</p>
              </div>
           </CardContent>
         </Card>

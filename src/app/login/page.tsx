@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { GraduationCap, ArrowRight, Loader2, AlertCircle } from "lucide-react";
+import { ArrowRight, Loader2, AlertCircle, Eye, EyeOff, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
@@ -11,6 +11,7 @@ import { login } from "@/app/actions/auth";
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -36,13 +37,12 @@ export default function LoginPage() {
       >
         {/* Logo */}
         <div className="flex flex-col items-center gap-4 text-center">
-           <Link href="/" className="flex items-center gap-2 group mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-xl shadow-primary/20 transition-transform group-hover:scale-110">
-                <GraduationCap className="h-7 w-7" />
-              </div>
+           <Link href="/" className="flex items-center gap-3 group mb-4">
+              <img src="/image.png" alt="Edyfra Logo" className="w-9 h-9 rounded-xl shadow-lg object-cover" />
+              <span className="text-3xl font-black text-foreground tracking-tighter">Edyfra</span>
            </Link>
            <h1 className="text-4xl font-black tracking-tightest">Welcome back.</h1>
-           <p className="text-muted-foreground font-medium text-lg">Log in to your account to continue.</p>
+           <p className="text-muted-foreground font-medium text-lg">We&apos;re glad you&apos;re here. Sign in to pick up where you left off.</p>
         </div>
 
         {/* Form */}
@@ -70,13 +70,22 @@ export default function LoginPage() {
            </div>
            <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-muted-foreground">Password</label>
-              <Input 
-                name="password" 
-                type="password" 
-                required 
-                placeholder="••••••••" 
-                className="h-14 rounded-2xl px-6 border-border bg-secondary font-medium focus-visible:ring-primary" 
-              />
+              <div className="relative">
+                <Input 
+                  name="password" 
+                  type={showPassword ? "text" : "password"} 
+                  required 
+                  placeholder="••••••••" 
+                  className="h-14 rounded-2xl px-6 pr-12 border-border bg-secondary font-medium focus-visible:ring-primary" 
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
            </div>
            
            <div className="flex justify-end">

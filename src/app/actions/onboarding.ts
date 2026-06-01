@@ -1,10 +1,11 @@
 "use server";
 
-import { Role, EduLevel, Tier, VerifPath } from "@prisma/client";
+import { Role, EduLevel, Tier, VerifPath, Gender } from "@/generated/client";
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { sendWelcomeEmail } from "@/lib/email";
+import { TUTOR_CONFIG } from "@/lib/config";
 
 interface OnboardingData {
   role: string;
@@ -37,7 +38,16 @@ export async function completeOnboarding(data: OnboardingData) {
   } = data;
   
   const isTutor = role === "TUTOR";
-  const isHS = educationLevel === "HIGH_SCHOOL";
+  
+  let userEducationLevel: EduLevel = EduLevel.HIGH_SCHOOL;
+  if (educationLevel === EduLevel.HIGH_SCHOOL) {
+    userEducationLevel = EduLevel.HIGH_SCHOOL;
+  } else if (educationLevel === EduLevel.UNIVERSITY) {
+    userEducationLevel = EduLevel.UNIVERSITY;
+  } else if (!isTutor) {
+    userEducationLevel = EduLevel.HIGH_SCHOOL;
+  }
+
   const prismaRole = isTutor ? Role.TUTOR : Role.STUDENT;
 
   // 1. Update Supabase Auth Metadata
@@ -45,6 +55,8 @@ export async function completeOnboarding(data: OnboardingData) {
     data: { 
       role: isTutor ? "TUTOR" : "STUDENT", 
       onboarding_completed: true,
+      gender: user.user_metadata?.gender,
+      avatar: user.user_metadata?.avatar,
     }
   });
 
@@ -59,16 +71,19 @@ export async function completeOnboarding(data: OnboardingData) {
     }
   });
 
+  const metaGender = user.user_metadata?.gender;
   const baseData = {
     email: user.email!,
-    name: user.user_metadata.name || user.user_metadata.full_name || "New User",
+    name: user.user_metadata?.name || user.user_metadata?.full_name || "New User",
     role: prismaRole,
-    educationLevel: isHS ? EduLevel.HIGH_SCHOOL : EduLevel.UNIVERSITY,
-    curriculum: isHS ? (curriculum || "8-4-4") : "HEC",
+    educationLevel: userEducationLevel,
+    curriculum: userEducationLevel === EduLevel.HIGH_SCHOOL ? (curriculum || "8-4-4") : "HEC",
     formYear: parseInt(formYear) || null,
     county: county || "Nairobi",
-    isUnder18: isHS,
+    isUnder18: userEducationLevel === EduLevel.HIGH_SCHOOL,
     bio: bio || "",
+    avatar: user.user_metadata?.avatar || null,
+    gender: metaGender === "MALE" ? Gender.MALE : metaGender === "FEMALE" ? Gender.FEMALE : undefined,
   };
 
   let finalUserId = user.id;
@@ -112,27 +127,49 @@ export async function completeOnboarding(data: OnboardingData) {
     }
   });
 
-  // 4. If TUTOR, Create Tutor Profile
+  // 4. If TUTOR, Create Tutor Application (PENDING - requires admin approval)
   if (isTutor) {
+    await prisma.tutorApplication.upsert({
+      where: { userId: finalUserId },
+      create: {
+        userId: finalUserId,
+        path: verificationPath === "GRADES" ? VerifPath.GRADES : VerifPath.POINTS,
+        gradesUrl: "",
+        subjects: subjects || [],
+        status: "PENDING",
+      },
+      update: {
+        path: verificationPath === "GRADES" ? VerifPath.GRADES : VerifPath.POINTS,
+        subjects: subjects || [],
+        status: "PENDING",
+      }
+    });
+
     await prisma.tutorProfile.upsert({
       where: { userId: finalUserId },
       create: {
         userId: finalUserId,
         subjects: subjects || [],
-        levelsTaught: [educationLevel],
+        levelsTaught: formYear ? [formYear] : [],
         verificationPath: verificationPath === "GRADES" ? VerifPath.GRADES : VerifPath.POINTS,
-        hourlyRate: parseInt(hourlyRate || "500"),
-        bio: bio || "Professional Academic Mentor",
+        hourlyRate: parseInt(hourlyRate || "0") || TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH,
+        bio: bio || "",
         mpesaNumber: mpesaNumber || "",
-        isVerified: true,
         availability: { isOnline: false }
       },
       update: {
         subjects: subjects || [],
-        bio: bio || "Professional Academic Mentor",
-        hourlyRate: parseInt(hourlyRate || "500"),
+        hourlyRate: parseInt(hourlyRate || "0") || TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH,
+        bio: bio || "",
         mpesaNumber: mpesaNumber || "",
-        isVerified: true
+      }
+    });
+    
+    // Update Supabase metadata to indicate pending tutor application
+    await supabase.auth.updateUser({
+      data: { 
+        tutorApplicationStatus: "PENDING",
+        onboarding_completed: true,
       }
     });
   }

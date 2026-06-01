@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { 
   Settings, Shield, Zap, Globe, 
   Terminal, Database, Save, RefreshCw,
-  Cpu, Lock, Rocket
+  Cpu, Lock, Rocket, Palette, Trash2, Skull, Eye, EyeOff
 } from "lucide-react";
 import { 
   Select, 
@@ -20,8 +20,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { resetAllSessions, clearGlobalCache, deleteUser, saveAdminGlobalSettings, getAdminGlobalSettings } from "@/app/actions/admin";
-import { updateUserSettings } from "@/app/actions/user";
-import { Palette, Trash2, Skull, Eye, EyeOff } from "lucide-react";
+import { updateUserPreferences } from "@/app/actions/user";
 
 export default function AdminSettingsPage() {
   const [accentColor, setAccentColor] = useState("#8b5cf6");
@@ -31,6 +30,13 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [userToDelete, setUserToDelete] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [registrationGate, setRegistrationGate] = useState(true);
+  const [dataCluster, setDataCluster] = useState("eu-central");
+  const [aiProvider, setAiProvider] = useState("auto");
+  const [aiMatchmaking, setAiMatchmaking] = useState(true);
+  const [pointsMultiplier, setPointsMultiplier] = useState("1x");
+  const [tutorEarnings, setTutorEarnings] = useState(true);
 
   useEffect(() => {
     loadSettings();
@@ -38,9 +44,17 @@ export default function AdminSettingsPage() {
 
   const loadSettings = async () => {
     try {
-      const settings = await getAdminGlobalSettings() as any;
-      if (settings.googleAiKey) setGoogleAiKey(settings.googleAiKey);
-      if (settings.accentColor) setAccentColor(settings.accentColor);
+      const rawSettings = await getAdminGlobalSettings();
+      const settings = rawSettings as Record<string, any> | undefined;
+      if (settings?.googleAiKey) setGoogleAiKey(settings.googleAiKey);
+      if (settings?.accentColor) setAccentColor(settings.accentColor);
+      if (settings?.maintenanceMode !== undefined) setMaintenanceMode(settings.maintenanceMode);
+      if (settings?.registrationGate !== undefined) setRegistrationGate(settings.registrationGate);
+      if (settings?.dataCluster) setDataCluster(settings.dataCluster);
+      if (settings?.aiProvider) setAiProvider(settings.aiProvider);
+      if (settings?.aiMatchmaking !== undefined) setAiMatchmaking(settings.aiMatchmaking);
+      if (settings?.pointsMultiplier) setPointsMultiplier(settings.pointsMultiplier);
+      if (settings?.tutorEarnings !== undefined) setTutorEarnings(settings.tutorEarnings);
     } catch (err) {
       console.error("Failed to load settings:", err);
     } finally {
@@ -67,13 +81,20 @@ export default function AdminSettingsPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // 1. Save to User Settings (Local)
-      await updateUserSettings({ accentColor });
+      // 1. Save to User Preferences (Local)
+      await updateUserPreferences({ accentColor });
       
       // 2. Save to Global Settings (API Keys, etc)
       await saveAdminGlobalSettings({ 
         googleAiKey,
         accentColor,
+        maintenanceMode,
+        registrationGate,
+        dataCluster,
+        aiProvider,
+        aiMatchmaking,
+        pointsMultiplier,
+        tutorEarnings,
         updatedAt: new Date().toISOString()
       });
       
@@ -131,18 +152,18 @@ export default function AdminSettingsPage() {
                 <Label className="text-lg font-black tracking-tight">Maintenance Mode</Label>
                 <p className="text-sm text-muted-foreground font-medium">Redirect all traffic to a maintenance splash page.</p>
               </div>
-              <Switch />
+              <Switch checked={maintenanceMode} onCheckedChange={setMaintenanceMode} />
             </div>
             <div className="flex items-center justify-between p-6 rounded-3xl bg-white/5 border border-white/5">
               <div className="space-y-1">
                 <Label className="text-lg font-black tracking-tight">Registration Gate</Label>
                 <p className="text-sm text-muted-foreground font-medium">Require invite codes for new scholars.</p>
               </div>
-              <Switch defaultChecked />
+              <Switch checked={registrationGate} onCheckedChange={setRegistrationGate} />
             </div>
             <div className="space-y-4">
               <Label className="text-sm font-black uppercase tracking-widest">Primary Data Cluster</Label>
-              <Select defaultValue="eu-central">
+              <Select value={dataCluster} onValueChange={(value) => setDataCluster(value || 'eu-central')}>
                 <SelectTrigger className="h-14 rounded-2xl bg-white/5 border-white/10 font-bold">
                   <SelectValue />
                 </SelectTrigger>
@@ -190,7 +211,7 @@ export default function AdminSettingsPage() {
 
             <div className="space-y-4">
               <Label className="text-sm font-black uppercase tracking-widest">Primary AI Provider</Label>
-              <Select defaultValue="gemini">
+              <Select value={aiProvider} onValueChange={(value) => setAiProvider(value || 'auto')}>
                 <SelectTrigger className="h-14 rounded-2xl bg-white/5 border-white/10 font-bold">
                   <SelectValue />
                 </SelectTrigger>
@@ -203,9 +224,9 @@ export default function AdminSettingsPage() {
             <div className="flex items-center justify-between p-6 rounded-3xl bg-white/5 border border-white/5">
                <div className="space-y-1">
                  <Label className="text-lg font-black tracking-tight">AI Matchmaking</Label>
-                 <p className="text-sm text-muted-foreground font-medium">Use AI to suggest the best tutor-student pairs.</p>
+                 <p className="text-sm text-muted-foreground font-medium">Use AI to suggest best tutor-student pairs.</p>
                </div>
-               <Switch defaultChecked />
+               <Switch checked={aiMatchmaking} onCheckedChange={setAiMatchmaking} />
             </div>
           </CardContent>
         </Card>
@@ -222,7 +243,7 @@ export default function AdminSettingsPage() {
           <CardContent className="p-10 space-y-8">
             <div className="space-y-4">
               <Label className="text-sm font-black uppercase tracking-widest">Global Points Multiplier</Label>
-              <Select defaultValue="1x">
+              <Select value={pointsMultiplier} onValueChange={(value) => setPointsMultiplier(value || '1x')}>
                 <SelectTrigger className="h-14 rounded-2xl bg-white/5 border-white/10 font-bold text-orange-400">
                   <SelectValue />
                 </SelectTrigger>
@@ -238,7 +259,7 @@ export default function AdminSettingsPage() {
                  <Label className="text-lg font-black tracking-tight">Tutor Earnings Access</Label>
                  <p className="text-sm text-muted-foreground font-medium">Allow tutors to request withdrawals.</p>
                </div>
-               <Switch defaultChecked />
+               <Switch checked={tutorEarnings} onCheckedChange={setTutorEarnings} />
             </div>
           </CardContent>
         </Card>
@@ -284,7 +305,15 @@ export default function AdminSettingsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <Button 
                   variant="outline" 
-                  onClick={() => toast.info("Reindexing initiated...")}
+                  onClick={async () => {
+                    try {
+                      const { reindexDatabase } = await import("@/app/actions/admin");
+                      await reindexDatabase();
+                      toast.success("Database reindexed successfully");
+                    } catch (error) {
+                      toast.error("Failed to reindex database");
+                    }
+                  }}
                   className="rounded-2xl h-20 border-white/5 bg-white/5 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 font-black text-xs tracking-widest flex flex-col gap-2"
                 >
                    <Database className="h-5 w-5" /> REINDEX DATABASE
@@ -313,7 +342,15 @@ export default function AdminSettingsPage() {
                 </Button>
                 <Button 
                   variant="outline" 
-                  onClick={() => toast.info("Bootstrapping seeds...")}
+                  onClick={async () => {
+                    try {
+                      const { bootstrapSeeds } = await import("@/app/actions/admin");
+                      await bootstrapSeeds();
+                      toast.success("Seeds bootstrapped successfully");
+                    } catch (error) {
+                      toast.error("Failed to bootstrap seeds");
+                    }
+                  }}
                   className="rounded-2xl h-20 border-white/5 bg-white/5 hover:bg-orange-500/10 hover:text-orange-400 hover:border-orange-500/20 font-black text-xs tracking-widest flex flex-col gap-2"
                 >
                    <Rocket className="h-5 w-5" /> BOOTSTRAP SEEDS

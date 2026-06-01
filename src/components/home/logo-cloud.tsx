@@ -3,32 +3,18 @@
 import { motion } from "framer-motion";
 
 export function LogoCloud() {
-  const logos = [
-    "LEADING UNIVERSITIES",
-    "TECHNICAL INSTITUTES",
-    "NATIONAL ACADEMIES",
-    "RESEARCH HUBS",
-  ];
-
   return (
-    <section className="py-24 border-y border-border/50">
-      <div className="container-max space-y-12">
-        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground text-center">
-          Trusted by leading institutional ecosystems
-        </p>
-        <div className="flex flex-wrap justify-center items-center gap-12 md:gap-24 grayscale opacity-30">
-          {logos.map((logo) => (
-            <motion.span
-              key={logo}
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              className="text-lg md:text-xl font-black tracking-tightest whitespace-nowrap"
-            >
-              {logo}
-            </motion.span>
-          ))}
-        </div>
+    <section className="py-16 border-y border-border/30">
+      <div className="container-max flex justify-center">
+        <motion.p
+          initial={{ opacity: 0, y: 8 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="text-sm font-medium text-muted-foreground/60 tracking-wide text-center"
+        >
+          Built for Kenyan students, from Form 1 to final year.
+        </motion.p>
       </div>
     </section>
   );

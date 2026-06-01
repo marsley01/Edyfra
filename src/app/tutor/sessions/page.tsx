@@ -14,7 +14,7 @@ import { Loader2 } from "lucide-react";
 
 import { getTutorSessions } from "@/app/actions/tutor";
 import { formatDistanceToNow } from "date-fns";
-import { Session } from "@prisma/client";
+import { Session } from "@/generated/client";
 
 type SessionWithStudent = Session & { student: { name: string, avatar: string | null } };
 
@@ -92,9 +92,9 @@ export default function TutorSessionsPage() {
                             <Badge className="bg-emerald-500/10 text-emerald-500 border-none text-[9px] font-black uppercase tracking-widest px-3 py-1">
                               {session.status === "ACTIVE" ? "Ready to Start" : "Completed"}
                             </Badge>
-                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                               <Monitor className="h-4 w-4" /> Virtual Classroom
-                            </span>
+                             <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                                <Monitor className="h-4 w-4" /> Online Session
+                             </span>
                          </div>
                          <div className="space-y-2">
                             <h3 className="text-3xl font-black tracking-tightest">{session.subject}</h3>
@@ -128,8 +128,8 @@ export default function TutorSessionsPage() {
                    <Archive className="h-10 w-10 text-muted-foreground/30" />
                </div>
                <div className="space-y-2">
-                  <h3 className="text-2xl font-black tracking-tightest">The log is empty.</h3>
-                  <p className="text-muted-foreground font-medium max-w-xs mx-auto">Your {activeTab === "active" ? "upcoming" : "completed"} teaching sessions will be archived here.</p>
+                   <h3 className="text-2xl font-black tracking-tightest">Nothing to show here yet.</h3>
+                   <p className="text-muted-foreground font-medium max-w-xs mx-auto">Your {activeTab === "active" ? "upcoming" : "completed"} sessions will appear here once you start teaching.</p>
                </div>
             </div>
           )}

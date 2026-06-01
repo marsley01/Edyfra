@@ -29,7 +29,7 @@ export default function ForgotPasswordPage() {
 
       if (error) throw error;
       setSubmitted(true);
-      toast.success("Recovery link sent!", { description: "Please check your inbox." });
+      toast.success("Reset link sent!", { description: "Please check your inbox." });
     } catch (err: any) {
       toast.error("Error sending link", { description: err.message });
     } finally {
@@ -60,12 +60,12 @@ export default function ForgotPasswordPage() {
         <Card className="rounded-[2.5rem] border-border/50 bg-secondary/30 backdrop-blur-xl shadow-2xl overflow-hidden">
           <CardHeader className="space-y-4 p-10 pb-6">
             <CardTitle className="text-4xl font-black tracking-tightest leading-none">
-              Recovery <br /> <span className="text-muted-foreground">Protocol.</span>
+              Forgot <br /> <span className="text-muted-foreground">Password?</span>
             </CardTitle>
             <CardDescription className="text-lg font-medium leading-relaxed">
               {submitted 
-                ? "Excellent. We've dispatched a recovery link to your secure inbox." 
-                : "Lost your credentials? Enter your email and we'll synchronize your access."}
+                ? "We've sent a recovery link to your inbox. Check your email to reset your password." 
+                : "No worries — just enter your email and we'll send you a reset link."}
             </CardDescription>
           </CardHeader>
           
@@ -73,12 +73,12 @@ export default function ForgotPasswordPage() {
             {!submitted ? (
               <form onSubmit={handleReset} className="space-y-6">
                 <div className="space-y-3">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-2">Secure Email Address</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-2">Email Address</Label>
                   <div className="relative group">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                     <Input 
                       type="email"
-                      placeholder="scholar@edyfra.com"
+                      placeholder="you@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="h-14 pl-12 rounded-2xl border-border bg-background shadow-sm focus-visible:ring-primary text-base font-medium"
@@ -91,7 +91,7 @@ export default function ForgotPasswordPage() {
                   disabled={loading}
                   className="w-full h-14 bg-foreground text-background hover:bg-foreground/90 font-black text-xs tracking-widest uppercase rounded-2xl shadow-xl transition-all active:scale-95 disabled:opacity-50"
                 >
-                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Initiate Recovery"}
+                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Send Reset Link"}
                 </Button>
               </form>
             ) : (
@@ -100,7 +100,7 @@ export default function ForgotPasswordPage() {
                     <CheckCircle2 className="h-10 w-10" />
                  </div>
                  <div className="space-y-2">
-                    <h3 className="text-xl font-black">Link Dispatched.</h3>
+                     <h3 className="text-xl font-black">Check Your Email</h3>
                     <p className="text-muted-foreground font-medium">Please check your inbox (and spam folder) for the reset link.</p>
                  </div>
                  <Button 

@@ -17,6 +17,7 @@ import {
 import { EDUCATIONAL_SUBJECTS } from "@/utils/subjects";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { TUTOR_CONFIG } from "@/lib/config";
 
 export default function TutorOnboardingPage() {
   const router = useRouter();
@@ -28,7 +29,7 @@ export default function TutorOnboardingPage() {
     educationLevel: "UNIVERSITY",
     curriculum: [] as string[],
     subjects: [] as string[],
-    hourlyRate: "500",
+    hourlyRate: TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH.toString(),
     mpesaNumber: "",
     bio: "",
   });
@@ -67,12 +68,13 @@ export default function TutorOnboardingPage() {
         verificationPath: "GRADES",
       });
       if (result.success) {
-        toast.success("Expert profile established.", {
-          description: "Welcome to the Edyfra Expert Network.",
+        toast.success("Application Submitted!", {
+          description: "Your tutor application is pending admin approval.",
         });
-        window.location.href = "/tutor";
+        // Redirect to pending status page instead of /tutor
+        window.location.href = "/onboarding/tutor-pending";
       } else {
-        toast.error("Profile creation failed.", {
+        toast.error("Application failed.", {
           description: result.error || "Please check your inputs.",
         });
         setLoading(false);
@@ -98,7 +100,7 @@ export default function TutorOnboardingPage() {
            <motion.div 
              className="h-full bg-primary shadow-[0_0_20px_rgba(139,92,246,0.5)]" 
              initial={{ width: "0%" }}
-             animate={{ width: `${(step/4) * 100}%` }}
+             animate={{ width: `${(step/3) * 100}%` }}
              transition={{ type: "spring", damping: 20 }}
            />
         </div>
@@ -111,18 +113,18 @@ export default function TutorOnboardingPage() {
                 <ShieldCheck className="h-8 w-8" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-3xl font-black tracking-tightest">Expert Network.</h3>
+                <h3 className="text-3xl font-black tracking-tightest">Help others succeed.</h3>
                 <p className="text-primary-foreground/70 font-medium text-sm leading-relaxed">
-                  You are joining a high-performance community of educators across Kenya.
+                  We&apos;ll set up your tutor profile so students can find and book you.
                 </p>
               </div>
             </div>
 
             <div className="space-y-8">
                {[
-                 { icon: CheckCircle2, text: "Verified Badge" },
-                 { icon: Wallet, text: "Weekly Payouts" },
-                 { icon: Sparkles, text: "Top Tier Tools" }
+                 { icon: CheckCircle2, text: "Get a verified badge" },
+                 { icon: Wallet, text: "Get paid weekly" },
+                 { icon: Sparkles, text: "Powerful tutor tools" }
                ].map((item, i) => (
                  <div key={i} className="flex items-center gap-4">
                    <item.icon className="h-5 w-5 text-primary-foreground/40" />
@@ -138,7 +140,7 @@ export default function TutorOnboardingPage() {
               {step === 1 && (
                 <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-10">
                    <div className="space-y-2">
-                      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Step 01 / 04</p>
+                      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Step 01 / 03</p>
                       <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Teaching Level.</h2>
                    </div>
                    
@@ -204,7 +206,7 @@ export default function TutorOnboardingPage() {
               {step === 2 && (
                 <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-10">
                    <div className="space-y-2">
-                      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Step 02 / 04</p>
+                      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Step 02 / 03</p>
                       <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Your Subjects.</h2>
                    </div>
 
@@ -262,21 +264,11 @@ export default function TutorOnboardingPage() {
               {step === 3 && (
                 <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-10">
                    <div className="space-y-2">
-                      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Step 03 / 04</p>
-                      <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Earnings.</h2>
+                      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Step 03 / 03</p>
+                      <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Profile Details.</h2>
                    </div>
 
-                   <div className="space-y-8">
-                      <div className="space-y-4">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">Hourly Rate (Ksh)</Label>
-                        <Input 
-                          type="number"
-                          className="h-20 rounded-[2rem] border-border bg-background font-black text-4xl px-8 focus-visible:ring-primary text-center"
-                          value={formData.hourlyRate}
-                          onChange={(e) => setFormData({ ...formData, hourlyRate: e.target.value })}
-                        />
-                        <p className="text-center text-[10px] font-black text-muted-foreground uppercase tracking-widest">Average rate is KSH 500 - 1,000</p>
-                      </div>
+                   <div className="space-y-6">
                       <div className="space-y-4">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">Withdrawal M-Pesa Number</Label>
                         <Input 
@@ -286,34 +278,11 @@ export default function TutorOnboardingPage() {
                           onChange={(e) => setFormData({ ...formData, mpesaNumber: e.target.value })}
                         />
                       </div>
-                   </div>
-
-                    <div className="pt-8 flex justify-between gap-4">
-                      <Button variant="ghost" onClick={prevStep} className="rounded-full h-16 px-10 font-black text-xs tracking-widest uppercase hover:bg-secondary transition-all">Back</Button>
-                      <Button 
-                        disabled={!formData.mpesaNumber || !formData.hourlyRate} 
-                        onClick={nextStep} 
-                        className="flex-1 rounded-full h-16 font-black text-xs tracking-widest uppercase bg-primary hover:bg-primary/90 text-white shadow-2xl shadow-primary/20 transition-all active:scale-95"
-                      >
-                         Continue <ArrowRight className="ml-3 h-4 w-4" />
-                      </Button>
-                   </div>
-                </motion.div>
-              )}
-
-              {step === 4 && (
-                <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-10">
-                   <div className="space-y-2">
-                      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Step 04 / 04</p>
-                      <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Expert Bio.</h2>
-                   </div>
-
-                   <div className="space-y-6">
                       <div className="space-y-4">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">Professional Summary</Label>
                         <Textarea 
                           placeholder="Tell us about your teaching philosophy and academic track record..." 
-                          className="min-h-[250px] rounded-[2.5rem] border-border bg-background font-bold p-10 focus-visible:ring-primary leading-relaxed text-lg"
+                          className="min-h-[200px] rounded-[2.5rem] border-border bg-background font-bold p-10 focus-visible:ring-primary leading-relaxed text-lg"
                           value={formData.bio}
                           onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                         />
@@ -324,7 +293,7 @@ export default function TutorOnboardingPage() {
                       <Button variant="ghost" onClick={prevStep} disabled={loading} className="rounded-full h-16 px-10 font-black text-xs tracking-widest uppercase hover:bg-secondary transition-all">Back</Button>
                       <Button 
                         onClick={handleSubmit} 
-                        disabled={loading || !formData.bio} 
+                        disabled={loading || !formData.bio || !formData.mpesaNumber} 
                         className="flex-1 rounded-full h-16 font-black text-xs tracking-widest uppercase bg-primary hover:bg-primary/90 text-white shadow-2xl shadow-primary/20 transition-all active:scale-95"
                       >
                         {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Establish Profile"}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { motion, useInView, useSpring, useTransform } from "framer-motion";
 
 interface Stat {
@@ -16,38 +16,50 @@ interface CounterProps {
 function Counter({ value, label }: CounterProps) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true });
-  const spring = useSpring(0, { stiffness: 50, damping: 20 });
+  const springConfig = useMemo(() => ({ stiffness: 50, damping: 20 }), []);
+  const spring = useSpring(0, springConfig);
   const display = useTransform(spring, (v) => {
     const val = Math.floor(v);
-    if (val === 0 && label !== "Uptime %") return "Join";
-    return val.toLocaleString() + (value > 1000 ? "+" : value === 99 ? "%" : "");
+    return val.toLocaleString() + (val > 1000 ? "+" : "");
   });
 
   useEffect(() => {
-    if (inView) spring.set(value || (label === "Uptime %" ? 99 : 0));
-  }, [inView, value, spring, label]);
+    if (inView && value > 0) {
+      spring.set(value);
+    }
+  }, [inView, value, spring]);
+
+  const isEmpty = value === 0;
 
   return (
     <div ref={ref} className="text-center space-y-4">
-      <motion.div className="text-6xl md:text-7xl font-black tracking-tightest tabular-nums text-white">
-        {label !== "Uptime %" && value === 0 ? (
-          <span className="text-primary tracking-tighter">JOIN</span>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="text-5xl md:text-6xl font-black tracking-tightest tabular-nums text-background"
+      >
+        {isEmpty ? (
+          <span className="text-3xl md:text-4xl font-black tracking-tight text-primary/70">
+            Growing Daily
+          </span>
         ) : (
-          display
+          <motion.span>{display}</motion.span>
         )}
       </motion.div>
       <div className="text-xs md:text-sm font-black uppercase tracking-[0.3em] text-primary/80">
-        {value === 0 && label !== "Uptime %" ? `Our first 100 ${label}` : label}
+        {label}
       </div>
     </div>
   );
 }
 
-// Now accepts stats as props from the server component — no client-side fetch
+// Accepts real stats from the server component — no client-side fetch needed
 export function HomeStats({ stats }: { stats: Stat[] }) {
   return (
-    <section className="bg-black py-32 md:py-48 overflow-hidden relative">
-      <div className="container-max grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 md:gap-8">
+    <section className="bg-foreground py-32 md:py-48 overflow-hidden relative">
+      <div className="container-max grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-8">
         {stats.map((stat) => (
           <Counter key={stat.label} value={stat.value} label={stat.label} />
         ))}

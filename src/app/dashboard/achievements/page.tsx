@@ -59,14 +59,14 @@ export default function AchievementsPage() {
         <div className="w-20 h-20 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mx-auto mb-6 shadow-xl shadow-primary/5">
           <Trophy className="h-10 w-10 text-primary" />
         </div>
-        <h1 className="text-5xl font-black tracking-tighter text-primary uppercase">Scholarly Honors</h1>
-        <p className="text-muted-foreground text-lg font-medium italic">Your journey of excellence, immortalized in badges of honor.</p>
+        <h1 className="text-5xl font-black tracking-tighter text-primary uppercase">Your Achievements</h1>
+        <p className="text-muted-foreground text-lg font-medium italic">Every badge tells a story of something you've accomplished.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-20">
         {achievements.length === 0 ? (
           <div className="col-span-full text-center py-20 bg-primary/5 rounded-[3rem] border-2 border-dashed border-primary/10">
-            <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">No honors earned yet. Start your first study session to begin!</p>
+            <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">No achievements yet. Start studying and you'll unlock your first one soon!</p>
           </div>
         ) : (
           achievements.map((ach) => {

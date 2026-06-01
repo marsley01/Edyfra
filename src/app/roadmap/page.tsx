@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
@@ -18,69 +19,69 @@ import {
 const scholarJourney = [
   {
     step: "01",
-    title: "Onboarding Protocol",
+    title: "Create Your Account",
     icon: ShieldCheck,
     color: "text-emerald-500",
     bg: "bg-emerald-500/10",
-    desc: "Create your institutional identity. Select your role (Student or Expert) and your curriculum (CBC or 8-4-4).",
-    milestones: ["Identity Verification", "Academic Level Sync", "Subject Specialization"]
+    desc: "Sign up as a student or tutor. Tell us your curriculum (8-4-4, CBC, or IGCSE) and the subjects you're studying.",
+    milestones: ["Verify your email", "Set your education level", "Pick your subjects"]
   },
   {
     step: "02",
-    title: "Synchronization",
+    title: "Get Matched",
     icon: Zap,
     color: "text-primary",
     bg: "bg-primary/10",
-    desc: "Use the Match-Me interface to find the perfect study partner or trigger Mash AI for instant expert guidance.",
-    milestones: ["Real-time Matching", "Subject Alignment", "AI Fallback Protocols"]
+    desc: "Use Match-Me to find the perfect study partner, or ask Mash AI for instant help when no one's available.",
+    milestones: ["Real-time matching", "Subject-based pairing", "AI fallback support"]
   },
   {
     step: "03",
-    title: "Deep Learning",
+    title: "Study Together",
     icon: BookOpen,
     color: "text-blue-500",
     bg: "bg-blue-500/10",
-    desc: "Enter your private Study Room. Collaborate via encrypted chat, share resources, and solve complex problems together.",
-    milestones: ["Encrypted Communication", "Collaborative Workspaces", "Expert Intervention"]
+    desc: "Jump into a private study room. Chat, share resources, and solve problems together in real time.",
+    milestones: ["Encrypted chat", "Collaborative workspace", "Tutor support on demand"]
   },
   {
     step: "04",
-    title: "Ecosystem Growth",
+    title: "Grow & Earn",
     icon: Award,
     color: "text-purple-500",
     bg: "bg-purple-500/10",
-    desc: "Earn points for every session, build your scholarly reputation, and climb the national leaderboard.",
-    milestones: ["Point Acquisition", "Leaderboard Ranking", "Achievement Unlocks"]
+    desc: "Earn points for every session, level up your profile, and climb the national leaderboard.",
+    milestones: ["Earn points", "Leaderboard rankings", "Unlock achievements"]
   }
 ];
 
 const roadmapItems = [
   {
     phase: "Alpha",
-    title: "The Core Foundation",
+    title: "The Foundation",
     status: "Completed",
     icon: Rocket,
     color: "text-emerald-500",
     bg: "bg-emerald-500/10",
-    desc: "Initial deployment of the Edyfra kernel, peer-to-peer matching, and institutional-grade auth.",
+    desc: "Launched the core Edyfra platform with peer matching, study rooms, and secure authentication.",
   },
   {
     phase: "Beta",
-    title: "Neural Expansion",
+    title: "AI & Growth",
     status: "In Progress",
     icon: Cpu,
     color: "text-primary",
     bg: "bg-primary/10",
-    desc: "Integration of advanced AI tutor models and real-time subject synchronization across counties.",
+    desc: "Rolling out advanced AI tutors, real-time subject tracking, and expanding to more Kenyan counties.",
   },
   {
     phase: "Gamma",
-    title: "Global Hub",
+    title: "Kenya-Wide Reach",
     status: "Scheduled",
     icon: Globe,
     color: "text-blue-500",
     bg: "bg-blue-500/10",
-    desc: "Scaling the infrastructure to support 1M+ simultaneous scholarly connections and mobile apps.",
+    desc: "Scaling to support 1M+ students across Kenya with mobile apps and offline-capable features.",
   }
 ];
 
@@ -92,38 +93,38 @@ export default function RoadmapPage() {
       <main className="pt-32 pb-48">
         <div className="container-max">
           {/* Hero Header */}
-          <div className="max-w-4xl space-y-8 mb-32">
-             <motion.p 
-               initial={{ opacity: 0, y: 10 }}
-               animate={{ opacity: 1, y: 0 }}
-               className="text-[10px] font-black uppercase tracking-[0.5em] text-primary"
-             >
-                Strategic Trajectory
-             </motion.p>
-             <motion.h1 
-               initial={{ opacity: 0, y: 20 }}
-               animate={{ opacity: 1, y: 0 }}
-               transition={{ delay: 0.1 }}
-               className="text-7xl md:text-8xl font-black tracking-tightest leading-none"
-             >
-                Edyfra <span className="text-muted-foreground">Roadmap.</span>
-             </motion.h1>
-             <motion.p 
-               initial={{ opacity: 0, y: 20 }}
-               animate={{ opacity: 1, y: 0 }}
-               transition={{ delay: 0.2 }}
-               className="text-xl md:text-2xl text-muted-foreground font-medium max-w-2xl leading-relaxed"
-             >
-                Our mission is to build the world's most sophisticated academic ecosystem. Here's how we get there.
-             </motion.p>
-          </div>
+         <div className="max-w-4xl space-y-8 mb-32">
+              <motion.p 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-[10px] font-black uppercase tracking-[0.5em] text-primary"
+              >
+                 What's Coming Next
+              </motion.p>
+              <motion.h1 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="text-7xl md:text-8xl font-black tracking-tightest leading-none"
+              >
+                 Edyfra <span className="text-muted-foreground">Roadmap.</span>
+              </motion.h1>
+              <motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-xl md:text-2xl text-muted-foreground font-medium max-w-2xl leading-relaxed"
+              >
+                 We're building the best study platform for Kenyan students. Here's what we've done and where we're headed.
+              </motion.p>
+           </div>
 
-          {/* Section 1: The Scholar Journey (Tutorial) */}
-          <div className="space-y-16 mb-48">
-            <div className="space-y-4">
-              <h2 className="text-4xl md:text-5xl font-black tracking-tightest">The Edyfra <span className="text-primary">Protocol.</span></h2>
-              <p className="text-muted-foreground font-medium text-lg">A step-by-step guide on how to navigate the ecosystem.</p>
-            </div>
+           {/* Section 1: How Edyfra Works */}
+           <div className="space-y-16 mb-48">
+             <div className="space-y-4">
+               <h2 className="text-4xl md:text-5xl font-black tracking-tightest">How Edyfra <span className="text-primary">Works.</span></h2>
+               <p className="text-muted-foreground font-medium text-lg">Four simple steps to start learning better.</p>
+             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                {scholarJourney.map((item, i) => (
@@ -159,11 +160,11 @@ export default function RoadmapPage() {
 
           <div className="h-px bg-border w-full mb-48" />
 
-          {/* Section 2: Development Roadmap */}
+           {/* Section 2: Development Roadmap */}
           <div className="space-y-16 mb-32">
              <div className="space-y-4">
-               <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Future <span className="text-muted-foreground">Ecosystem.</span></h2>
-               <p className="text-muted-foreground font-medium text-lg">Our strategic trajectory for the coming years.</p>
+               <h2 className="text-4xl md:text-5xl font-black tracking-tightest">What's <span className="text-muted-foreground">Next.</span></h2>
+               <p className="text-muted-foreground font-medium text-lg">The features and improvements we're working on.</p>
              </div>
           </div>
 
@@ -240,5 +241,3 @@ export default function RoadmapPage() {
     </div>
   );
 }
-
-import Link from "next/link";

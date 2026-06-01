@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { createMatchRequest, forceAIFallback, checkMatchStatus } from "@/app/actions/match";
-import { Zap, Search, Users, Cpu, Loader2 } from "lucide-react";
+import { Zap, Search, Users, Cpu, Loader2, Sparkles, Calendar as CalendarIcon } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/utils/supabase/client";
 
@@ -29,11 +29,17 @@ export default function StudyPage() {
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
+  const aiFallbackRef = useRef(false);
 
   useEffect(() => {
     getUserData().then((data) => {
       setUserData(data);
-    });
+    }).catch(console.error);
+    
+    // Sweep unmatched requests on mount
+    import("@/app/actions/match").then(({ sweepUnmatchedRequests }) => {
+      sweepUnmatchedRequests();
+    }).catch(console.error);
   }, []);
 
   const subjects = getSubjectsByLevel(userData?.educationLevel || "HIGH_SCHOOL");
@@ -47,16 +53,23 @@ export default function StudyPage() {
     setIsMatching(true);
     setMatchStep(1);
     setTimer(30);
+    aiFallbackRef.current = false;
 
     try {
       const result = await createMatchRequest(formData);
-      if (result.success) {
-        setCurrentRequestId(result.matchRequestId);
-        
-        // Broadcast the request to all online users
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          supabase.channel('global-matches').send({
+      if (!result.success) {
+        toast.error(result.error || "Failed to start matching. Please try again.");
+        setIsMatching(false);
+        return;
+      }
+      
+      setCurrentRequestId(result.matchRequestId || null);
+      
+      // Broadcast the request to all online users/tutors
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        try {
+          await supabase.channel('global-matches').send({
             type: 'broadcast',
             event: 'new-request',
             payload: {
@@ -64,12 +77,17 @@ export default function StudyPage() {
               studentId: user.id,
               studentName: user.user_metadata?.name || 'A student',
               subject: formData.subject,
-              topic: formData.topic
+              topic: formData.topic || 'General'
             }
           });
+        } catch (broadcastErr) {
+          console.error('Broadcast failed, but matching continues:', broadcastErr);
         }
       }
-    } catch {
+      
+      toast.success("Request submitted! Searching for help...");
+    } catch (error) {
+      console.error("Matching error:", error);
       toast.error("Failed to start matching. Please try again.");
       setIsMatching(false);
     }
@@ -84,6 +102,9 @@ export default function StudyPage() {
       if (result.success) {
         toast.info("Connecting you to Mash AI...");
         router.push(`/study-room/${result.sessionId}`);
+      } else {
+        // Already matched or not found - poll will handle redirect
+        console.log("AI fallback skipped:", result.message);
       }
     } catch {
       toast.error("AI fallback failed. Please try again.");
@@ -104,8 +125,8 @@ export default function StudyPage() {
           table: "MatchRequest",
           filter: `id=eq.${currentRequestId}`,
         },
-        (payload) => {
-          if (payload.new.sessionId) {
+        (payload: any) => {
+          if (payload.new?.sessionId) {
             toast.success("Match found! Redirecting...");
             router.push(`/study-room/${payload.new.sessionId}`);
           }
@@ -135,26 +156,41 @@ export default function StudyPage() {
   }, [currentRequestId, router, supabase]);
 
   useEffect(() => {
-    if (!isMatching || timer === 0) return;
-
-    if (timer === 20) setMatchStep(2); // Peer search
-    if (timer === 10) {
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (pollingRef.current) clearInterval(pollingRef.current);
+    if (!isMatching) return;
+    
+    if (timer === 20 && matchStep === 1) {
+      setMatchStep(2);
+    }
+    if (timer === 10 && matchStep === 2) {
+      setMatchStep(3);
+    }
+    if (timer === 0 && !aiFallbackRef.current) {
+      aiFallbackRef.current = true;
       handleAIFallback();
     }
-  }, [timer, isMatching, handleAIFallback]);
+  }, [timer, isMatching, matchStep, handleAIFallback]);
 
   return (
     <div className="p-4 md:p-12 max-w-5xl mx-auto space-y-12 animate-in fade-in duration-700 font-sans">
-      <div className="space-y-4 text-center md:text-left">
-        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Neural Network Match</p>
-        <h1 className="text-5xl md:text-7xl font-black tracking-tightest leading-[0.9]">
-          Connect <br /> <span className="text-muted-foreground">Instantly.</span>
-        </h1>
-        <p className="text-muted-foreground text-lg md:text-xl font-medium max-w-2xl leading-relaxed">
-          Initialize a study session with a verified expert, a brilliant peer, or Mash AI in under 30 seconds.
-        </p>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="space-y-4 text-center md:text-left">
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Start a session</p>
+          <h1 className="text-5xl md:text-7xl font-black tracking-tightest leading-[0.9]">
+            Let&apos;s find you <br /> <span className="text-muted-foreground">some help.</span>
+          </h1>
+          <p className="text-muted-foreground text-lg md:text-xl font-medium max-w-2xl leading-relaxed">
+            Pick a subject and we&apos;ll find someone to help — a tutor, a study buddy, or Mash AI. <span className="text-emerald-500">Mash AI is always available in your room.</span>
+          </p>
+        </div>
+        
+        <div className="flex items-center justify-center bg-secondary/50 p-1.5 rounded-full border border-border">
+          <Button variant="ghost" className="rounded-full bg-background shadow-md px-6 font-bold text-sm h-12 hover:bg-background">
+            <Zap className="mr-2 h-4 w-4 text-primary" /> Instant Match
+          </Button>
+          <Button variant="ghost" onClick={() => router.push("/dashboard/tutors")} className="rounded-full px-6 font-bold text-sm h-12 text-muted-foreground hover:text-foreground">
+            <CalendarIcon className="mr-2 h-4 w-4" /> Book a Session
+          </Button>
+        </div>
       </div>
 
       {!isMatching ? (
@@ -163,10 +199,10 @@ export default function StudyPage() {
           <CardContent className="p-8 md:p-16 space-y-12">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               <div className="space-y-4">
-                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">Academic Discipline</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">What subject?</label>
                 <Select onValueChange={(v: string | null) => v && setFormData({ ...formData, subject: v })}>
                   <SelectTrigger className="h-20 rounded-[2rem] border-border bg-background font-black px-8 text-2xl focus:ring-primary">
-                    <SelectValue placeholder="Select Discipline" />
+                    <SelectValue placeholder="Pick a subject" />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl border-border max-h-[300px]">
                     {subjects.map((s) => (
@@ -176,7 +212,7 @@ export default function StudyPage() {
                 </Select>
               </div>
               <div className="space-y-4">
-                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">Session Objective (Optional)</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">What are you working on? (optional)</label>
                 <Input
                   placeholder="e.g. Calculus Integration"
                   className="h-20 rounded-[2rem] border-border bg-background font-bold px-8 text-xl focus-visible:ring-primary"
@@ -191,7 +227,7 @@ export default function StudyPage() {
               className="w-full h-24 rounded-[2.5rem] bg-foreground text-background hover:bg-primary hover:text-white font-black text-xl tracking-[0.2em] uppercase shadow-2xl transition-all duration-500 active:scale-95 group"
             >
               <Zap className="h-8 w-8 mr-4 fill-primary text-primary group-hover:fill-white group-hover:text-white transition-colors" />
-              Initialize Match-Me Protocol
+               Find Me Someone to Help
             </Button>
           </CardContent>
         </Card>
@@ -215,10 +251,10 @@ export default function StudyPage() {
                    </div>
                 </div>
                 <div className="space-y-4">
-                  <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Checking Expert Tier.</h2>
-                  <p className="text-muted-foreground text-lg font-medium">Scanning for verified educators specializing in {formData.subject}.</p>
+                  <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Searching for a tutor...</h2>
+                  <p className="text-muted-foreground text-lg font-medium">Looking for someone who knows {formData.subject}. <span className="text-emerald-500">Mash AI is already listening in your room.</span></p>
                   <div className="pt-6">
-                     <span className="px-6 py-2 rounded-full bg-primary/10 text-primary font-black text-xs tracking-widest uppercase">{timer}s Protocol Remaining</span>
+                     <span className="px-6 py-2 rounded-full bg-primary/10 text-primary font-black text-xs tracking-widest uppercase">{timer}s left</span>
                   </div>
                 </div>
               </motion.div>
@@ -239,10 +275,10 @@ export default function StudyPage() {
                    </div>
                 </div>
                 <div className="space-y-4">
-                  <h2 className="text-4xl md:text-5xl font-black tracking-tightest text-blue-500">Expanding Search.</h2>
-                  <p className="text-muted-foreground text-lg font-medium">Connecting with elite scholars studying {formData.subject}.</p>
+                  <h2 className="text-4xl md:text-5xl font-black tracking-tightest text-blue-500">Searching for a study partner...</h2>
+                  <p className="text-muted-foreground text-lg font-medium">No tutor available — looking for a peer who can help with {formData.subject}. <span className="text-emerald-500">Mash AI is still listening.</span></p>
                   <div className="pt-6">
-                     <span className="px-6 py-2 rounded-full bg-blue-500/10 text-blue-500 font-black text-xs tracking-widest uppercase">{timer}s Protocol Remaining</span>
+                     <span className="px-6 py-2 rounded-full bg-blue-500/10 text-blue-500 font-black text-xs tracking-widest uppercase">{timer}s left</span>
                   </div>
                 </div>
               </motion.div>
@@ -263,27 +299,28 @@ export default function StudyPage() {
                    </div>
                 </div>
                 <div className="space-y-4">
-                  <h2 className="text-4xl md:text-5xl font-black tracking-tightest text-emerald-500">Initializing Mash AI.</h2>
-                  <p className="text-muted-foreground text-lg font-medium">Instant deployment — your scholarly sanctuary is being prepared.</p>
+                  <h2 className="text-4xl md:text-5xl font-black tracking-tightest text-emerald-500">Mash AI has you covered</h2>
+                  <p className="text-muted-foreground text-lg font-medium">No one&apos;s available right now — Mash AI will guide you through {formData.subject}.</p>
                   <div className="pt-6 flex justify-center gap-2">
-                     <Loader2 className="h-4 w-4 animate-spin text-emerald-500" />
-                     <span className="text-emerald-500 font-black text-xs tracking-widest uppercase">Connecting...</span>
+                     <Sparkles className="h-5 w-5 text-emerald-500" />
+                     <span className="text-emerald-500 font-black text-xs tracking-widest uppercase">AI Ready</span>
                   </div>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <Button
-            variant="ghost"
-            onClick={() => {
-              setIsMatching(false);
-              setCurrentRequestId(null);
-            }}
-            className="mt-16 text-muted-foreground hover:text-red-500 font-black text-[10px] tracking-widest uppercase transition-colors"
-          >
-            Abort Protocol
-          </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setIsMatching(false);
+                setCurrentRequestId(null);
+                aiFallbackRef.current = false;
+              }}
+              className="mt-16 text-muted-foreground hover:text-red-500 font-black text-[10px] tracking-widest uppercase transition-colors"
+            >
+              Cancel
+            </Button>
         </Card>
       )}
     </div>

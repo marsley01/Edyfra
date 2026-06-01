@@ -12,14 +12,14 @@ import {
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
-import { acceptMatchRequest } from "@/app/actions/tutor";
+import { acceptMatchRequest, getTutorProfile } from "@/app/actions/tutor";
 
 interface MatchRequest {
   id: string;
   subject: string;
-  topic?: string;
-  createdAt: string;
-  sessionId?: string | null;
+  topic: string | null;
+  createdAt: string | Date;
+  sessionId: string | null;
 }
 
 export default function TutorRequestsPage() {
@@ -27,60 +27,99 @@ export default function TutorRequestsPage() {
   const [requests, setRequests] = useState<MatchRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
+  const [tutorSubjects, setTutorSubjects] = useState<string[]>([]);
   const router = useRouter();
 
   useEffect(() => {
-    fetchRequests();
-    
-    const dbChannel = supabase
-      .channel("new-requests")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "MatchRequest" },
-        (payload) => {
-          const newReq = payload.new as MatchRequest;
-          setRequests((prev) => {
-            if (prev.find(r => r.id === newReq.id)) return prev;
-            return [newReq, ...prev];
-          });
-          toast.info("New study request detected!");
-        }
-      )
-      .subscribe();
+    let channel: any;
+    let broadcastChannel: any;
 
-    const broadcastChannel = supabase
-      .channel('global-matches')
-      .on('broadcast', { event: 'new-request' }, (payload) => {
-        const newReq = {
-          id: payload.payload.requestId,
-          subject: payload.payload.subject,
-          topic: payload.payload.topic,
-          createdAt: new Date().toISOString()
-        } as MatchRequest;
-        
-        setRequests((prev) => {
-          if (prev.find(r => r.id === newReq.id)) return prev;
-          return [newReq, ...prev];
-        });
-        toast.info(`Match Request: ${newReq.subject}`);
-      })
-      .subscribe();
+    const setup = async () => {
+      const profile = await getTutorProfile();
+      const subjects = (profile as any)?.subjects || [];
+      setTutorSubjects(subjects);
+      await fetchRequests(subjects);
+
+      channel = supabase
+        .channel("new-requests")
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "MatchRequest" },
+          (payload: any) => {
+            const newReq = payload.new as MatchRequest;
+            if (!newReq?.sessionId) {
+              if (subjects.length === 0 || subjects.includes(newReq?.subject)) {
+                setRequests((prev) => {
+                  if (prev.find(r => r.id === newReq.id)) return prev;
+                  return [newReq, ...prev];
+                });
+                toast.info(`New ${newReq?.subject} request detected!`);
+              }
+            }
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "MatchRequest" },
+          (payload: any) => {
+            if (payload.new?.sessionId) {
+              setRequests((prev) => prev.filter(req => req.id !== payload.new.id));
+            }
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "DELETE", schema: "public", table: "MatchRequest" },
+          (payload: any) => {
+            setRequests((prev) => prev.filter(req => req.id !== payload.old.id));
+          }
+        )
+        .subscribe();
+
+      broadcastChannel = supabase
+        .channel('global-matches')
+        .on('broadcast', { event: 'new-request' }, (payload: any) => {
+          const newReq = {
+            id: payload.payload.requestId,
+            subject: payload.payload.subject,
+            topic: payload.payload.topic,
+            createdAt: new Date().toISOString()
+          } as MatchRequest;
+
+          if (subjects.length === 0 || subjects.includes(newReq.subject)) {
+            setRequests((prev) => {
+              if (prev.find(r => r.id === newReq.id)) return prev;
+              return [newReq, ...prev];
+            });
+            toast.info(`Match Request: ${newReq.subject}`);
+          }
+        })
+        .subscribe();
+    };
+
+    setup();
 
     return () => {
-      supabase.removeChannel(dbChannel);
-      supabase.removeChannel(broadcastChannel);
+      supabase.removeChannel(channel);
+      if (broadcastChannel) supabase.removeChannel(broadcastChannel);
     };
   }, [supabase]);
 
-  const fetchRequests = async () => {
+  const fetchRequests = async (subjects: string[] = []) => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("MatchRequest")
-      .select("*")
-      .is("sessionId", null)
-      .order("createdAt", { ascending: false });
-
-    if (data) setRequests(data);
+    try {
+      const { getFilteredMatchRequests } = await import("@/app/actions/match-algorithm");
+      const data = await getFilteredMatchRequests(subjects);
+      setRequests(data);
+    } catch (err) {
+      console.error("Failed to load match requests:", err);
+      try {
+        const { getFilteredMatchRequests } = await import("@/app/actions/match-algorithm");
+        setRequests(await getFilteredMatchRequests(subjects));
+      } catch {
+        setRequests([]);
+      }
+    }
     setLoading(false);
   };
 
@@ -104,8 +143,8 @@ export default function TutorRequestsPage() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-1">
-          <h1 className="text-3xl font-black tracking-tight">Match Feed</h1>
-          <p className="text-muted-foreground font-medium italic">Discover students currently seeking your expertise.</p>
+           <h1 className="text-3xl font-black tracking-tight">Student Requests</h1>
+           <p className="text-muted-foreground font-medium">Students nearby who could use your help right now.</p>
         </div>
         <div className="flex gap-3">
            <Button variant="outline" className="rounded-xl font-bold gap-2">
@@ -139,8 +178,7 @@ export default function TutorRequestsPage() {
                         <Clock className="h-3 w-3" /> 2m ago
                       </span>
                     </div>
-                    <h3 className="text-xl font-bold">{req.topic || "General Revision"}</h3>
-                    <p className="text-sm text-muted-foreground font-medium italic">&quot;Seeking assistance with structured problem solving and exam techniques.&quot;</p>
+                     <h3 className="text-xl font-bold">{req.topic || "General Help"}</h3>
                   </div>
                 </div>
 
@@ -169,10 +207,10 @@ export default function TutorRequestsPage() {
              <div className="w-20 h-20 bg-teal-600/5 rounded-full flex items-center justify-center mx-auto border-2 border-teal-600/5">
                 <Users className="h-10 w-10 text-teal-600/30" />
              </div>
-             <div>
-                <h3 className="text-2xl font-black text-teal-600">Feed is Quiet</h3>
-                <p className="text-muted-foreground max-w-sm mx-auto font-medium italic">No live requests at the moment. Ensure your status is set to &apos;Online&apos; to be discovered by students.</p>
-             </div>
+              <div>
+                 <h3 className="text-2xl font-black text-teal-600">All caught up</h3>
+                 <p className="text-muted-foreground max-w-sm mx-auto font-medium">No students waiting right now. Stay online — someone will reach out soon.</p>
+              </div>
           </div>
         )}
       </div>

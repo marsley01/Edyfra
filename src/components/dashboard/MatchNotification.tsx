@@ -26,16 +26,25 @@ export default function MatchNotification() {
   useEffect(() => {
     const channel = supabase
       .channel('global-matches')
-      .on('broadcast', { event: 'new-request' }, ({ payload }) => {
-        // Add to list and show toast
-        setRequests((prev) => [...prev, payload]);
-        
-        // Auto-remove after 30s
-        setTimeout(() => {
-          setRequests((prev) => prev.filter(r => r.requestId !== payload.requestId));
-        }, 30000);
+      .on('broadcast', { event: 'new-request' }, ({ payload }: { payload: any }) => {
+        // Only show requests that aren't from the current user
+        supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
+          if (user && payload.studentId !== user.id) {
+            setRequests((prev) => [...prev, payload]);
+            toast.info(`New help request: ${payload.studentName} needs ${payload.subject}!`);
+            
+            // Auto-remove after 45s
+            setTimeout(() => {
+              setRequests((prev) => prev.filter(r => r.requestId !== payload.requestId));
+            }, 45000);
+          }
+        });
       })
-      .subscribe();
+      .subscribe((status: any) => {
+        if (status === 'SUBSCRIBED') {
+
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

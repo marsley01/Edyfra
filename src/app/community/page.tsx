@@ -3,159 +3,282 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Users, Star, Globe, ShieldCheck, Loader2, UserCheck, Sparkles } from "lucide-react";
+import { 
+  GraduationCap, Users, Star, Globe, ShieldCheck, 
+  Loader2, UserCheck, Sparkles, Trophy, Flame,
+  Zap, ArrowRight, Crown, Medal, Target
+} from "lucide-react";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
 import Link from "next/link";
-import { createClient } from "@/utils/supabase/client";
+import { getCommunityScholars } from "@/app/actions/user";
+import { Badge } from "@/components/ui/badge";
 
 interface Scholar {
   id: string;
   name: string;
   county: string;
   points: number;
+  tier: string;
 }
 
 export default function CommunityPage() {
   const [scholars, setScholars] = useState<Scholar[]>([]);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
-
   useEffect(() => {
     fetchTopScholars();
   }, []);
 
   const fetchTopScholars = async () => {
-    const { data, error } = await supabase
-      .from("User")
-      .select("id, name, county, points")
-      .eq("role", "STUDENT")
-      .order("points", { ascending: false })
-      .limit(4);
-
-    if (!error && data) setScholars(data);
-    setLoading(false);
+    try {
+      const data = await getCommunityScholars();
+      setScholars(
+        data.map((row) => ({
+          ...row,
+          tier: String(row.tier),
+        }))
+      );
+    } catch (e) {
+      console.error("Error fetching scholars:", e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="bg-background pt-32 pb-48">
-      <div className="container-max space-y-32">
+    <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <div className="relative pt-32 pb-24 px-6 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/3 via-background to-background" />
+        <div className="absolute top-40 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-3xl" />
+        
+        <div className="container-max relative z-10">
+          <div className="max-w-5xl mx-auto text-center space-y-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-widest text-primary mb-2">
+                <Users className="h-4 w-4" />
+                Your Study Circle
+              </div>
+              
+               <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tightest leading-none">
+                 Find people <br />
+                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/60">learning with you.</span>
+               </h1>
+               
+               <p className="text-lg md:text-2xl text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed">
+                 Meet students working through the same pressure, topics, and exams. Ask, share, and build momentum together.
+               </p>
 
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-12">
-          <div className="max-w-3xl space-y-6">
-            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">A Community of Scholars</p>
-            <h1 className="text-6xl md:text-8xl font-black tracking-tightest leading-none">
-              Learn <br /><span className="text-muted-foreground">Together.</span>
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground font-medium leading-relaxed max-w-xl">
-              Connect with students from across the country. Find your study partners and mentors in one place.
-            </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
+                <Link href="/signup">
+                  <Button className="h-14 px-10 rounded-full bg-foreground text-background hover:bg-foreground/90 font-black text-xs tracking-widest uppercase shadow-xl transition-all active:scale-95">
+                    Create My Profile
+                  </Button>
+                </Link>
+                <Link href="/dashboard/feed">
+                  <Button variant="ghost" className="h-14 px-10 rounded-full font-black text-xs tracking-widest uppercase group">
+                    See Student Posts <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
           </div>
-          <Link href="/signup">
-            <Button className="h-16 px-12 rounded-full bg-foreground text-background font-black text-xs tracking-widest uppercase shadow-2xl transition-all active:scale-95">
-              Join the Community
-            </Button>
-          </Link>
         </div>
+      </div>
 
-        {/* Platform Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { label: "Live Status", value: "ACTIVE", icon: ShieldCheck },
-            { label: "Subjects", value: "40+", icon: GraduationCap },
-            { label: "Counties", value: "47", icon: Globe },
-            { label: "Powered by AI", value: "Mash AI", icon: Star },
-          ].map((stat) => (
-            <div key={stat.label} className="p-8 bg-secondary/50 rounded-[2rem] border border-border/50 text-center space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-background flex items-center justify-center text-primary mx-auto shadow-sm border border-border">
-                <stat.icon className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-3xl font-black tracking-tightest">{stat.value}</p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{stat.label}</p>
-              </div>
-            </div>
-          ))}
+      {/* Stats Bar */}
+      <div className="border-y border-border/50 bg-secondary/30">
+        <div className="container-max py-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { label: "Students", value: "Growing", icon: Users },
+              { label: "Points Earned", value: "Every Day", icon: Trophy },
+              { label: "Study Help", value: "Live", icon: Zap },
+              { label: "Reach", value: "Kenya", icon: Globe },
+            ].map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="flex items-center gap-4 p-6 bg-background/50 rounded-2xl border border-border/50"
+              >
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                  <stat.icon className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-2xl font-black tracking-tightest">{stat.value}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{stat.label}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
+      </div>
 
-        {/* Knowledge Feed */}
-        <div className="space-y-16">
+      {/* Top Scholars Section */}
+      <div className="py-32">
+        <div className="container-max space-y-16">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
             <div className="space-y-4">
-              <h2 className="text-4xl md:text-6xl font-black tracking-tightest">Community Feed.</h2>
-              <p className="text-muted-foreground text-lg font-medium max-w-xl">
-                See what other students are studying right now.
-              </p>
-            </div>
-            <Link href="/dashboard/feed">
-              <Button className="h-12 px-8 rounded-full bg-primary text-white font-black text-[10px] tracking-widest uppercase">
-                Post Something
-              </Button>
-            </Link>
-          </div>
-          
-          <div className="py-16 text-center space-y-6 bg-secondary/30 rounded-[3rem] border border-border">
-            <Sparkles className="h-10 w-10 text-muted-foreground/20 mx-auto" />
-            <div className="space-y-2">
-              <h3 className="text-xl font-black tracking-tightest">The feed is quiet.</h3>
-              <p className="text-muted-foreground font-medium max-w-md mx-auto">Be the first to share your learning progress with the community.</p>
-            </div>
-            <Link href="/dashboard/feed">
-              <Button className="h-12 px-10 rounded-full bg-primary text-white font-black text-[10px] tracking-widest uppercase mt-2">
-                Share an Update
-              </Button>
-            </Link>
-          </div>
-        </div>
-
-        {/* Leaderboard */}
-        <div className="p-8 md:p-16 bg-secondary rounded-[3rem] border border-border space-y-12">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-            <div className="space-y-4">
-              <h2 className="text-4xl font-black tracking-tightest">Top Scholars.</h2>
-              <p className="text-muted-foreground text-lg font-medium">Recognizing the most active students in the ecosystem.</p>
+              <div className="flex items-center gap-3">
+                 <Crown className="h-8 w-8 text-primary" />
+                 <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Students showing up.</h2>
+               </div>
+               <p className="text-lg text-muted-foreground font-medium max-w-xl">
+                 A quick look at students building points through consistency, sessions, and daily effort.
+               </p>
             </div>
             <Link href="/dashboard/leaderboard">
-              <Button variant="ghost" className="font-black text-[10px] tracking-widest uppercase text-primary hover:text-primary underline">
-                View All
+              <Button variant="ghost" className="font-black text-[10px] tracking-widest uppercase text-primary hover:text-primary group">
+                See Full Leaderboard <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="h-10 w-10 animate-spin text-primary" />
             </div>
-          ) : scholars.length === 0 ? (
-            <div className="py-16 text-center space-y-4">
-              <UserCheck className="h-12 w-12 text-muted-foreground/20 mx-auto" />
-              <p className="text-muted-foreground font-medium">No scholars ranked yet. Be the first to earn points!</p>
-              <Link href="/signup">
-                <Button className="h-10 px-8 rounded-full bg-primary text-white font-black text-[10px] tracking-widest uppercase mt-2">
-                  Get Started
-                </Button>
-              </Link>
-            </div>
-          ) : (
+          ) : scholars.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {scholars.map((s, i) => (
-                <div key={s.id} className="p-6 bg-background rounded-2xl border border-border flex items-center gap-4 group hover:shadow-lg transition-all">
-                  <div className="text-2xl font-black text-muted-foreground w-8">#{i + 1}</div>
-                  <AvatarPremium seed={s.id} name={s.name} size="md" />
-                  <div className="min-w-0">
-                    <h4 className="font-black text-sm tracking-tight truncate">{s.name}</h4>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[9px] font-bold text-muted-foreground uppercase truncate">{s.county}</span>
-                      <div className="w-1 h-1 rounded-full bg-border flex-shrink-0" />
-                      <span className="text-[9px] font-black text-primary uppercase flex-shrink-0">{s.points.toLocaleString()} PTS</span>
+                <motion.div
+                  key={s.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className={`relative p-6 bg-background rounded-[2rem] border transition-all duration-500 hover:shadow-xl hover:translate-y-[-4px] ${
+                    i === 0 ? "border-primary/50 shadow-lg shadow-primary/5" : "border-border/50"
+                  }`}
+                >
+                  {i === 0 && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-primary to-primary/80 text-white text-[8px] font-black uppercase tracking-widest shadow-lg">
+                      #1 Scholar
+                    </div>
+                  )}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-4">
+                      <div className="text-2xl font-black text-muted-foreground/30 w-8">
+                        #{i + 1}
+                      </div>
+                      <AvatarPremium seed={s.id} name={s.name} size="lg" />
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-black text-base tracking-tight truncate">{s.name}</h4>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[9px] font-bold text-muted-foreground uppercase truncate">
+                            {s.county}
+                          </span>
+                          <span className="w-1 h-1 rounded-full bg-border" />
+                          <Badge variant="outline" className="h-4 px-1.5 text-[8px] font-black uppercase border-primary/30 text-primary">
+                            {s.tier}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="pt-4 border-t border-border/50 flex items-center justify-between">
+                      <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Total Points</span>
+                      <span className="text-lg font-black tracking-tightest text-primary">{s.points.toLocaleString()}</span>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
+          ) : (
+            <div className="py-20 text-center space-y-6 bg-secondary/20 rounded-[2rem] border border-border/50">
+               <UserCheck className="h-12 w-12 text-muted-foreground/20 mx-auto" />
+               <div className="space-y-2">
+                 <p className="text-xl font-black tracking-tightest">No rankings yet</p>
+                 <p className="text-muted-foreground">Start learning, earn points, and help set the pace for everyone else.</p>
+               </div>
+               <Link href="/signup">
+                 <Button className="rounded-full bg-primary">
+                   Get Started <Zap className="ml-2 h-4 w-4" />
+                 </Button>
+               </Link>
+             </div>
           )}
         </div>
+      </div>
 
+      {/* Community Feed Preview */}
+      <div className="py-32 bg-secondary/20">
+        <div className="container-max space-y-16">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Sparkles className="h-8 w-8 text-primary" />
+                <h2 className="text-4xl md:text-5xl font-black tracking-tightest">What students are sharing.</h2>
+              </div>
+              <p className="text-lg text-muted-foreground font-medium max-w-xl">
+                Questions, wins, study notes, and honest progress from the Edyfra community.
+              </p>
+            </div>
+            <Link href="/dashboard/feed">
+              <Button className="h-12 px-10 rounded-full bg-primary hover:bg-primary/90 text-white font-black text-[10px] tracking-widest uppercase shadow-lg transition-all">
+                Open Student Feed <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+
+          <div className="py-20 text-center space-y-6 bg-background rounded-[3rem] border border-border/50">
+            <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mx-auto">
+              <Users className="h-10 w-10 text-muted-foreground/20" />
+            </div>
+            <div className="space-y-3 max-w-md mx-auto">
+              <h3 className="text-2xl font-black tracking-tightest">No one has posted yet.</h3>
+              <p className="text-muted-foreground">
+                Share the question you are working on, a topic you finally understood, or a win from today.
+              </p>
+            </div>
+            <Link href="/dashboard/feed">
+              <Button className="rounded-full bg-foreground text-background hover:bg-foreground/90 font-black text-xs tracking-widest uppercase">
+                Share My First Update <Sparkles className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* CTA Section */}
+      <div className="py-32">
+        <div className="container-max">
+          <div className="relative p-16 md:p-24 rounded-[4rem] bg-gradient-to-br from-primary via-primary/90 to-primary/70 text-white text-center overflow-hidden">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%22.05%22%3E%3Ccircle%20cx%3D%223%22%20cy%3D%223%22%20r%3D%223%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')] opacity-30" />
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="relative z-10 space-y-8"
+            >
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tightest">
+                Ready to find your people?
+              </h2>
+              <p className="text-xl md:text-2xl font-medium opacity-90 max-w-2xl mx-auto">
+                Build a profile, join the feed, and make studying feel less lonely.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Link href="/signup">
+                  <Button className="h-14 px-12 rounded-full bg-white text-primary hover:bg-white/90 font-black text-xs tracking-widest uppercase shadow-xl transition-all active:scale-95">
+                    Get Started Free
+                  </Button>
+                </Link>
+                <Link href="/onboarding">
+                  <Button variant="ghost" className="h-14 px-12 rounded-full text-white border border-white/30 hover:bg-white/10 font-black text-xs tracking-widest uppercase">
+                    Learn More
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        </div>
       </div>
     </div>
   );

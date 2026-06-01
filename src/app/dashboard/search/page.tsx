@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
 import { Search, Loader2, UserPlus, GraduationCap, MapPin, SearchX, RefreshCcw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { searchStudents, Student } from "@/app/actions/search";
@@ -49,10 +50,10 @@ export default function SearchPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-5xl font-black tracking-tighter"
         >
-          Find Your <span className="text-primary">Scholar Circle</span>
+          Find Your <span className="text-primary">People</span>
         </motion.h1>
         <p className="text-muted-foreground text-lg max-w-xl mx-auto font-medium">
-          Search for students across Kenya by name, school, or expertise.
+           Find students by name, school, or what they study.
         </p>
       </div>
 
@@ -61,7 +62,7 @@ export default function SearchPage() {
         <div className="relative bg-background border border-border rounded-2xl shadow-2xl overflow-hidden flex items-center px-6 py-2">
           <Search className="h-6 w-6 text-muted-foreground" />
           <Input 
-            placeholder="Search by name, school, or course..." 
+            placeholder="Search by name, school, or subject..." 
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="border-none focus-visible:ring-0 text-lg h-14 font-medium bg-transparent"
@@ -83,8 +84,8 @@ export default function SearchPage() {
               <div className="bg-destructive/10 text-destructive p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto">
                  <SearchX className="h-8 w-8" />
               </div>
-              <h3 className="text-xl font-bold">Search Interrupted</h3>
-              <p className="text-muted-foreground max-w-xs mx-auto">Something went wrong with the search.</p>
+              <h3 className="text-xl font-bold">Search failed</h3>
+               <p className="text-muted-foreground max-w-xs mx-auto">Something went wrong. Please try again.</p>
               <Button onClick={() => setQuery(query)} variant="outline" className="gap-2">
                 <RefreshCcw className="h-4 w-4" /> Retry Search
               </Button>
@@ -117,8 +118,8 @@ export default function SearchPage() {
                <div className="bg-secondary p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto">
                  <SearchX className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="text-xl font-bold">No Scholars Found</h3>
-              <p className="text-muted-foreground">Try searching for a different name, school, or course.</p>
+              <h3 className="text-xl font-bold">No results found</h3>
+               <p className="text-muted-foreground">Try a different name, school, or subject.</p>
             </motion.div>
           ) : results.length > 0 ? (
             <motion.div 
@@ -133,9 +134,11 @@ export default function SearchPage() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex gap-4">
                         <div className="relative">
-                          <img 
-                            src={student.avatar_url} 
+                          <Image 
+                            src={student.avatar_url || "/default-avatar.png"} 
                             alt={student.name} 
+                            width={64}
+                            height={64}
                             className="h-16 w-16 rounded-2xl bg-secondary object-cover ring-1 ring-border group-hover:ring-primary/30 transition-all"
                           />
                           <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-green-500 rounded-full border-2 border-background" />

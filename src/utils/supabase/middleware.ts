@@ -6,6 +6,10 @@ export async function updateSession(request: NextRequest) {
     request,
   });
 
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return supabaseResponse;
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -36,8 +40,9 @@ export async function updateSession(request: NextRequest) {
 
   const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/signup');
   const isStudentRoute = request.nextUrl.pathname.startsWith('/dashboard');
+  const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
   const isTutorRoute = request.nextUrl.pathname.startsWith('/tutor');
-  const isProtectedRoute = isStudentRoute || isTutorRoute || request.nextUrl.pathname.startsWith('/study-room') || request.nextUrl.pathname.startsWith('/onboarding');
+  const isProtectedRoute = isStudentRoute || isTutorRoute || isAdminRoute || request.nextUrl.pathname.startsWith('/study-room') || request.nextUrl.pathname.startsWith('/onboarding');
 
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();
@@ -51,22 +56,52 @@ export async function updateSession(request: NextRequest) {
     // Redirect already logged in users away from auth pages
     if (isAuthRoute) {
       const url = request.nextUrl.clone();
-      url.pathname = role === 'TUTOR' ? '/tutor' : '/dashboard';
+      if (role?.toUpperCase() === 'TUTOR') url.pathname = '/tutor';
+      else if (role?.toUpperCase() === 'ADMIN') url.pathname = '/admin';
+      else url.pathname = '/dashboard';
       return NextResponse.redirect(url);
     }
 
-    // Role-based access control
-    if (role === 'TUTOR' && isStudentRoute) {
+    // Additional role-based redirects for security
+    // Only redirect if user is trying to access wrong role-based route
+    if (isStudentRoute && role?.toUpperCase() === 'TUTOR') {
       const url = request.nextUrl.clone();
       url.pathname = '/tutor';
       return NextResponse.redirect(url);
     }
 
-    if (role !== 'TUTOR' && isTutorRoute) {
+    if (isStudentRoute && role?.toUpperCase() === 'ADMIN') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/admin';
+      return NextResponse.redirect(url);
+    }
+
+    if (isTutorRoute && role?.toUpperCase() === 'STUDENT') {
       const url = request.nextUrl.clone();
       url.pathname = '/dashboard';
       return NextResponse.redirect(url);
     }
+
+    if (isTutorRoute && role?.toUpperCase() === 'ADMIN') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/admin';
+      return NextResponse.redirect(url);
+    }
+
+    if (isAdminRoute && role?.toUpperCase() === 'STUDENT') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/dashboard';
+      return NextResponse.redirect(url);
+    }
+
+    if (isAdminRoute && role?.toUpperCase() === 'TUTOR') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/tutor';
+      return NextResponse.redirect(url);
+    }
+
+    // Role-based access is handled in Prisma-backed layouts/pages.
+    // Middleware only protects authenticated routes because Supabase user_metadata can be stale.
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're

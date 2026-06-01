@@ -1,169 +1,223 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { Calendar, Clock, ArrowLeft, Share2, Link as LinkIcon, Send } from "lucide-react";
-import { getNewsBySlug, NewsArticle, getLatestNews } from "@/app/actions/news";
+import { notFound } from "next/navigation";
+import { getNewsBySlug, NewsArticle } from "@/app/actions/news";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { motion } from "framer-motion";
+import { Calendar, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-export default function ArticlePage() {
-  const { slug } = useParams();
+export default function NewsArticlePage({ params }: { params: { slug: string } }) {
   const [article, setArticle] = useState<NewsArticle | null>(null);
-  const [related, setRelated] = useState<NewsArticle[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (slug) {
-      getNewsBySlug(slug as string).then(data => {
-        if (data?.slug.startsWith("rss-")) {
-          window.location.href = data.content; // Redirect to external source
-          return;
+    async function loadArticle() {
+      try {
+        const data = await getNewsBySlug(params.slug);
+        if (!data) {
+          notFound();
         }
         setArticle(data);
-        setLoading(false);
-      });
-      getLatestNews(3).then(setRelated);
+      } catch (e) {
+        console.error("Failed to fetch article:", e);
+        notFound();
+      } finally {
+        setIsLoading(false);
+      }
     }
-  }, [slug]);
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-       <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
+    loadArticle();
+  }, [params.slug]);
 
-  if (!article) return (
-    <div className="min-h-screen flex flex-col items-center justify-center space-y-6">
-       <h1 className="text-4xl font-black">Article not found.</h1>
-       <Link href="/news">
-          <Button>Back to Intelligence Feed</Button>
-       </Link>
-    </div>
-  );
-
-  return (
-    <article className="bg-background pt-32 pb-48">
-      <div className="container-max">
-        {/* Navigation */}
-        <Link href="/news" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors mb-12">
-           <ArrowLeft className="h-4 w-4" /> Back to Intelligence Feed
-        </Link>
-
-        {/* Hero */}
-        <div className="space-y-12">
-           <div className="space-y-6 max-w-4xl">
-              <span className="px-3 py-1 rounded-full bg-secondary text-primary text-[10px] font-black uppercase tracking-widest">
-                 {article.category}
-              </span>
-              <h1 className="text-5xl md:text-7xl font-black tracking-tightest leading-tight">
-                 {article.title}
-              </h1>
-              <div className="flex flex-wrap items-center gap-8 pt-4">
-                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-primary font-black uppercase text-xs">
-                       {article.author[0]}
-                    </div>
-                    <div>
-                       <p className="text-xs font-black uppercase tracking-widest">{article.author}</p>
-                       <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Mission Lead</p>
-                    </div>
-                 </div>
-                 <div className="h-8 w-px bg-border hidden md:block" />
-                 <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                    <span className="flex items-center gap-2"><Calendar className="h-4 w-4" /> {new Date(article.published_at).toLocaleDateString()}</span>
-                    <span className="flex items-center gap-2"><Clock className="h-4 w-4" /> {article.reading_time || "5 min read"}</span>
-                 </div>
-              </div>
-           </div>
-
-           <div className="aspect-[21/9] rounded-[3rem] overflow-hidden border border-border shadow-2xl relative">
-              <Image 
-                src={article.cover_image} 
-                alt={article.title} 
-                fill
-                className="object-cover" 
-              />
-           </div>
-        </div>
-
-        {/* Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mt-24">
-           {/* Sidebar Actions */}
-           <div className="lg:col-span-1 flex lg:flex-col gap-6 sticky top-32 h-fit">
-              <Button size="icon" variant="outline" className="rounded-full border-border hover:bg-primary hover:text-white transition-all shadow-sm">
-                 <Share2 className="h-4 w-4" />
-              </Button>
-              <Button size="icon" variant="outline" className="rounded-full border-border hover:bg-primary hover:text-white transition-all shadow-sm">
-                 <LinkIcon className="h-4 w-4" />
-              </Button>
-              <Button size="icon" variant="outline" className="rounded-full border-border hover:bg-primary hover:text-white transition-all shadow-sm">
-                 <Send className="h-4 w-4" />
-              </Button>
-           </div>
-
-           {/* Article Body */}
-           <div className="lg:col-span-8 space-y-12">
-              <div className="prose prose-xl prose-neutral dark:prose-invert max-w-none font-medium leading-relaxed text-muted-foreground selection:bg-primary/20">
-                 <p className="text-2xl font-semibold text-foreground mb-8 leading-snug">
-                    {article.excerpt}
-                 </p>
-                 <div dangerouslySetInnerHTML={{ __html: article.content }} />
-                 {/* Fallback content for demo */}
-                 {!article.content.includes("<") && (
-                   <div className="space-y-8">
-                     <p>
-                        The academic landscape in Kenya is undergoing a fundamental transformation. At Edyfra, we are not just observing this change; we are architecting the infrastructure that makes it possible. Distributed intelligence is more than just a buzzword—it is the synchronization of thousands of individual academic trajectories into a single, high-performance ecosystem.
-                     </p>
-                     <h3 className="text-foreground">The Protocol of Discovery</h3>
-                     <p>
-                        Standard learning systems focus on storage. Edyfra focuses on connection. By leveraging our proprietary AI discovery engine, we ensure that every scholar is matched with the exact resources and mentors needed for their current mission. This removes the legacy friction that has plagued Kenyan education for decades.
-                     </p>
-                     <blockquote className="border-l-4 border-primary pl-8 py-4 italic text-foreground text-2xl font-bold tracking-tight">
-                        &quot;The future of education isn&apos;t about more content; it&apos;s about more synchronization.&quot;
-                     </blockquote>
-                     <p>
-                        As we move into the next phase of our mission, we are doubling down on our institutional verification protocols. Every expert on our platform is hand-audited to ensure they meet the institutional grade standards our community demands.
-                     </p>
-                   </div>
-                 )}
-              </div>
-
-              {/* Tag Cloud */}
-              <div className="flex flex-wrap gap-3 pt-12 border-t border-border">
-                 {["Academic OS", "Future of Education", "Kenya Tech", "Distributed Learning"].map(tag => (
-                   <span key={tag} className="px-4 py-2 rounded-full bg-secondary text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                      #{tag.replace(/\s+/g, "")}
-                   </span>
-                 ))}
-              </div>
-           </div>
-        </div>
-
-        {/* Related Articles */}
-        <div className="mt-48 space-y-16">
-           <div className="flex items-center justify-between">
-              <h2 className="text-4xl font-black tracking-tightest">Related intelligence.</h2>
-              <Link href="/news" className="text-xs font-black uppercase tracking-widest text-primary hover:underline">View all</Link>
-           </div>
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {related.filter(r => r.id !== article.id).slice(0, 3).map((r) => (
-                 <Link key={r.id} href={`/news/${r.slug}`} className="group space-y-4 block">
-                    <div className="aspect-[16/10] rounded-2xl overflow-hidden border border-border group-hover:shadow-xl transition-all relative">
-                       <Image 
-                         src={r.cover_image} 
-                         alt={r.title} 
-                         fill
-                         className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
-                       />
-                    </div>
-                    <h4 className="font-black text-lg tracking-tight group-hover:text-primary transition-colors">{r.title}</h4>
-                 </Link>
-              ))}
-           </div>
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background py-12">
+        <div className="container-max">
+          <div className="space-y-8 text-center">
+            <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mx-auto">
+              <Sparkles className="h-8 w-8 text-muted-foreground/30" />
+            </div>
+            <h2 className="text-3xl font-black tracking-tightest">Loading article...</h2>
+            <p className="text-muted-foreground">Please wait while we fetch the article for you.</p>
+          </div>
         </div>
       </div>
-    </article>
+    );
+  }
+
+  if (!article) {
+    notFound();
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Article Header */}
+      <div className="relative pt-20 pb-16 px-6 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-background" />
+        <div className="absolute top-10 left-0 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
+        
+        <div className="container-max relative z-10">
+          <div className="space-y-6">
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-[10px] font-black uppercase tracking-[0.5em] text-primary"
+            >
+              {article.category}
+            </motion.p>
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-5xl md:text-6xl font-black tracking-tightest leading-none"
+            >
+              {article.title}
+            </motion.h1>
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="flex items-center gap-4 text-muted-foreground font-medium"
+            >
+              <motion.span
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <Calendar className="h-4 w-4 mr-2" /> {new Date(article.published_at).toLocaleDateString()}
+              </motion.span>
+              <motion.span
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <Sparkles className="h-4 w-4 mr-2" /> {article.author}
+              </motion.span>
+              <motion.span
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                {article.reading_time || "3m"} read
+              </motion.span>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+
+      {/* Article Content */}
+      <div className="container-max py-12 md:py-20">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="prose prose-lg prose-headings:font-bold prose-headings:scroll-mt-20 prose-leading-relaxed"
+        >
+          {/* We'll use dangerouslySetInnerHTML for the content since it's rich text */}
+          <div 
+            dangerouslySetInnerHTML={{ __html: article.content }} 
+            className="w-full"
+          />
+        </motion.div>
+      </div>
+
+      {/* Call to Action */}
+      <div className="container-max py-16 border-t border-border">
+        <div className="space-y-8 text-center">
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-muted-foreground font-medium max-w-2xl mx-auto"
+          >
+            Found this helpful? Share it with a study buddy or save it for later.
+          </motion.p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+            <Button 
+              variant="outline"
+              className="h-12 px-8"
+            >
+              Share Article
+            </Button>
+            <Button 
+              className="h-12 px-8"
+            >
+              Save for Later
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Related Articles */}
+      <div className="container-max py-16">
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-[10px] font-black uppercase tracking-[0.5em] text-primary mb-4"
+        >
+          More from Edyfra
+        </motion.p>
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-3xl font-black tracking-tightest mb-8"
+        >
+          You might also like
+        </motion.h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {/* Placeholder for related articles - in a real app, we'd fetch these based on category/tags */}
+          {[1, 2, 3].map((i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.05 }}
+              className="group"
+            >
+              <Link href={`/news/article-${i}`} className="block space-y-4">
+                <div className="aspect-[16/10] rounded-3xl overflow-hidden border border-border shadow-sm group-hover:shadow-xl group-hover:translate-y-[-2px] transition-all duration-500 relative">
+                  <Image
+                    src="/placeholder-news.jpg"
+                    alt="Related Article"
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white text-[8px] font-black uppercase tracking-widest">
+                      3m read
+                    </span>
+                  </div>
+                  <div className="absolute bottom-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="px-3 py-1 rounded-full bg-primary text-white text-[8px] font-black uppercase tracking-widest">
+                      Read More
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border bg-secondary text-primary border-transparent">
+                      Education
+                    </span>
+                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1">
+                      <Calendar className="h-3 w-3" /> Jan 15, 2026
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-black tracking-tight leading-tight group-hover:text-primary transition-colors line-clamp-2">
+                    How to Master Kenyan History in 30 Days
+                  </h3>
+                  <p className="text-sm text-muted-foreground font-medium leading-relaxed line-clamp-2">
+                    Proven study techniques and resources for excelling in KCSE history papers.
+                  </p>
+                </div>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }

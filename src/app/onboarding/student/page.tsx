@@ -90,9 +90,9 @@ export default function StudentOnboardingPage() {
                 <GraduationCap className="h-8 w-8" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-3xl font-black tracking-tightest text-white">Scholar Journey.</h3>
+                <h3 className="text-3xl font-black tracking-tightest text-white">Your journey starts here.</h3>
                 <p className="text-primary-foreground/70 font-medium text-sm leading-relaxed">
-                  Join 10,000+ students across Kenya mastering their subjects with Edyfra.
+                  A few quick questions so we can personalise Edyfra just for you.
                 </p>
               </div>
             </div>
@@ -118,7 +118,7 @@ export default function StudentOnboardingPage() {
                 <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-10">
                    <div className="space-y-2">
                       <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Step 01 / 05</p>
-                      <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Your Level.</h2>
+                      <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Where are you in school?</h2>
                    </div>
                    
                    <div className="space-y-8">
@@ -200,7 +200,7 @@ export default function StudentOnboardingPage() {
                 <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-10">
                    <div className="space-y-2">
                       <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Step 02 / 05</p>
-                      <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Your Base.</h2>
+                      <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Which county are you in?</h2>
                    </div>
 
                    <div className="space-y-4">
@@ -234,7 +234,7 @@ export default function StudentOnboardingPage() {
                 <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-10">
                    <div className="space-y-2">
                       <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Step 03 / 05</p>
-                      <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Strengths.</h2>
+                      <h2 className="text-4xl md:text-5xl font-black tracking-tightest">What subjects are you taking?</h2>
                    </div>
 
                    <div className="space-y-6">
@@ -282,7 +282,7 @@ export default function StudentOnboardingPage() {
                 <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-10">
                    <div className="space-y-2">
                       <p className="text-[10px] font-black uppercase tracking-[0.4em] text-red-500">Step 04 / 05</p>
-                      <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Support.</h2>
+                      <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Which topics do you struggle with?</h2>
                    </div>
 
                    <div className="space-y-6">
@@ -330,7 +330,7 @@ export default function StudentOnboardingPage() {
                 <motion.div key="step5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-10">
                    <div className="space-y-2">
                       <p className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500">Step 05 / 05</p>
-                      <h2 className="text-4xl md:text-5xl font-black tracking-tightest text-emerald-500">Finish.</h2>
+                      <h2 className="text-4xl md:text-5xl font-black tracking-tightest text-emerald-500">Almost done — how do you learn best?</h2>
                    </div>
 
                    <div className="space-y-6">
@@ -338,10 +338,10 @@ export default function StudentOnboardingPage() {
                         <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Learning Methodology</label>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {[
-                            { id: "visual", label: "Visual Integration", desc: "Graphs & Diagrams" },
-                            { id: "auditory", label: "Auditory Processing", desc: "Lecture analysis" },
-                            { id: "group", label: "Collaborative Sync", desc: "Peer matching" },
-                            { id: "solo", label: "Deepwork", desc: "Independent study" },
+                            { id: "visual", label: "I learn by seeing", desc: "Diagrams, charts & visual notes" },
+                            { id: "auditory", label: "I learn by listening", desc: "Explained concepts & discussions" },
+                            { id: "group", label: "I learn with others", desc: "Study groups & peer discussions" },
+                            { id: "solo", label: "I learn on my own", desc: "Quiet time & self-paced study" },
                           ].map((style) => (
                             <button
                               key={style.id}
