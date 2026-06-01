@@ -4,6 +4,7 @@ import DashboardSidebar from "@/components/dashboard/Sidebar";
 import MatchNotification from "@/components/dashboard/MatchNotification";
 import MobileNav from "@/components/dashboard/MobileNav";
 import { GlobalMatchManager } from "@/components/dashboard/GlobalMatchManager";
+import prisma from "@/lib/prisma";
 
 export default async function DashboardLayout({
   children,
@@ -15,6 +16,16 @@ export default async function DashboardLayout({
 
   if (!user) {
     redirect("/login");
+  }
+
+  const prismaUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { role: true },
+  });
+
+  if (prismaUser) {
+    if (prismaUser.role === "TUTOR") redirect("/tutor");
+    if (prismaUser.role === "ADMIN") redirect("/admin");
   }
 
   return (

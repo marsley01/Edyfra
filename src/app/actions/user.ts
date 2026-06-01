@@ -255,28 +255,6 @@ export async function updateUserRole(role: "STUDENT" | "TUTOR") {
   }
 }
 
-<<<<<<< HEAD
-export async function updateUserSettings(settings: Prisma.InputJsonValue) {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Unauthorized");
-
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { settings }
-    });
-
-    revalidatePath("/dashboard/settings");
-    return { success: true };
-  } catch (error) {
-    captureServerError(error, { action: "updateUserSettings" });
-    throw error;
-  }
-}
-
-=======
->>>>>>> origin/main
 export async function updateUserPreferences(prefs: {
   theme?: string;
   accentColor?: string;

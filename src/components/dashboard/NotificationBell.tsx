@@ -3,9 +3,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, CheckCheck, Loader2 } from "lucide-react";
+import { Bell, CheckCheck, Loader2, BellOff, BellRing } from "lucide-react";
 import { getUnreadCount, getNotifications, markAllRead } from "@/app/actions/notifications";
+import { createClient } from "@/utils/supabase/client";
 import { cn } from "@/lib/utils";
+import { urlBase64ToUint8Array } from "@/lib/utils";
 
 interface NotificationItem {
   id: string;
@@ -45,7 +47,19 @@ export function NotificationBell() {
   useEffect(() => {
     fetchUnread();
     const interval = setInterval(fetchUnread, 30000);
-    return () => clearInterval(interval);
+
+    const supabase = createClient();
+    const channel = supabase
+      .channel("notifications")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "Notification" }, () => {
+        fetchUnread();
+      })
+      .subscribe();
+
+    return () => {
+      clearInterval(interval);
+      supabase.removeChannel(channel);
+    };
   }, [fetchUnread]);
 
   useEffect(() => {
@@ -104,15 +118,18 @@ export function NotificationBell() {
             <h3 className="text-xs font-black uppercase tracking-widest text-foreground">
               Notifications
             </h3>
-            {unread > 0 && (
-              <button
-                onClick={handleMarkAllRead}
-                className="flex items-center gap-1 text-[10px] font-bold text-primary hover:text-primary/80 transition-colors"
-              >
-                <CheckCheck className="h-3 w-3" />
-                Mark all read
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {unread > 0 && (
+                <button
+                  onClick={handleMarkAllRead}
+                  className="flex items-center gap-1 text-[10px] font-bold text-primary hover:text-primary/80 transition-colors"
+                >
+                  <CheckCheck className="h-3 w-3" />
+                  Mark all read
+                </button>
+              )}
+              <PushToggle />
+            </div>
           </div>
 
           <div className="max-h-80 overflow-y-auto">
@@ -169,5 +186,74 @@ export function NotificationBell() {
         </div>
       )}
     </div>
+  );
+}
+
+function PushToggle() {
+  const [subscribed, setSubscribed] = useState(false);
+  const [supported, setSupported] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) return;
+    setSupported(true);
+    navigator.serviceWorker.ready.then((reg) =>
+      reg.pushManager.getSubscription().then((sub) => setSubscribed(!!sub))
+    );
+  }, []);
+
+  const toggle = async () => {
+    if (!supported) return;
+    setLoading(true);
+    try {
+      if (subscribed) {
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.getSubscription();
+        if (sub) {
+          const raw = sub.toJSON();
+          await fetch("/api/push/unsubscribe", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ endpoint: raw.endpoint }),
+          });
+          await sub.unsubscribe();
+        }
+        setSubscribed(false);
+      } else {
+        const result = await Notification.requestPermission();
+        if (result !== "granted") return;
+        const reg = await navigator.serviceWorker.ready;
+        const res = await fetch("/api/push/vapid-public-key");
+        const { publicKey } = await res.json();
+        if (!publicKey) return;
+        const existing = await reg.pushManager.getSubscription();
+        if (existing) await existing.unsubscribe();
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(publicKey),
+        });
+        const raw = sub.toJSON();
+        await fetch("/api/push/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ endpoint: raw.endpoint, keys: raw.keys }),
+        });
+        setSubscribed(true);
+      }
+    } catch {}
+    setLoading(false);
+  };
+
+  if (!supported) return null;
+
+  return (
+    <button
+      onClick={toggle}
+      disabled={loading}
+      className={`p-1.5 rounded-lg text-[10px] transition-all ${subscribed ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-primary hover:bg-primary/5"}`}
+      title={subscribed ? "Push notifications on" : "Enable push notifications"}
+    >
+      {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : subscribed ? <BellRing className="h-3.5 w-3.5" /> : <BellOff className="h-3.5 w-3.5" />}
+    </button>
   );
 }

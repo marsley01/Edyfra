@@ -26,9 +26,13 @@ export default function NewsPage() {
   const [publish, setPublish] = useState(false);
 
   const load = async () => {
-    const { getNewsArticles } = await import("@/app/actions/admin-content");
-    const data = await getNewsArticles();
-    setArticles(data);
+    try {
+      const { getNewsArticles } = await import("@/app/actions/admin-content");
+      const data = await getNewsArticles();
+      setArticles(data);
+    } catch {
+      toast.error("Failed to load articles");
+    }
     setLoading(false);
   };
 
@@ -44,18 +48,26 @@ export default function NewsPage() {
 
   const handleCreate = async () => {
     if (!title || !slug || !body) return;
-    const { createNewsArticle } = await import("@/app/actions/admin-content");
-    await createNewsArticle({ title, slug, category, body, coverImage, summary, publish });
-    toast.success(publish ? "Published!" : "Saved as draft");
-    setTitle(""); setSlug(""); setBody(""); setCoverImage(""); setSummary(""); setShowForm(false);
-    await load();
+    try {
+      const { createNewsArticle } = await import("@/app/actions/admin-content");
+      await createNewsArticle({ title, slug, category, body, coverImage, summary, publish });
+      toast.success(publish ? "Published!" : "Saved as draft");
+      setTitle(""); setSlug(""); setBody(""); setCoverImage(""); setSummary(""); setShowForm(false);
+      await load();
+    } catch {
+      toast.error("Failed to create article");
+    }
   };
 
   const handleDelete = async (id: string) => {
-    const { deleteNewsArticle } = await import("@/app/actions/admin-content");
-    await deleteNewsArticle(id);
-    toast.success("Deleted");
-    await load();
+    try {
+      const { deleteNewsArticle } = await import("@/app/actions/admin-content");
+      await deleteNewsArticle(id);
+      toast.success("Deleted");
+      await load();
+    } catch {
+      toast.error("Failed to delete article");
+    }
   };
 
   if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;

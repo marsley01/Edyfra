@@ -8,7 +8,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   LayoutDashboard, Users, GraduationCap, 
   Settings, LogOut, Zap, Calendar, Wallet, Trophy,
-  Menu, X, ChevronLeft, BookOpen, Bell
+  Menu, X, ChevronLeft, BookOpen, Bell, Share2,
+  MessageSquare, LibraryBig, ClipboardList
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -81,6 +82,12 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
 
   const navItems = [
     { href: "/tutor", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/tutor/feed", label: "Community", icon: Share2 },
+    { href: "/tutor/sessions", label: "Sessions", icon: BookOpen },
+    { href: "/tutor/requests", label: "Requests", icon: ClipboardList },
+    { href: "/tutor/schedule", label: "Schedule", icon: Calendar },
+    { href: "/tutor/earnings", label: "Earnings", icon: Wallet },
+    { href: "/tutor/resources", label: "Resources", icon: LibraryBig },
     { href: "/tutor/notifications", label: "Notifications", icon: Bell },
     { href: "/tutor/settings", label: "Settings", icon: Settings },
   ];

@@ -75,24 +75,32 @@ export default function AdminBookingsPage() {
 
   const handleConfirm = async (id: string) => {
     setActionLoading(id + "-confirm");
-    const res = await adminConfirmBooking(id);
-    if ((res as any).success) {
-      toast.success("Booking confirmed");
-      fetchBookings(activeFilter);
-    } else {
-      toast.error((res as any).error || "Failed");
+    try {
+      const res = await adminConfirmBooking(id);
+      if ((res as any).success) {
+        toast.success("Booking confirmed");
+        fetchBookings(activeFilter);
+      } else {
+        toast.error((res as any).error || "Failed");
+      }
+    } catch {
+      toast.error("Failed to confirm booking");
     }
     setActionLoading(null);
   };
 
   const handleCancel = async (id: string) => {
     setActionLoading(id + "-cancel");
-    const res = await adminCancelBooking(id, "Admin override");
-    if ((res as any).success) {
-      toast.success("Booking cancelled");
-      fetchBookings(activeFilter);
-    } else {
-      toast.error((res as any).error || "Failed");
+    try {
+      const res = await adminCancelBooking(id, "Admin override");
+      if ((res as any).success) {
+        toast.success("Booking cancelled");
+        fetchBookings(activeFilter);
+      } else {
+        toast.error((res as any).error || "Failed");
+      }
+    } catch {
+      toast.error("Failed to cancel booking");
     }
     setActionLoading(null);
   };

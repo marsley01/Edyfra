@@ -131,7 +131,7 @@ export default function InstitutionLogin() {
 
           <div className="mt-6 text-center">
              <p className="text-sm text-muted-foreground">
-               Not registered yet? <Link href="/institution" className="text-indigo-400 font-medium hover:text-indigo-300">Contact sales for onboarding</Link>
+                Not registered yet? <Link href="/institution/apply" className="text-indigo-400 font-medium hover:text-indigo-300">Apply for institution access</Link>
              </p>
           </div>
         </div>

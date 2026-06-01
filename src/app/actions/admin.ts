@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { TUTOR_CONFIG } from "@/lib/config";
 import { isFounderEmail } from "@/utils/admin-guard";
 import { notifyUser } from "@/app/actions/notifications";
+import { getCached, TTL } from "@/lib/cache";
 
 export type AdminGlobalSettings = {
   googleAiKey?: string;
@@ -648,8 +649,6 @@ export async function bootstrapSeeds() {
 }
 
 // --- DASHBOARD METRICS ---
-
-import { getCached, TTL } from "@/lib/cache";
 
 export async function getAdminDashboardMetrics() {
   return getCached("admin:dashboard:metrics", TTL.PLATFORM_STATS, async () => {

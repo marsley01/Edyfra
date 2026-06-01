@@ -44,11 +44,7 @@ export async function GET(request: Request) {
         `;
 
         try {
-<<<<<<< HEAD
-          const aiData = await AIService.generateJSON(prompt) as any;
-=======
           const aiData = await AIService.generateJSON<ChallengePayload | null>(prompt);
->>>>>>> origin/main
           
           if (!aiData || !aiData.question) continue;
 

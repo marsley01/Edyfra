@@ -22,9 +22,13 @@ export default function AnnouncementsPage() {
   const [showForm, setShowForm] = useState(false);
 
   const load = async () => {
-    const { getAnnouncements } = await import("@/app/actions/admin-content");
-    const data = await getAnnouncements();
-    setAnnouncements(data);
+    try {
+      const { getAnnouncements } = await import("@/app/actions/admin-content");
+      const data = await getAnnouncements();
+      setAnnouncements(data);
+    } catch {
+      toast.error("Failed to load announcements");
+    }
     setLoading(false);
   };
 
@@ -40,18 +44,26 @@ export default function AnnouncementsPage() {
 
   const handleCreate = async () => {
     if (!title || !body) return;
-    const { createAnnouncement } = await import("@/app/actions/admin-content");
-    await createAnnouncement({ title, body, targetAudience: target });
-    toast.success("Announcement published");
-    setTitle(""); setBody(""); setShowForm(false);
-    await load();
+    try {
+      const { createAnnouncement } = await import("@/app/actions/admin-content");
+      await createAnnouncement({ title, body, targetAudience: target });
+      toast.success("Announcement published");
+      setTitle(""); setBody(""); setShowForm(false);
+      await load();
+    } catch {
+      toast.error("Failed to create announcement");
+    }
   };
 
   const handleDelete = async (id: string) => {
-    const { deleteAnnouncement } = await import("@/app/actions/admin-content");
-    await deleteAnnouncement(id);
-    toast.success("Deleted");
-    await load();
+    try {
+      const { deleteAnnouncement } = await import("@/app/actions/admin-content");
+      await deleteAnnouncement(id);
+      toast.success("Deleted");
+      await load();
+    } catch {
+      toast.error("Failed to delete announcement");
+    }
   };
 
   if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;

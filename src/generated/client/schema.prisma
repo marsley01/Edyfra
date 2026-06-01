@@ -10,40 +10,36 @@ datasource db {
 }
 
 model User {
-  id                       String                  @id @default(cuid())
-  email                    String                  @unique
-  phone                    String?                 @unique
+  id                       String                   @id @default(cuid())
+  email                    String                   @unique
+  phone                    String?                  @unique
   name                     String
   avatar                   String?
   gender                   Gender?
-  role                     Role                    @default(STUDENT)
+  role                     Role                     @default(STUDENT)
   educationLevel           EduLevel?
   formYear                 Int?
   county                   String
-  points                   Int                     @default(0)
-  tier                     Tier                    @default(BRONZE)
-  streakDays               Int                     @default(0)
+  points                   Int                      @default(0)
+  tier                     Tier                     @default(BRONZE)
+  streakDays               Int                      @default(0)
   lastActiveAt             DateTime?
-  isUnder18                Boolean                 @default(false)
-  strikes                  Int                     @default(0)
-  createdAt                DateTime                @default(now())
+  isUnder18                Boolean                  @default(false)
+  strikes                  Int                      @default(0)
+  createdAt                DateTime                 @default(now())
   bio                      String?
-<<<<<<< HEAD
-  settings                 Json                    @default("{\"theme\": \"system\", \"fontSize\": \"medium\", \"accentColor\": \"#0071e3\"}")
-=======
   preferences              UserPreferences?
->>>>>>> origin/main
-  curriculum               String?                 @default("8-4-4")
-  dailyMessageCount        Int                     @default(0)
-  dailySearchCount         Int                     @default(0)
+  curriculum               String?                  @default("8-4-4")
+  dailyMessageCount        Int                      @default(0)
+  dailySearchCount         Int                      @default(0)
   lastCountReset           DateTime?
   subscriptionTier         String?
-  banned                   Boolean                 @default(false)
-  suspended                Boolean                 @default(false)
-  plan                     String                  @default("free")
-  planStartedAt            DateTime?               @map("plan_started_at")
-  planExpiresAt            DateTime?               @map("plan_expires_at")
-  planBillingCycle         String?                 @map("plan_billing_cycle")
+  banned                   Boolean                  @default(false)
+  suspended                Boolean                  @default(false)
+  plan                     String                   @default("free")
+  planStartedAt            DateTime?                @map("plan_started_at")
+  planExpiresAt            DateTime?                @map("plan_expires_at")
+  planBillingCycle         String?                  @map("plan_billing_cycle")
   achievements             Achievement[]
   comments                 Comment[]
   challenges               DailyChallengeAttempt[]
@@ -51,18 +47,18 @@ model User {
   messages                 Message[]
   notifications            Notification[]
   postLikes                PostLike[]
-  reviewsRecv              Review[]                @relation("Reviewee")
-  reviewsGiven             Review[]                @relation("Reviewer")
-  sessionsAsTutor          Session[]               @relation("TutorSessions")
-  sessionsAsStudent        Session[]               @relation("StudentSessions")
+  reviewsRecv              Review[]                 @relation("Reviewee")
+  reviewsGiven             Review[]                 @relation("Reviewer")
+  sessionsAsTutor          Session[]                @relation("TutorSessions")
+  sessionsAsStudent        Session[]                @relation("StudentSessions")
   studentProfile           StudentProfile?
   tutorApplication         TutorApplication?
   tutorProfile             TutorProfile?
   payments                 Payment[]
   resourcePurchases        ResourcePurchase[]
   resources                Resource[]
-  sessionPaymentsAsStudent SessionPayment[]        @relation("StudentSessionPayments")
-  sessionPaymentsAsTutor   SessionPayment[]        @relation("TutorSessionPayments")
+  sessionPaymentsAsStudent SessionPayment[]         @relation("StudentSessionPayments")
+  sessionPaymentsAsTutor   SessionPayment[]         @relation("TutorSessionPayments")
   payouts                  TutorPayout[]
   matchRequests            MatchRequest[]
   newsArticles             NewsArticle[]
@@ -74,12 +70,12 @@ model User {
   uploadedDocuments        InstitutionDocument[]
   institutionStudent       InstitutionStudent?
   institutionTutors        InstitutionTutor[]
-  tutorAvailabilities      TutorAvailability[]     @relation("TutorAvailability")
-  studentBookings          Booking[]               @relation("StudentBookings")
-  tutorBookings            Booking[]               @relation("TutorBookings")
+  tutorAvailabilities      TutorAvailability[]      @relation("TutorAvailability")
+  studentBookings          Booking[]                @relation("StudentBookings")
+  tutorBookings            Booking[]                @relation("TutorBookings")
   bookingReminders         BookingReminder[]
-  sessionFlags             SessionFlag[]           @relation("TutorSessionFlags")
-  scheduledNotifications   ScheduledNotification[]
+  sessionFlags             SessionFlag[]            @relation("TutorSessionFlags")
+  reviewedApplications     InstitutionApplication[]
 
   @@index([role])
 }
@@ -624,15 +620,15 @@ model Institution {
   updatedAt      DateTime @updatedAt
   isActive       Boolean  @default(true)
 
-  staff               InstitutionStaff[]
-  students            InstitutionStudent[]
-  tutors              InstitutionTutor[]
-  members             InstitutionMember[]
-  documents           InstitutionDocument[]
-  limit               InstitutionLimit?
-  studentResults      StudentResult[]
-  coachingAssignments CoachingAssignment[]
-  processingJobs      ProcessingJob[]
+  staff          InstitutionStaff[]
+  students       InstitutionStudent[]
+  tutors         InstitutionTutor[]
+  members        InstitutionMember[]
+  documents      InstitutionDocument[]
+  limits         InstitutionLimit[]
+  assignments    CoachingAssignment[]
+  studentResults StudentResult[]
+  processingJobs ProcessingJob[]
 }
 
 model InstitutionStaff {
@@ -655,10 +651,8 @@ model InstitutionStudent {
   classYear     String?
   createdAt     DateTime @default(now())
 
-  institution         Institution          @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  results             StudentResult[]
-  coachingAssignments CoachingAssignment[]
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model InstitutionTutor {
@@ -668,9 +662,8 @@ model InstitutionTutor {
   status        String   @default("ACTIVE")
   createdAt     DateTime @default(now())
 
-  institution         Institution          @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  coachingAssignments CoachingAssignment[]
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([institutionId, userId])
 }
@@ -705,6 +698,85 @@ model InstitutionDocument {
   uploader    User        @relation(fields: [uploadedBy], references: [id])
 
   @@map("institution_documents")
+}
+
+model InstitutionLimit {
+  id             String   @id @default(cuid())
+  institutionId  String   @unique
+  maxStudents    Int      @default(200)
+  maxAssignments Int      @default(5)
+  maxTermsStored Int      @default(3)
+  updatedAt      DateTime @updatedAt
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  @@map("institution_limits")
+}
+
+model CoachingAssignment {
+  id            String   @id @default(cuid())
+  institutionId String
+  studentId     String
+  tutorUserId   String?
+  subject       String?
+  status        String   @default("active")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  @@map("coaching_assignments")
+}
+
+model StudentResult {
+  id            String   @id @default(cuid())
+  institutionId String
+  studentId     String
+  subject       String?
+  score         Float?
+  grade         String?
+  term          String
+  year          Int
+  createdAt     DateTime @default(now())
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  @@map("student_results")
+}
+
+model ProcessingJob {
+  id            String    @id @default(cuid())
+  institutionId String
+  filePath      String
+  status        String    @default("pending")
+  error         String?
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  @@map("processing_jobs")
+}
+
+model InstitutionApplication {
+  id              String    @id @default(cuid())
+  name            String
+  email           String
+  institutionName String    @map("institution_name")
+  phone           String?
+  message         String?
+  status          AppStatus @default(PENDING)
+  adminNotes      String?   @map("admin_notes")
+  reviewedById    String?   @map("reviewed_by_id")
+  reviewedAt      DateTime? @map("reviewed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  reviewedBy User? @relation(fields: [reviewedById], references: [id])
+
+  @@map("institution_applications")
 }
 
 model TutorAvailability {
@@ -777,80 +849,6 @@ model SessionFlag {
   @@map("session_flags")
 }
 
-<<<<<<< HEAD
-model InstitutionLimit {
-  id             String   @id @default(cuid())
-  institutionId  String   @unique @map("institution_id")
-  maxStudents    Int      @default(200) @map("max_students")
-  maxAssignments Int      @default(5) @map("max_assignments")
-  maxTermsStored Int      @default(3) @map("max_terms_stored")
-  tier           String   @default("free") // free/paid
-  updatedAt      DateTime @updatedAt @map("updated_at")
-
-  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-
-  @@map("institution_limits")
-}
-
-model StudentResult {
-  id            String   @id @default(cuid())
-  studentId     String   @map("student_id")
-  institutionId String   @map("institution_id")
-  term          String
-  year          Int
-  data          Json // the actual result payload
-  createdAt     DateTime @default(now()) @map("created_at")
-
-  institution Institution        @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-  student     InstitutionStudent @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@map("student_results")
-}
-
-model CoachingAssignment {
-  id            String   @id @default(cuid())
-  institutionId String   @map("institution_id")
-  studentId     String   @map("student_id")
-  tutorId       String   @map("tutor_id")
-  status        String   @default("active") // active/completed
-  createdAt     DateTime @default(now()) @map("created_at")
-
-  institution Institution        @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-  student     InstitutionStudent @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  tutor       InstitutionTutor   @relation(fields: [tutorId], references: [id], onDelete: Cascade)
-
-  @@map("coaching_assignments")
-}
-
-model ProcessingJob {
-  id            String    @id @default(cuid())
-  institutionId String    @map("institution_id")
-  filePath      String    @map("file_path")
-  status        String    @default("pending") // pending/processing/completed/failed
-  error         String?
-  createdAt     DateTime  @default(now()) @map("created_at")
-  startedAt     DateTime? @map("started_at")
-  completedAt   DateTime? @map("completed_at")
-
-  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-
-  @@map("processing_jobs")
-}
-
-model ScheduledNotification {
-  id           String    @id @default(cuid())
-  userId       String    @map("user_id")
-  type         String
-  title        String
-  body         String
-  scheduledFor DateTime  @map("scheduled_for")
-  sentAt       DateTime? @map("sent_at")
-  createdAt    DateTime  @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("scheduled_notifications")
-=======
 enum Gender {
   MALE
   FEMALE
@@ -923,5 +921,4 @@ enum resource_status {
   pending
   approved
   rejected
->>>>>>> origin/main
 }

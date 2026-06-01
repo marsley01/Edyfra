@@ -36,10 +36,14 @@ export default function ModerationPage() {
   }, [router]);
 
   const handleAction = async (reportId: string, action: "warn" | "suspend" | "ban") => {
-    const { actionReport } = await import("@/app/actions/admin-content");
-    await actionReport(reportId, action);
-    toast.success(`User ${action}ed`);
-    setReports((prev) => prev.filter((r) => r.id !== reportId));
+    try {
+      const { actionReport } = await import("@/app/actions/admin-content");
+      await actionReport(reportId, action);
+      toast.success(`User ${action}ed`);
+      setReports((prev) => prev.filter((r) => r.id !== reportId));
+    } catch {
+      toast.error("Failed to take action on report");
+    }
   };
 
   if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
@@ -99,7 +103,7 @@ export default function ModerationPage() {
                       <Button onClick={() => handleAction(report.id, "warn")} variant="outline" size="sm" className="rounded-xl">Warn</Button>
                       <Button onClick={() => handleAction(report.id, "suspend")} variant="outline" size="sm" className="rounded-xl text-amber-500">Suspend</Button>
                       <Button onClick={() => handleAction(report.id, "ban")} size="sm" className="rounded-xl bg-destructive text-destructive-foreground">Ban</Button>
-                      <Button onClick={async () => { const { dismissReport } = await import("@/app/actions/admin-content"); await dismissReport(report.id); setReports((prev) => prev.filter((r) => r.id !== report.id)); toast.success("Dismissed"); }} variant="ghost" size="sm" className="rounded-xl">Dismiss</Button>
+                      <Button onClick={async () => { try { const { dismissReport } = await import("@/app/actions/admin-content"); await dismissReport(report.id); setReports((prev) => prev.filter((r) => r.id !== report.id)); toast.success("Dismissed"); } catch { toast.error("Failed to dismiss report"); } }} variant="ghost" size="sm" className="rounded-xl">Dismiss</Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -142,18 +146,22 @@ export default function ModerationPage() {
                   <div className="flex items-center gap-2">
                     {u.strikes >= 3 && !u.suspended && (
                       <Button size="sm" variant="outline" className="rounded-xl text-amber-500 text-[10px]" onClick={async () => {
-                        const { actionReport } = await import("@/app/actions/admin-content");
-                        await actionReport("bulk_" + u.id, "suspend");
-                        toast.success("Suspended");
+                        try {
+                          const { actionReport } = await import("@/app/actions/admin-content");
+                          await actionReport("bulk_" + u.id, "suspend");
+                          toast.success("Suspended");
+                        } catch { toast.error("Failed to suspend"); }
                       }}>
                         Suspend
                       </Button>
                     )}
                     {u.strikes >= 5 && !u.banned && (
                       <Button size="sm" className="rounded-xl bg-destructive text-destructive-foreground text-[10px]" onClick={async () => {
-                        const { actionReport } = await import("@/app/actions/admin-content");
-                        await actionReport("bulk_" + u.id, "ban");
-                        toast.success("Banned");
+                        try {
+                          const { actionReport } = await import("@/app/actions/admin-content");
+                          await actionReport("bulk_" + u.id, "ban");
+                          toast.success("Banned");
+                        } catch { toast.error("Failed to ban"); }
                       }}>
                         <Ban className="h-3 w-3 mr-1" /> Ban
                       </Button>

@@ -1,6 +1,8 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { RSSService, RSSItem } from "@/utils/rss-service";
+import { getCached, TTL } from "@/lib/cache";
 
 export interface NewsArticle {
   id: string;
@@ -15,10 +17,6 @@ export interface NewsArticle {
   reading_time?: string;
   isDraft?: boolean;
 }
-
-import { RSSService, RSSItem } from "@/utils/rss-service";
-
-import { getCached, TTL } from "@/lib/cache";
 
 export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
   return getCached(`news:latest:${limit}`, TTL.KNOWLEDGE_FEED, async () => {

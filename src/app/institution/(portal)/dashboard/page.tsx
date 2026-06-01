@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 import {
   BarChart3,
@@ -17,16 +18,12 @@ import {
   Trash2,
   Search,
   Shield,
-  Mail,
-  MapPin,
-  Globe,
-  Phone,
-  Save,
   Loader2,
   CircleCheck,
   Clock,
   X,
   AlertCircle,
+  ExternalLink,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -56,14 +53,14 @@ import {
 } from "@/components/ui/dialog";
 import {
   getInstitutionDashboard,
-  getInstitutionMembers,
-  getInstitutionDocuments,
-  updateInstitutionProfile,
   updateMemberRole,
   removeMember,
+  getInstitutionDocuments,
   uploadInstitutionDocument,
   deleteInstitutionDocument,
+  getInstitutionMembers,
 } from "@/app/actions/institution";
+import { createClient } from "@/utils/supabase/client";
 import { getUserInstitution } from "@/app/actions/institution-data";
 
 type DashboardData = {
@@ -160,17 +157,6 @@ export default function InstitutionDashboardPage() {
   const [documents, setDocuments] = useState<DocumentType[]>([]);
   const [docsLoading, setDocsLoading] = useState(false);
 
-  const [profileForm, setProfileForm] = useState({
-    name: "",
-    description: "",
-    location: "",
-    email: "",
-    phone: "",
-    website: "",
-    allowedDomains: "",
-  });
-  const [saving, setSaving] = useState(false);
-
   const loadDashboard = useCallback(async () => {
     setLoading(true);
     try {
@@ -185,15 +171,6 @@ export default function InstitutionDashboardPage() {
       const result = await getInstitutionDashboard(instId);
       if (result) {
         setData(result as DashboardData);
-        setProfileForm({
-          name: result.institution.name,
-          description: result.institution.description ?? "",
-          location: result.institution.location ?? "",
-          email: result.institution.email ?? "",
-          phone: result.institution.phone ?? "",
-          website: result.institution.website ?? "",
-          allowedDomains: result.institution.allowedDomains.join(", "),
-        });
       }
     } catch {
       toast.error("Failed to load institution dashboard");
@@ -243,31 +220,6 @@ export default function InstitutionDashboardPage() {
     if (activeTab === "knowledge" && institutionId) loadDocuments(institutionId);
   }, [activeTab, loadDocuments, institutionId]);
 
-  async function handleSaveProfile() {
-    if (!institutionId) return;
-    setSaving(true);
-    try {
-      await updateInstitutionProfile(institutionId, {
-        name: profileForm.name,
-        description: profileForm.description,
-        location: profileForm.location,
-        email: profileForm.email,
-        phone: profileForm.phone,
-        website: profileForm.website,
-        allowedDomains: profileForm.allowedDomains
-          .split(",")
-          .map((d) => d.trim())
-          .filter(Boolean),
-      });
-      toast.success("Institution profile updated");
-      loadDashboard();
-    } catch {
-      toast.error("Failed to update profile");
-    } finally {
-      setSaving(false);
-    }
-  }
-
   async function handleRoleChange(memberId: string, role: "INSTITUTION_ADMIN" | "DEPARTMENT_HEAD" | "INSTRUCTOR" | "STUDENT") {
     try {
       await updateMemberRole(memberId, role);
@@ -298,10 +250,25 @@ export default function InstitutionDashboardPage() {
       return;
     }
     try {
+      const supabase = createClient();
+      const filePath = `institutions/${institutionId}/${Date.now()}_${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from("institution-uploads")
+        .upload(filePath, file);
+
+      if (uploadError) {
+        toast.error("Failed to upload file to storage");
+        return;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("institution-uploads")
+        .getPublicUrl(filePath);
+
       await uploadInstitutionDocument(institutionId, {
         title,
         description: description || undefined,
-        filePath: file.name,
+        filePath: publicUrl,
         fileType: file.type,
         fileSize: file.size,
         uploadedBy: "system",
@@ -393,20 +360,21 @@ export default function InstitutionDashboardPage() {
             AI Knowledge Base
           </TabsTrigger>
           <TabsTrigger
-            value="roster"
-            className="rounded-none border-b-2 border-transparent px-5 py-3 text-sm font-medium data-active:border-[#3730A3] data-active:text-[#3730A3] data-active:bg-transparent data-active:shadow-none"
-          >
-            <Users className="mr-2 h-4 w-4" />
-            Roster & Roles
-          </TabsTrigger>
-          <TabsTrigger
-            value="settings"
-            className="rounded-none border-b-2 border-transparent px-5 py-3 text-sm font-medium data-active:border-[#3730A3] data-active:text-[#3730A3] data-active:bg-transparent data-active:shadow-none"
-          >
-            <Settings className="mr-2 h-4 w-4" />
-            Branding & Settings
-          </TabsTrigger>
-        </TabsList>
+              value="roster"
+              className="rounded-none border-b-2 border-transparent px-5 py-3 text-sm font-medium data-active:border-[#3730A3] data-active:text-[#3730A3] data-active:bg-transparent data-active:shadow-none"
+            >
+              <Users className="mr-2 h-4 w-4" />
+              Roster & Roles
+            </TabsTrigger>
+            <Link
+              href="/institution/settings"
+              className="inline-flex items-center gap-2 rounded-none border-b-2 border-transparent px-5 py-3 text-sm font-medium text-gray-500 hover:text-[#3730A3] transition-colors"
+            >
+              <Settings className="h-4 w-4" />
+              Branding & Settings
+              <ExternalLink className="h-3 w-3 text-gray-300" />
+            </Link>
+          </TabsList>
 
         <TabsContent value="insights" className="mt-6 space-y-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -744,121 +712,6 @@ export default function InstitutionDashboardPage() {
                   <Shield className="h-3 w-3" />
                   Tenant boundary enforced
                 </span>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="settings" className="mt-6 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-gray-400" />
-                Institution Profile
-              </CardTitle>
-              <CardDescription>Manage your institution&apos;s public identity and contact details</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-5">
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                  <div className="space-y-2 sm:col-span-2">
-                    <label className="text-xs font-medium text-gray-500">Institution Name</label>
-                    <Input
-                      value={profileForm.name}
-                      onChange={(e) => setProfileForm((p) => ({ ...p, name: e.target.value }))}
-                      className="border-gray-200"
-                    />
-                  </div>
-                  <div className="space-y-2 sm:col-span-2">
-                    <label className="text-xs font-medium text-gray-500">Description</label>
-                    <Textarea
-                      value={profileForm.description}
-                      onChange={(e) => setProfileForm((p) => ({ ...p, description: e.target.value }))}
-                      className="border-gray-200"
-                      rows={3}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium text-gray-500">
-                      <MapPin className="mr-1 inline h-3 w-3" />
-                      Location
-                    </label>
-                    <Input
-                      value={profileForm.location}
-                      onChange={(e) => setProfileForm((p) => ({ ...p, location: e.target.value }))}
-                      placeholder="Nairobi, Kenya"
-                      className="border-gray-200"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium text-gray-500">
-                      <Mail className="mr-1 inline h-3 w-3" />
-                      Contact Email
-                    </label>
-                    <Input
-                      value={profileForm.email}
-                      onChange={(e) => setProfileForm((p) => ({ ...p, email: e.target.value }))}
-                      type="email"
-                      placeholder="admin@school.edu"
-                      className="border-gray-200"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium text-gray-500">
-                      <Phone className="mr-1 inline h-3 w-3" />
-                      Phone Number
-                    </label>
-                    <Input
-                      value={profileForm.phone}
-                      onChange={(e) => setProfileForm((p) => ({ ...p, phone: e.target.value }))}
-                      placeholder="+254 700 000 000"
-                      className="border-gray-200"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium text-gray-500">
-                      <Globe className="mr-1 inline h-3 w-3" />
-                      Website
-                    </label>
-                    <Input
-                      value={profileForm.website}
-                      onChange={(e) => setProfileForm((p) => ({ ...p, website: e.target.value }))}
-                      placeholder="https://school.edu"
-                      className="border-gray-200"
-                    />
-                  </div>
-                  <div className="space-y-2 sm:col-span-2">
-                    <label className="text-xs font-medium text-gray-500">
-                      Allowed Email Domains
-                    </label>
-                    <Input
-                      value={profileForm.allowedDomains}
-                      onChange={(e) => setProfileForm((p) => ({ ...p, allowedDomains: e.target.value }))}
-                      placeholder="@school.edu, @student.school.edu"
-                      className="border-gray-200"
-                    />
-                    <p className="text-xs text-gray-400">
-                      Comma-separated email domains that can register under this institution.
-                    </p>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="flex items-center justify-end gap-3">
-                  <Button
-                    onClick={handleSaveProfile}
-                    disabled={saving}
-                    className="bg-[#3730A3] hover:bg-[#3730A3]/90"
-                  >
-                    {saving ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Save className="mr-2 h-4 w-4" />
-                    )}
-                    Save Changes
-                  </Button>
-                </div>
               </div>
             </CardContent>
           </Card>

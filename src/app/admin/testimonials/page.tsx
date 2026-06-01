@@ -15,9 +15,13 @@ export default function TestimonialsPage() {
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
-    const { getTestimonials } = await import("@/app/actions/admin-content");
-    const data = await getTestimonials();
-    setTestimonials(data);
+    try {
+      const { getTestimonials } = await import("@/app/actions/admin-content");
+      const data = await getTestimonials();
+      setTestimonials(data);
+    } catch {
+      toast.error("Failed to load testimonials");
+    }
     setLoading(false);
   };
 
@@ -32,17 +36,25 @@ export default function TestimonialsPage() {
   }, [router]);
 
   const handleApprove = async (id: string) => {
-    const { approveTestimonial } = await import("@/app/actions/admin-content");
-    await approveTestimonial(id);
-    toast.success("Approved");
-    await load();
+    try {
+      const { approveTestimonial } = await import("@/app/actions/admin-content");
+      await approveTestimonial(id);
+      toast.success("Approved");
+      await load();
+    } catch {
+      toast.error("Failed to approve testimonial");
+    }
   };
 
   const handleReject = async (id: string) => {
-    const { rejectTestimonial } = await import("@/app/actions/admin-content");
-    await rejectTestimonial(id);
-    toast.success("Rejected");
-    await load();
+    try {
+      const { rejectTestimonial } = await import("@/app/actions/admin-content");
+      await rejectTestimonial(id);
+      toast.success("Rejected");
+      await load();
+    } catch {
+      toast.error("Failed to reject testimonial");
+    }
   };
 
   if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;

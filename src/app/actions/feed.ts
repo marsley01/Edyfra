@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import { notifyUser } from "@/app/actions/notifications";
 
 export async function createPost(content: string, subject?: string, image?: string) {
   const supabase = await createClient();
@@ -79,28 +80,38 @@ export async function likePost(postId: string) {
   });
 
   if (existingLike) {
-    
     await prisma.postLike.delete({
       where: { id: existingLike.id }
     });
-    
     await prisma.feedPost.update({
       where: { id: postId },
       data: { likes: { decrement: 1 } }
     });
   } else {
-    
     await prisma.postLike.create({
-      data: {
-        postId,
-        userId: user.id
-      }
+      data: { postId, userId: user.id }
     });
-    
     await prisma.feedPost.update({
       where: { id: postId },
       data: { likes: { increment: 1 } }
     });
+
+    const post = await prisma.feedPost.findUnique({
+      where: { id: postId },
+      select: { userId: true, content: true }
+    });
+    if (post && post.userId !== user.id) {
+      const liker = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { name: true }
+      });
+      await notifyUser(post.userId, {
+        type: "NEW_MESSAGE",
+        title: "New Like",
+        body: `${liker?.name || "Someone"} liked your post: "${post.content.slice(0, 80)}${post.content.length > 80 ? "..." : ""}"`,
+        actionUrl: "/dashboard/feed",
+      });
+    }
   }
 
   revalidatePath("/dashboard/feed");
@@ -112,13 +123,27 @@ export async function addComment(postId: string, content: string) {
   if (!user) throw new Error("Unauthorized");
 
   
-  await prisma.comment.create({
-    data: {
-      postId,
-      userId: user.id,
-      content
-    }
+  const post = await prisma.feedPost.findUnique({
+    where: { id: postId },
+    select: { userId: true }
   });
+
+  await prisma.comment.create({
+    data: { postId, userId: user.id, content }
+  });
+
+  if (post && post.userId !== user.id) {
+    const commenter = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { name: true }
+    });
+    await notifyUser(post.userId, {
+      type: "NEW_MESSAGE",
+      title: "New Comment",
+      body: `${commenter?.name || "Someone"} commented on your post: "${content.slice(0, 80)}${content.length > 80 ? "..." : ""}"`,
+      actionUrl: "/dashboard/feed",
+    });
+  }
 
   revalidatePath("/dashboard/feed");
 }

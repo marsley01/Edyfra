@@ -29,36 +29,48 @@ export default function AdminResourcesPage() {
   useEffect(() => { load(); }, [pendingOnly]);
 
   const handleApprove = async (id: string) => {
-    const { approveResource } = await import("@/app/actions/admin");
-    const result = await approveResource(id);
-    if (result.success) {
-      toast.success("Resource approved");
-      setResources((prev) => prev.filter((r) => r.id !== id));
-    } else {
-      toast.error(result.error || "Failed to approve");
+    try {
+      const { approveResource } = await import("@/app/actions/admin");
+      const result = await approveResource(id);
+      if (result.success) {
+        toast.success("Resource approved");
+        setResources((prev) => prev.filter((r) => r.id !== id));
+      } else {
+        toast.error(result.error || "Failed to approve");
+      }
+    } catch {
+      toast.error("Failed to approve resource");
     }
   };
 
   const handleReject = async (id: string) => {
-    const { rejectResource } = await import("@/app/actions/admin");
-    const result = await rejectResource(id);
-    if (result.success) {
-      toast.success("Resource rejected");
-      setResources((prev) => prev.filter((r) => r.id !== id));
-    } else {
-      toast.error(result.error || "Failed to reject");
+    try {
+      const { rejectResource } = await import("@/app/actions/admin");
+      const result = await rejectResource(id);
+      if (result.success) {
+        toast.success("Resource rejected");
+        setResources((prev) => prev.filter((r) => r.id !== id));
+      } else {
+        toast.error(result.error || "Failed to reject");
+      }
+    } catch {
+      toast.error("Failed to reject resource");
     }
   };
 
   const handleDelete = async (id: string, title: string) => {
     if (!confirm(`Delete "${title}" permanently? This cannot be undone.`)) return;
-    const { deleteResource } = await import("@/app/actions/admin-content");
-    const result = await deleteResource(id);
-    if (result.success) {
-      toast.success("Resource deleted");
-      setResources((prev) => prev.filter((r) => r.id !== id));
-    } else {
-      toast.error(result.error || "Failed to delete resource");
+    try {
+      const { deleteResource } = await import("@/app/actions/admin-content");
+      const result = await deleteResource(id);
+      if (result.success) {
+        toast.success("Resource deleted");
+        setResources((prev) => prev.filter((r) => r.id !== id));
+      } else {
+        toast.error(result.error || "Failed to delete resource");
+      }
+    } catch {
+      toast.error("Failed to delete resource");
     }
   };
 

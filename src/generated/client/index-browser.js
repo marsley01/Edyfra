@@ -648,6 +648,65 @@ exports.Prisma.InstitutionDocumentScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.InstitutionLimitScalarFieldEnum = {
+  id: 'id',
+  institutionId: 'institutionId',
+  maxStudents: 'maxStudents',
+  maxAssignments: 'maxAssignments',
+  maxTermsStored: 'maxTermsStored',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CoachingAssignmentScalarFieldEnum = {
+  id: 'id',
+  institutionId: 'institutionId',
+  studentId: 'studentId',
+  tutorUserId: 'tutorUserId',
+  subject: 'subject',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.StudentResultScalarFieldEnum = {
+  id: 'id',
+  institutionId: 'institutionId',
+  studentId: 'studentId',
+  subject: 'subject',
+  score: 'score',
+  grade: 'grade',
+  term: 'term',
+  year: 'year',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ProcessingJobScalarFieldEnum = {
+  id: 'id',
+  institutionId: 'institutionId',
+  filePath: 'filePath',
+  status: 'status',
+  error: 'error',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.InstitutionApplicationScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  institutionName: 'institutionName',
+  phone: 'phone',
+  message: 'message',
+  status: 'status',
+  adminNotes: 'adminNotes',
+  reviewedById: 'reviewedById',
+  reviewedAt: 'reviewedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.TutorAvailabilityScalarFieldEnum = {
   id: 'id',
   tutorId: 'tutorId',
@@ -694,57 +753,6 @@ exports.Prisma.SessionFlagScalarFieldEnum = {
   tutorId: 'tutorId',
   flagType: 'flagType',
   bookingId: 'bookingId',
-  createdAt: 'createdAt'
-};
-
-exports.Prisma.InstitutionLimitScalarFieldEnum = {
-  id: 'id',
-  institutionId: 'institutionId',
-  maxStudents: 'maxStudents',
-  maxAssignments: 'maxAssignments',
-  maxTermsStored: 'maxTermsStored',
-  tier: 'tier',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.StudentResultScalarFieldEnum = {
-  id: 'id',
-  studentId: 'studentId',
-  institutionId: 'institutionId',
-  term: 'term',
-  year: 'year',
-  data: 'data',
-  createdAt: 'createdAt'
-};
-
-exports.Prisma.CoachingAssignmentScalarFieldEnum = {
-  id: 'id',
-  institutionId: 'institutionId',
-  studentId: 'studentId',
-  tutorId: 'tutorId',
-  status: 'status',
-  createdAt: 'createdAt'
-};
-
-exports.Prisma.ProcessingJobScalarFieldEnum = {
-  id: 'id',
-  institutionId: 'institutionId',
-  filePath: 'filePath',
-  status: 'status',
-  error: 'error',
-  createdAt: 'createdAt',
-  startedAt: 'startedAt',
-  completedAt: 'completedAt'
-};
-
-exports.Prisma.ScheduledNotificationScalarFieldEnum = {
-  id: 'id',
-  userId: 'userId',
-  type: 'type',
-  title: 'title',
-  body: 'body',
-  scheduledFor: 'scheduledFor',
-  sentAt: 'sentAt',
   createdAt: 'createdAt'
 };
 
@@ -873,15 +881,15 @@ exports.Prisma.ModelName = {
   InstitutionTutor: 'InstitutionTutor',
   InstitutionMember: 'InstitutionMember',
   InstitutionDocument: 'InstitutionDocument',
+  InstitutionLimit: 'InstitutionLimit',
+  CoachingAssignment: 'CoachingAssignment',
+  StudentResult: 'StudentResult',
+  ProcessingJob: 'ProcessingJob',
+  InstitutionApplication: 'InstitutionApplication',
   TutorAvailability: 'TutorAvailability',
   Booking: 'Booking',
   BookingReminder: 'BookingReminder',
-  SessionFlag: 'SessionFlag',
-  InstitutionLimit: 'InstitutionLimit',
-  StudentResult: 'StudentResult',
-  CoachingAssignment: 'CoachingAssignment',
-  ProcessingJob: 'ProcessingJob',
-  ScheduledNotification: 'ScheduledNotification'
+  SessionFlag: 'SessionFlag'
 };
 
 /**

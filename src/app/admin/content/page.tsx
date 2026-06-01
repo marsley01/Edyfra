@@ -26,12 +26,20 @@ export default function AdminContentPage() {
 
   const fetchChallenges = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("DailyChallenge")
-      .select("*")
-      .order("date", { ascending: false });
-    
-    if (data) setChallenges(data);
+    try {
+      const { data, error } = await supabase
+        .from("DailyChallenge")
+        .select("*")
+        .order("date", { ascending: false });
+      
+      if (error) {
+        toast.error("Failed to load challenges");
+        return;
+      }
+      if (data) setChallenges(data);
+    } catch {
+      toast.error("Failed to load challenges");
+    }
     setLoading(false);
   };
 

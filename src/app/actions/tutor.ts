@@ -5,6 +5,8 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getUserData } from "./user";
 import { TUTOR_CONFIG } from "@/lib/config";
+import { acceptMatchRequest } from "./match";
+import { getCached, TTL } from "@/lib/cache";
 
 export async function getTutorProfile() {
   try {
@@ -89,7 +91,6 @@ export async function updateTutorAvailability(schedule: any) {
   }
 }
 
-import { acceptMatchRequest } from "./match";
 export { acceptMatchRequest };
 
 export async function getTutorStats() {
@@ -116,8 +117,6 @@ export async function getTutorStats() {
     return null;
   }
 }
-
-import { getCached, TTL } from "@/lib/cache";
 
 export async function getVerifiedTutors(level?: EduLevel) {
   const cacheKey = level ? `tutors:verified:${level}` : `tutors:verified:all`;

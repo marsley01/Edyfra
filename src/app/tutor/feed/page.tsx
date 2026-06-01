@@ -1,5 +1,5 @@
 import { CommunityFeed } from "@/components/community/CommunityFeed";
 
-export default function FeedPage() {
+export default function TutorFeedPage() {
   return <CommunityFeed />;
 }
