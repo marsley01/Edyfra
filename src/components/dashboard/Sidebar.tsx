@@ -14,7 +14,6 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { getUserData } from "@/app/actions/user";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -116,11 +115,7 @@ export default function DashboardSidebar({ user, onClose }: { user: User; onClos
             )} />
             {label}
             {pathname === href && (
-              <motion.div 
-                layoutId="active-nav"
-                className="absolute left-0 w-1 h-4 bg-primary rounded-r-full"
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              />
+              <div className="absolute left-0 w-1 h-4 bg-primary rounded-r-full" />
             )}
           </Link>
         ))}

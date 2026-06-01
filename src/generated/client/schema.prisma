@@ -28,7 +28,11 @@ model User {
   strikes                  Int                     @default(0)
   createdAt                DateTime                @default(now())
   bio                      String?
+<<<<<<< HEAD
   settings                 Json                    @default("{\"theme\": \"system\", \"fontSize\": \"medium\", \"accentColor\": \"#0071e3\"}")
+=======
+  preferences              UserPreferences?
+>>>>>>> origin/main
   curriculum               String?                 @default("8-4-4")
   dailyMessageCount        Int                     @default(0)
   dailySearchCount         Int                     @default(0)
@@ -65,11 +69,11 @@ model User {
   userCredits              UserCredits?
   creditTransactions       CreditTransaction[]
   sellerEarnings           SellerEarning[]
-  institutionStudent       InstitutionStudent?
-  institutionTutors        InstitutionTutor[]
+  pushSubscriptions        PushSubscription[]
   institutionMembers       InstitutionMember[]
   uploadedDocuments        InstitutionDocument[]
-  pushSubscriptions        PushSubscription[]
+  institutionStudent       InstitutionStudent?
+  institutionTutors        InstitutionTutor[]
   tutorAvailabilities      TutorAvailability[]     @relation("TutorAvailability")
   studentBookings          Booking[]               @relation("StudentBookings")
   tutorBookings            Booking[]               @relation("TutorBookings")
@@ -433,7 +437,9 @@ model UserPreferences {
   showOnlineStatus   Boolean  @default(true)
   allowTutorRequests Boolean  @default(true)
   enableMashFallback Boolean  @default(true)
+  studyHoursPerWeek  Int?
   updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Challenge {
@@ -598,80 +604,6 @@ model newsletter_subscribers {
 
   @@index([email], map: "idx_newsletter_subscribers_email")
   @@index([subscribed_at(sort: Desc)], map: "idx_newsletter_subscribers_subscribed_at")
-}
-
-enum Gender {
-  MALE
-  FEMALE
-}
-
-enum Role {
-  STUDENT
-  TUTOR
-  ADMIN
-}
-
-enum EduLevel {
-  HIGH_SCHOOL
-  UNIVERSITY
-}
-
-enum Tier {
-  BRONZE
-  SILVER
-  GOLD
-  PLATINUM
-  LEGEND
-}
-
-enum VerifPath {
-  POINTS
-  GRADES
-}
-
-enum MatchTier {
-  TUTOR
-  PEER
-  MASH
-}
-
-enum SessionStatus {
-  PENDING
-  ACTIVE
-  COMPLETED
-  CANCELLED
-}
-
-enum PayStatus {
-  NONE
-  HELD
-  RELEASED
-  REFUNDED
-}
-
-enum AppStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-enum payment_status {
-  pending
-  completed
-  failed
-  refunded
-}
-
-enum payment_type {
-  subscription
-  session
-  resource
-}
-
-enum resource_status {
-  pending
-  approved
-  rejected
 }
 
 model Institution {
@@ -845,6 +777,7 @@ model SessionFlag {
   @@map("session_flags")
 }
 
+<<<<<<< HEAD
 model InstitutionLimit {
   id             String   @id @default(cuid())
   institutionId  String   @unique @map("institution_id")
@@ -917,4 +850,78 @@ model ScheduledNotification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("scheduled_notifications")
+=======
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum Role {
+  STUDENT
+  TUTOR
+  ADMIN
+}
+
+enum EduLevel {
+  HIGH_SCHOOL
+  UNIVERSITY
+}
+
+enum Tier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+  LEGEND
+}
+
+enum VerifPath {
+  POINTS
+  GRADES
+}
+
+enum MatchTier {
+  TUTOR
+  PEER
+  MASH
+}
+
+enum SessionStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum PayStatus {
+  NONE
+  HELD
+  RELEASED
+  REFUNDED
+}
+
+enum AppStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum payment_status {
+  pending
+  completed
+  failed
+  refunded
+}
+
+enum payment_type {
+  subscription
+  session
+  resource
+}
+
+enum resource_status {
+  pending
+  approved
+  rejected
+>>>>>>> origin/main
 }

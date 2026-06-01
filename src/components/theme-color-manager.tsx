@@ -7,6 +7,7 @@ export function ThemeColorManager() {
   useEffect(() => {
     const applyColor = async () => {
       const userData = await getUserData();
+<<<<<<< HEAD
       const settings = userData?.settings as Record<string, unknown> | undefined;
       let accentColor = settings?.accentColor as string | undefined;
       
@@ -14,6 +15,9 @@ export function ThemeColorManager() {
       if (accentColor === "#8b5cf6") {
         accentColor = "#0071e3";
       }
+=======
+      const accentColor = userData?.preferences?.accentColor;
+>>>>>>> origin/main
       
       if (accentColor) {
         document.documentElement.style.setProperty("--primary", accentColor);

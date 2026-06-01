@@ -20,7 +20,7 @@ import {
   Eye, EyeOff, Languages, Bot, Search, AlertTriangle, Smartphone
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { getUserData, updateProfile, updateUserSettings, updateUserPreferences, updateNotificationSettings, updateStudentProfile, changePassword, changeEmail, downloadUserData, deleteUserAccount, updateAvatar } from "@/app/actions/user";
+import { getUserData, updateProfile, updateUserPreferences, updateNotificationSettings, updateStudentProfile, changePassword, changeEmail, downloadUserData, deleteUserAccount, updateAvatar } from "@/app/actions/user";
 import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
@@ -64,13 +64,13 @@ export default function SettingsPage() {
     if (data) {
       setUserData(data);
       setCurrentAvatar(data.avatar || null);
-      const settings = (data.settings as any) || {};
+      const preferences = data.preferences || {};
       setFormData({
         name: data.name || "",
         bio: data.bio || "",
         educationLevel: data.educationLevel || "HIGH_SCHOOL",
         subjects: data.studentProfile?.subjects?.join(", ") || "",
-        studyHours: settings.studyHoursPerWeek?.toString() || "",
+        studyHours: preferences.studyHoursPerWeek?.toString() || "",
       });
     }
     try {

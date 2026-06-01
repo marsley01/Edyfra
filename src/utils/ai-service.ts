@@ -1,7 +1,11 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import OpenAI from "openai";
 
+<<<<<<< HEAD
 const DEFAULT_OPENROUTER_MODEL = "openai/gpt-4o-mini";
+=======
+const DEFAULT_OPENROUTER_MODEL = "deepseek/deepseek-chat";
+>>>>>>> origin/main
 const DEFAULT_GEMINI_MODEL = "gemini-2.0-flash";
 
 let openaiInstance: OpenAI | null = null;
@@ -43,6 +47,7 @@ export class AIService {
     const openai = getOpenAI();
     const gemini = getGemini();
 
+<<<<<<< HEAD
     if (openai) {
       try {
         const completion = await openai.chat.completions.create({
@@ -95,11 +100,61 @@ export class AIService {
     schema?: unknown,
     model: string = DEFAULT_OPENROUTER_MODEL
   ): Promise<unknown> {
+=======
+    if (openai) {
+      try {
+        const completion = await openai.chat.completions.create({
+          model,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: prompt },
+          ],
+          temperature: 0.7,
+        });
+
+        const content = completion.choices[0]?.message?.content?.trim();
+        if (content) return content;
+      } catch (error) {
+        console.error("[AIService] OpenRouter generation error:", error);
+      }
+    } else {
+      console.warn("[AIService] OPENROUTER_API_KEY is missing. Trying Gemini fallback.");
+    }
+
+    if (gemini) {
+      try {
+        const modelClient = gemini.getGenerativeModel({
+          model: DEFAULT_GEMINI_MODEL,
+        });
+        const result = await modelClient.generateContent(
+          `${systemPrompt}\n\nUser request:\n${prompt}`
+        );
+        const text = result.response.text().trim();
+        if (text) return text;
+      } catch (error) {
+        console.error("[AIService] Gemini generation error:", error);
+      }
+    }
+
+    if (!openai && !gemini) {
+      return "AI services are currently offline. Please ensure your AI keys are configured.";
+    }
+
+    return "I'm having a bit of trouble thinking right now. Let's try again in a moment.";
+  }
+
+  static async generateJSON<T>(
+    prompt: string,
+    schema?: T,
+    model: string = DEFAULT_OPENROUTER_MODEL
+  ): Promise<T> {
+>>>>>>> origin/main
     const systemPrompt = "You are a specialized assistant that returns ONLY valid JSON. No markdown, no commentary.";
 
     try {
       const text = await this.generateCompletion(prompt, systemPrompt, model);
       // Clean potential markdown artifacts
+<<<<<<< HEAD
       const cleaned = text.replace(/```json/g, "").replace(/```/g, "").trim();
       return JSON.parse(cleaned);
     } catch (error) {
@@ -109,3 +164,14 @@ export class AIService {
     }
   }
 }
+=======
+      const cleaned = text.replace(/```json/g, "").replace(/```/g, "").trim();
+      return JSON.parse(cleaned) as T;
+    } catch (error) {
+      console.error("[AIService] JSON generation error:", error);
+      // Fallback for JSON structure to prevent crashes
+      return (schema || { error: "Failed to generate valid JSON" }) as T;
+    }
+  }
+}
+>>>>>>> origin/main

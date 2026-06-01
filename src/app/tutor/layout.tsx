@@ -137,7 +137,7 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
               className="fixed inset-0 w-full h-full bg-card z-[70] shadow-2xl overflow-y-auto overscroll-y-contain lg:hidden"
             >
               <div className="sticky top-0 z-50 flex items-center justify-between p-4 border-b border-border bg-card">

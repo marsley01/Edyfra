@@ -11,6 +11,11 @@ html {
   isolation: isolate;
 }
 
+/* Prevent layout shift when mobile menus lock body scroll */
+body {
+  scrollbar-gutter: stable;
+}
+
 /* On iOS, hide purely decorative large blurs and force solid backgrounds
    for backdrop-filter elements to avoid GPU compositing conflicts */
 @supports (-webkit-touch-callout: none) {

@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
 import { AIService } from "@/utils/ai-service";
 import prisma from "@/lib/prisma";
+import { EduLevel } from "@/generated/client";
 
 export const maxDuration = 60; // Allow 60 seconds for API generation
 
 const SUBJECTS = ["Mathematics", "Physics", "Chemistry", "Biology"];
-const LEVELS = ["HIGH_SCHOOL", "UNIVERSITY"];
+const LEVELS = [EduLevel.HIGH_SCHOOL, EduLevel.UNIVERSITY];
+
+type ChallengePayload = {
+  question: string;
+  options: string[];
+  answer: string;
+  explanation: string;
+};
 
 export async function GET(request: Request) {
   // Simple auth check for Cron jobs to prevent public triggering
@@ -36,14 +44,18 @@ export async function GET(request: Request) {
         `;
 
         try {
+<<<<<<< HEAD
           const aiData = await AIService.generateJSON(prompt) as any;
+=======
+          const aiData = await AIService.generateJSON<ChallengePayload | null>(prompt);
+>>>>>>> origin/main
           
           if (!aiData || !aiData.question) continue;
 
           const challenge = await prisma.dailyChallenge.create({
             data: {
               subject,
-              level: level as any,
+              level,
               question: aiData.question,
               options: aiData.options,
               answer: aiData.answer,
@@ -60,8 +72,9 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json({ success: true, count: results.length, data: results });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Daily Challenge Cron Error:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }
