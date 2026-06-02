@@ -631,6 +631,24 @@ export const getCommunityScholars = unstable_cache(
   { revalidate: 300, tags: ["community-scholars"] },
 );
 
+export async function getUserStreak() {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const row = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { streakDays: true },
+    });
+
+    return row?.streakDays ?? 0;
+  } catch (error) {
+    captureServerError(error, { action: "getUserStreak" });
+    return null;
+  }
+}
+
 export async function recalibrateTier(userId: string) {
   try {
     const user = await prisma.user.findUnique({ where: { id: userId }, select: { points: true, tier: true } });

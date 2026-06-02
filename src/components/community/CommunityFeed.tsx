@@ -6,11 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
-import { getPosts, createPost, likePost, addComment } from "@/app/actions/feed";
+import { useRouter } from "next/navigation";
+import { getPosts, createPost, likePost, addComment, getTrendingSubjects } from "@/app/actions/feed";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
+import { getCommunityScholars, getUserStreak } from "@/app/actions/user";
+import { getFollowingIds, toggleFollow } from "@/app/actions/social";
 
 interface FeedUser {
   name: string;
@@ -30,6 +33,19 @@ interface Post {
   comments: any[];
 }
 
+interface TrendingTopic {
+  subject: string;
+  posts: number;
+}
+
+interface CommunityScholar {
+  id: string;
+  name: string;
+  county: string;
+  points: number;
+  tier: string;
+}
+
 export function CommunityFeed() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,11 +53,19 @@ export function CommunityFeed() {
   const [newPostContent, setNewPostContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [streakDays, setStreakDays] = useState<number | null>(null);
+  const [streakLoading, setStreakLoading] = useState(true);
+  const [trendingTopics, setTrendingTopics] = useState<TrendingTopic[]>([]);
+  const [topicsLoading, setTopicsLoading] = useState(true);
+  const [communityScholars, setCommunityScholars] = useState<CommunityScholar[]>([]);
+  const [scholarsLoading, setScholarsLoading] = useState(true);
+  const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
   const [news, setNews] = useState<any[]>([]);
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
   const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
   const [submittingComment, setSubmittingComment] = useState<string | null>(null);
   const [likingPosts, setLikingPosts] = useState<Set<string>>(new Set());
+  const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
@@ -50,9 +74,7 @@ export function CommunityFeed() {
       if (data?.user) setCurrentUserId(data.user.id);
     }
     init();
-    loadPosts();
-    fetchTechNews();
-  }, [filter]);
+  }, []);
 
   const fetchTechNews = async () => {
     try {
@@ -63,6 +85,10 @@ export function CommunityFeed() {
       console.error("Failed to fetch news", e);
     }
   };
+
+  useEffect(() => {
+    fetchTechNews();
+  }, []);
 
   const loadPosts = useCallback(async () => {
     setLoading(true);
@@ -92,8 +118,86 @@ export function CommunityFeed() {
     }
   }, [filter]);
 
+  useEffect(() => {
+    loadPosts();
+  }, [loadPosts]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadSidebar() {
+      setTopicsLoading(true);
+      setScholarsLoading(true);
+      try {
+        const [topics, scholars] = await Promise.all([
+          getTrendingSubjects(6),
+          getCommunityScholars(),
+        ]);
+
+        if (cancelled) return;
+
+        setTrendingTopics(topics);
+        setCommunityScholars(
+          scholars.map((row: any) => ({
+            ...row,
+            tier: String(row.tier),
+          }))
+        );
+      } catch (e) {
+        console.error("Failed to load forum sidebar:", e);
+      } finally {
+        if (!cancelled) {
+          setTopicsLoading(false);
+          setScholarsLoading(false);
+        }
+      }
+    }
+
+    loadSidebar();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadPersonal() {
+      if (!currentUserId) {
+        setStreakDays(null);
+        setFollowingIds(new Set());
+        setStreakLoading(false);
+        return;
+      }
+
+      setStreakLoading(true);
+      try {
+        const [streak, following] = await Promise.all([
+          getUserStreak(),
+          getFollowingIds(),
+        ]);
+
+        if (cancelled) return;
+        setStreakDays(streak);
+        setFollowingIds(new Set(following));
+      } catch (e) {
+        console.error("Failed to load personal forum data:", e);
+      } finally {
+        if (!cancelled) setStreakLoading(false);
+      }
+    }
+
+    loadPersonal();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUserId]);
+
   const handleCreatePost = async () => {
     if (!newPostContent.trim()) return;
+    if (!currentUserId) {
+      toast.error("Please sign in to post.");
+      router.push("/login");
+      return;
+    }
     setIsSubmitting(true);
     try {
       await createPost(newPostContent);
@@ -108,7 +212,11 @@ export function CommunityFeed() {
   };
 
   const handleLike = async (postId: string) => {
-    if (!currentUserId) return;
+    if (!currentUserId) {
+      toast.error("Please sign in to like posts.");
+      router.push("/login");
+      return;
+    }
     setLikingPosts(prev => new Set(prev).add(postId));
 
     setPosts(prev => prev.map(post => {
@@ -135,6 +243,11 @@ export function CommunityFeed() {
   };
 
   const handleComment = async (postId: string) => {
+    if (!currentUserId) {
+      toast.error("Please sign in to comment.");
+      router.push("/login");
+      return;
+    }
     const content = commentInputs[postId]?.trim();
     if (!content) return;
     setSubmittingComment(postId);
@@ -171,6 +284,30 @@ export function CommunityFeed() {
     }
   };
 
+  const handleToggleFollow = async (targetUserId: string) => {
+    if (!currentUserId) {
+      toast.error("Please sign in to follow learners.");
+      router.push("/login");
+      return;
+    }
+    if (targetUserId === currentUserId) return;
+
+    const isFollowing = followingIds.has(targetUserId);
+    try {
+      await toggleFollow(targetUserId);
+      setFollowingIds((prev) => {
+        const next = new Set(prev);
+        if (isFollowing) next.delete(targetUserId);
+        else next.add(targetUserId);
+        return next;
+      });
+      toast.success(isFollowing ? "Unfollowed" : "Following");
+    } catch (e: any) {
+      console.error("Failed to toggle follow:", e);
+      toast.error(e?.message || "Failed to update follow.");
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto p-3 md:p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 animate-in fade-in duration-700">
       {/* Left Sidebar - Profile Summary */}
@@ -196,8 +333,18 @@ export function CommunityFeed() {
               <span className="text-base leading-none">🔥</span>
               <h3 className="text-[10px] font-black uppercase tracking-widest">Daily Streak</h3>
             </div>
-            <p className="text-2xl font-black text-orange-500">0</p>
-            <p className="text-[9px] text-muted-foreground font-medium">Keep learning every day!</p>
+            <p className="text-2xl font-black text-orange-500 min-h-[2.5rem] flex items-center justify-center">
+              {streakLoading ? (
+                <Loader2 className="h-5 w-5 animate-spin opacity-70" />
+              ) : streakDays === null ? (
+                "—"
+              ) : (
+                streakDays
+              )}
+            </p>
+            <p className="text-[9px] text-muted-foreground font-medium">
+              {currentUserId ? "Keep learning every day!" : "Sign in to track your streak."}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -211,7 +358,7 @@ export function CommunityFeed() {
               Community <span className="bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">Feed</span>
             </h1>
             <div className="flex bg-secondary/80 p-1 rounded-xl gap-1 backdrop-blur-sm">
-              {["all", "following", "school"].map((f) => (
+              {["all", "school"].map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
@@ -236,7 +383,8 @@ export function CommunityFeed() {
                   value={newPostContent}
                   onChange={(e) => setNewPostContent(e.target.value)}
                   placeholder="What's on your mind? Share a discovery or ask a question..."
-                  className="flex-1 bg-transparent border-none focus:ring-0 text-base lg:text-lg font-medium resize-none min-h-[60px] lg:min-h-[80px] pt-2 placeholder:text-muted-foreground/40"
+                  disabled={!currentUserId}
+                  className="flex-1 bg-transparent border-none focus:ring-0 text-base lg:text-lg font-medium resize-none min-h-[60px] lg:min-h-[80px] pt-2 placeholder:text-muted-foreground/40 disabled:opacity-60 disabled:cursor-not-allowed"
                 />
               </div>
               <div className="flex flex-wrap gap-2">
@@ -247,7 +395,7 @@ export function CommunityFeed() {
               </div>
               <Button
                 onClick={handleCreatePost}
-                disabled={isSubmitting || !newPostContent.trim()}
+                disabled={!currentUserId || isSubmitting || !newPostContent.trim()}
                 className="rounded-full bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 font-black text-[10px] tracking-widest uppercase px-8 h-10 shadow-lg shadow-primary/20 disabled:opacity-50"
               >
                 {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <span className="mr-1">📤</span>}
@@ -326,7 +474,8 @@ export function CommunityFeed() {
                     <div className="flex items-center gap-4 lg:gap-8 pt-3 border-t border-border/50 pl-[44px] lg:pl-[52px]">
                       <button
                         onClick={() => handleLike(post.id)}
-                        className={`flex items-center gap-1.5 text-[11px] lg:text-xs font-bold transition-all duration-200 ${post.likedBy?.some((l: { userId: string }) => l.userId === currentUserId) ? "text-red-500" : "text-muted-foreground hover:text-red-500"}`}
+                        disabled={!currentUserId}
+                        className={`flex items-center gap-1.5 text-[11px] lg:text-xs font-bold transition-all duration-200 ${post.likedBy?.some((l: { userId: string }) => l.userId === currentUserId) ? "text-red-500" : "text-muted-foreground hover:text-red-500"} disabled:opacity-60 disabled:cursor-not-allowed`}
                       >
                         <span className={`text-base leading-none transition-all duration-200 ${likingPosts.has(post.id) ? "scale-125 inline-block" : ""}`}>
                           {post.likedBy?.some((l: { userId: string }) => l.userId === currentUserId) ? "❤️" : "🤍"}
@@ -392,12 +541,13 @@ export function CommunityFeed() {
                                   value={commentInputs[post.id] || ""}
                                   onChange={(e) => setCommentInputs(prev => ({ ...prev, [post.id]: e.target.value }))}
                                   placeholder="Write a comment..."
+                                  disabled={!currentUserId}
                                   className="flex-1 bg-transparent border-none focus:ring-0 text-[12px] outline-none placeholder:text-muted-foreground/40"
                                   onKeyDown={(e) => { if (e.key === "Enter") handleComment(post.id); }}
                                 />
                                 <button
                                   onClick={() => handleComment(post.id)}
-                                  disabled={submittingComment === post.id || !commentInputs[post.id]?.trim()}
+                                  disabled={!currentUserId || submittingComment === post.id || !commentInputs[post.id]?.trim()}
                                   className="text-primary hover:text-primary/80 transition-colors disabled:opacity-30 text-lg leading-none"
                                 >
                                   {submittingComment === post.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "➡️"}
@@ -477,21 +627,37 @@ export function CommunityFeed() {
               <h3 className="text-[10px] lg:text-sm font-black uppercase tracking-widest">Trending Topics</h3>
             </div>
             <div className="space-y-2">
-              {[
-                { tag: "Calculus", posts: "1.2k" },
-                { tag: "KenyanHistory", posts: "850" },
-                { tag: "ExamPrep", posts: "640" },
-                { tag: "Scholarships", posts: "420" },
-                { tag: "STEM", posts: "310" },
-              ].map((topic, i) => (
-                <div key={topic.tag} className="flex items-center justify-between group cursor-pointer p-1.5 rounded-lg hover:bg-purple-500/5 transition-colors">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[9px] font-black text-muted-foreground/30 w-4">{i + 1}</span>
-                    <span className="text-[11px] lg:text-sm font-bold text-muted-foreground group-hover:text-purple-500 transition-colors">#{topic.tag}</span>
-                  </div>
-                  <span className="text-[8px] lg:text-[10px] font-black text-muted-foreground/50">{topic.posts} posts</span>
+              {topicsLoading ? (
+                <div className="space-y-2">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-8 rounded-lg bg-secondary/40 animate-pulse"
+                    />
+                  ))}
                 </div>
-              ))}
+              ) : trendingTopics.length > 0 ? (
+                trendingTopics.map((topic, i) => (
+                  <div
+                    key={topic.subject}
+                    className="flex items-center justify-between group p-1.5 rounded-lg hover:bg-purple-500/5 transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] font-black text-muted-foreground/30 w-4">{i + 1}</span>
+                      <span className="text-[11px] lg:text-sm font-bold text-muted-foreground group-hover:text-purple-500 transition-colors">
+                        #{topic.subject}
+                      </span>
+                    </div>
+                    <span className="text-[8px] lg:text-[10px] font-black text-muted-foreground/50">
+                      {topic.posts.toLocaleString()} posts
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="py-6 text-center">
+                  <p className="text-xs text-muted-foreground font-medium">No topics yet</p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -504,28 +670,52 @@ export function CommunityFeed() {
               <h3 className="text-[10px] lg:text-sm font-black uppercase tracking-widest">Top Scholars</h3>
             </div>
             <div className="space-y-3">
-              {[
-                { name: "John Doe", level: "University", points: "4.5k" },
-                { name: "Sarah W.", level: "High School", points: "3.2k" },
-                { name: "Kevin M.", level: "University", points: "2.8k" },
-              ].map((scholar) => (
-                <div key={scholar.name} className="flex items-center justify-between group p-2 rounded-xl hover:bg-emerald-500/5 transition-colors">
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8 ring-2 ring-emerald-500/20">
-                      <AvatarFallback className="text-xs bg-gradient-to-br from-emerald-500/20 to-emerald-500/5">
-                        {scholar.name[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-xs font-bold">{scholar.name}</p>
-                      <p className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">{scholar.level} · {scholar.points} pts</p>
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="sm" className="h-7 px-3 rounded-xl text-[9px] font-black uppercase tracking-widest text-emerald-500 hover:bg-emerald-500/10">
-                    Follow
-                  </Button>
+              {scholarsLoading ? (
+                <div className="space-y-2">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="h-16 rounded-xl bg-secondary/40 animate-pulse" />
+                  ))}
                 </div>
-              ))}
+              ) : communityScholars.length > 0 ? (
+                communityScholars.map((scholar) => {
+                  const isFollowing = followingIds.has(scholar.id);
+                  const canFollow = !!currentUserId && scholar.id !== currentUserId;
+
+                  return (
+                    <div
+                      key={scholar.id}
+                      className="flex items-center justify-between group p-2 rounded-xl hover:bg-emerald-500/5 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-8 w-8 ring-2 ring-emerald-500/20">
+                          <AvatarFallback className="text-xs bg-gradient-to-br from-emerald-500/20 to-emerald-500/5">
+                            {scholar.name[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-xs font-bold">{scholar.name}</p>
+                          <p className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">
+                            {scholar.tier.replace(/_/g, " ")} · {scholar.points.toLocaleString()} pts
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={!canFollow}
+                        onClick={() => handleToggleFollow(scholar.id)}
+                        className="h-7 px-3 rounded-xl text-[9px] font-black uppercase tracking-widest text-emerald-500 hover:bg-emerald-500/10 disabled:opacity-50 disabled:hover:bg-transparent"
+                      >
+                        {isFollowing ? "Following" : "Follow"}
+                      </Button>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="py-6 text-center">
+                  <p className="text-xs text-muted-foreground font-medium">No scholars yet</p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

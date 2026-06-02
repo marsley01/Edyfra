@@ -125,7 +125,8 @@ export async function getVerifiedTutors(level?: EduLevel) {
     const whereClause: any = {
       role: Role.TUTOR,
       tutorProfile: {
-        isNot: null
+        isNot: null,
+        isVerified: true
       }
     };
     if (level) {

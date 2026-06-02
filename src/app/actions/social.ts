@@ -39,6 +39,20 @@ export async function toggleFollow(targetUserId: string) {
   revalidatePath("/dashboard");
 }
 
+export async function getFollowingIds() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("connections")
+    .select("following_id")
+    .eq("follower_id", user.id);
+
+  return (data || []).map((row: any) => row.following_id as string);
+}
+
 export async function trackProfileView(profileId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

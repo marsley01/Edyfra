@@ -162,21 +162,21 @@ function BookingDialog({ tutor }: { tutor: any }) {
   const [selectedSlot, setSelectedSlot] = useState("");
   const router = useRouter();
 
-  // Generate real time slots from tutorAvailability
+  // Generate real time slots from tutorAvailabilities
   const timeSlots: { label: string, value: string, date: string, startTime: string }[] = [];
   
-  if (tutor.tutorAvailability && tutor.tutorAvailability.length > 0) {
+  if (tutor.tutorAvailabilities && tutor.tutorAvailabilities.length > 0) {
     const today = new Date();
     for (let i = 1; i <= 7; i++) {
       const d = new Date(today);
       d.setDate(d.getDate() + i);
       const dayOfWeek = d.getDay(); // 0 is Sunday
       
-      const slotsForDay = tutor.tutorAvailability.filter((a: any) => a.dayOfWeek === dayOfWeek && !a.isBlocked);
+      const slotsForDay = tutor.tutorAvailabilities.filter((a: any) => a.dayOfWeek === dayOfWeek && !a.isBlocked);
       slotsForDay.forEach((slot: any) => {
         const dateStr = d.toISOString();
         const value = `${dateStr}|${slot.startTime}`;
-        const label = `${d.toLocaleDateString('en-US', {weekday: 'short'})}, ${slot.startTime}`;
+        const label = `${d.toLocaleDateString('en-US', {weekday: 'short', month: 'short', day: 'numeric'})}, ${slot.startTime} - ${slot.endTime}`;
         timeSlots.push({ label, value, date: dateStr, startTime: slot.startTime });
       });
     }
@@ -211,7 +211,7 @@ function BookingDialog({ tutor }: { tutor: any }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
+      <DialogTrigger asChild>
         <Button className="w-full h-12 rounded-xl font-black text-xs tracking-widest uppercase bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/20 transition-all active:scale-95">
           <Calendar className="mr-2 h-4 w-4" /> Book Session
         </Button>

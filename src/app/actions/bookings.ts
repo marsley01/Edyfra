@@ -165,6 +165,58 @@ export async function createBooking(tutorId: string, subject: string, topic: str
       }
     });
 
+    // --- Send notifications ---
+    const { notifyUser } = await import("./notifications");
+
+    // 1. Notify the tutor about the new booking request (in-app + push)
+    const bookingDate = new Date(date);
+    const dateLabel = bookingDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+    await notifyUser(tutorId, {
+      type: "BOOKING_REQUEST",
+      title: "📚 New Session Request!",
+      body: `${user.name} wants to book a ${subject} session on ${dateLabel} at ${startTime}. Review and confirm the request.`,
+      actionUrl: "/tutor",
+    });
+
+    // 2. Find other available tutors for this time slot and notify the student
+    try {
+      const bookingDayOfWeek = bookingDate.getDay();
+      const availableTutors = await prisma.user.findMany({
+        where: {
+          id: { not: tutorId },
+          role: "TUTOR",
+          tutorProfile: {
+            isVerified: true,
+            subjects: { has: subject },
+          },
+          tutorAvailabilities: {
+            some: {
+              dayOfWeek: bookingDayOfWeek,
+              startTime: { lte: startTime },
+              endTime: { gte: endTime },
+              isBlocked: false,
+            },
+          },
+        },
+        select: { name: true },
+        take: 5,
+      });
+
+      if (availableTutors.length > 0) {
+        const names = availableTutors.map((t) => t.name).join(", ");
+        await notifyUser(user.id, {
+          type: "TUTOR_AVAILABILITY",
+          title: "🎯 More Tutors Available!",
+          body: `${availableTutors.length} other tutor${availableTutors.length > 1 ? "s" : ""} available for ${subject} at this time: ${names}`,
+          actionUrl: "/dashboard/tutors",
+        });
+      }
+    } catch (err) {
+      console.error("Error finding available tutors for notification:", err);
+    }
+
+    revalidatePath("/tutor");
+    revalidatePath("/dashboard/tutors");
     return { success: true, bookingId: booking.id };
   } catch (error) {
     console.error("Error in createBooking:", error);

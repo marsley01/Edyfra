@@ -12,6 +12,7 @@ import { AvatarPremium } from "@/components/ui/avatar-premium";
 import Link from "next/link";
 import { getCommunityScholars } from "@/app/actions/user";
 import { Badge } from "@/components/ui/badge";
+import { CommunityFeed } from "@/components/community/CommunityFeed";
 
 interface Scholar {
   id: string;
@@ -43,6 +44,10 @@ export default function CommunityPage() {
       setLoading(false);
     }
   };
+
+  // Render the real forum UI on this route.
+  // This removes the marketing/demo layout from the community experience.
+  return <CommunityFeed />;
 
   return (
     <div className="min-h-screen bg-background">

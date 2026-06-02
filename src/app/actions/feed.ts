@@ -31,19 +31,25 @@ export async function createPost(content: string, subject?: string, image?: stri
 }
 
 export async function getPosts(filter?: string) {
+  // Reading the forum should work without authentication.
+  // Authentication is only required for actions like liking/commenting/creating posts.
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const userData = await prisma.user.findUnique({
-    where: { id: user.id }
-  });
-
-  if (!userData) throw new Error("User not found");
+  let userData: { educationLevel: any } | null = null;
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      userData = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { educationLevel: true },
+      });
+    }
+  } catch {
+    // Ignore auth errors (forum remains readable).
+  }
 
   const where: any = {};
 
-  if (filter === "school" && userData.educationLevel) {
+  if (filter === "school" && userData?.educationLevel) {
     where.level = userData.educationLevel;
   }
 
@@ -62,6 +68,23 @@ export async function getPosts(filter?: string) {
       createdAt: 'desc'
     }
   });
+}
+
+export async function getTrendingSubjects(limit = 6) {
+  const groups = await prisma.feedPost.groupBy({
+    by: ["subject"],
+    where: { subject: { not: null } },
+    _count: { _all: true },
+    orderBy: { _count: { _all: "desc" } },
+    take: limit,
+  });
+
+  return groups
+    .filter((g) => g.subject)
+    .map((g) => ({
+      subject: g.subject as string,
+      posts: g._count._all,
+    }));
 }
 
 export async function likePost(postId: string) {
