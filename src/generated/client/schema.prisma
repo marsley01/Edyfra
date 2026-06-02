@@ -63,6 +63,12 @@ model User {
   matchRequests            MatchRequest[]
   newsArticles             NewsArticle[]
   userCredits              UserCredits?
+  referralCode             String?                 @unique @map("referral_code")
+  referredBy               String?                 @map("referred_by")
+  referredUsers            Referral[]              @relation("Referrer")
+  referralsMade            Referral[]              @relation("Referred")
+  mashContext              MashContext?
+  analyticsEvents          AnalyticsEvent[]
   creditTransactions       CreditTransaction[]
   sellerEarnings           SellerEarning[]
   institutionStudent       InstitutionStudent?
@@ -90,23 +96,30 @@ model StudentProfile {
 }
 
 model TutorProfile {
-  userId           String    @id
-  subjects         String[]
-  levelsTaught     String[]
-  verificationPath VerifPath
-  gradesProof      String?
-  hourlyRate       Int
-  bio              String
-  isVerified       Boolean   @default(false)
-  verifiedAt       DateTime?
-  rating           Float     @default(0)
-  totalSessions    Int       @default(0)
-  mpesaNumber      String?
-  availability     Json
-  sessionRate1on1  Int?      @default(200) @map("session_rate_1on1")
-  sessionRateGroup Int?      @default(100) @map("session_rate_group")
-  payoutPhone      String?   @map("payout_phone")
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                String    @id
+  subjects              String[]
+  levelsTaught          String[]
+  verificationPath      VerifPath
+  gradesProof           String?
+  hourlyRate            Int
+  bio                   String
+  isVerified            Boolean   @default(false)
+  verifiedAt            DateTime?
+  rating                Float     @default(0)
+  totalSessions         Int       @default(0)
+  mpesaNumber           String?
+  availability          Json
+  sessionRate1on1       Int?      @default(200) @map("session_rate_1on1")
+  sessionRateGroup      Int?      @default(100) @map("session_rate_group")
+  payoutPhone           String?   @map("payout_phone")
+  currentActiveSessions Int       @default(0) @map("current_active_sessions")
+  maxConcurrentSessions Int       @default(3) @map("max_concurrent_sessions")
+  lastAssignedAt        DateTime? @map("last_assigned_at")
+  totalAssignmentsToday Int       @default(0) @map("total_assignments_today")
+  responseRate          Float     @default(100) @map("response_rate")
+  sessionsAssigned      Int       @default(0) @map("sessions_assigned")
+  sessionsResponded     Int       @default(0) @map("sessions_responded")
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([isVerified])
 }
@@ -835,4 +848,47 @@ model SessionFlag {
   booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@map("session_flags")
+}
+
+model Referral {
+  id           String   @id @default(cuid())
+  referrerId   String   @map("referrer_id")
+  referredId   String   @map("referred_id")
+  codeUsed     String   @map("code_used")
+  bonusAwarded Boolean  @default(false) @map("bonus_awarded")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  referrer User @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referred User @relation("Referred", fields: [referredId], references: [id], onDelete: Cascade)
+
+  @@map("referrals")
+}
+
+model MashContext {
+  id                 String   @id @default(cuid())
+  userId             String   @unique @map("user_id")
+  subjectsStruggled  String[] @map("subjects_struggled")
+  topicsCovered      String[] @map("topics_covered")
+  lastSessionSummary String?  @map("last_session_summary")
+  weakAreas          Json?    @map("weak_areas")
+  strongAreas        Json?    @map("strong_areas")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("mash_context")
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  eventType String   @map("event_type") // signup, first_session, session_complete, challenge_complete, referral
+  metadata  Json?    @map("metadata")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([eventType])
+  @@index([createdAt])
+  @@map("analytics_events")
 }

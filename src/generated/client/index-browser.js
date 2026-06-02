@@ -151,7 +151,9 @@ exports.Prisma.UserScalarFieldEnum = {
   plan: 'plan',
   planStartedAt: 'planStartedAt',
   planExpiresAt: 'planExpiresAt',
-  planBillingCycle: 'planBillingCycle'
+  planBillingCycle: 'planBillingCycle',
+  referralCode: 'referralCode',
+  referredBy: 'referredBy'
 };
 
 exports.Prisma.StudentProfileScalarFieldEnum = {
@@ -179,7 +181,14 @@ exports.Prisma.TutorProfileScalarFieldEnum = {
   availability: 'availability',
   sessionRate1on1: 'sessionRate1on1',
   sessionRateGroup: 'sessionRateGroup',
-  payoutPhone: 'payoutPhone'
+  payoutPhone: 'payoutPhone',
+  currentActiveSessions: 'currentActiveSessions',
+  maxConcurrentSessions: 'maxConcurrentSessions',
+  lastAssignedAt: 'lastAssignedAt',
+  totalAssignmentsToday: 'totalAssignmentsToday',
+  responseRate: 'responseRate',
+  sessionsAssigned: 'sessionsAssigned',
+  sessionsResponded: 'sessionsResponded'
 };
 
 exports.Prisma.MatchRequestScalarFieldEnum = {
@@ -697,12 +706,45 @@ exports.Prisma.SessionFlagScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.ReferralScalarFieldEnum = {
+  id: 'id',
+  referrerId: 'referrerId',
+  referredId: 'referredId',
+  codeUsed: 'codeUsed',
+  bonusAwarded: 'bonusAwarded',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.MashContextScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  subjectsStruggled: 'subjectsStruggled',
+  topicsCovered: 'topicsCovered',
+  lastSessionSummary: 'lastSessionSummary',
+  weakAreas: 'weakAreas',
+  strongAreas: 'strongAreas',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AnalyticsEventScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  eventType: 'eventType',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
 };
 
 exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull
 };
 
@@ -825,7 +867,10 @@ exports.Prisma.ModelName = {
   TutorAvailability: 'TutorAvailability',
   Booking: 'Booking',
   BookingReminder: 'BookingReminder',
-  SessionFlag: 'SessionFlag'
+  SessionFlag: 'SessionFlag',
+  Referral: 'Referral',
+  MashContext: 'MashContext',
+  AnalyticsEvent: 'AnalyticsEvent'
 };
 
 /**

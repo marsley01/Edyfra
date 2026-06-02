@@ -258,6 +258,21 @@ export type BookingReminder = $Result.DefaultSelection<Prisma.$BookingReminderPa
  * 
  */
 export type SessionFlag = $Result.DefaultSelection<Prisma.$SessionFlagPayload>
+/**
+ * Model Referral
+ * 
+ */
+export type Referral = $Result.DefaultSelection<Prisma.$ReferralPayload>
+/**
+ * Model MashContext
+ * 
+ */
+export type MashContext = $Result.DefaultSelection<Prisma.$MashContextPayload>
+/**
+ * Model AnalyticsEvent
+ * 
+ */
+export type AnalyticsEvent = $Result.DefaultSelection<Prisma.$AnalyticsEventPayload>
 
 /**
  * Enums
@@ -1029,6 +1044,36 @@ export class PrismaClient<
     * ```
     */
   get sessionFlag(): Prisma.SessionFlagDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.referral`: Exposes CRUD operations for the **Referral** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Referrals
+    * const referrals = await prisma.referral.findMany()
+    * ```
+    */
+  get referral(): Prisma.ReferralDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.mashContext`: Exposes CRUD operations for the **MashContext** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more MashContexts
+    * const mashContexts = await prisma.mashContext.findMany()
+    * ```
+    */
+  get mashContext(): Prisma.MashContextDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.analyticsEvent`: Exposes CRUD operations for the **AnalyticsEvent** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AnalyticsEvents
+    * const analyticsEvents = await prisma.analyticsEvent.findMany()
+    * ```
+    */
+  get analyticsEvent(): Prisma.AnalyticsEventDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1518,7 +1563,10 @@ export namespace Prisma {
     TutorAvailability: 'TutorAvailability',
     Booking: 'Booking',
     BookingReminder: 'BookingReminder',
-    SessionFlag: 'SessionFlag'
+    SessionFlag: 'SessionFlag',
+    Referral: 'Referral',
+    MashContext: 'MashContext',
+    AnalyticsEvent: 'AnalyticsEvent'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1537,7 +1585,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "studentProfile" | "tutorProfile" | "matchRequest" | "session" | "message" | "review" | "dailyChallenge" | "dailyChallengeAttempt" | "struggleGroup" | "groupMessage" | "tutorApplication" | "notification" | "feedPost" | "postLike" | "comment" | "achievement" | "platformSettings" | "aiConversation" | "report" | "announcement" | "newsArticle" | "userCredits" | "creditTransaction" | "testimonial" | "notificationSettings" | "pushSubscription" | "userPreferences" | "challenge" | "challengeCompletion" | "plan" | "payment" | "sessionPayment" | "tutorPayout" | "sellerEarning" | "curriculumTopic" | "resource" | "resourcePurchase" | "newsletter_subscribers" | "institution" | "institutionStaff" | "institutionStudent" | "institutionTutor" | "institutionMember" | "institutionDocument" | "tutorAvailability" | "booking" | "bookingReminder" | "sessionFlag"
+      modelProps: "user" | "studentProfile" | "tutorProfile" | "matchRequest" | "session" | "message" | "review" | "dailyChallenge" | "dailyChallengeAttempt" | "struggleGroup" | "groupMessage" | "tutorApplication" | "notification" | "feedPost" | "postLike" | "comment" | "achievement" | "platformSettings" | "aiConversation" | "report" | "announcement" | "newsArticle" | "userCredits" | "creditTransaction" | "testimonial" | "notificationSettings" | "pushSubscription" | "userPreferences" | "challenge" | "challengeCompletion" | "plan" | "payment" | "sessionPayment" | "tutorPayout" | "sellerEarning" | "curriculumTopic" | "resource" | "resourcePurchase" | "newsletter_subscribers" | "institution" | "institutionStaff" | "institutionStudent" | "institutionTutor" | "institutionMember" | "institutionDocument" | "tutorAvailability" | "booking" | "bookingReminder" | "sessionFlag" | "referral" | "mashContext" | "analyticsEvent"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -5167,6 +5215,228 @@ export namespace Prisma {
           }
         }
       }
+      Referral: {
+        payload: Prisma.$ReferralPayload<ExtArgs>
+        fields: Prisma.ReferralFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ReferralFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReferralPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ReferralFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReferralPayload>
+          }
+          findFirst: {
+            args: Prisma.ReferralFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReferralPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ReferralFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReferralPayload>
+          }
+          findMany: {
+            args: Prisma.ReferralFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReferralPayload>[]
+          }
+          create: {
+            args: Prisma.ReferralCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReferralPayload>
+          }
+          createMany: {
+            args: Prisma.ReferralCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ReferralCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReferralPayload>[]
+          }
+          delete: {
+            args: Prisma.ReferralDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReferralPayload>
+          }
+          update: {
+            args: Prisma.ReferralUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReferralPayload>
+          }
+          deleteMany: {
+            args: Prisma.ReferralDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ReferralUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ReferralUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReferralPayload>[]
+          }
+          upsert: {
+            args: Prisma.ReferralUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReferralPayload>
+          }
+          aggregate: {
+            args: Prisma.ReferralAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateReferral>
+          }
+          groupBy: {
+            args: Prisma.ReferralGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ReferralGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ReferralCountArgs<ExtArgs>
+            result: $Utils.Optional<ReferralCountAggregateOutputType> | number
+          }
+        }
+      }
+      MashContext: {
+        payload: Prisma.$MashContextPayload<ExtArgs>
+        fields: Prisma.MashContextFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.MashContextFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MashContextPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.MashContextFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MashContextPayload>
+          }
+          findFirst: {
+            args: Prisma.MashContextFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MashContextPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.MashContextFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MashContextPayload>
+          }
+          findMany: {
+            args: Prisma.MashContextFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MashContextPayload>[]
+          }
+          create: {
+            args: Prisma.MashContextCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MashContextPayload>
+          }
+          createMany: {
+            args: Prisma.MashContextCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.MashContextCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MashContextPayload>[]
+          }
+          delete: {
+            args: Prisma.MashContextDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MashContextPayload>
+          }
+          update: {
+            args: Prisma.MashContextUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MashContextPayload>
+          }
+          deleteMany: {
+            args: Prisma.MashContextDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.MashContextUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.MashContextUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MashContextPayload>[]
+          }
+          upsert: {
+            args: Prisma.MashContextUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MashContextPayload>
+          }
+          aggregate: {
+            args: Prisma.MashContextAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateMashContext>
+          }
+          groupBy: {
+            args: Prisma.MashContextGroupByArgs<ExtArgs>
+            result: $Utils.Optional<MashContextGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.MashContextCountArgs<ExtArgs>
+            result: $Utils.Optional<MashContextCountAggregateOutputType> | number
+          }
+        }
+      }
+      AnalyticsEvent: {
+        payload: Prisma.$AnalyticsEventPayload<ExtArgs>
+        fields: Prisma.AnalyticsEventFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AnalyticsEventFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AnalyticsEventPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AnalyticsEventFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>
+          }
+          findFirst: {
+            args: Prisma.AnalyticsEventFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AnalyticsEventPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AnalyticsEventFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>
+          }
+          findMany: {
+            args: Prisma.AnalyticsEventFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>[]
+          }
+          create: {
+            args: Prisma.AnalyticsEventCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>
+          }
+          createMany: {
+            args: Prisma.AnalyticsEventCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AnalyticsEventCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>[]
+          }
+          delete: {
+            args: Prisma.AnalyticsEventDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>
+          }
+          update: {
+            args: Prisma.AnalyticsEventUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>
+          }
+          deleteMany: {
+            args: Prisma.AnalyticsEventDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AnalyticsEventUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AnalyticsEventUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>[]
+          }
+          upsert: {
+            args: Prisma.AnalyticsEventUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>
+          }
+          aggregate: {
+            args: Prisma.AnalyticsEventAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAnalyticsEvent>
+          }
+          groupBy: {
+            args: Prisma.AnalyticsEventGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AnalyticsEventGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AnalyticsEventCountArgs<ExtArgs>
+            result: $Utils.Optional<AnalyticsEventCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -5312,6 +5582,9 @@ export namespace Prisma {
     booking?: BookingOmit
     bookingReminder?: BookingReminderOmit
     sessionFlag?: SessionFlagOmit
+    referral?: ReferralOmit
+    mashContext?: MashContextOmit
+    analyticsEvent?: AnalyticsEventOmit
   }
 
   /* Types for Logging */
@@ -5411,6 +5684,9 @@ export namespace Prisma {
     payouts: number
     matchRequests: number
     newsArticles: number
+    referredUsers: number
+    referralsMade: number
+    analyticsEvents: number
     creditTransactions: number
     sellerEarnings: number
     institutionTutors: number
@@ -5444,6 +5720,9 @@ export namespace Prisma {
     payouts?: boolean | UserCountOutputTypeCountPayoutsArgs
     matchRequests?: boolean | UserCountOutputTypeCountMatchRequestsArgs
     newsArticles?: boolean | UserCountOutputTypeCountNewsArticlesArgs
+    referredUsers?: boolean | UserCountOutputTypeCountReferredUsersArgs
+    referralsMade?: boolean | UserCountOutputTypeCountReferralsMadeArgs
+    analyticsEvents?: boolean | UserCountOutputTypeCountAnalyticsEventsArgs
     creditTransactions?: boolean | UserCountOutputTypeCountCreditTransactionsArgs
     sellerEarnings?: boolean | UserCountOutputTypeCountSellerEarningsArgs
     institutionTutors?: boolean | UserCountOutputTypeCountInstitutionTutorsArgs
@@ -5599,6 +5878,27 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountNewsArticlesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: NewsArticleWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountReferredUsersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReferralWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountReferralsMadeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReferralWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountAnalyticsEventsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AnalyticsEventWhereInput
   }
 
   /**
@@ -6063,6 +6363,8 @@ export namespace Prisma {
     planStartedAt: Date | null
     planExpiresAt: Date | null
     planBillingCycle: string | null
+    referralCode: string | null
+    referredBy: string | null
   }
 
   export type UserMaxAggregateOutputType = {
@@ -6095,6 +6397,8 @@ export namespace Prisma {
     planStartedAt: Date | null
     planExpiresAt: Date | null
     planBillingCycle: string | null
+    referralCode: string | null
+    referredBy: string | null
   }
 
   export type UserCountAggregateOutputType = {
@@ -6128,6 +6432,8 @@ export namespace Prisma {
     planStartedAt: number
     planExpiresAt: number
     planBillingCycle: number
+    referralCode: number
+    referredBy: number
     _all: number
   }
 
@@ -6180,6 +6486,8 @@ export namespace Prisma {
     planStartedAt?: true
     planExpiresAt?: true
     planBillingCycle?: true
+    referralCode?: true
+    referredBy?: true
   }
 
   export type UserMaxAggregateInputType = {
@@ -6212,6 +6520,8 @@ export namespace Prisma {
     planStartedAt?: true
     planExpiresAt?: true
     planBillingCycle?: true
+    referralCode?: true
+    referredBy?: true
   }
 
   export type UserCountAggregateInputType = {
@@ -6245,6 +6555,8 @@ export namespace Prisma {
     planStartedAt?: true
     planExpiresAt?: true
     planBillingCycle?: true
+    referralCode?: true
+    referredBy?: true
     _all?: true
   }
 
@@ -6365,6 +6677,8 @@ export namespace Prisma {
     planStartedAt: Date | null
     planExpiresAt: Date | null
     planBillingCycle: string | null
+    referralCode: string | null
+    referredBy: string | null
     _count: UserCountAggregateOutputType | null
     _avg: UserAvgAggregateOutputType | null
     _sum: UserSumAggregateOutputType | null
@@ -6417,6 +6731,8 @@ export namespace Prisma {
     planStartedAt?: boolean
     planExpiresAt?: boolean
     planBillingCycle?: boolean
+    referralCode?: boolean
+    referredBy?: boolean
     achievements?: boolean | User$achievementsArgs<ExtArgs>
     comments?: boolean | User$commentsArgs<ExtArgs>
     challenges?: boolean | User$challengesArgs<ExtArgs>
@@ -6440,6 +6756,10 @@ export namespace Prisma {
     matchRequests?: boolean | User$matchRequestsArgs<ExtArgs>
     newsArticles?: boolean | User$newsArticlesArgs<ExtArgs>
     userCredits?: boolean | User$userCreditsArgs<ExtArgs>
+    referredUsers?: boolean | User$referredUsersArgs<ExtArgs>
+    referralsMade?: boolean | User$referralsMadeArgs<ExtArgs>
+    mashContext?: boolean | User$mashContextArgs<ExtArgs>
+    analyticsEvents?: boolean | User$analyticsEventsArgs<ExtArgs>
     creditTransactions?: boolean | User$creditTransactionsArgs<ExtArgs>
     sellerEarnings?: boolean | User$sellerEarningsArgs<ExtArgs>
     institutionStudent?: boolean | User$institutionStudentArgs<ExtArgs>
@@ -6486,6 +6806,8 @@ export namespace Prisma {
     planStartedAt?: boolean
     planExpiresAt?: boolean
     planBillingCycle?: boolean
+    referralCode?: boolean
+    referredBy?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -6519,6 +6841,8 @@ export namespace Prisma {
     planStartedAt?: boolean
     planExpiresAt?: boolean
     planBillingCycle?: boolean
+    referralCode?: boolean
+    referredBy?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectScalar = {
@@ -6552,9 +6876,11 @@ export namespace Prisma {
     planStartedAt?: boolean
     planExpiresAt?: boolean
     planBillingCycle?: boolean
+    referralCode?: boolean
+    referredBy?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "phone" | "name" | "avatar" | "gender" | "role" | "educationLevel" | "formYear" | "county" | "points" | "tier" | "streakDays" | "lastActiveAt" | "isUnder18" | "strikes" | "createdAt" | "bio" | "settings" | "curriculum" | "dailyMessageCount" | "dailySearchCount" | "lastCountReset" | "subscriptionTier" | "banned" | "suspended" | "plan" | "planStartedAt" | "planExpiresAt" | "planBillingCycle", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "phone" | "name" | "avatar" | "gender" | "role" | "educationLevel" | "formYear" | "county" | "points" | "tier" | "streakDays" | "lastActiveAt" | "isUnder18" | "strikes" | "createdAt" | "bio" | "settings" | "curriculum" | "dailyMessageCount" | "dailySearchCount" | "lastCountReset" | "subscriptionTier" | "banned" | "suspended" | "plan" | "planStartedAt" | "planExpiresAt" | "planBillingCycle" | "referralCode" | "referredBy", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     achievements?: boolean | User$achievementsArgs<ExtArgs>
     comments?: boolean | User$commentsArgs<ExtArgs>
@@ -6579,6 +6905,10 @@ export namespace Prisma {
     matchRequests?: boolean | User$matchRequestsArgs<ExtArgs>
     newsArticles?: boolean | User$newsArticlesArgs<ExtArgs>
     userCredits?: boolean | User$userCreditsArgs<ExtArgs>
+    referredUsers?: boolean | User$referredUsersArgs<ExtArgs>
+    referralsMade?: boolean | User$referralsMadeArgs<ExtArgs>
+    mashContext?: boolean | User$mashContextArgs<ExtArgs>
+    analyticsEvents?: boolean | User$analyticsEventsArgs<ExtArgs>
     creditTransactions?: boolean | User$creditTransactionsArgs<ExtArgs>
     sellerEarnings?: boolean | User$sellerEarningsArgs<ExtArgs>
     institutionStudent?: boolean | User$institutionStudentArgs<ExtArgs>
@@ -6622,6 +6952,10 @@ export namespace Prisma {
       matchRequests: Prisma.$MatchRequestPayload<ExtArgs>[]
       newsArticles: Prisma.$NewsArticlePayload<ExtArgs>[]
       userCredits: Prisma.$UserCreditsPayload<ExtArgs> | null
+      referredUsers: Prisma.$ReferralPayload<ExtArgs>[]
+      referralsMade: Prisma.$ReferralPayload<ExtArgs>[]
+      mashContext: Prisma.$MashContextPayload<ExtArgs> | null
+      analyticsEvents: Prisma.$AnalyticsEventPayload<ExtArgs>[]
       creditTransactions: Prisma.$CreditTransactionPayload<ExtArgs>[]
       sellerEarnings: Prisma.$SellerEarningPayload<ExtArgs>[]
       institutionStudent: Prisma.$InstitutionStudentPayload<ExtArgs> | null
@@ -6666,6 +7000,8 @@ export namespace Prisma {
       planStartedAt: Date | null
       planExpiresAt: Date | null
       planBillingCycle: string | null
+      referralCode: string | null
+      referredBy: string | null
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -7083,6 +7419,10 @@ export namespace Prisma {
     matchRequests<T extends User$matchRequestsArgs<ExtArgs> = {}>(args?: Subset<T, User$matchRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MatchRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     newsArticles<T extends User$newsArticlesArgs<ExtArgs> = {}>(args?: Subset<T, User$newsArticlesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NewsArticlePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     userCredits<T extends User$userCreditsArgs<ExtArgs> = {}>(args?: Subset<T, User$userCreditsArgs<ExtArgs>>): Prisma__UserCreditsClient<$Result.GetResult<Prisma.$UserCreditsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    referredUsers<T extends User$referredUsersArgs<ExtArgs> = {}>(args?: Subset<T, User$referredUsersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReferralPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    referralsMade<T extends User$referralsMadeArgs<ExtArgs> = {}>(args?: Subset<T, User$referralsMadeArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReferralPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    mashContext<T extends User$mashContextArgs<ExtArgs> = {}>(args?: Subset<T, User$mashContextArgs<ExtArgs>>): Prisma__MashContextClient<$Result.GetResult<Prisma.$MashContextPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    analyticsEvents<T extends User$analyticsEventsArgs<ExtArgs> = {}>(args?: Subset<T, User$analyticsEventsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AnalyticsEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     creditTransactions<T extends User$creditTransactionsArgs<ExtArgs> = {}>(args?: Subset<T, User$creditTransactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CreditTransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sellerEarnings<T extends User$sellerEarningsArgs<ExtArgs> = {}>(args?: Subset<T, User$sellerEarningsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SellerEarningPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     institutionStudent<T extends User$institutionStudentArgs<ExtArgs> = {}>(args?: Subset<T, User$institutionStudentArgs<ExtArgs>>): Prisma__InstitutionStudentClient<$Result.GetResult<Prisma.$InstitutionStudentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -7154,6 +7494,8 @@ export namespace Prisma {
     readonly planStartedAt: FieldRef<"User", 'DateTime'>
     readonly planExpiresAt: FieldRef<"User", 'DateTime'>
     readonly planBillingCycle: FieldRef<"User", 'String'>
+    readonly referralCode: FieldRef<"User", 'String'>
+    readonly referredBy: FieldRef<"User", 'String'>
   }
     
 
@@ -8071,6 +8413,97 @@ export namespace Prisma {
      */
     include?: UserCreditsInclude<ExtArgs> | null
     where?: UserCreditsWhereInput
+  }
+
+  /**
+   * User.referredUsers
+   */
+  export type User$referredUsersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Referral
+     */
+    select?: ReferralSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Referral
+     */
+    omit?: ReferralOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReferralInclude<ExtArgs> | null
+    where?: ReferralWhereInput
+    orderBy?: ReferralOrderByWithRelationInput | ReferralOrderByWithRelationInput[]
+    cursor?: ReferralWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ReferralScalarFieldEnum | ReferralScalarFieldEnum[]
+  }
+
+  /**
+   * User.referralsMade
+   */
+  export type User$referralsMadeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Referral
+     */
+    select?: ReferralSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Referral
+     */
+    omit?: ReferralOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReferralInclude<ExtArgs> | null
+    where?: ReferralWhereInput
+    orderBy?: ReferralOrderByWithRelationInput | ReferralOrderByWithRelationInput[]
+    cursor?: ReferralWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ReferralScalarFieldEnum | ReferralScalarFieldEnum[]
+  }
+
+  /**
+   * User.mashContext
+   */
+  export type User$mashContextArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MashContext
+     */
+    select?: MashContextSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MashContext
+     */
+    omit?: MashContextOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MashContextInclude<ExtArgs> | null
+    where?: MashContextWhereInput
+  }
+
+  /**
+   * User.analyticsEvents
+   */
+  export type User$analyticsEventsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsEvent
+     */
+    select?: AnalyticsEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsEvent
+     */
+    omit?: AnalyticsEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsEventInclude<ExtArgs> | null
+    where?: AnalyticsEventWhereInput
+    orderBy?: AnalyticsEventOrderByWithRelationInput | AnalyticsEventOrderByWithRelationInput[]
+    cursor?: AnalyticsEventWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AnalyticsEventScalarFieldEnum | AnalyticsEventScalarFieldEnum[]
   }
 
   /**
@@ -9448,6 +9881,12 @@ export namespace Prisma {
     totalSessions: number | null
     sessionRate1on1: number | null
     sessionRateGroup: number | null
+    currentActiveSessions: number | null
+    maxConcurrentSessions: number | null
+    totalAssignmentsToday: number | null
+    responseRate: number | null
+    sessionsAssigned: number | null
+    sessionsResponded: number | null
   }
 
   export type TutorProfileSumAggregateOutputType = {
@@ -9456,6 +9895,12 @@ export namespace Prisma {
     totalSessions: number | null
     sessionRate1on1: number | null
     sessionRateGroup: number | null
+    currentActiveSessions: number | null
+    maxConcurrentSessions: number | null
+    totalAssignmentsToday: number | null
+    responseRate: number | null
+    sessionsAssigned: number | null
+    sessionsResponded: number | null
   }
 
   export type TutorProfileMinAggregateOutputType = {
@@ -9472,6 +9917,13 @@ export namespace Prisma {
     sessionRate1on1: number | null
     sessionRateGroup: number | null
     payoutPhone: string | null
+    currentActiveSessions: number | null
+    maxConcurrentSessions: number | null
+    lastAssignedAt: Date | null
+    totalAssignmentsToday: number | null
+    responseRate: number | null
+    sessionsAssigned: number | null
+    sessionsResponded: number | null
   }
 
   export type TutorProfileMaxAggregateOutputType = {
@@ -9488,6 +9940,13 @@ export namespace Prisma {
     sessionRate1on1: number | null
     sessionRateGroup: number | null
     payoutPhone: string | null
+    currentActiveSessions: number | null
+    maxConcurrentSessions: number | null
+    lastAssignedAt: Date | null
+    totalAssignmentsToday: number | null
+    responseRate: number | null
+    sessionsAssigned: number | null
+    sessionsResponded: number | null
   }
 
   export type TutorProfileCountAggregateOutputType = {
@@ -9507,6 +9966,13 @@ export namespace Prisma {
     sessionRate1on1: number
     sessionRateGroup: number
     payoutPhone: number
+    currentActiveSessions: number
+    maxConcurrentSessions: number
+    lastAssignedAt: number
+    totalAssignmentsToday: number
+    responseRate: number
+    sessionsAssigned: number
+    sessionsResponded: number
     _all: number
   }
 
@@ -9517,6 +9983,12 @@ export namespace Prisma {
     totalSessions?: true
     sessionRate1on1?: true
     sessionRateGroup?: true
+    currentActiveSessions?: true
+    maxConcurrentSessions?: true
+    totalAssignmentsToday?: true
+    responseRate?: true
+    sessionsAssigned?: true
+    sessionsResponded?: true
   }
 
   export type TutorProfileSumAggregateInputType = {
@@ -9525,6 +9997,12 @@ export namespace Prisma {
     totalSessions?: true
     sessionRate1on1?: true
     sessionRateGroup?: true
+    currentActiveSessions?: true
+    maxConcurrentSessions?: true
+    totalAssignmentsToday?: true
+    responseRate?: true
+    sessionsAssigned?: true
+    sessionsResponded?: true
   }
 
   export type TutorProfileMinAggregateInputType = {
@@ -9541,6 +10019,13 @@ export namespace Prisma {
     sessionRate1on1?: true
     sessionRateGroup?: true
     payoutPhone?: true
+    currentActiveSessions?: true
+    maxConcurrentSessions?: true
+    lastAssignedAt?: true
+    totalAssignmentsToday?: true
+    responseRate?: true
+    sessionsAssigned?: true
+    sessionsResponded?: true
   }
 
   export type TutorProfileMaxAggregateInputType = {
@@ -9557,6 +10042,13 @@ export namespace Prisma {
     sessionRate1on1?: true
     sessionRateGroup?: true
     payoutPhone?: true
+    currentActiveSessions?: true
+    maxConcurrentSessions?: true
+    lastAssignedAt?: true
+    totalAssignmentsToday?: true
+    responseRate?: true
+    sessionsAssigned?: true
+    sessionsResponded?: true
   }
 
   export type TutorProfileCountAggregateInputType = {
@@ -9576,6 +10068,13 @@ export namespace Prisma {
     sessionRate1on1?: true
     sessionRateGroup?: true
     payoutPhone?: true
+    currentActiveSessions?: true
+    maxConcurrentSessions?: true
+    lastAssignedAt?: true
+    totalAssignmentsToday?: true
+    responseRate?: true
+    sessionsAssigned?: true
+    sessionsResponded?: true
     _all?: true
   }
 
@@ -9682,6 +10181,13 @@ export namespace Prisma {
     sessionRate1on1: number | null
     sessionRateGroup: number | null
     payoutPhone: string | null
+    currentActiveSessions: number
+    maxConcurrentSessions: number
+    lastAssignedAt: Date | null
+    totalAssignmentsToday: number
+    responseRate: number
+    sessionsAssigned: number
+    sessionsResponded: number
     _count: TutorProfileCountAggregateOutputType | null
     _avg: TutorProfileAvgAggregateOutputType | null
     _sum: TutorProfileSumAggregateOutputType | null
@@ -9720,6 +10226,13 @@ export namespace Prisma {
     sessionRate1on1?: boolean
     sessionRateGroup?: boolean
     payoutPhone?: boolean
+    currentActiveSessions?: boolean
+    maxConcurrentSessions?: boolean
+    lastAssignedAt?: boolean
+    totalAssignmentsToday?: boolean
+    responseRate?: boolean
+    sessionsAssigned?: boolean
+    sessionsResponded?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["tutorProfile"]>
 
@@ -9740,6 +10253,13 @@ export namespace Prisma {
     sessionRate1on1?: boolean
     sessionRateGroup?: boolean
     payoutPhone?: boolean
+    currentActiveSessions?: boolean
+    maxConcurrentSessions?: boolean
+    lastAssignedAt?: boolean
+    totalAssignmentsToday?: boolean
+    responseRate?: boolean
+    sessionsAssigned?: boolean
+    sessionsResponded?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["tutorProfile"]>
 
@@ -9760,6 +10280,13 @@ export namespace Prisma {
     sessionRate1on1?: boolean
     sessionRateGroup?: boolean
     payoutPhone?: boolean
+    currentActiveSessions?: boolean
+    maxConcurrentSessions?: boolean
+    lastAssignedAt?: boolean
+    totalAssignmentsToday?: boolean
+    responseRate?: boolean
+    sessionsAssigned?: boolean
+    sessionsResponded?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["tutorProfile"]>
 
@@ -9780,9 +10307,16 @@ export namespace Prisma {
     sessionRate1on1?: boolean
     sessionRateGroup?: boolean
     payoutPhone?: boolean
+    currentActiveSessions?: boolean
+    maxConcurrentSessions?: boolean
+    lastAssignedAt?: boolean
+    totalAssignmentsToday?: boolean
+    responseRate?: boolean
+    sessionsAssigned?: boolean
+    sessionsResponded?: boolean
   }
 
-  export type TutorProfileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"userId" | "subjects" | "levelsTaught" | "verificationPath" | "gradesProof" | "hourlyRate" | "bio" | "isVerified" | "verifiedAt" | "rating" | "totalSessions" | "mpesaNumber" | "availability" | "sessionRate1on1" | "sessionRateGroup" | "payoutPhone", ExtArgs["result"]["tutorProfile"]>
+  export type TutorProfileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"userId" | "subjects" | "levelsTaught" | "verificationPath" | "gradesProof" | "hourlyRate" | "bio" | "isVerified" | "verifiedAt" | "rating" | "totalSessions" | "mpesaNumber" | "availability" | "sessionRate1on1" | "sessionRateGroup" | "payoutPhone" | "currentActiveSessions" | "maxConcurrentSessions" | "lastAssignedAt" | "totalAssignmentsToday" | "responseRate" | "sessionsAssigned" | "sessionsResponded", ExtArgs["result"]["tutorProfile"]>
   export type TutorProfileInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -9815,6 +10349,13 @@ export namespace Prisma {
       sessionRate1on1: number | null
       sessionRateGroup: number | null
       payoutPhone: string | null
+      currentActiveSessions: number
+      maxConcurrentSessions: number
+      lastAssignedAt: Date | null
+      totalAssignmentsToday: number
+      responseRate: number
+      sessionsAssigned: number
+      sessionsResponded: number
     }, ExtArgs["result"]["tutorProfile"]>
     composites: {}
   }
@@ -10255,6 +10796,13 @@ export namespace Prisma {
     readonly sessionRate1on1: FieldRef<"TutorProfile", 'Int'>
     readonly sessionRateGroup: FieldRef<"TutorProfile", 'Int'>
     readonly payoutPhone: FieldRef<"TutorProfile", 'String'>
+    readonly currentActiveSessions: FieldRef<"TutorProfile", 'Int'>
+    readonly maxConcurrentSessions: FieldRef<"TutorProfile", 'Int'>
+    readonly lastAssignedAt: FieldRef<"TutorProfile", 'DateTime'>
+    readonly totalAssignmentsToday: FieldRef<"TutorProfile", 'Int'>
+    readonly responseRate: FieldRef<"TutorProfile", 'Float'>
+    readonly sessionsAssigned: FieldRef<"TutorProfile", 'Int'>
+    readonly sessionsResponded: FieldRef<"TutorProfile", 'Int'>
   }
     
 
@@ -61923,6 +62471,3220 @@ export namespace Prisma {
 
 
   /**
+   * Model Referral
+   */
+
+  export type AggregateReferral = {
+    _count: ReferralCountAggregateOutputType | null
+    _min: ReferralMinAggregateOutputType | null
+    _max: ReferralMaxAggregateOutputType | null
+  }
+
+  export type ReferralMinAggregateOutputType = {
+    id: string | null
+    referrerId: string | null
+    referredId: string | null
+    codeUsed: string | null
+    bonusAwarded: boolean | null
+    createdAt: Date | null
+  }
+
+  export type ReferralMaxAggregateOutputType = {
+    id: string | null
+    referrerId: string | null
+    referredId: string | null
+    codeUsed: string | null
+    bonusAwarded: boolean | null
+    createdAt: Date | null
+  }
+
+  export type ReferralCountAggregateOutputType = {
+    id: number
+    referrerId: number
+    referredId: number
+    codeUsed: number
+    bonusAwarded: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type ReferralMinAggregateInputType = {
+    id?: true
+    referrerId?: true
+    referredId?: true
+    codeUsed?: true
+    bonusAwarded?: true
+    createdAt?: true
+  }
+
+  export type ReferralMaxAggregateInputType = {
+    id?: true
+    referrerId?: true
+    referredId?: true
+    codeUsed?: true
+    bonusAwarded?: true
+    createdAt?: true
+  }
+
+  export type ReferralCountAggregateInputType = {
+    id?: true
+    referrerId?: true
+    referredId?: true
+    codeUsed?: true
+    bonusAwarded?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type ReferralAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Referral to aggregate.
+     */
+    where?: ReferralWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Referrals to fetch.
+     */
+    orderBy?: ReferralOrderByWithRelationInput | ReferralOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ReferralWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Referrals from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Referrals.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Referrals
+    **/
+    _count?: true | ReferralCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ReferralMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ReferralMaxAggregateInputType
+  }
+
+  export type GetReferralAggregateType<T extends ReferralAggregateArgs> = {
+        [P in keyof T & keyof AggregateReferral]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateReferral[P]>
+      : GetScalarType<T[P], AggregateReferral[P]>
+  }
+
+
+
+
+  export type ReferralGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReferralWhereInput
+    orderBy?: ReferralOrderByWithAggregationInput | ReferralOrderByWithAggregationInput[]
+    by: ReferralScalarFieldEnum[] | ReferralScalarFieldEnum
+    having?: ReferralScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ReferralCountAggregateInputType | true
+    _min?: ReferralMinAggregateInputType
+    _max?: ReferralMaxAggregateInputType
+  }
+
+  export type ReferralGroupByOutputType = {
+    id: string
+    referrerId: string
+    referredId: string
+    codeUsed: string
+    bonusAwarded: boolean
+    createdAt: Date
+    _count: ReferralCountAggregateOutputType | null
+    _min: ReferralMinAggregateOutputType | null
+    _max: ReferralMaxAggregateOutputType | null
+  }
+
+  type GetReferralGroupByPayload<T extends ReferralGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ReferralGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ReferralGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ReferralGroupByOutputType[P]>
+            : GetScalarType<T[P], ReferralGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ReferralSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    referrerId?: boolean
+    referredId?: boolean
+    codeUsed?: boolean
+    bonusAwarded?: boolean
+    createdAt?: boolean
+    referrer?: boolean | UserDefaultArgs<ExtArgs>
+    referred?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["referral"]>
+
+  export type ReferralSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    referrerId?: boolean
+    referredId?: boolean
+    codeUsed?: boolean
+    bonusAwarded?: boolean
+    createdAt?: boolean
+    referrer?: boolean | UserDefaultArgs<ExtArgs>
+    referred?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["referral"]>
+
+  export type ReferralSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    referrerId?: boolean
+    referredId?: boolean
+    codeUsed?: boolean
+    bonusAwarded?: boolean
+    createdAt?: boolean
+    referrer?: boolean | UserDefaultArgs<ExtArgs>
+    referred?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["referral"]>
+
+  export type ReferralSelectScalar = {
+    id?: boolean
+    referrerId?: boolean
+    referredId?: boolean
+    codeUsed?: boolean
+    bonusAwarded?: boolean
+    createdAt?: boolean
+  }
+
+  export type ReferralOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "referrerId" | "referredId" | "codeUsed" | "bonusAwarded" | "createdAt", ExtArgs["result"]["referral"]>
+  export type ReferralInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    referrer?: boolean | UserDefaultArgs<ExtArgs>
+    referred?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type ReferralIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    referrer?: boolean | UserDefaultArgs<ExtArgs>
+    referred?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type ReferralIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    referrer?: boolean | UserDefaultArgs<ExtArgs>
+    referred?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $ReferralPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Referral"
+    objects: {
+      referrer: Prisma.$UserPayload<ExtArgs>
+      referred: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      referrerId: string
+      referredId: string
+      codeUsed: string
+      bonusAwarded: boolean
+      createdAt: Date
+    }, ExtArgs["result"]["referral"]>
+    composites: {}
+  }
+
+  type ReferralGetPayload<S extends boolean | null | undefined | ReferralDefaultArgs> = $Result.GetResult<Prisma.$ReferralPayload, S>
+
+  type ReferralCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ReferralFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ReferralCountAggregateInputType | true
+    }
+
+  export interface ReferralDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Referral'], meta: { name: 'Referral' } }
+    /**
+     * Find zero or one Referral that matches the filter.
+     * @param {ReferralFindUniqueArgs} args - Arguments to find a Referral
+     * @example
+     * // Get one Referral
+     * const referral = await prisma.referral.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ReferralFindUniqueArgs>(args: SelectSubset<T, ReferralFindUniqueArgs<ExtArgs>>): Prisma__ReferralClient<$Result.GetResult<Prisma.$ReferralPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Referral that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ReferralFindUniqueOrThrowArgs} args - Arguments to find a Referral
+     * @example
+     * // Get one Referral
+     * const referral = await prisma.referral.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ReferralFindUniqueOrThrowArgs>(args: SelectSubset<T, ReferralFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ReferralClient<$Result.GetResult<Prisma.$ReferralPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Referral that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReferralFindFirstArgs} args - Arguments to find a Referral
+     * @example
+     * // Get one Referral
+     * const referral = await prisma.referral.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ReferralFindFirstArgs>(args?: SelectSubset<T, ReferralFindFirstArgs<ExtArgs>>): Prisma__ReferralClient<$Result.GetResult<Prisma.$ReferralPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Referral that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReferralFindFirstOrThrowArgs} args - Arguments to find a Referral
+     * @example
+     * // Get one Referral
+     * const referral = await prisma.referral.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ReferralFindFirstOrThrowArgs>(args?: SelectSubset<T, ReferralFindFirstOrThrowArgs<ExtArgs>>): Prisma__ReferralClient<$Result.GetResult<Prisma.$ReferralPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Referrals that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReferralFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Referrals
+     * const referrals = await prisma.referral.findMany()
+     * 
+     * // Get first 10 Referrals
+     * const referrals = await prisma.referral.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const referralWithIdOnly = await prisma.referral.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ReferralFindManyArgs>(args?: SelectSubset<T, ReferralFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReferralPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Referral.
+     * @param {ReferralCreateArgs} args - Arguments to create a Referral.
+     * @example
+     * // Create one Referral
+     * const Referral = await prisma.referral.create({
+     *   data: {
+     *     // ... data to create a Referral
+     *   }
+     * })
+     * 
+     */
+    create<T extends ReferralCreateArgs>(args: SelectSubset<T, ReferralCreateArgs<ExtArgs>>): Prisma__ReferralClient<$Result.GetResult<Prisma.$ReferralPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Referrals.
+     * @param {ReferralCreateManyArgs} args - Arguments to create many Referrals.
+     * @example
+     * // Create many Referrals
+     * const referral = await prisma.referral.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ReferralCreateManyArgs>(args?: SelectSubset<T, ReferralCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Referrals and returns the data saved in the database.
+     * @param {ReferralCreateManyAndReturnArgs} args - Arguments to create many Referrals.
+     * @example
+     * // Create many Referrals
+     * const referral = await prisma.referral.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Referrals and only return the `id`
+     * const referralWithIdOnly = await prisma.referral.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ReferralCreateManyAndReturnArgs>(args?: SelectSubset<T, ReferralCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReferralPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Referral.
+     * @param {ReferralDeleteArgs} args - Arguments to delete one Referral.
+     * @example
+     * // Delete one Referral
+     * const Referral = await prisma.referral.delete({
+     *   where: {
+     *     // ... filter to delete one Referral
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ReferralDeleteArgs>(args: SelectSubset<T, ReferralDeleteArgs<ExtArgs>>): Prisma__ReferralClient<$Result.GetResult<Prisma.$ReferralPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Referral.
+     * @param {ReferralUpdateArgs} args - Arguments to update one Referral.
+     * @example
+     * // Update one Referral
+     * const referral = await prisma.referral.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ReferralUpdateArgs>(args: SelectSubset<T, ReferralUpdateArgs<ExtArgs>>): Prisma__ReferralClient<$Result.GetResult<Prisma.$ReferralPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Referrals.
+     * @param {ReferralDeleteManyArgs} args - Arguments to filter Referrals to delete.
+     * @example
+     * // Delete a few Referrals
+     * const { count } = await prisma.referral.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ReferralDeleteManyArgs>(args?: SelectSubset<T, ReferralDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Referrals.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReferralUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Referrals
+     * const referral = await prisma.referral.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ReferralUpdateManyArgs>(args: SelectSubset<T, ReferralUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Referrals and returns the data updated in the database.
+     * @param {ReferralUpdateManyAndReturnArgs} args - Arguments to update many Referrals.
+     * @example
+     * // Update many Referrals
+     * const referral = await prisma.referral.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Referrals and only return the `id`
+     * const referralWithIdOnly = await prisma.referral.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ReferralUpdateManyAndReturnArgs>(args: SelectSubset<T, ReferralUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReferralPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Referral.
+     * @param {ReferralUpsertArgs} args - Arguments to update or create a Referral.
+     * @example
+     * // Update or create a Referral
+     * const referral = await prisma.referral.upsert({
+     *   create: {
+     *     // ... data to create a Referral
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Referral we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ReferralUpsertArgs>(args: SelectSubset<T, ReferralUpsertArgs<ExtArgs>>): Prisma__ReferralClient<$Result.GetResult<Prisma.$ReferralPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Referrals.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReferralCountArgs} args - Arguments to filter Referrals to count.
+     * @example
+     * // Count the number of Referrals
+     * const count = await prisma.referral.count({
+     *   where: {
+     *     // ... the filter for the Referrals we want to count
+     *   }
+     * })
+    **/
+    count<T extends ReferralCountArgs>(
+      args?: Subset<T, ReferralCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ReferralCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Referral.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReferralAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ReferralAggregateArgs>(args: Subset<T, ReferralAggregateArgs>): Prisma.PrismaPromise<GetReferralAggregateType<T>>
+
+    /**
+     * Group by Referral.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReferralGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ReferralGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ReferralGroupByArgs['orderBy'] }
+        : { orderBy?: ReferralGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ReferralGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetReferralGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Referral model
+   */
+  readonly fields: ReferralFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Referral.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ReferralClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    referrer<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    referred<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Referral model
+   */
+  interface ReferralFieldRefs {
+    readonly id: FieldRef<"Referral", 'String'>
+    readonly referrerId: FieldRef<"Referral", 'String'>
+    readonly referredId: FieldRef<"Referral", 'String'>
+    readonly codeUsed: FieldRef<"Referral", 'String'>
+    readonly bonusAwarded: FieldRef<"Referral", 'Boolean'>
+    readonly createdAt: FieldRef<"Referral", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Referral findUnique
+   */
+  export type ReferralFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Referral
+     */
+    select?: ReferralSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Referral
+     */
+    omit?: ReferralOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReferralInclude<ExtArgs> | null
+    /**
+     * Filter, which Referral to fetch.
+     */
+    where: ReferralWhereUniqueInput
+  }
+
+  /**
+   * Referral findUniqueOrThrow
+   */
+  export type ReferralFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Referral
+     */
+    select?: ReferralSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Referral
+     */
+    omit?: ReferralOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReferralInclude<ExtArgs> | null
+    /**
+     * Filter, which Referral to fetch.
+     */
+    where: ReferralWhereUniqueInput
+  }
+
+  /**
+   * Referral findFirst
+   */
+  export type ReferralFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Referral
+     */
+    select?: ReferralSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Referral
+     */
+    omit?: ReferralOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReferralInclude<ExtArgs> | null
+    /**
+     * Filter, which Referral to fetch.
+     */
+    where?: ReferralWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Referrals to fetch.
+     */
+    orderBy?: ReferralOrderByWithRelationInput | ReferralOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Referrals.
+     */
+    cursor?: ReferralWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Referrals from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Referrals.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Referrals.
+     */
+    distinct?: ReferralScalarFieldEnum | ReferralScalarFieldEnum[]
+  }
+
+  /**
+   * Referral findFirstOrThrow
+   */
+  export type ReferralFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Referral
+     */
+    select?: ReferralSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Referral
+     */
+    omit?: ReferralOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReferralInclude<ExtArgs> | null
+    /**
+     * Filter, which Referral to fetch.
+     */
+    where?: ReferralWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Referrals to fetch.
+     */
+    orderBy?: ReferralOrderByWithRelationInput | ReferralOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Referrals.
+     */
+    cursor?: ReferralWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Referrals from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Referrals.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Referrals.
+     */
+    distinct?: ReferralScalarFieldEnum | ReferralScalarFieldEnum[]
+  }
+
+  /**
+   * Referral findMany
+   */
+  export type ReferralFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Referral
+     */
+    select?: ReferralSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Referral
+     */
+    omit?: ReferralOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReferralInclude<ExtArgs> | null
+    /**
+     * Filter, which Referrals to fetch.
+     */
+    where?: ReferralWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Referrals to fetch.
+     */
+    orderBy?: ReferralOrderByWithRelationInput | ReferralOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Referrals.
+     */
+    cursor?: ReferralWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Referrals from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Referrals.
+     */
+    skip?: number
+    distinct?: ReferralScalarFieldEnum | ReferralScalarFieldEnum[]
+  }
+
+  /**
+   * Referral create
+   */
+  export type ReferralCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Referral
+     */
+    select?: ReferralSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Referral
+     */
+    omit?: ReferralOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReferralInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Referral.
+     */
+    data: XOR<ReferralCreateInput, ReferralUncheckedCreateInput>
+  }
+
+  /**
+   * Referral createMany
+   */
+  export type ReferralCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Referrals.
+     */
+    data: ReferralCreateManyInput | ReferralCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Referral createManyAndReturn
+   */
+  export type ReferralCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Referral
+     */
+    select?: ReferralSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Referral
+     */
+    omit?: ReferralOmit<ExtArgs> | null
+    /**
+     * The data used to create many Referrals.
+     */
+    data: ReferralCreateManyInput | ReferralCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReferralIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Referral update
+   */
+  export type ReferralUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Referral
+     */
+    select?: ReferralSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Referral
+     */
+    omit?: ReferralOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReferralInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Referral.
+     */
+    data: XOR<ReferralUpdateInput, ReferralUncheckedUpdateInput>
+    /**
+     * Choose, which Referral to update.
+     */
+    where: ReferralWhereUniqueInput
+  }
+
+  /**
+   * Referral updateMany
+   */
+  export type ReferralUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Referrals.
+     */
+    data: XOR<ReferralUpdateManyMutationInput, ReferralUncheckedUpdateManyInput>
+    /**
+     * Filter which Referrals to update
+     */
+    where?: ReferralWhereInput
+    /**
+     * Limit how many Referrals to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Referral updateManyAndReturn
+   */
+  export type ReferralUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Referral
+     */
+    select?: ReferralSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Referral
+     */
+    omit?: ReferralOmit<ExtArgs> | null
+    /**
+     * The data used to update Referrals.
+     */
+    data: XOR<ReferralUpdateManyMutationInput, ReferralUncheckedUpdateManyInput>
+    /**
+     * Filter which Referrals to update
+     */
+    where?: ReferralWhereInput
+    /**
+     * Limit how many Referrals to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReferralIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Referral upsert
+   */
+  export type ReferralUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Referral
+     */
+    select?: ReferralSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Referral
+     */
+    omit?: ReferralOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReferralInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Referral to update in case it exists.
+     */
+    where: ReferralWhereUniqueInput
+    /**
+     * In case the Referral found by the `where` argument doesn't exist, create a new Referral with this data.
+     */
+    create: XOR<ReferralCreateInput, ReferralUncheckedCreateInput>
+    /**
+     * In case the Referral was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ReferralUpdateInput, ReferralUncheckedUpdateInput>
+  }
+
+  /**
+   * Referral delete
+   */
+  export type ReferralDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Referral
+     */
+    select?: ReferralSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Referral
+     */
+    omit?: ReferralOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReferralInclude<ExtArgs> | null
+    /**
+     * Filter which Referral to delete.
+     */
+    where: ReferralWhereUniqueInput
+  }
+
+  /**
+   * Referral deleteMany
+   */
+  export type ReferralDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Referrals to delete
+     */
+    where?: ReferralWhereInput
+    /**
+     * Limit how many Referrals to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Referral without action
+   */
+  export type ReferralDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Referral
+     */
+    select?: ReferralSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Referral
+     */
+    omit?: ReferralOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReferralInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model MashContext
+   */
+
+  export type AggregateMashContext = {
+    _count: MashContextCountAggregateOutputType | null
+    _min: MashContextMinAggregateOutputType | null
+    _max: MashContextMaxAggregateOutputType | null
+  }
+
+  export type MashContextMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    lastSessionSummary: string | null
+    updatedAt: Date | null
+  }
+
+  export type MashContextMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    lastSessionSummary: string | null
+    updatedAt: Date | null
+  }
+
+  export type MashContextCountAggregateOutputType = {
+    id: number
+    userId: number
+    subjectsStruggled: number
+    topicsCovered: number
+    lastSessionSummary: number
+    weakAreas: number
+    strongAreas: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type MashContextMinAggregateInputType = {
+    id?: true
+    userId?: true
+    lastSessionSummary?: true
+    updatedAt?: true
+  }
+
+  export type MashContextMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    lastSessionSummary?: true
+    updatedAt?: true
+  }
+
+  export type MashContextCountAggregateInputType = {
+    id?: true
+    userId?: true
+    subjectsStruggled?: true
+    topicsCovered?: true
+    lastSessionSummary?: true
+    weakAreas?: true
+    strongAreas?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type MashContextAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MashContext to aggregate.
+     */
+    where?: MashContextWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MashContexts to fetch.
+     */
+    orderBy?: MashContextOrderByWithRelationInput | MashContextOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: MashContextWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MashContexts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MashContexts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned MashContexts
+    **/
+    _count?: true | MashContextCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: MashContextMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: MashContextMaxAggregateInputType
+  }
+
+  export type GetMashContextAggregateType<T extends MashContextAggregateArgs> = {
+        [P in keyof T & keyof AggregateMashContext]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateMashContext[P]>
+      : GetScalarType<T[P], AggregateMashContext[P]>
+  }
+
+
+
+
+  export type MashContextGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MashContextWhereInput
+    orderBy?: MashContextOrderByWithAggregationInput | MashContextOrderByWithAggregationInput[]
+    by: MashContextScalarFieldEnum[] | MashContextScalarFieldEnum
+    having?: MashContextScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: MashContextCountAggregateInputType | true
+    _min?: MashContextMinAggregateInputType
+    _max?: MashContextMaxAggregateInputType
+  }
+
+  export type MashContextGroupByOutputType = {
+    id: string
+    userId: string
+    subjectsStruggled: string[]
+    topicsCovered: string[]
+    lastSessionSummary: string | null
+    weakAreas: JsonValue | null
+    strongAreas: JsonValue | null
+    updatedAt: Date
+    _count: MashContextCountAggregateOutputType | null
+    _min: MashContextMinAggregateOutputType | null
+    _max: MashContextMaxAggregateOutputType | null
+  }
+
+  type GetMashContextGroupByPayload<T extends MashContextGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<MashContextGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof MashContextGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], MashContextGroupByOutputType[P]>
+            : GetScalarType<T[P], MashContextGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type MashContextSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    subjectsStruggled?: boolean
+    topicsCovered?: boolean
+    lastSessionSummary?: boolean
+    weakAreas?: boolean
+    strongAreas?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["mashContext"]>
+
+  export type MashContextSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    subjectsStruggled?: boolean
+    topicsCovered?: boolean
+    lastSessionSummary?: boolean
+    weakAreas?: boolean
+    strongAreas?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["mashContext"]>
+
+  export type MashContextSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    subjectsStruggled?: boolean
+    topicsCovered?: boolean
+    lastSessionSummary?: boolean
+    weakAreas?: boolean
+    strongAreas?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["mashContext"]>
+
+  export type MashContextSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    subjectsStruggled?: boolean
+    topicsCovered?: boolean
+    lastSessionSummary?: boolean
+    weakAreas?: boolean
+    strongAreas?: boolean
+    updatedAt?: boolean
+  }
+
+  export type MashContextOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "subjectsStruggled" | "topicsCovered" | "lastSessionSummary" | "weakAreas" | "strongAreas" | "updatedAt", ExtArgs["result"]["mashContext"]>
+  export type MashContextInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type MashContextIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type MashContextIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $MashContextPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "MashContext"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      subjectsStruggled: string[]
+      topicsCovered: string[]
+      lastSessionSummary: string | null
+      weakAreas: Prisma.JsonValue | null
+      strongAreas: Prisma.JsonValue | null
+      updatedAt: Date
+    }, ExtArgs["result"]["mashContext"]>
+    composites: {}
+  }
+
+  type MashContextGetPayload<S extends boolean | null | undefined | MashContextDefaultArgs> = $Result.GetResult<Prisma.$MashContextPayload, S>
+
+  type MashContextCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<MashContextFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: MashContextCountAggregateInputType | true
+    }
+
+  export interface MashContextDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['MashContext'], meta: { name: 'MashContext' } }
+    /**
+     * Find zero or one MashContext that matches the filter.
+     * @param {MashContextFindUniqueArgs} args - Arguments to find a MashContext
+     * @example
+     * // Get one MashContext
+     * const mashContext = await prisma.mashContext.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends MashContextFindUniqueArgs>(args: SelectSubset<T, MashContextFindUniqueArgs<ExtArgs>>): Prisma__MashContextClient<$Result.GetResult<Prisma.$MashContextPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one MashContext that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {MashContextFindUniqueOrThrowArgs} args - Arguments to find a MashContext
+     * @example
+     * // Get one MashContext
+     * const mashContext = await prisma.mashContext.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends MashContextFindUniqueOrThrowArgs>(args: SelectSubset<T, MashContextFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MashContextClient<$Result.GetResult<Prisma.$MashContextPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MashContext that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MashContextFindFirstArgs} args - Arguments to find a MashContext
+     * @example
+     * // Get one MashContext
+     * const mashContext = await prisma.mashContext.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends MashContextFindFirstArgs>(args?: SelectSubset<T, MashContextFindFirstArgs<ExtArgs>>): Prisma__MashContextClient<$Result.GetResult<Prisma.$MashContextPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MashContext that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MashContextFindFirstOrThrowArgs} args - Arguments to find a MashContext
+     * @example
+     * // Get one MashContext
+     * const mashContext = await prisma.mashContext.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends MashContextFindFirstOrThrowArgs>(args?: SelectSubset<T, MashContextFindFirstOrThrowArgs<ExtArgs>>): Prisma__MashContextClient<$Result.GetResult<Prisma.$MashContextPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more MashContexts that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MashContextFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all MashContexts
+     * const mashContexts = await prisma.mashContext.findMany()
+     * 
+     * // Get first 10 MashContexts
+     * const mashContexts = await prisma.mashContext.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const mashContextWithIdOnly = await prisma.mashContext.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends MashContextFindManyArgs>(args?: SelectSubset<T, MashContextFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MashContextPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a MashContext.
+     * @param {MashContextCreateArgs} args - Arguments to create a MashContext.
+     * @example
+     * // Create one MashContext
+     * const MashContext = await prisma.mashContext.create({
+     *   data: {
+     *     // ... data to create a MashContext
+     *   }
+     * })
+     * 
+     */
+    create<T extends MashContextCreateArgs>(args: SelectSubset<T, MashContextCreateArgs<ExtArgs>>): Prisma__MashContextClient<$Result.GetResult<Prisma.$MashContextPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many MashContexts.
+     * @param {MashContextCreateManyArgs} args - Arguments to create many MashContexts.
+     * @example
+     * // Create many MashContexts
+     * const mashContext = await prisma.mashContext.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends MashContextCreateManyArgs>(args?: SelectSubset<T, MashContextCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many MashContexts and returns the data saved in the database.
+     * @param {MashContextCreateManyAndReturnArgs} args - Arguments to create many MashContexts.
+     * @example
+     * // Create many MashContexts
+     * const mashContext = await prisma.mashContext.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many MashContexts and only return the `id`
+     * const mashContextWithIdOnly = await prisma.mashContext.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends MashContextCreateManyAndReturnArgs>(args?: SelectSubset<T, MashContextCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MashContextPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a MashContext.
+     * @param {MashContextDeleteArgs} args - Arguments to delete one MashContext.
+     * @example
+     * // Delete one MashContext
+     * const MashContext = await prisma.mashContext.delete({
+     *   where: {
+     *     // ... filter to delete one MashContext
+     *   }
+     * })
+     * 
+     */
+    delete<T extends MashContextDeleteArgs>(args: SelectSubset<T, MashContextDeleteArgs<ExtArgs>>): Prisma__MashContextClient<$Result.GetResult<Prisma.$MashContextPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one MashContext.
+     * @param {MashContextUpdateArgs} args - Arguments to update one MashContext.
+     * @example
+     * // Update one MashContext
+     * const mashContext = await prisma.mashContext.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends MashContextUpdateArgs>(args: SelectSubset<T, MashContextUpdateArgs<ExtArgs>>): Prisma__MashContextClient<$Result.GetResult<Prisma.$MashContextPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more MashContexts.
+     * @param {MashContextDeleteManyArgs} args - Arguments to filter MashContexts to delete.
+     * @example
+     * // Delete a few MashContexts
+     * const { count } = await prisma.mashContext.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends MashContextDeleteManyArgs>(args?: SelectSubset<T, MashContextDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more MashContexts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MashContextUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many MashContexts
+     * const mashContext = await prisma.mashContext.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends MashContextUpdateManyArgs>(args: SelectSubset<T, MashContextUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more MashContexts and returns the data updated in the database.
+     * @param {MashContextUpdateManyAndReturnArgs} args - Arguments to update many MashContexts.
+     * @example
+     * // Update many MashContexts
+     * const mashContext = await prisma.mashContext.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more MashContexts and only return the `id`
+     * const mashContextWithIdOnly = await prisma.mashContext.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends MashContextUpdateManyAndReturnArgs>(args: SelectSubset<T, MashContextUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MashContextPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one MashContext.
+     * @param {MashContextUpsertArgs} args - Arguments to update or create a MashContext.
+     * @example
+     * // Update or create a MashContext
+     * const mashContext = await prisma.mashContext.upsert({
+     *   create: {
+     *     // ... data to create a MashContext
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the MashContext we want to update
+     *   }
+     * })
+     */
+    upsert<T extends MashContextUpsertArgs>(args: SelectSubset<T, MashContextUpsertArgs<ExtArgs>>): Prisma__MashContextClient<$Result.GetResult<Prisma.$MashContextPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of MashContexts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MashContextCountArgs} args - Arguments to filter MashContexts to count.
+     * @example
+     * // Count the number of MashContexts
+     * const count = await prisma.mashContext.count({
+     *   where: {
+     *     // ... the filter for the MashContexts we want to count
+     *   }
+     * })
+    **/
+    count<T extends MashContextCountArgs>(
+      args?: Subset<T, MashContextCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], MashContextCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a MashContext.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MashContextAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends MashContextAggregateArgs>(args: Subset<T, MashContextAggregateArgs>): Prisma.PrismaPromise<GetMashContextAggregateType<T>>
+
+    /**
+     * Group by MashContext.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MashContextGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends MashContextGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: MashContextGroupByArgs['orderBy'] }
+        : { orderBy?: MashContextGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, MashContextGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMashContextGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the MashContext model
+   */
+  readonly fields: MashContextFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for MashContext.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__MashContextClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the MashContext model
+   */
+  interface MashContextFieldRefs {
+    readonly id: FieldRef<"MashContext", 'String'>
+    readonly userId: FieldRef<"MashContext", 'String'>
+    readonly subjectsStruggled: FieldRef<"MashContext", 'String[]'>
+    readonly topicsCovered: FieldRef<"MashContext", 'String[]'>
+    readonly lastSessionSummary: FieldRef<"MashContext", 'String'>
+    readonly weakAreas: FieldRef<"MashContext", 'Json'>
+    readonly strongAreas: FieldRef<"MashContext", 'Json'>
+    readonly updatedAt: FieldRef<"MashContext", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * MashContext findUnique
+   */
+  export type MashContextFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MashContext
+     */
+    select?: MashContextSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MashContext
+     */
+    omit?: MashContextOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MashContextInclude<ExtArgs> | null
+    /**
+     * Filter, which MashContext to fetch.
+     */
+    where: MashContextWhereUniqueInput
+  }
+
+  /**
+   * MashContext findUniqueOrThrow
+   */
+  export type MashContextFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MashContext
+     */
+    select?: MashContextSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MashContext
+     */
+    omit?: MashContextOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MashContextInclude<ExtArgs> | null
+    /**
+     * Filter, which MashContext to fetch.
+     */
+    where: MashContextWhereUniqueInput
+  }
+
+  /**
+   * MashContext findFirst
+   */
+  export type MashContextFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MashContext
+     */
+    select?: MashContextSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MashContext
+     */
+    omit?: MashContextOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MashContextInclude<ExtArgs> | null
+    /**
+     * Filter, which MashContext to fetch.
+     */
+    where?: MashContextWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MashContexts to fetch.
+     */
+    orderBy?: MashContextOrderByWithRelationInput | MashContextOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MashContexts.
+     */
+    cursor?: MashContextWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MashContexts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MashContexts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MashContexts.
+     */
+    distinct?: MashContextScalarFieldEnum | MashContextScalarFieldEnum[]
+  }
+
+  /**
+   * MashContext findFirstOrThrow
+   */
+  export type MashContextFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MashContext
+     */
+    select?: MashContextSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MashContext
+     */
+    omit?: MashContextOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MashContextInclude<ExtArgs> | null
+    /**
+     * Filter, which MashContext to fetch.
+     */
+    where?: MashContextWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MashContexts to fetch.
+     */
+    orderBy?: MashContextOrderByWithRelationInput | MashContextOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MashContexts.
+     */
+    cursor?: MashContextWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MashContexts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MashContexts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MashContexts.
+     */
+    distinct?: MashContextScalarFieldEnum | MashContextScalarFieldEnum[]
+  }
+
+  /**
+   * MashContext findMany
+   */
+  export type MashContextFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MashContext
+     */
+    select?: MashContextSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MashContext
+     */
+    omit?: MashContextOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MashContextInclude<ExtArgs> | null
+    /**
+     * Filter, which MashContexts to fetch.
+     */
+    where?: MashContextWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MashContexts to fetch.
+     */
+    orderBy?: MashContextOrderByWithRelationInput | MashContextOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing MashContexts.
+     */
+    cursor?: MashContextWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MashContexts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MashContexts.
+     */
+    skip?: number
+    distinct?: MashContextScalarFieldEnum | MashContextScalarFieldEnum[]
+  }
+
+  /**
+   * MashContext create
+   */
+  export type MashContextCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MashContext
+     */
+    select?: MashContextSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MashContext
+     */
+    omit?: MashContextOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MashContextInclude<ExtArgs> | null
+    /**
+     * The data needed to create a MashContext.
+     */
+    data: XOR<MashContextCreateInput, MashContextUncheckedCreateInput>
+  }
+
+  /**
+   * MashContext createMany
+   */
+  export type MashContextCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many MashContexts.
+     */
+    data: MashContextCreateManyInput | MashContextCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * MashContext createManyAndReturn
+   */
+  export type MashContextCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MashContext
+     */
+    select?: MashContextSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the MashContext
+     */
+    omit?: MashContextOmit<ExtArgs> | null
+    /**
+     * The data used to create many MashContexts.
+     */
+    data: MashContextCreateManyInput | MashContextCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MashContextIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * MashContext update
+   */
+  export type MashContextUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MashContext
+     */
+    select?: MashContextSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MashContext
+     */
+    omit?: MashContextOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MashContextInclude<ExtArgs> | null
+    /**
+     * The data needed to update a MashContext.
+     */
+    data: XOR<MashContextUpdateInput, MashContextUncheckedUpdateInput>
+    /**
+     * Choose, which MashContext to update.
+     */
+    where: MashContextWhereUniqueInput
+  }
+
+  /**
+   * MashContext updateMany
+   */
+  export type MashContextUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update MashContexts.
+     */
+    data: XOR<MashContextUpdateManyMutationInput, MashContextUncheckedUpdateManyInput>
+    /**
+     * Filter which MashContexts to update
+     */
+    where?: MashContextWhereInput
+    /**
+     * Limit how many MashContexts to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * MashContext updateManyAndReturn
+   */
+  export type MashContextUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MashContext
+     */
+    select?: MashContextSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the MashContext
+     */
+    omit?: MashContextOmit<ExtArgs> | null
+    /**
+     * The data used to update MashContexts.
+     */
+    data: XOR<MashContextUpdateManyMutationInput, MashContextUncheckedUpdateManyInput>
+    /**
+     * Filter which MashContexts to update
+     */
+    where?: MashContextWhereInput
+    /**
+     * Limit how many MashContexts to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MashContextIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * MashContext upsert
+   */
+  export type MashContextUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MashContext
+     */
+    select?: MashContextSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MashContext
+     */
+    omit?: MashContextOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MashContextInclude<ExtArgs> | null
+    /**
+     * The filter to search for the MashContext to update in case it exists.
+     */
+    where: MashContextWhereUniqueInput
+    /**
+     * In case the MashContext found by the `where` argument doesn't exist, create a new MashContext with this data.
+     */
+    create: XOR<MashContextCreateInput, MashContextUncheckedCreateInput>
+    /**
+     * In case the MashContext was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<MashContextUpdateInput, MashContextUncheckedUpdateInput>
+  }
+
+  /**
+   * MashContext delete
+   */
+  export type MashContextDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MashContext
+     */
+    select?: MashContextSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MashContext
+     */
+    omit?: MashContextOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MashContextInclude<ExtArgs> | null
+    /**
+     * Filter which MashContext to delete.
+     */
+    where: MashContextWhereUniqueInput
+  }
+
+  /**
+   * MashContext deleteMany
+   */
+  export type MashContextDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MashContexts to delete
+     */
+    where?: MashContextWhereInput
+    /**
+     * Limit how many MashContexts to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * MashContext without action
+   */
+  export type MashContextDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MashContext
+     */
+    select?: MashContextSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MashContext
+     */
+    omit?: MashContextOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MashContextInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AnalyticsEvent
+   */
+
+  export type AggregateAnalyticsEvent = {
+    _count: AnalyticsEventCountAggregateOutputType | null
+    _min: AnalyticsEventMinAggregateOutputType | null
+    _max: AnalyticsEventMaxAggregateOutputType | null
+  }
+
+  export type AnalyticsEventMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    eventType: string | null
+    createdAt: Date | null
+  }
+
+  export type AnalyticsEventMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    eventType: string | null
+    createdAt: Date | null
+  }
+
+  export type AnalyticsEventCountAggregateOutputType = {
+    id: number
+    userId: number
+    eventType: number
+    metadata: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type AnalyticsEventMinAggregateInputType = {
+    id?: true
+    userId?: true
+    eventType?: true
+    createdAt?: true
+  }
+
+  export type AnalyticsEventMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    eventType?: true
+    createdAt?: true
+  }
+
+  export type AnalyticsEventCountAggregateInputType = {
+    id?: true
+    userId?: true
+    eventType?: true
+    metadata?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type AnalyticsEventAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AnalyticsEvent to aggregate.
+     */
+    where?: AnalyticsEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AnalyticsEvents to fetch.
+     */
+    orderBy?: AnalyticsEventOrderByWithRelationInput | AnalyticsEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AnalyticsEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AnalyticsEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AnalyticsEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AnalyticsEvents
+    **/
+    _count?: true | AnalyticsEventCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AnalyticsEventMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AnalyticsEventMaxAggregateInputType
+  }
+
+  export type GetAnalyticsEventAggregateType<T extends AnalyticsEventAggregateArgs> = {
+        [P in keyof T & keyof AggregateAnalyticsEvent]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAnalyticsEvent[P]>
+      : GetScalarType<T[P], AggregateAnalyticsEvent[P]>
+  }
+
+
+
+
+  export type AnalyticsEventGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AnalyticsEventWhereInput
+    orderBy?: AnalyticsEventOrderByWithAggregationInput | AnalyticsEventOrderByWithAggregationInput[]
+    by: AnalyticsEventScalarFieldEnum[] | AnalyticsEventScalarFieldEnum
+    having?: AnalyticsEventScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AnalyticsEventCountAggregateInputType | true
+    _min?: AnalyticsEventMinAggregateInputType
+    _max?: AnalyticsEventMaxAggregateInputType
+  }
+
+  export type AnalyticsEventGroupByOutputType = {
+    id: string
+    userId: string
+    eventType: string
+    metadata: JsonValue | null
+    createdAt: Date
+    _count: AnalyticsEventCountAggregateOutputType | null
+    _min: AnalyticsEventMinAggregateOutputType | null
+    _max: AnalyticsEventMaxAggregateOutputType | null
+  }
+
+  type GetAnalyticsEventGroupByPayload<T extends AnalyticsEventGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AnalyticsEventGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AnalyticsEventGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AnalyticsEventGroupByOutputType[P]>
+            : GetScalarType<T[P], AnalyticsEventGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AnalyticsEventSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    eventType?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["analyticsEvent"]>
+
+  export type AnalyticsEventSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    eventType?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["analyticsEvent"]>
+
+  export type AnalyticsEventSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    eventType?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["analyticsEvent"]>
+
+  export type AnalyticsEventSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    eventType?: boolean
+    metadata?: boolean
+    createdAt?: boolean
+  }
+
+  export type AnalyticsEventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "eventType" | "metadata" | "createdAt", ExtArgs["result"]["analyticsEvent"]>
+  export type AnalyticsEventInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type AnalyticsEventIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type AnalyticsEventIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $AnalyticsEventPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AnalyticsEvent"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      eventType: string
+      metadata: Prisma.JsonValue | null
+      createdAt: Date
+    }, ExtArgs["result"]["analyticsEvent"]>
+    composites: {}
+  }
+
+  type AnalyticsEventGetPayload<S extends boolean | null | undefined | AnalyticsEventDefaultArgs> = $Result.GetResult<Prisma.$AnalyticsEventPayload, S>
+
+  type AnalyticsEventCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AnalyticsEventFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AnalyticsEventCountAggregateInputType | true
+    }
+
+  export interface AnalyticsEventDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AnalyticsEvent'], meta: { name: 'AnalyticsEvent' } }
+    /**
+     * Find zero or one AnalyticsEvent that matches the filter.
+     * @param {AnalyticsEventFindUniqueArgs} args - Arguments to find a AnalyticsEvent
+     * @example
+     * // Get one AnalyticsEvent
+     * const analyticsEvent = await prisma.analyticsEvent.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AnalyticsEventFindUniqueArgs>(args: SelectSubset<T, AnalyticsEventFindUniqueArgs<ExtArgs>>): Prisma__AnalyticsEventClient<$Result.GetResult<Prisma.$AnalyticsEventPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AnalyticsEvent that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AnalyticsEventFindUniqueOrThrowArgs} args - Arguments to find a AnalyticsEvent
+     * @example
+     * // Get one AnalyticsEvent
+     * const analyticsEvent = await prisma.analyticsEvent.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AnalyticsEventFindUniqueOrThrowArgs>(args: SelectSubset<T, AnalyticsEventFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AnalyticsEventClient<$Result.GetResult<Prisma.$AnalyticsEventPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AnalyticsEvent that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AnalyticsEventFindFirstArgs} args - Arguments to find a AnalyticsEvent
+     * @example
+     * // Get one AnalyticsEvent
+     * const analyticsEvent = await prisma.analyticsEvent.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AnalyticsEventFindFirstArgs>(args?: SelectSubset<T, AnalyticsEventFindFirstArgs<ExtArgs>>): Prisma__AnalyticsEventClient<$Result.GetResult<Prisma.$AnalyticsEventPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AnalyticsEvent that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AnalyticsEventFindFirstOrThrowArgs} args - Arguments to find a AnalyticsEvent
+     * @example
+     * // Get one AnalyticsEvent
+     * const analyticsEvent = await prisma.analyticsEvent.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AnalyticsEventFindFirstOrThrowArgs>(args?: SelectSubset<T, AnalyticsEventFindFirstOrThrowArgs<ExtArgs>>): Prisma__AnalyticsEventClient<$Result.GetResult<Prisma.$AnalyticsEventPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AnalyticsEvents that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AnalyticsEventFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AnalyticsEvents
+     * const analyticsEvents = await prisma.analyticsEvent.findMany()
+     * 
+     * // Get first 10 AnalyticsEvents
+     * const analyticsEvents = await prisma.analyticsEvent.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const analyticsEventWithIdOnly = await prisma.analyticsEvent.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AnalyticsEventFindManyArgs>(args?: SelectSubset<T, AnalyticsEventFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AnalyticsEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AnalyticsEvent.
+     * @param {AnalyticsEventCreateArgs} args - Arguments to create a AnalyticsEvent.
+     * @example
+     * // Create one AnalyticsEvent
+     * const AnalyticsEvent = await prisma.analyticsEvent.create({
+     *   data: {
+     *     // ... data to create a AnalyticsEvent
+     *   }
+     * })
+     * 
+     */
+    create<T extends AnalyticsEventCreateArgs>(args: SelectSubset<T, AnalyticsEventCreateArgs<ExtArgs>>): Prisma__AnalyticsEventClient<$Result.GetResult<Prisma.$AnalyticsEventPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AnalyticsEvents.
+     * @param {AnalyticsEventCreateManyArgs} args - Arguments to create many AnalyticsEvents.
+     * @example
+     * // Create many AnalyticsEvents
+     * const analyticsEvent = await prisma.analyticsEvent.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AnalyticsEventCreateManyArgs>(args?: SelectSubset<T, AnalyticsEventCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AnalyticsEvents and returns the data saved in the database.
+     * @param {AnalyticsEventCreateManyAndReturnArgs} args - Arguments to create many AnalyticsEvents.
+     * @example
+     * // Create many AnalyticsEvents
+     * const analyticsEvent = await prisma.analyticsEvent.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AnalyticsEvents and only return the `id`
+     * const analyticsEventWithIdOnly = await prisma.analyticsEvent.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AnalyticsEventCreateManyAndReturnArgs>(args?: SelectSubset<T, AnalyticsEventCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AnalyticsEventPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AnalyticsEvent.
+     * @param {AnalyticsEventDeleteArgs} args - Arguments to delete one AnalyticsEvent.
+     * @example
+     * // Delete one AnalyticsEvent
+     * const AnalyticsEvent = await prisma.analyticsEvent.delete({
+     *   where: {
+     *     // ... filter to delete one AnalyticsEvent
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AnalyticsEventDeleteArgs>(args: SelectSubset<T, AnalyticsEventDeleteArgs<ExtArgs>>): Prisma__AnalyticsEventClient<$Result.GetResult<Prisma.$AnalyticsEventPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AnalyticsEvent.
+     * @param {AnalyticsEventUpdateArgs} args - Arguments to update one AnalyticsEvent.
+     * @example
+     * // Update one AnalyticsEvent
+     * const analyticsEvent = await prisma.analyticsEvent.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AnalyticsEventUpdateArgs>(args: SelectSubset<T, AnalyticsEventUpdateArgs<ExtArgs>>): Prisma__AnalyticsEventClient<$Result.GetResult<Prisma.$AnalyticsEventPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AnalyticsEvents.
+     * @param {AnalyticsEventDeleteManyArgs} args - Arguments to filter AnalyticsEvents to delete.
+     * @example
+     * // Delete a few AnalyticsEvents
+     * const { count } = await prisma.analyticsEvent.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AnalyticsEventDeleteManyArgs>(args?: SelectSubset<T, AnalyticsEventDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AnalyticsEvents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AnalyticsEventUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AnalyticsEvents
+     * const analyticsEvent = await prisma.analyticsEvent.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AnalyticsEventUpdateManyArgs>(args: SelectSubset<T, AnalyticsEventUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AnalyticsEvents and returns the data updated in the database.
+     * @param {AnalyticsEventUpdateManyAndReturnArgs} args - Arguments to update many AnalyticsEvents.
+     * @example
+     * // Update many AnalyticsEvents
+     * const analyticsEvent = await prisma.analyticsEvent.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AnalyticsEvents and only return the `id`
+     * const analyticsEventWithIdOnly = await prisma.analyticsEvent.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AnalyticsEventUpdateManyAndReturnArgs>(args: SelectSubset<T, AnalyticsEventUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AnalyticsEventPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AnalyticsEvent.
+     * @param {AnalyticsEventUpsertArgs} args - Arguments to update or create a AnalyticsEvent.
+     * @example
+     * // Update or create a AnalyticsEvent
+     * const analyticsEvent = await prisma.analyticsEvent.upsert({
+     *   create: {
+     *     // ... data to create a AnalyticsEvent
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AnalyticsEvent we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AnalyticsEventUpsertArgs>(args: SelectSubset<T, AnalyticsEventUpsertArgs<ExtArgs>>): Prisma__AnalyticsEventClient<$Result.GetResult<Prisma.$AnalyticsEventPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AnalyticsEvents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AnalyticsEventCountArgs} args - Arguments to filter AnalyticsEvents to count.
+     * @example
+     * // Count the number of AnalyticsEvents
+     * const count = await prisma.analyticsEvent.count({
+     *   where: {
+     *     // ... the filter for the AnalyticsEvents we want to count
+     *   }
+     * })
+    **/
+    count<T extends AnalyticsEventCountArgs>(
+      args?: Subset<T, AnalyticsEventCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AnalyticsEventCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AnalyticsEvent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AnalyticsEventAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AnalyticsEventAggregateArgs>(args: Subset<T, AnalyticsEventAggregateArgs>): Prisma.PrismaPromise<GetAnalyticsEventAggregateType<T>>
+
+    /**
+     * Group by AnalyticsEvent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AnalyticsEventGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AnalyticsEventGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AnalyticsEventGroupByArgs['orderBy'] }
+        : { orderBy?: AnalyticsEventGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AnalyticsEventGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAnalyticsEventGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AnalyticsEvent model
+   */
+  readonly fields: AnalyticsEventFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AnalyticsEvent.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AnalyticsEventClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AnalyticsEvent model
+   */
+  interface AnalyticsEventFieldRefs {
+    readonly id: FieldRef<"AnalyticsEvent", 'String'>
+    readonly userId: FieldRef<"AnalyticsEvent", 'String'>
+    readonly eventType: FieldRef<"AnalyticsEvent", 'String'>
+    readonly metadata: FieldRef<"AnalyticsEvent", 'Json'>
+    readonly createdAt: FieldRef<"AnalyticsEvent", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AnalyticsEvent findUnique
+   */
+  export type AnalyticsEventFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsEvent
+     */
+    select?: AnalyticsEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsEvent
+     */
+    omit?: AnalyticsEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsEventInclude<ExtArgs> | null
+    /**
+     * Filter, which AnalyticsEvent to fetch.
+     */
+    where: AnalyticsEventWhereUniqueInput
+  }
+
+  /**
+   * AnalyticsEvent findUniqueOrThrow
+   */
+  export type AnalyticsEventFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsEvent
+     */
+    select?: AnalyticsEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsEvent
+     */
+    omit?: AnalyticsEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsEventInclude<ExtArgs> | null
+    /**
+     * Filter, which AnalyticsEvent to fetch.
+     */
+    where: AnalyticsEventWhereUniqueInput
+  }
+
+  /**
+   * AnalyticsEvent findFirst
+   */
+  export type AnalyticsEventFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsEvent
+     */
+    select?: AnalyticsEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsEvent
+     */
+    omit?: AnalyticsEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsEventInclude<ExtArgs> | null
+    /**
+     * Filter, which AnalyticsEvent to fetch.
+     */
+    where?: AnalyticsEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AnalyticsEvents to fetch.
+     */
+    orderBy?: AnalyticsEventOrderByWithRelationInput | AnalyticsEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AnalyticsEvents.
+     */
+    cursor?: AnalyticsEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AnalyticsEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AnalyticsEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AnalyticsEvents.
+     */
+    distinct?: AnalyticsEventScalarFieldEnum | AnalyticsEventScalarFieldEnum[]
+  }
+
+  /**
+   * AnalyticsEvent findFirstOrThrow
+   */
+  export type AnalyticsEventFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsEvent
+     */
+    select?: AnalyticsEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsEvent
+     */
+    omit?: AnalyticsEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsEventInclude<ExtArgs> | null
+    /**
+     * Filter, which AnalyticsEvent to fetch.
+     */
+    where?: AnalyticsEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AnalyticsEvents to fetch.
+     */
+    orderBy?: AnalyticsEventOrderByWithRelationInput | AnalyticsEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AnalyticsEvents.
+     */
+    cursor?: AnalyticsEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AnalyticsEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AnalyticsEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AnalyticsEvents.
+     */
+    distinct?: AnalyticsEventScalarFieldEnum | AnalyticsEventScalarFieldEnum[]
+  }
+
+  /**
+   * AnalyticsEvent findMany
+   */
+  export type AnalyticsEventFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsEvent
+     */
+    select?: AnalyticsEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsEvent
+     */
+    omit?: AnalyticsEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsEventInclude<ExtArgs> | null
+    /**
+     * Filter, which AnalyticsEvents to fetch.
+     */
+    where?: AnalyticsEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AnalyticsEvents to fetch.
+     */
+    orderBy?: AnalyticsEventOrderByWithRelationInput | AnalyticsEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AnalyticsEvents.
+     */
+    cursor?: AnalyticsEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AnalyticsEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AnalyticsEvents.
+     */
+    skip?: number
+    distinct?: AnalyticsEventScalarFieldEnum | AnalyticsEventScalarFieldEnum[]
+  }
+
+  /**
+   * AnalyticsEvent create
+   */
+  export type AnalyticsEventCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsEvent
+     */
+    select?: AnalyticsEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsEvent
+     */
+    omit?: AnalyticsEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsEventInclude<ExtArgs> | null
+    /**
+     * The data needed to create a AnalyticsEvent.
+     */
+    data: XOR<AnalyticsEventCreateInput, AnalyticsEventUncheckedCreateInput>
+  }
+
+  /**
+   * AnalyticsEvent createMany
+   */
+  export type AnalyticsEventCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AnalyticsEvents.
+     */
+    data: AnalyticsEventCreateManyInput | AnalyticsEventCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AnalyticsEvent createManyAndReturn
+   */
+  export type AnalyticsEventCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsEvent
+     */
+    select?: AnalyticsEventSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsEvent
+     */
+    omit?: AnalyticsEventOmit<ExtArgs> | null
+    /**
+     * The data used to create many AnalyticsEvents.
+     */
+    data: AnalyticsEventCreateManyInput | AnalyticsEventCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsEventIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AnalyticsEvent update
+   */
+  export type AnalyticsEventUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsEvent
+     */
+    select?: AnalyticsEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsEvent
+     */
+    omit?: AnalyticsEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsEventInclude<ExtArgs> | null
+    /**
+     * The data needed to update a AnalyticsEvent.
+     */
+    data: XOR<AnalyticsEventUpdateInput, AnalyticsEventUncheckedUpdateInput>
+    /**
+     * Choose, which AnalyticsEvent to update.
+     */
+    where: AnalyticsEventWhereUniqueInput
+  }
+
+  /**
+   * AnalyticsEvent updateMany
+   */
+  export type AnalyticsEventUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AnalyticsEvents.
+     */
+    data: XOR<AnalyticsEventUpdateManyMutationInput, AnalyticsEventUncheckedUpdateManyInput>
+    /**
+     * Filter which AnalyticsEvents to update
+     */
+    where?: AnalyticsEventWhereInput
+    /**
+     * Limit how many AnalyticsEvents to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AnalyticsEvent updateManyAndReturn
+   */
+  export type AnalyticsEventUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsEvent
+     */
+    select?: AnalyticsEventSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsEvent
+     */
+    omit?: AnalyticsEventOmit<ExtArgs> | null
+    /**
+     * The data used to update AnalyticsEvents.
+     */
+    data: XOR<AnalyticsEventUpdateManyMutationInput, AnalyticsEventUncheckedUpdateManyInput>
+    /**
+     * Filter which AnalyticsEvents to update
+     */
+    where?: AnalyticsEventWhereInput
+    /**
+     * Limit how many AnalyticsEvents to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsEventIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AnalyticsEvent upsert
+   */
+  export type AnalyticsEventUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsEvent
+     */
+    select?: AnalyticsEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsEvent
+     */
+    omit?: AnalyticsEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsEventInclude<ExtArgs> | null
+    /**
+     * The filter to search for the AnalyticsEvent to update in case it exists.
+     */
+    where: AnalyticsEventWhereUniqueInput
+    /**
+     * In case the AnalyticsEvent found by the `where` argument doesn't exist, create a new AnalyticsEvent with this data.
+     */
+    create: XOR<AnalyticsEventCreateInput, AnalyticsEventUncheckedCreateInput>
+    /**
+     * In case the AnalyticsEvent was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AnalyticsEventUpdateInput, AnalyticsEventUncheckedUpdateInput>
+  }
+
+  /**
+   * AnalyticsEvent delete
+   */
+  export type AnalyticsEventDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsEvent
+     */
+    select?: AnalyticsEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsEvent
+     */
+    omit?: AnalyticsEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsEventInclude<ExtArgs> | null
+    /**
+     * Filter which AnalyticsEvent to delete.
+     */
+    where: AnalyticsEventWhereUniqueInput
+  }
+
+  /**
+   * AnalyticsEvent deleteMany
+   */
+  export type AnalyticsEventDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AnalyticsEvents to delete
+     */
+    where?: AnalyticsEventWhereInput
+    /**
+     * Limit how many AnalyticsEvents to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AnalyticsEvent without action
+   */
+  export type AnalyticsEventDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnalyticsEvent
+     */
+    select?: AnalyticsEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnalyticsEvent
+     */
+    omit?: AnalyticsEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnalyticsEventInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -61966,7 +65728,9 @@ export namespace Prisma {
     plan: 'plan',
     planStartedAt: 'planStartedAt',
     planExpiresAt: 'planExpiresAt',
-    planBillingCycle: 'planBillingCycle'
+    planBillingCycle: 'planBillingCycle',
+    referralCode: 'referralCode',
+    referredBy: 'referredBy'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -62000,7 +65764,14 @@ export namespace Prisma {
     availability: 'availability',
     sessionRate1on1: 'sessionRate1on1',
     sessionRateGroup: 'sessionRateGroup',
-    payoutPhone: 'payoutPhone'
+    payoutPhone: 'payoutPhone',
+    currentActiveSessions: 'currentActiveSessions',
+    maxConcurrentSessions: 'maxConcurrentSessions',
+    lastAssignedAt: 'lastAssignedAt',
+    totalAssignmentsToday: 'totalAssignmentsToday',
+    responseRate: 'responseRate',
+    sessionsAssigned: 'sessionsAssigned',
+    sessionsResponded: 'sessionsResponded'
   };
 
   export type TutorProfileScalarFieldEnum = (typeof TutorProfileScalarFieldEnum)[keyof typeof TutorProfileScalarFieldEnum]
@@ -62659,6 +66430,43 @@ export namespace Prisma {
   export type SessionFlagScalarFieldEnum = (typeof SessionFlagScalarFieldEnum)[keyof typeof SessionFlagScalarFieldEnum]
 
 
+  export const ReferralScalarFieldEnum: {
+    id: 'id',
+    referrerId: 'referrerId',
+    referredId: 'referredId',
+    codeUsed: 'codeUsed',
+    bonusAwarded: 'bonusAwarded',
+    createdAt: 'createdAt'
+  };
+
+  export type ReferralScalarFieldEnum = (typeof ReferralScalarFieldEnum)[keyof typeof ReferralScalarFieldEnum]
+
+
+  export const MashContextScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    subjectsStruggled: 'subjectsStruggled',
+    topicsCovered: 'topicsCovered',
+    lastSessionSummary: 'lastSessionSummary',
+    weakAreas: 'weakAreas',
+    strongAreas: 'strongAreas',
+    updatedAt: 'updatedAt'
+  };
+
+  export type MashContextScalarFieldEnum = (typeof MashContextScalarFieldEnum)[keyof typeof MashContextScalarFieldEnum]
+
+
+  export const AnalyticsEventScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    eventType: 'eventType',
+    metadata: 'metadata',
+    createdAt: 'createdAt'
+  };
+
+  export type AnalyticsEventScalarFieldEnum = (typeof AnalyticsEventScalarFieldEnum)[keyof typeof AnalyticsEventScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -62672,6 +66480,14 @@ export namespace Prisma {
   };
 
   export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+  export const NullableJsonNullValueInput: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull
+  };
+
+  export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
   export const QueryMode: {
@@ -62944,6 +66760,8 @@ export namespace Prisma {
     planStartedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     planExpiresAt?: DateTimeNullableFilter<"User"> | Date | string | null
     planBillingCycle?: StringNullableFilter<"User"> | string | null
+    referralCode?: StringNullableFilter<"User"> | string | null
+    referredBy?: StringNullableFilter<"User"> | string | null
     achievements?: AchievementListRelationFilter
     comments?: CommentListRelationFilter
     challenges?: DailyChallengeAttemptListRelationFilter
@@ -62967,6 +66785,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestListRelationFilter
     newsArticles?: NewsArticleListRelationFilter
     userCredits?: XOR<UserCreditsNullableScalarRelationFilter, UserCreditsWhereInput> | null
+    referredUsers?: ReferralListRelationFilter
+    referralsMade?: ReferralListRelationFilter
+    mashContext?: XOR<MashContextNullableScalarRelationFilter, MashContextWhereInput> | null
+    analyticsEvents?: AnalyticsEventListRelationFilter
     creditTransactions?: CreditTransactionListRelationFilter
     sellerEarnings?: SellerEarningListRelationFilter
     institutionStudent?: XOR<InstitutionStudentNullableScalarRelationFilter, InstitutionStudentWhereInput> | null
@@ -63012,6 +66834,8 @@ export namespace Prisma {
     planStartedAt?: SortOrderInput | SortOrder
     planExpiresAt?: SortOrderInput | SortOrder
     planBillingCycle?: SortOrderInput | SortOrder
+    referralCode?: SortOrderInput | SortOrder
+    referredBy?: SortOrderInput | SortOrder
     achievements?: AchievementOrderByRelationAggregateInput
     comments?: CommentOrderByRelationAggregateInput
     challenges?: DailyChallengeAttemptOrderByRelationAggregateInput
@@ -63035,6 +66859,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestOrderByRelationAggregateInput
     newsArticles?: NewsArticleOrderByRelationAggregateInput
     userCredits?: UserCreditsOrderByWithRelationInput
+    referredUsers?: ReferralOrderByRelationAggregateInput
+    referralsMade?: ReferralOrderByRelationAggregateInput
+    mashContext?: MashContextOrderByWithRelationInput
+    analyticsEvents?: AnalyticsEventOrderByRelationAggregateInput
     creditTransactions?: CreditTransactionOrderByRelationAggregateInput
     sellerEarnings?: SellerEarningOrderByRelationAggregateInput
     institutionStudent?: InstitutionStudentOrderByWithRelationInput
@@ -63053,6 +66881,7 @@ export namespace Prisma {
     id?: string
     email?: string
     phone?: string
+    referralCode?: string
     AND?: UserWhereInput | UserWhereInput[]
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
@@ -63083,6 +66912,7 @@ export namespace Prisma {
     planStartedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     planExpiresAt?: DateTimeNullableFilter<"User"> | Date | string | null
     planBillingCycle?: StringNullableFilter<"User"> | string | null
+    referredBy?: StringNullableFilter<"User"> | string | null
     achievements?: AchievementListRelationFilter
     comments?: CommentListRelationFilter
     challenges?: DailyChallengeAttemptListRelationFilter
@@ -63106,6 +66936,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestListRelationFilter
     newsArticles?: NewsArticleListRelationFilter
     userCredits?: XOR<UserCreditsNullableScalarRelationFilter, UserCreditsWhereInput> | null
+    referredUsers?: ReferralListRelationFilter
+    referralsMade?: ReferralListRelationFilter
+    mashContext?: XOR<MashContextNullableScalarRelationFilter, MashContextWhereInput> | null
+    analyticsEvents?: AnalyticsEventListRelationFilter
     creditTransactions?: CreditTransactionListRelationFilter
     sellerEarnings?: SellerEarningListRelationFilter
     institutionStudent?: XOR<InstitutionStudentNullableScalarRelationFilter, InstitutionStudentWhereInput> | null
@@ -63118,7 +66952,7 @@ export namespace Prisma {
     tutorBookings?: BookingListRelationFilter
     bookingReminders?: BookingReminderListRelationFilter
     sessionFlags?: SessionFlagListRelationFilter
-  }, "id" | "email" | "phone">
+  }, "id" | "email" | "phone" | "referralCode">
 
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder
@@ -63151,6 +66985,8 @@ export namespace Prisma {
     planStartedAt?: SortOrderInput | SortOrder
     planExpiresAt?: SortOrderInput | SortOrder
     planBillingCycle?: SortOrderInput | SortOrder
+    referralCode?: SortOrderInput | SortOrder
+    referredBy?: SortOrderInput | SortOrder
     _count?: UserCountOrderByAggregateInput
     _avg?: UserAvgOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
@@ -63192,6 +67028,8 @@ export namespace Prisma {
     planStartedAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     planExpiresAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     planBillingCycle?: StringNullableWithAggregatesFilter<"User"> | string | null
+    referralCode?: StringNullableWithAggregatesFilter<"User"> | string | null
+    referredBy?: StringNullableWithAggregatesFilter<"User"> | string | null
   }
 
   export type StudentProfileWhereInput = {
@@ -63274,6 +67112,13 @@ export namespace Prisma {
     sessionRate1on1?: IntNullableFilter<"TutorProfile"> | number | null
     sessionRateGroup?: IntNullableFilter<"TutorProfile"> | number | null
     payoutPhone?: StringNullableFilter<"TutorProfile"> | string | null
+    currentActiveSessions?: IntFilter<"TutorProfile"> | number
+    maxConcurrentSessions?: IntFilter<"TutorProfile"> | number
+    lastAssignedAt?: DateTimeNullableFilter<"TutorProfile"> | Date | string | null
+    totalAssignmentsToday?: IntFilter<"TutorProfile"> | number
+    responseRate?: FloatFilter<"TutorProfile"> | number
+    sessionsAssigned?: IntFilter<"TutorProfile"> | number
+    sessionsResponded?: IntFilter<"TutorProfile"> | number
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
@@ -63294,6 +67139,13 @@ export namespace Prisma {
     sessionRate1on1?: SortOrderInput | SortOrder
     sessionRateGroup?: SortOrderInput | SortOrder
     payoutPhone?: SortOrderInput | SortOrder
+    currentActiveSessions?: SortOrder
+    maxConcurrentSessions?: SortOrder
+    lastAssignedAt?: SortOrderInput | SortOrder
+    totalAssignmentsToday?: SortOrder
+    responseRate?: SortOrder
+    sessionsAssigned?: SortOrder
+    sessionsResponded?: SortOrder
     user?: UserOrderByWithRelationInput
   }
 
@@ -63317,6 +67169,13 @@ export namespace Prisma {
     sessionRate1on1?: IntNullableFilter<"TutorProfile"> | number | null
     sessionRateGroup?: IntNullableFilter<"TutorProfile"> | number | null
     payoutPhone?: StringNullableFilter<"TutorProfile"> | string | null
+    currentActiveSessions?: IntFilter<"TutorProfile"> | number
+    maxConcurrentSessions?: IntFilter<"TutorProfile"> | number
+    lastAssignedAt?: DateTimeNullableFilter<"TutorProfile"> | Date | string | null
+    totalAssignmentsToday?: IntFilter<"TutorProfile"> | number
+    responseRate?: FloatFilter<"TutorProfile"> | number
+    sessionsAssigned?: IntFilter<"TutorProfile"> | number
+    sessionsResponded?: IntFilter<"TutorProfile"> | number
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "userId">
 
@@ -63337,6 +67196,13 @@ export namespace Prisma {
     sessionRate1on1?: SortOrderInput | SortOrder
     sessionRateGroup?: SortOrderInput | SortOrder
     payoutPhone?: SortOrderInput | SortOrder
+    currentActiveSessions?: SortOrder
+    maxConcurrentSessions?: SortOrder
+    lastAssignedAt?: SortOrderInput | SortOrder
+    totalAssignmentsToday?: SortOrder
+    responseRate?: SortOrder
+    sessionsAssigned?: SortOrder
+    sessionsResponded?: SortOrder
     _count?: TutorProfileCountOrderByAggregateInput
     _avg?: TutorProfileAvgOrderByAggregateInput
     _max?: TutorProfileMaxOrderByAggregateInput
@@ -63364,6 +67230,13 @@ export namespace Prisma {
     sessionRate1on1?: IntNullableWithAggregatesFilter<"TutorProfile"> | number | null
     sessionRateGroup?: IntNullableWithAggregatesFilter<"TutorProfile"> | number | null
     payoutPhone?: StringNullableWithAggregatesFilter<"TutorProfile"> | string | null
+    currentActiveSessions?: IntWithAggregatesFilter<"TutorProfile"> | number
+    maxConcurrentSessions?: IntWithAggregatesFilter<"TutorProfile"> | number
+    lastAssignedAt?: DateTimeNullableWithAggregatesFilter<"TutorProfile"> | Date | string | null
+    totalAssignmentsToday?: IntWithAggregatesFilter<"TutorProfile"> | number
+    responseRate?: FloatWithAggregatesFilter<"TutorProfile"> | number
+    sessionsAssigned?: IntWithAggregatesFilter<"TutorProfile"> | number
+    sessionsResponded?: IntWithAggregatesFilter<"TutorProfile"> | number
   }
 
   export type MatchRequestWhereInput = {
@@ -66740,6 +70613,194 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"SessionFlag"> | Date | string
   }
 
+  export type ReferralWhereInput = {
+    AND?: ReferralWhereInput | ReferralWhereInput[]
+    OR?: ReferralWhereInput[]
+    NOT?: ReferralWhereInput | ReferralWhereInput[]
+    id?: StringFilter<"Referral"> | string
+    referrerId?: StringFilter<"Referral"> | string
+    referredId?: StringFilter<"Referral"> | string
+    codeUsed?: StringFilter<"Referral"> | string
+    bonusAwarded?: BoolFilter<"Referral"> | boolean
+    createdAt?: DateTimeFilter<"Referral"> | Date | string
+    referrer?: XOR<UserScalarRelationFilter, UserWhereInput>
+    referred?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type ReferralOrderByWithRelationInput = {
+    id?: SortOrder
+    referrerId?: SortOrder
+    referredId?: SortOrder
+    codeUsed?: SortOrder
+    bonusAwarded?: SortOrder
+    createdAt?: SortOrder
+    referrer?: UserOrderByWithRelationInput
+    referred?: UserOrderByWithRelationInput
+  }
+
+  export type ReferralWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ReferralWhereInput | ReferralWhereInput[]
+    OR?: ReferralWhereInput[]
+    NOT?: ReferralWhereInput | ReferralWhereInput[]
+    referrerId?: StringFilter<"Referral"> | string
+    referredId?: StringFilter<"Referral"> | string
+    codeUsed?: StringFilter<"Referral"> | string
+    bonusAwarded?: BoolFilter<"Referral"> | boolean
+    createdAt?: DateTimeFilter<"Referral"> | Date | string
+    referrer?: XOR<UserScalarRelationFilter, UserWhereInput>
+    referred?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type ReferralOrderByWithAggregationInput = {
+    id?: SortOrder
+    referrerId?: SortOrder
+    referredId?: SortOrder
+    codeUsed?: SortOrder
+    bonusAwarded?: SortOrder
+    createdAt?: SortOrder
+    _count?: ReferralCountOrderByAggregateInput
+    _max?: ReferralMaxOrderByAggregateInput
+    _min?: ReferralMinOrderByAggregateInput
+  }
+
+  export type ReferralScalarWhereWithAggregatesInput = {
+    AND?: ReferralScalarWhereWithAggregatesInput | ReferralScalarWhereWithAggregatesInput[]
+    OR?: ReferralScalarWhereWithAggregatesInput[]
+    NOT?: ReferralScalarWhereWithAggregatesInput | ReferralScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Referral"> | string
+    referrerId?: StringWithAggregatesFilter<"Referral"> | string
+    referredId?: StringWithAggregatesFilter<"Referral"> | string
+    codeUsed?: StringWithAggregatesFilter<"Referral"> | string
+    bonusAwarded?: BoolWithAggregatesFilter<"Referral"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"Referral"> | Date | string
+  }
+
+  export type MashContextWhereInput = {
+    AND?: MashContextWhereInput | MashContextWhereInput[]
+    OR?: MashContextWhereInput[]
+    NOT?: MashContextWhereInput | MashContextWhereInput[]
+    id?: StringFilter<"MashContext"> | string
+    userId?: StringFilter<"MashContext"> | string
+    subjectsStruggled?: StringNullableListFilter<"MashContext">
+    topicsCovered?: StringNullableListFilter<"MashContext">
+    lastSessionSummary?: StringNullableFilter<"MashContext"> | string | null
+    weakAreas?: JsonNullableFilter<"MashContext">
+    strongAreas?: JsonNullableFilter<"MashContext">
+    updatedAt?: DateTimeFilter<"MashContext"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type MashContextOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    subjectsStruggled?: SortOrder
+    topicsCovered?: SortOrder
+    lastSessionSummary?: SortOrderInput | SortOrder
+    weakAreas?: SortOrderInput | SortOrder
+    strongAreas?: SortOrderInput | SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type MashContextWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId?: string
+    AND?: MashContextWhereInput | MashContextWhereInput[]
+    OR?: MashContextWhereInput[]
+    NOT?: MashContextWhereInput | MashContextWhereInput[]
+    subjectsStruggled?: StringNullableListFilter<"MashContext">
+    topicsCovered?: StringNullableListFilter<"MashContext">
+    lastSessionSummary?: StringNullableFilter<"MashContext"> | string | null
+    weakAreas?: JsonNullableFilter<"MashContext">
+    strongAreas?: JsonNullableFilter<"MashContext">
+    updatedAt?: DateTimeFilter<"MashContext"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "userId">
+
+  export type MashContextOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    subjectsStruggled?: SortOrder
+    topicsCovered?: SortOrder
+    lastSessionSummary?: SortOrderInput | SortOrder
+    weakAreas?: SortOrderInput | SortOrder
+    strongAreas?: SortOrderInput | SortOrder
+    updatedAt?: SortOrder
+    _count?: MashContextCountOrderByAggregateInput
+    _max?: MashContextMaxOrderByAggregateInput
+    _min?: MashContextMinOrderByAggregateInput
+  }
+
+  export type MashContextScalarWhereWithAggregatesInput = {
+    AND?: MashContextScalarWhereWithAggregatesInput | MashContextScalarWhereWithAggregatesInput[]
+    OR?: MashContextScalarWhereWithAggregatesInput[]
+    NOT?: MashContextScalarWhereWithAggregatesInput | MashContextScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"MashContext"> | string
+    userId?: StringWithAggregatesFilter<"MashContext"> | string
+    subjectsStruggled?: StringNullableListFilter<"MashContext">
+    topicsCovered?: StringNullableListFilter<"MashContext">
+    lastSessionSummary?: StringNullableWithAggregatesFilter<"MashContext"> | string | null
+    weakAreas?: JsonNullableWithAggregatesFilter<"MashContext">
+    strongAreas?: JsonNullableWithAggregatesFilter<"MashContext">
+    updatedAt?: DateTimeWithAggregatesFilter<"MashContext"> | Date | string
+  }
+
+  export type AnalyticsEventWhereInput = {
+    AND?: AnalyticsEventWhereInput | AnalyticsEventWhereInput[]
+    OR?: AnalyticsEventWhereInput[]
+    NOT?: AnalyticsEventWhereInput | AnalyticsEventWhereInput[]
+    id?: StringFilter<"AnalyticsEvent"> | string
+    userId?: StringFilter<"AnalyticsEvent"> | string
+    eventType?: StringFilter<"AnalyticsEvent"> | string
+    metadata?: JsonNullableFilter<"AnalyticsEvent">
+    createdAt?: DateTimeFilter<"AnalyticsEvent"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type AnalyticsEventOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    eventType?: SortOrder
+    metadata?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type AnalyticsEventWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: AnalyticsEventWhereInput | AnalyticsEventWhereInput[]
+    OR?: AnalyticsEventWhereInput[]
+    NOT?: AnalyticsEventWhereInput | AnalyticsEventWhereInput[]
+    userId?: StringFilter<"AnalyticsEvent"> | string
+    eventType?: StringFilter<"AnalyticsEvent"> | string
+    metadata?: JsonNullableFilter<"AnalyticsEvent">
+    createdAt?: DateTimeFilter<"AnalyticsEvent"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type AnalyticsEventOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    eventType?: SortOrder
+    metadata?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: AnalyticsEventCountOrderByAggregateInput
+    _max?: AnalyticsEventMaxOrderByAggregateInput
+    _min?: AnalyticsEventMinOrderByAggregateInput
+  }
+
+  export type AnalyticsEventScalarWhereWithAggregatesInput = {
+    AND?: AnalyticsEventScalarWhereWithAggregatesInput | AnalyticsEventScalarWhereWithAggregatesInput[]
+    OR?: AnalyticsEventScalarWhereWithAggregatesInput[]
+    NOT?: AnalyticsEventScalarWhereWithAggregatesInput | AnalyticsEventScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AnalyticsEvent"> | string
+    userId?: StringWithAggregatesFilter<"AnalyticsEvent"> | string
+    eventType?: StringWithAggregatesFilter<"AnalyticsEvent"> | string
+    metadata?: JsonNullableWithAggregatesFilter<"AnalyticsEvent">
+    createdAt?: DateTimeWithAggregatesFilter<"AnalyticsEvent"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     email: string
@@ -66771,6 +70832,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -66794,6 +70857,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -66839,6 +70906,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -66862,6 +70931,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -66907,6 +70980,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -66930,6 +71005,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -66975,6 +71054,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -66998,6 +71079,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -67043,6 +71128,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
   }
 
   export type UserUpdateManyMutationInput = {
@@ -67076,6 +71163,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserUncheckedUpdateManyInput = {
@@ -67109,6 +71198,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type StudentProfileCreateInput = {
@@ -67189,6 +71280,13 @@ export namespace Prisma {
     sessionRate1on1?: number | null
     sessionRateGroup?: number | null
     payoutPhone?: string | null
+    currentActiveSessions?: number
+    maxConcurrentSessions?: number
+    lastAssignedAt?: Date | string | null
+    totalAssignmentsToday?: number
+    responseRate?: number
+    sessionsAssigned?: number
+    sessionsResponded?: number
     user: UserCreateNestedOneWithoutTutorProfileInput
   }
 
@@ -67209,6 +71307,13 @@ export namespace Prisma {
     sessionRate1on1?: number | null
     sessionRateGroup?: number | null
     payoutPhone?: string | null
+    currentActiveSessions?: number
+    maxConcurrentSessions?: number
+    lastAssignedAt?: Date | string | null
+    totalAssignmentsToday?: number
+    responseRate?: number
+    sessionsAssigned?: number
+    sessionsResponded?: number
   }
 
   export type TutorProfileUpdateInput = {
@@ -67227,6 +71332,13 @@ export namespace Prisma {
     sessionRate1on1?: NullableIntFieldUpdateOperationsInput | number | null
     sessionRateGroup?: NullableIntFieldUpdateOperationsInput | number | null
     payoutPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    currentActiveSessions?: IntFieldUpdateOperationsInput | number
+    maxConcurrentSessions?: IntFieldUpdateOperationsInput | number
+    lastAssignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    totalAssignmentsToday?: IntFieldUpdateOperationsInput | number
+    responseRate?: FloatFieldUpdateOperationsInput | number
+    sessionsAssigned?: IntFieldUpdateOperationsInput | number
+    sessionsResponded?: IntFieldUpdateOperationsInput | number
     user?: UserUpdateOneRequiredWithoutTutorProfileNestedInput
   }
 
@@ -67247,6 +71359,13 @@ export namespace Prisma {
     sessionRate1on1?: NullableIntFieldUpdateOperationsInput | number | null
     sessionRateGroup?: NullableIntFieldUpdateOperationsInput | number | null
     payoutPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    currentActiveSessions?: IntFieldUpdateOperationsInput | number
+    maxConcurrentSessions?: IntFieldUpdateOperationsInput | number
+    lastAssignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    totalAssignmentsToday?: IntFieldUpdateOperationsInput | number
+    responseRate?: FloatFieldUpdateOperationsInput | number
+    sessionsAssigned?: IntFieldUpdateOperationsInput | number
+    sessionsResponded?: IntFieldUpdateOperationsInput | number
   }
 
   export type TutorProfileCreateManyInput = {
@@ -67266,6 +71385,13 @@ export namespace Prisma {
     sessionRate1on1?: number | null
     sessionRateGroup?: number | null
     payoutPhone?: string | null
+    currentActiveSessions?: number
+    maxConcurrentSessions?: number
+    lastAssignedAt?: Date | string | null
+    totalAssignmentsToday?: number
+    responseRate?: number
+    sessionsAssigned?: number
+    sessionsResponded?: number
   }
 
   export type TutorProfileUpdateManyMutationInput = {
@@ -67284,6 +71410,13 @@ export namespace Prisma {
     sessionRate1on1?: NullableIntFieldUpdateOperationsInput | number | null
     sessionRateGroup?: NullableIntFieldUpdateOperationsInput | number | null
     payoutPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    currentActiveSessions?: IntFieldUpdateOperationsInput | number
+    maxConcurrentSessions?: IntFieldUpdateOperationsInput | number
+    lastAssignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    totalAssignmentsToday?: IntFieldUpdateOperationsInput | number
+    responseRate?: FloatFieldUpdateOperationsInput | number
+    sessionsAssigned?: IntFieldUpdateOperationsInput | number
+    sessionsResponded?: IntFieldUpdateOperationsInput | number
   }
 
   export type TutorProfileUncheckedUpdateManyInput = {
@@ -67303,6 +71436,13 @@ export namespace Prisma {
     sessionRate1on1?: NullableIntFieldUpdateOperationsInput | number | null
     sessionRateGroup?: NullableIntFieldUpdateOperationsInput | number | null
     payoutPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    currentActiveSessions?: IntFieldUpdateOperationsInput | number
+    maxConcurrentSessions?: IntFieldUpdateOperationsInput | number
+    lastAssignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    totalAssignmentsToday?: IntFieldUpdateOperationsInput | number
+    responseRate?: FloatFieldUpdateOperationsInput | number
+    sessionsAssigned?: IntFieldUpdateOperationsInput | number
+    sessionsResponded?: IntFieldUpdateOperationsInput | number
   }
 
   export type MatchRequestCreateInput = {
@@ -70928,6 +75068,198 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ReferralCreateInput = {
+    id?: string
+    codeUsed: string
+    bonusAwarded?: boolean
+    createdAt?: Date | string
+    referrer: UserCreateNestedOneWithoutReferredUsersInput
+    referred: UserCreateNestedOneWithoutReferralsMadeInput
+  }
+
+  export type ReferralUncheckedCreateInput = {
+    id?: string
+    referrerId: string
+    referredId: string
+    codeUsed: string
+    bonusAwarded?: boolean
+    createdAt?: Date | string
+  }
+
+  export type ReferralUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    codeUsed?: StringFieldUpdateOperationsInput | string
+    bonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    referrer?: UserUpdateOneRequiredWithoutReferredUsersNestedInput
+    referred?: UserUpdateOneRequiredWithoutReferralsMadeNestedInput
+  }
+
+  export type ReferralUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    referrerId?: StringFieldUpdateOperationsInput | string
+    referredId?: StringFieldUpdateOperationsInput | string
+    codeUsed?: StringFieldUpdateOperationsInput | string
+    bonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReferralCreateManyInput = {
+    id?: string
+    referrerId: string
+    referredId: string
+    codeUsed: string
+    bonusAwarded?: boolean
+    createdAt?: Date | string
+  }
+
+  export type ReferralUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    codeUsed?: StringFieldUpdateOperationsInput | string
+    bonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReferralUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    referrerId?: StringFieldUpdateOperationsInput | string
+    referredId?: StringFieldUpdateOperationsInput | string
+    codeUsed?: StringFieldUpdateOperationsInput | string
+    bonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MashContextCreateInput = {
+    id?: string
+    subjectsStruggled?: MashContextCreatesubjectsStruggledInput | string[]
+    topicsCovered?: MashContextCreatetopicsCoveredInput | string[]
+    lastSessionSummary?: string | null
+    weakAreas?: NullableJsonNullValueInput | InputJsonValue
+    strongAreas?: NullableJsonNullValueInput | InputJsonValue
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutMashContextInput
+  }
+
+  export type MashContextUncheckedCreateInput = {
+    id?: string
+    userId: string
+    subjectsStruggled?: MashContextCreatesubjectsStruggledInput | string[]
+    topicsCovered?: MashContextCreatetopicsCoveredInput | string[]
+    lastSessionSummary?: string | null
+    weakAreas?: NullableJsonNullValueInput | InputJsonValue
+    strongAreas?: NullableJsonNullValueInput | InputJsonValue
+    updatedAt?: Date | string
+  }
+
+  export type MashContextUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    subjectsStruggled?: MashContextUpdatesubjectsStruggledInput | string[]
+    topicsCovered?: MashContextUpdatetopicsCoveredInput | string[]
+    lastSessionSummary?: NullableStringFieldUpdateOperationsInput | string | null
+    weakAreas?: NullableJsonNullValueInput | InputJsonValue
+    strongAreas?: NullableJsonNullValueInput | InputJsonValue
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutMashContextNestedInput
+  }
+
+  export type MashContextUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    subjectsStruggled?: MashContextUpdatesubjectsStruggledInput | string[]
+    topicsCovered?: MashContextUpdatetopicsCoveredInput | string[]
+    lastSessionSummary?: NullableStringFieldUpdateOperationsInput | string | null
+    weakAreas?: NullableJsonNullValueInput | InputJsonValue
+    strongAreas?: NullableJsonNullValueInput | InputJsonValue
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MashContextCreateManyInput = {
+    id?: string
+    userId: string
+    subjectsStruggled?: MashContextCreatesubjectsStruggledInput | string[]
+    topicsCovered?: MashContextCreatetopicsCoveredInput | string[]
+    lastSessionSummary?: string | null
+    weakAreas?: NullableJsonNullValueInput | InputJsonValue
+    strongAreas?: NullableJsonNullValueInput | InputJsonValue
+    updatedAt?: Date | string
+  }
+
+  export type MashContextUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    subjectsStruggled?: MashContextUpdatesubjectsStruggledInput | string[]
+    topicsCovered?: MashContextUpdatetopicsCoveredInput | string[]
+    lastSessionSummary?: NullableStringFieldUpdateOperationsInput | string | null
+    weakAreas?: NullableJsonNullValueInput | InputJsonValue
+    strongAreas?: NullableJsonNullValueInput | InputJsonValue
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MashContextUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    subjectsStruggled?: MashContextUpdatesubjectsStruggledInput | string[]
+    topicsCovered?: MashContextUpdatetopicsCoveredInput | string[]
+    lastSessionSummary?: NullableStringFieldUpdateOperationsInput | string | null
+    weakAreas?: NullableJsonNullValueInput | InputJsonValue
+    strongAreas?: NullableJsonNullValueInput | InputJsonValue
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AnalyticsEventCreateInput = {
+    id?: string
+    eventType: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    user: UserCreateNestedOneWithoutAnalyticsEventsInput
+  }
+
+  export type AnalyticsEventUncheckedCreateInput = {
+    id?: string
+    userId: string
+    eventType: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+  }
+
+  export type AnalyticsEventUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutAnalyticsEventsNestedInput
+  }
+
+  export type AnalyticsEventUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AnalyticsEventCreateManyInput = {
+    id?: string
+    userId: string
+    eventType: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+  }
+
+  export type AnalyticsEventUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AnalyticsEventUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -71174,6 +75506,23 @@ export namespace Prisma {
     isNot?: UserCreditsWhereInput | null
   }
 
+  export type ReferralListRelationFilter = {
+    every?: ReferralWhereInput
+    some?: ReferralWhereInput
+    none?: ReferralWhereInput
+  }
+
+  export type MashContextNullableScalarRelationFilter = {
+    is?: MashContextWhereInput | null
+    isNot?: MashContextWhereInput | null
+  }
+
+  export type AnalyticsEventListRelationFilter = {
+    every?: AnalyticsEventWhereInput
+    some?: AnalyticsEventWhereInput
+    none?: AnalyticsEventWhereInput
+  }
+
   export type CreditTransactionListRelationFilter = {
     every?: CreditTransactionWhereInput
     some?: CreditTransactionWhereInput
@@ -71308,6 +75657,14 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type ReferralOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type AnalyticsEventOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type CreditTransactionOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -71379,6 +75736,8 @@ export namespace Prisma {
     planStartedAt?: SortOrder
     planExpiresAt?: SortOrder
     planBillingCycle?: SortOrder
+    referralCode?: SortOrder
+    referredBy?: SortOrder
   }
 
   export type UserAvgOrderByAggregateInput = {
@@ -71420,6 +75779,8 @@ export namespace Prisma {
     planStartedAt?: SortOrder
     planExpiresAt?: SortOrder
     planBillingCycle?: SortOrder
+    referralCode?: SortOrder
+    referredBy?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
@@ -71452,6 +75813,8 @@ export namespace Prisma {
     planStartedAt?: SortOrder
     planExpiresAt?: SortOrder
     planBillingCycle?: SortOrder
+    referralCode?: SortOrder
+    referredBy?: SortOrder
   }
 
   export type UserSumOrderByAggregateInput = {
@@ -71700,6 +76063,13 @@ export namespace Prisma {
     sessionRate1on1?: SortOrder
     sessionRateGroup?: SortOrder
     payoutPhone?: SortOrder
+    currentActiveSessions?: SortOrder
+    maxConcurrentSessions?: SortOrder
+    lastAssignedAt?: SortOrder
+    totalAssignmentsToday?: SortOrder
+    responseRate?: SortOrder
+    sessionsAssigned?: SortOrder
+    sessionsResponded?: SortOrder
   }
 
   export type TutorProfileAvgOrderByAggregateInput = {
@@ -71708,6 +76078,12 @@ export namespace Prisma {
     totalSessions?: SortOrder
     sessionRate1on1?: SortOrder
     sessionRateGroup?: SortOrder
+    currentActiveSessions?: SortOrder
+    maxConcurrentSessions?: SortOrder
+    totalAssignmentsToday?: SortOrder
+    responseRate?: SortOrder
+    sessionsAssigned?: SortOrder
+    sessionsResponded?: SortOrder
   }
 
   export type TutorProfileMaxOrderByAggregateInput = {
@@ -71724,6 +76100,13 @@ export namespace Prisma {
     sessionRate1on1?: SortOrder
     sessionRateGroup?: SortOrder
     payoutPhone?: SortOrder
+    currentActiveSessions?: SortOrder
+    maxConcurrentSessions?: SortOrder
+    lastAssignedAt?: SortOrder
+    totalAssignmentsToday?: SortOrder
+    responseRate?: SortOrder
+    sessionsAssigned?: SortOrder
+    sessionsResponded?: SortOrder
   }
 
   export type TutorProfileMinOrderByAggregateInput = {
@@ -71740,6 +76123,13 @@ export namespace Prisma {
     sessionRate1on1?: SortOrder
     sessionRateGroup?: SortOrder
     payoutPhone?: SortOrder
+    currentActiveSessions?: SortOrder
+    maxConcurrentSessions?: SortOrder
+    lastAssignedAt?: SortOrder
+    totalAssignmentsToday?: SortOrder
+    responseRate?: SortOrder
+    sessionsAssigned?: SortOrder
+    sessionsResponded?: SortOrder
   }
 
   export type TutorProfileSumOrderByAggregateInput = {
@@ -71748,6 +76138,12 @@ export namespace Prisma {
     totalSessions?: SortOrder
     sessionRate1on1?: SortOrder
     sessionRateGroup?: SortOrder
+    currentActiveSessions?: SortOrder
+    maxConcurrentSessions?: SortOrder
+    totalAssignmentsToday?: SortOrder
+    responseRate?: SortOrder
+    sessionsAssigned?: SortOrder
+    sessionsResponded?: SortOrder
   }
 
   export type EnumVerifPathWithAggregatesFilter<$PrismaModel = never> = {
@@ -73762,6 +78158,129 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
+  export type ReferralCountOrderByAggregateInput = {
+    id?: SortOrder
+    referrerId?: SortOrder
+    referredId?: SortOrder
+    codeUsed?: SortOrder
+    bonusAwarded?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ReferralMaxOrderByAggregateInput = {
+    id?: SortOrder
+    referrerId?: SortOrder
+    referredId?: SortOrder
+    codeUsed?: SortOrder
+    bonusAwarded?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ReferralMinOrderByAggregateInput = {
+    id?: SortOrder
+    referrerId?: SortOrder
+    referredId?: SortOrder
+    codeUsed?: SortOrder
+    bonusAwarded?: SortOrder
+    createdAt?: SortOrder
+  }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type MashContextCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    subjectsStruggled?: SortOrder
+    topicsCovered?: SortOrder
+    lastSessionSummary?: SortOrder
+    weakAreas?: SortOrder
+    strongAreas?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type MashContextMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    lastSessionSummary?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type MashContextMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    lastSessionSummary?: SortOrder
+    updatedAt?: SortOrder
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
+  }
+
+  export type AnalyticsEventCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    eventType?: SortOrder
+    metadata?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AnalyticsEventMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    eventType?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type AnalyticsEventMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    eventType?: SortOrder
+    createdAt?: SortOrder
+  }
+
   export type AchievementCreateNestedManyWithoutUserInput = {
     create?: XOR<AchievementCreateWithoutUserInput, AchievementUncheckedCreateWithoutUserInput> | AchievementCreateWithoutUserInput[] | AchievementUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AchievementCreateOrConnectWithoutUserInput | AchievementCreateOrConnectWithoutUserInput[]
@@ -73917,6 +78436,33 @@ export namespace Prisma {
     create?: XOR<UserCreditsCreateWithoutUserInput, UserCreditsUncheckedCreateWithoutUserInput>
     connectOrCreate?: UserCreditsCreateOrConnectWithoutUserInput
     connect?: UserCreditsWhereUniqueInput
+  }
+
+  export type ReferralCreateNestedManyWithoutReferrerInput = {
+    create?: XOR<ReferralCreateWithoutReferrerInput, ReferralUncheckedCreateWithoutReferrerInput> | ReferralCreateWithoutReferrerInput[] | ReferralUncheckedCreateWithoutReferrerInput[]
+    connectOrCreate?: ReferralCreateOrConnectWithoutReferrerInput | ReferralCreateOrConnectWithoutReferrerInput[]
+    createMany?: ReferralCreateManyReferrerInputEnvelope
+    connect?: ReferralWhereUniqueInput | ReferralWhereUniqueInput[]
+  }
+
+  export type ReferralCreateNestedManyWithoutReferredInput = {
+    create?: XOR<ReferralCreateWithoutReferredInput, ReferralUncheckedCreateWithoutReferredInput> | ReferralCreateWithoutReferredInput[] | ReferralUncheckedCreateWithoutReferredInput[]
+    connectOrCreate?: ReferralCreateOrConnectWithoutReferredInput | ReferralCreateOrConnectWithoutReferredInput[]
+    createMany?: ReferralCreateManyReferredInputEnvelope
+    connect?: ReferralWhereUniqueInput | ReferralWhereUniqueInput[]
+  }
+
+  export type MashContextCreateNestedOneWithoutUserInput = {
+    create?: XOR<MashContextCreateWithoutUserInput, MashContextUncheckedCreateWithoutUserInput>
+    connectOrCreate?: MashContextCreateOrConnectWithoutUserInput
+    connect?: MashContextWhereUniqueInput
+  }
+
+  export type AnalyticsEventCreateNestedManyWithoutUserInput = {
+    create?: XOR<AnalyticsEventCreateWithoutUserInput, AnalyticsEventUncheckedCreateWithoutUserInput> | AnalyticsEventCreateWithoutUserInput[] | AnalyticsEventUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AnalyticsEventCreateOrConnectWithoutUserInput | AnalyticsEventCreateOrConnectWithoutUserInput[]
+    createMany?: AnalyticsEventCreateManyUserInputEnvelope
+    connect?: AnalyticsEventWhereUniqueInput | AnalyticsEventWhereUniqueInput[]
   }
 
   export type CreditTransactionCreateNestedManyWithoutUserInput = {
@@ -74157,6 +78703,33 @@ export namespace Prisma {
     create?: XOR<UserCreditsCreateWithoutUserInput, UserCreditsUncheckedCreateWithoutUserInput>
     connectOrCreate?: UserCreditsCreateOrConnectWithoutUserInput
     connect?: UserCreditsWhereUniqueInput
+  }
+
+  export type ReferralUncheckedCreateNestedManyWithoutReferrerInput = {
+    create?: XOR<ReferralCreateWithoutReferrerInput, ReferralUncheckedCreateWithoutReferrerInput> | ReferralCreateWithoutReferrerInput[] | ReferralUncheckedCreateWithoutReferrerInput[]
+    connectOrCreate?: ReferralCreateOrConnectWithoutReferrerInput | ReferralCreateOrConnectWithoutReferrerInput[]
+    createMany?: ReferralCreateManyReferrerInputEnvelope
+    connect?: ReferralWhereUniqueInput | ReferralWhereUniqueInput[]
+  }
+
+  export type ReferralUncheckedCreateNestedManyWithoutReferredInput = {
+    create?: XOR<ReferralCreateWithoutReferredInput, ReferralUncheckedCreateWithoutReferredInput> | ReferralCreateWithoutReferredInput[] | ReferralUncheckedCreateWithoutReferredInput[]
+    connectOrCreate?: ReferralCreateOrConnectWithoutReferredInput | ReferralCreateOrConnectWithoutReferredInput[]
+    createMany?: ReferralCreateManyReferredInputEnvelope
+    connect?: ReferralWhereUniqueInput | ReferralWhereUniqueInput[]
+  }
+
+  export type MashContextUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<MashContextCreateWithoutUserInput, MashContextUncheckedCreateWithoutUserInput>
+    connectOrCreate?: MashContextCreateOrConnectWithoutUserInput
+    connect?: MashContextWhereUniqueInput
+  }
+
+  export type AnalyticsEventUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<AnalyticsEventCreateWithoutUserInput, AnalyticsEventUncheckedCreateWithoutUserInput> | AnalyticsEventCreateWithoutUserInput[] | AnalyticsEventUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AnalyticsEventCreateOrConnectWithoutUserInput | AnalyticsEventCreateOrConnectWithoutUserInput[]
+    createMany?: AnalyticsEventCreateManyUserInputEnvelope
+    connect?: AnalyticsEventWhereUniqueInput | AnalyticsEventWhereUniqueInput[]
   }
 
   export type CreditTransactionUncheckedCreateNestedManyWithoutUserInput = {
@@ -74598,6 +79171,58 @@ export namespace Prisma {
     delete?: UserCreditsWhereInput | boolean
     connect?: UserCreditsWhereUniqueInput
     update?: XOR<XOR<UserCreditsUpdateToOneWithWhereWithoutUserInput, UserCreditsUpdateWithoutUserInput>, UserCreditsUncheckedUpdateWithoutUserInput>
+  }
+
+  export type ReferralUpdateManyWithoutReferrerNestedInput = {
+    create?: XOR<ReferralCreateWithoutReferrerInput, ReferralUncheckedCreateWithoutReferrerInput> | ReferralCreateWithoutReferrerInput[] | ReferralUncheckedCreateWithoutReferrerInput[]
+    connectOrCreate?: ReferralCreateOrConnectWithoutReferrerInput | ReferralCreateOrConnectWithoutReferrerInput[]
+    upsert?: ReferralUpsertWithWhereUniqueWithoutReferrerInput | ReferralUpsertWithWhereUniqueWithoutReferrerInput[]
+    createMany?: ReferralCreateManyReferrerInputEnvelope
+    set?: ReferralWhereUniqueInput | ReferralWhereUniqueInput[]
+    disconnect?: ReferralWhereUniqueInput | ReferralWhereUniqueInput[]
+    delete?: ReferralWhereUniqueInput | ReferralWhereUniqueInput[]
+    connect?: ReferralWhereUniqueInput | ReferralWhereUniqueInput[]
+    update?: ReferralUpdateWithWhereUniqueWithoutReferrerInput | ReferralUpdateWithWhereUniqueWithoutReferrerInput[]
+    updateMany?: ReferralUpdateManyWithWhereWithoutReferrerInput | ReferralUpdateManyWithWhereWithoutReferrerInput[]
+    deleteMany?: ReferralScalarWhereInput | ReferralScalarWhereInput[]
+  }
+
+  export type ReferralUpdateManyWithoutReferredNestedInput = {
+    create?: XOR<ReferralCreateWithoutReferredInput, ReferralUncheckedCreateWithoutReferredInput> | ReferralCreateWithoutReferredInput[] | ReferralUncheckedCreateWithoutReferredInput[]
+    connectOrCreate?: ReferralCreateOrConnectWithoutReferredInput | ReferralCreateOrConnectWithoutReferredInput[]
+    upsert?: ReferralUpsertWithWhereUniqueWithoutReferredInput | ReferralUpsertWithWhereUniqueWithoutReferredInput[]
+    createMany?: ReferralCreateManyReferredInputEnvelope
+    set?: ReferralWhereUniqueInput | ReferralWhereUniqueInput[]
+    disconnect?: ReferralWhereUniqueInput | ReferralWhereUniqueInput[]
+    delete?: ReferralWhereUniqueInput | ReferralWhereUniqueInput[]
+    connect?: ReferralWhereUniqueInput | ReferralWhereUniqueInput[]
+    update?: ReferralUpdateWithWhereUniqueWithoutReferredInput | ReferralUpdateWithWhereUniqueWithoutReferredInput[]
+    updateMany?: ReferralUpdateManyWithWhereWithoutReferredInput | ReferralUpdateManyWithWhereWithoutReferredInput[]
+    deleteMany?: ReferralScalarWhereInput | ReferralScalarWhereInput[]
+  }
+
+  export type MashContextUpdateOneWithoutUserNestedInput = {
+    create?: XOR<MashContextCreateWithoutUserInput, MashContextUncheckedCreateWithoutUserInput>
+    connectOrCreate?: MashContextCreateOrConnectWithoutUserInput
+    upsert?: MashContextUpsertWithoutUserInput
+    disconnect?: MashContextWhereInput | boolean
+    delete?: MashContextWhereInput | boolean
+    connect?: MashContextWhereUniqueInput
+    update?: XOR<XOR<MashContextUpdateToOneWithWhereWithoutUserInput, MashContextUpdateWithoutUserInput>, MashContextUncheckedUpdateWithoutUserInput>
+  }
+
+  export type AnalyticsEventUpdateManyWithoutUserNestedInput = {
+    create?: XOR<AnalyticsEventCreateWithoutUserInput, AnalyticsEventUncheckedCreateWithoutUserInput> | AnalyticsEventCreateWithoutUserInput[] | AnalyticsEventUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AnalyticsEventCreateOrConnectWithoutUserInput | AnalyticsEventCreateOrConnectWithoutUserInput[]
+    upsert?: AnalyticsEventUpsertWithWhereUniqueWithoutUserInput | AnalyticsEventUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: AnalyticsEventCreateManyUserInputEnvelope
+    set?: AnalyticsEventWhereUniqueInput | AnalyticsEventWhereUniqueInput[]
+    disconnect?: AnalyticsEventWhereUniqueInput | AnalyticsEventWhereUniqueInput[]
+    delete?: AnalyticsEventWhereUniqueInput | AnalyticsEventWhereUniqueInput[]
+    connect?: AnalyticsEventWhereUniqueInput | AnalyticsEventWhereUniqueInput[]
+    update?: AnalyticsEventUpdateWithWhereUniqueWithoutUserInput | AnalyticsEventUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: AnalyticsEventUpdateManyWithWhereWithoutUserInput | AnalyticsEventUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: AnalyticsEventScalarWhereInput | AnalyticsEventScalarWhereInput[]
   }
 
   export type CreditTransactionUpdateManyWithoutUserNestedInput = {
@@ -75068,6 +79693,58 @@ export namespace Prisma {
     delete?: UserCreditsWhereInput | boolean
     connect?: UserCreditsWhereUniqueInput
     update?: XOR<XOR<UserCreditsUpdateToOneWithWhereWithoutUserInput, UserCreditsUpdateWithoutUserInput>, UserCreditsUncheckedUpdateWithoutUserInput>
+  }
+
+  export type ReferralUncheckedUpdateManyWithoutReferrerNestedInput = {
+    create?: XOR<ReferralCreateWithoutReferrerInput, ReferralUncheckedCreateWithoutReferrerInput> | ReferralCreateWithoutReferrerInput[] | ReferralUncheckedCreateWithoutReferrerInput[]
+    connectOrCreate?: ReferralCreateOrConnectWithoutReferrerInput | ReferralCreateOrConnectWithoutReferrerInput[]
+    upsert?: ReferralUpsertWithWhereUniqueWithoutReferrerInput | ReferralUpsertWithWhereUniqueWithoutReferrerInput[]
+    createMany?: ReferralCreateManyReferrerInputEnvelope
+    set?: ReferralWhereUniqueInput | ReferralWhereUniqueInput[]
+    disconnect?: ReferralWhereUniqueInput | ReferralWhereUniqueInput[]
+    delete?: ReferralWhereUniqueInput | ReferralWhereUniqueInput[]
+    connect?: ReferralWhereUniqueInput | ReferralWhereUniqueInput[]
+    update?: ReferralUpdateWithWhereUniqueWithoutReferrerInput | ReferralUpdateWithWhereUniqueWithoutReferrerInput[]
+    updateMany?: ReferralUpdateManyWithWhereWithoutReferrerInput | ReferralUpdateManyWithWhereWithoutReferrerInput[]
+    deleteMany?: ReferralScalarWhereInput | ReferralScalarWhereInput[]
+  }
+
+  export type ReferralUncheckedUpdateManyWithoutReferredNestedInput = {
+    create?: XOR<ReferralCreateWithoutReferredInput, ReferralUncheckedCreateWithoutReferredInput> | ReferralCreateWithoutReferredInput[] | ReferralUncheckedCreateWithoutReferredInput[]
+    connectOrCreate?: ReferralCreateOrConnectWithoutReferredInput | ReferralCreateOrConnectWithoutReferredInput[]
+    upsert?: ReferralUpsertWithWhereUniqueWithoutReferredInput | ReferralUpsertWithWhereUniqueWithoutReferredInput[]
+    createMany?: ReferralCreateManyReferredInputEnvelope
+    set?: ReferralWhereUniqueInput | ReferralWhereUniqueInput[]
+    disconnect?: ReferralWhereUniqueInput | ReferralWhereUniqueInput[]
+    delete?: ReferralWhereUniqueInput | ReferralWhereUniqueInput[]
+    connect?: ReferralWhereUniqueInput | ReferralWhereUniqueInput[]
+    update?: ReferralUpdateWithWhereUniqueWithoutReferredInput | ReferralUpdateWithWhereUniqueWithoutReferredInput[]
+    updateMany?: ReferralUpdateManyWithWhereWithoutReferredInput | ReferralUpdateManyWithWhereWithoutReferredInput[]
+    deleteMany?: ReferralScalarWhereInput | ReferralScalarWhereInput[]
+  }
+
+  export type MashContextUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<MashContextCreateWithoutUserInput, MashContextUncheckedCreateWithoutUserInput>
+    connectOrCreate?: MashContextCreateOrConnectWithoutUserInput
+    upsert?: MashContextUpsertWithoutUserInput
+    disconnect?: MashContextWhereInput | boolean
+    delete?: MashContextWhereInput | boolean
+    connect?: MashContextWhereUniqueInput
+    update?: XOR<XOR<MashContextUpdateToOneWithWhereWithoutUserInput, MashContextUpdateWithoutUserInput>, MashContextUncheckedUpdateWithoutUserInput>
+  }
+
+  export type AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<AnalyticsEventCreateWithoutUserInput, AnalyticsEventUncheckedCreateWithoutUserInput> | AnalyticsEventCreateWithoutUserInput[] | AnalyticsEventUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AnalyticsEventCreateOrConnectWithoutUserInput | AnalyticsEventCreateOrConnectWithoutUserInput[]
+    upsert?: AnalyticsEventUpsertWithWhereUniqueWithoutUserInput | AnalyticsEventUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: AnalyticsEventCreateManyUserInputEnvelope
+    set?: AnalyticsEventWhereUniqueInput | AnalyticsEventWhereUniqueInput[]
+    disconnect?: AnalyticsEventWhereUniqueInput | AnalyticsEventWhereUniqueInput[]
+    delete?: AnalyticsEventWhereUniqueInput | AnalyticsEventWhereUniqueInput[]
+    connect?: AnalyticsEventWhereUniqueInput | AnalyticsEventWhereUniqueInput[]
+    update?: AnalyticsEventUpdateWithWhereUniqueWithoutUserInput | AnalyticsEventUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: AnalyticsEventUpdateManyWithWhereWithoutUserInput | AnalyticsEventUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: AnalyticsEventScalarWhereInput | AnalyticsEventScalarWhereInput[]
   }
 
   export type CreditTransactionUncheckedUpdateManyWithoutUserNestedInput = {
@@ -76806,6 +81483,80 @@ export namespace Prisma {
     update?: XOR<XOR<BookingUpdateToOneWithWhereWithoutFlagsInput, BookingUpdateWithoutFlagsInput>, BookingUncheckedUpdateWithoutFlagsInput>
   }
 
+  export type UserCreateNestedOneWithoutReferredUsersInput = {
+    create?: XOR<UserCreateWithoutReferredUsersInput, UserUncheckedCreateWithoutReferredUsersInput>
+    connectOrCreate?: UserCreateOrConnectWithoutReferredUsersInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutReferralsMadeInput = {
+    create?: XOR<UserCreateWithoutReferralsMadeInput, UserUncheckedCreateWithoutReferralsMadeInput>
+    connectOrCreate?: UserCreateOrConnectWithoutReferralsMadeInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutReferredUsersNestedInput = {
+    create?: XOR<UserCreateWithoutReferredUsersInput, UserUncheckedCreateWithoutReferredUsersInput>
+    connectOrCreate?: UserCreateOrConnectWithoutReferredUsersInput
+    upsert?: UserUpsertWithoutReferredUsersInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutReferredUsersInput, UserUpdateWithoutReferredUsersInput>, UserUncheckedUpdateWithoutReferredUsersInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutReferralsMadeNestedInput = {
+    create?: XOR<UserCreateWithoutReferralsMadeInput, UserUncheckedCreateWithoutReferralsMadeInput>
+    connectOrCreate?: UserCreateOrConnectWithoutReferralsMadeInput
+    upsert?: UserUpsertWithoutReferralsMadeInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutReferralsMadeInput, UserUpdateWithoutReferralsMadeInput>, UserUncheckedUpdateWithoutReferralsMadeInput>
+  }
+
+  export type MashContextCreatesubjectsStruggledInput = {
+    set: string[]
+  }
+
+  export type MashContextCreatetopicsCoveredInput = {
+    set: string[]
+  }
+
+  export type UserCreateNestedOneWithoutMashContextInput = {
+    create?: XOR<UserCreateWithoutMashContextInput, UserUncheckedCreateWithoutMashContextInput>
+    connectOrCreate?: UserCreateOrConnectWithoutMashContextInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type MashContextUpdatesubjectsStruggledInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type MashContextUpdatetopicsCoveredInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type UserUpdateOneRequiredWithoutMashContextNestedInput = {
+    create?: XOR<UserCreateWithoutMashContextInput, UserUncheckedCreateWithoutMashContextInput>
+    connectOrCreate?: UserCreateOrConnectWithoutMashContextInput
+    upsert?: UserUpsertWithoutMashContextInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutMashContextInput, UserUpdateWithoutMashContextInput>, UserUncheckedUpdateWithoutMashContextInput>
+  }
+
+  export type UserCreateNestedOneWithoutAnalyticsEventsInput = {
+    create?: XOR<UserCreateWithoutAnalyticsEventsInput, UserUncheckedCreateWithoutAnalyticsEventsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAnalyticsEventsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutAnalyticsEventsNestedInput = {
+    create?: XOR<UserCreateWithoutAnalyticsEventsInput, UserUncheckedCreateWithoutAnalyticsEventsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAnalyticsEventsInput
+    upsert?: UserUpsertWithoutAnalyticsEventsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAnalyticsEventsInput, UserUpdateWithoutAnalyticsEventsInput>, UserUncheckedUpdateWithoutAnalyticsEventsInput>
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -77273,6 +82024,29 @@ export namespace Prisma {
     _min?: NestedFloatNullableFilter<$PrismaModel>
     _max?: NestedFloatNullableFilter<$PrismaModel>
   }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type AchievementCreateWithoutUserInput = {
     id?: string
@@ -77688,6 +82462,13 @@ export namespace Prisma {
     sessionRate1on1?: number | null
     sessionRateGroup?: number | null
     payoutPhone?: string | null
+    currentActiveSessions?: number
+    maxConcurrentSessions?: number
+    lastAssignedAt?: Date | string | null
+    totalAssignmentsToday?: number
+    responseRate?: number
+    sessionsAssigned?: number
+    sessionsResponded?: number
   }
 
   export type TutorProfileUncheckedCreateWithoutUserInput = {
@@ -77706,6 +82487,13 @@ export namespace Prisma {
     sessionRate1on1?: number | null
     sessionRateGroup?: number | null
     payoutPhone?: string | null
+    currentActiveSessions?: number
+    maxConcurrentSessions?: number
+    lastAssignedAt?: Date | string | null
+    totalAssignmentsToday?: number
+    responseRate?: number
+    sessionsAssigned?: number
+    sessionsResponded?: number
   }
 
   export type TutorProfileCreateOrConnectWithoutUserInput = {
@@ -78018,6 +82806,107 @@ export namespace Prisma {
   export type UserCreditsCreateOrConnectWithoutUserInput = {
     where: UserCreditsWhereUniqueInput
     create: XOR<UserCreditsCreateWithoutUserInput, UserCreditsUncheckedCreateWithoutUserInput>
+  }
+
+  export type ReferralCreateWithoutReferrerInput = {
+    id?: string
+    codeUsed: string
+    bonusAwarded?: boolean
+    createdAt?: Date | string
+    referred: UserCreateNestedOneWithoutReferralsMadeInput
+  }
+
+  export type ReferralUncheckedCreateWithoutReferrerInput = {
+    id?: string
+    referredId: string
+    codeUsed: string
+    bonusAwarded?: boolean
+    createdAt?: Date | string
+  }
+
+  export type ReferralCreateOrConnectWithoutReferrerInput = {
+    where: ReferralWhereUniqueInput
+    create: XOR<ReferralCreateWithoutReferrerInput, ReferralUncheckedCreateWithoutReferrerInput>
+  }
+
+  export type ReferralCreateManyReferrerInputEnvelope = {
+    data: ReferralCreateManyReferrerInput | ReferralCreateManyReferrerInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ReferralCreateWithoutReferredInput = {
+    id?: string
+    codeUsed: string
+    bonusAwarded?: boolean
+    createdAt?: Date | string
+    referrer: UserCreateNestedOneWithoutReferredUsersInput
+  }
+
+  export type ReferralUncheckedCreateWithoutReferredInput = {
+    id?: string
+    referrerId: string
+    codeUsed: string
+    bonusAwarded?: boolean
+    createdAt?: Date | string
+  }
+
+  export type ReferralCreateOrConnectWithoutReferredInput = {
+    where: ReferralWhereUniqueInput
+    create: XOR<ReferralCreateWithoutReferredInput, ReferralUncheckedCreateWithoutReferredInput>
+  }
+
+  export type ReferralCreateManyReferredInputEnvelope = {
+    data: ReferralCreateManyReferredInput | ReferralCreateManyReferredInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type MashContextCreateWithoutUserInput = {
+    id?: string
+    subjectsStruggled?: MashContextCreatesubjectsStruggledInput | string[]
+    topicsCovered?: MashContextCreatetopicsCoveredInput | string[]
+    lastSessionSummary?: string | null
+    weakAreas?: NullableJsonNullValueInput | InputJsonValue
+    strongAreas?: NullableJsonNullValueInput | InputJsonValue
+    updatedAt?: Date | string
+  }
+
+  export type MashContextUncheckedCreateWithoutUserInput = {
+    id?: string
+    subjectsStruggled?: MashContextCreatesubjectsStruggledInput | string[]
+    topicsCovered?: MashContextCreatetopicsCoveredInput | string[]
+    lastSessionSummary?: string | null
+    weakAreas?: NullableJsonNullValueInput | InputJsonValue
+    strongAreas?: NullableJsonNullValueInput | InputJsonValue
+    updatedAt?: Date | string
+  }
+
+  export type MashContextCreateOrConnectWithoutUserInput = {
+    where: MashContextWhereUniqueInput
+    create: XOR<MashContextCreateWithoutUserInput, MashContextUncheckedCreateWithoutUserInput>
+  }
+
+  export type AnalyticsEventCreateWithoutUserInput = {
+    id?: string
+    eventType: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+  }
+
+  export type AnalyticsEventUncheckedCreateWithoutUserInput = {
+    id?: string
+    eventType: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+  }
+
+  export type AnalyticsEventCreateOrConnectWithoutUserInput = {
+    where: AnalyticsEventWhereUniqueInput
+    create: XOR<AnalyticsEventCreateWithoutUserInput, AnalyticsEventUncheckedCreateWithoutUserInput>
+  }
+
+  export type AnalyticsEventCreateManyUserInputEnvelope = {
+    data: AnalyticsEventCreateManyUserInput | AnalyticsEventCreateManyUserInput[]
+    skipDuplicates?: boolean
   }
 
   export type CreditTransactionCreateWithoutUserInput = {
@@ -78777,6 +83666,13 @@ export namespace Prisma {
     sessionRate1on1?: NullableIntFieldUpdateOperationsInput | number | null
     sessionRateGroup?: NullableIntFieldUpdateOperationsInput | number | null
     payoutPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    currentActiveSessions?: IntFieldUpdateOperationsInput | number
+    maxConcurrentSessions?: IntFieldUpdateOperationsInput | number
+    lastAssignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    totalAssignmentsToday?: IntFieldUpdateOperationsInput | number
+    responseRate?: FloatFieldUpdateOperationsInput | number
+    sessionsAssigned?: IntFieldUpdateOperationsInput | number
+    sessionsResponded?: IntFieldUpdateOperationsInput | number
   }
 
   export type TutorProfileUncheckedUpdateWithoutUserInput = {
@@ -78795,6 +83691,13 @@ export namespace Prisma {
     sessionRate1on1?: NullableIntFieldUpdateOperationsInput | number | null
     sessionRateGroup?: NullableIntFieldUpdateOperationsInput | number | null
     payoutPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    currentActiveSessions?: IntFieldUpdateOperationsInput | number
+    maxConcurrentSessions?: IntFieldUpdateOperationsInput | number
+    lastAssignedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    totalAssignmentsToday?: IntFieldUpdateOperationsInput | number
+    responseRate?: FloatFieldUpdateOperationsInput | number
+    sessionsAssigned?: IntFieldUpdateOperationsInput | number
+    sessionsResponded?: IntFieldUpdateOperationsInput | number
   }
 
   export type PaymentUpsertWithWhereUniqueWithoutUserInput = {
@@ -79064,6 +83967,108 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     balance?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReferralUpsertWithWhereUniqueWithoutReferrerInput = {
+    where: ReferralWhereUniqueInput
+    update: XOR<ReferralUpdateWithoutReferrerInput, ReferralUncheckedUpdateWithoutReferrerInput>
+    create: XOR<ReferralCreateWithoutReferrerInput, ReferralUncheckedCreateWithoutReferrerInput>
+  }
+
+  export type ReferralUpdateWithWhereUniqueWithoutReferrerInput = {
+    where: ReferralWhereUniqueInput
+    data: XOR<ReferralUpdateWithoutReferrerInput, ReferralUncheckedUpdateWithoutReferrerInput>
+  }
+
+  export type ReferralUpdateManyWithWhereWithoutReferrerInput = {
+    where: ReferralScalarWhereInput
+    data: XOR<ReferralUpdateManyMutationInput, ReferralUncheckedUpdateManyWithoutReferrerInput>
+  }
+
+  export type ReferralScalarWhereInput = {
+    AND?: ReferralScalarWhereInput | ReferralScalarWhereInput[]
+    OR?: ReferralScalarWhereInput[]
+    NOT?: ReferralScalarWhereInput | ReferralScalarWhereInput[]
+    id?: StringFilter<"Referral"> | string
+    referrerId?: StringFilter<"Referral"> | string
+    referredId?: StringFilter<"Referral"> | string
+    codeUsed?: StringFilter<"Referral"> | string
+    bonusAwarded?: BoolFilter<"Referral"> | boolean
+    createdAt?: DateTimeFilter<"Referral"> | Date | string
+  }
+
+  export type ReferralUpsertWithWhereUniqueWithoutReferredInput = {
+    where: ReferralWhereUniqueInput
+    update: XOR<ReferralUpdateWithoutReferredInput, ReferralUncheckedUpdateWithoutReferredInput>
+    create: XOR<ReferralCreateWithoutReferredInput, ReferralUncheckedCreateWithoutReferredInput>
+  }
+
+  export type ReferralUpdateWithWhereUniqueWithoutReferredInput = {
+    where: ReferralWhereUniqueInput
+    data: XOR<ReferralUpdateWithoutReferredInput, ReferralUncheckedUpdateWithoutReferredInput>
+  }
+
+  export type ReferralUpdateManyWithWhereWithoutReferredInput = {
+    where: ReferralScalarWhereInput
+    data: XOR<ReferralUpdateManyMutationInput, ReferralUncheckedUpdateManyWithoutReferredInput>
+  }
+
+  export type MashContextUpsertWithoutUserInput = {
+    update: XOR<MashContextUpdateWithoutUserInput, MashContextUncheckedUpdateWithoutUserInput>
+    create: XOR<MashContextCreateWithoutUserInput, MashContextUncheckedCreateWithoutUserInput>
+    where?: MashContextWhereInput
+  }
+
+  export type MashContextUpdateToOneWithWhereWithoutUserInput = {
+    where?: MashContextWhereInput
+    data: XOR<MashContextUpdateWithoutUserInput, MashContextUncheckedUpdateWithoutUserInput>
+  }
+
+  export type MashContextUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    subjectsStruggled?: MashContextUpdatesubjectsStruggledInput | string[]
+    topicsCovered?: MashContextUpdatetopicsCoveredInput | string[]
+    lastSessionSummary?: NullableStringFieldUpdateOperationsInput | string | null
+    weakAreas?: NullableJsonNullValueInput | InputJsonValue
+    strongAreas?: NullableJsonNullValueInput | InputJsonValue
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MashContextUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    subjectsStruggled?: MashContextUpdatesubjectsStruggledInput | string[]
+    topicsCovered?: MashContextUpdatetopicsCoveredInput | string[]
+    lastSessionSummary?: NullableStringFieldUpdateOperationsInput | string | null
+    weakAreas?: NullableJsonNullValueInput | InputJsonValue
+    strongAreas?: NullableJsonNullValueInput | InputJsonValue
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AnalyticsEventUpsertWithWhereUniqueWithoutUserInput = {
+    where: AnalyticsEventWhereUniqueInput
+    update: XOR<AnalyticsEventUpdateWithoutUserInput, AnalyticsEventUncheckedUpdateWithoutUserInput>
+    create: XOR<AnalyticsEventCreateWithoutUserInput, AnalyticsEventUncheckedCreateWithoutUserInput>
+  }
+
+  export type AnalyticsEventUpdateWithWhereUniqueWithoutUserInput = {
+    where: AnalyticsEventWhereUniqueInput
+    data: XOR<AnalyticsEventUpdateWithoutUserInput, AnalyticsEventUncheckedUpdateWithoutUserInput>
+  }
+
+  export type AnalyticsEventUpdateManyWithWhereWithoutUserInput = {
+    where: AnalyticsEventScalarWhereInput
+    data: XOR<AnalyticsEventUpdateManyMutationInput, AnalyticsEventUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type AnalyticsEventScalarWhereInput = {
+    AND?: AnalyticsEventScalarWhereInput | AnalyticsEventScalarWhereInput[]
+    OR?: AnalyticsEventScalarWhereInput[]
+    NOT?: AnalyticsEventScalarWhereInput | AnalyticsEventScalarWhereInput[]
+    id?: StringFilter<"AnalyticsEvent"> | string
+    userId?: StringFilter<"AnalyticsEvent"> | string
+    eventType?: StringFilter<"AnalyticsEvent"> | string
+    metadata?: JsonNullableFilter<"AnalyticsEvent">
+    createdAt?: DateTimeFilter<"AnalyticsEvent"> | Date | string
   }
 
   export type CreditTransactionUpsertWithWhereUniqueWithoutUserInput = {
@@ -79438,6 +84443,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -79460,6 +84467,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -79505,6 +84516,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -79527,6 +84540,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -79588,6 +84605,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -79610,6 +84629,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -79655,6 +84678,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -79677,6 +84702,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -79722,6 +84751,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -79744,6 +84775,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -79789,6 +84824,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -79811,6 +84848,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -79872,6 +84913,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -79894,6 +84937,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -79939,6 +84986,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -79961,6 +85010,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -80006,6 +85059,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -80028,6 +85083,10 @@ export namespace Prisma {
     payouts?: TutorPayoutCreateNestedManyWithoutTutorInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -80073,6 +85132,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -80095,6 +85156,10 @@ export namespace Prisma {
     payouts?: TutorPayoutUncheckedCreateNestedManyWithoutTutorInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -80156,6 +85221,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -80178,6 +85245,10 @@ export namespace Prisma {
     payouts?: TutorPayoutUpdateManyWithoutTutorNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -80223,6 +85294,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -80245,6 +85318,10 @@ export namespace Prisma {
     payouts?: TutorPayoutUncheckedUpdateManyWithoutTutorNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -80341,6 +85418,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -80363,6 +85442,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -80408,6 +85491,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -80430,6 +85515,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -80480,6 +85569,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -80502,6 +85593,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -80547,6 +85642,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -80569,6 +85666,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -80711,6 +85812,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -80733,6 +85836,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -80778,6 +85885,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -80800,6 +85909,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -80856,6 +85969,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -80878,6 +85993,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -80923,6 +86042,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -80945,6 +86066,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -81006,6 +86131,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -81028,6 +86155,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -81073,6 +86204,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -81095,6 +86228,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -81201,6 +86338,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -81223,6 +86362,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -81268,6 +86411,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -81290,6 +86435,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -81386,6 +86535,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -81408,6 +86559,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -81453,6 +86608,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -81475,6 +86632,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -81525,6 +86686,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -81547,6 +86710,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -81592,6 +86759,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -81614,6 +86783,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -81720,6 +86893,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -81742,6 +86917,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -81787,6 +86966,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -81809,6 +86990,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -81865,6 +87050,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -81887,6 +87074,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -81932,6 +87123,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -81954,6 +87147,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -82121,6 +87318,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     feedPosts?: FeedPostCreateNestedManyWithoutUserInput
@@ -82143,6 +87342,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -82188,6 +87391,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     feedPosts?: FeedPostUncheckedCreateNestedManyWithoutUserInput
@@ -82210,6 +87415,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -82306,6 +87515,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     feedPosts?: FeedPostUpdateManyWithoutUserNestedInput
@@ -82328,6 +87539,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -82373,6 +87588,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     feedPosts?: FeedPostUncheckedUpdateManyWithoutUserNestedInput
@@ -82395,6 +87612,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -82555,6 +87776,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -82577,6 +87800,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -82622,6 +87849,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -82644,6 +87873,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -82705,6 +87938,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -82727,6 +87962,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -82772,6 +88011,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -82794,6 +88035,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -82839,6 +88084,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -82861,6 +88108,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -82906,6 +88157,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -82928,6 +88181,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -82989,6 +88246,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -83011,6 +88270,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -83056,6 +88319,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -83078,6 +88343,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -83147,6 +88416,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -83169,6 +88440,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -83214,6 +88489,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -83236,6 +88513,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -83335,6 +88616,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -83357,6 +88640,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -83402,6 +88689,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -83424,6 +88713,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -83514,6 +88807,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -83536,6 +88831,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -83581,6 +88880,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -83603,6 +88904,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -83699,6 +89004,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -83721,6 +89028,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -83766,6 +89077,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -83788,6 +89101,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -83862,6 +89179,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
     feedPosts?: FeedPostCreateNestedManyWithoutUserInput
@@ -83884,6 +89203,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -83929,6 +89252,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
     feedPosts?: FeedPostUncheckedCreateNestedManyWithoutUserInput
@@ -83951,6 +89276,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -84047,6 +89376,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
     feedPosts?: FeedPostUpdateManyWithoutUserNestedInput
@@ -84069,6 +89400,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -84114,6 +89449,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
     feedPosts?: FeedPostUncheckedUpdateManyWithoutUserNestedInput
@@ -84136,6 +89473,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -84181,6 +89522,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
     feedPosts?: FeedPostCreateNestedManyWithoutUserInput
@@ -84203,6 +89546,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -84248,6 +89595,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
     feedPosts?: FeedPostUncheckedCreateNestedManyWithoutUserInput
@@ -84270,6 +89619,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -84331,6 +89684,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
     feedPosts?: FeedPostUpdateManyWithoutUserNestedInput
@@ -84353,6 +89708,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -84398,6 +89757,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
     feedPosts?: FeedPostUncheckedUpdateManyWithoutUserNestedInput
@@ -84420,6 +89781,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -84465,6 +89830,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -84487,6 +89854,10 @@ export namespace Prisma {
     payouts?: TutorPayoutCreateNestedManyWithoutTutorInput
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -84532,6 +89903,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -84554,6 +89927,10 @@ export namespace Prisma {
     payouts?: TutorPayoutUncheckedCreateNestedManyWithoutTutorInput
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -84615,6 +89992,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -84637,6 +90016,10 @@ export namespace Prisma {
     payouts?: TutorPayoutUpdateManyWithoutTutorNestedInput
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -84682,6 +90065,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -84704,6 +90089,10 @@ export namespace Prisma {
     payouts?: TutorPayoutUncheckedUpdateManyWithoutTutorNestedInput
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -84749,6 +90138,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -84771,6 +90162,10 @@ export namespace Prisma {
     payouts?: TutorPayoutCreateNestedManyWithoutTutorInput
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -84816,6 +90211,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -84838,6 +90235,10 @@ export namespace Prisma {
     payouts?: TutorPayoutUncheckedCreateNestedManyWithoutTutorInput
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -84899,6 +90300,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -84921,6 +90324,10 @@ export namespace Prisma {
     payouts?: TutorPayoutUpdateManyWithoutTutorNestedInput
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -84966,6 +90373,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -84988,6 +90397,10 @@ export namespace Prisma {
     payouts?: TutorPayoutUncheckedUpdateManyWithoutTutorNestedInput
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -85033,6 +90446,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -85056,6 +90471,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
@@ -85100,6 +90519,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -85123,6 +90544,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
@@ -85183,6 +90608,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -85206,6 +90633,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
@@ -85250,6 +90681,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -85273,6 +90706,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
@@ -85317,6 +90754,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -85340,6 +90779,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -85384,6 +90827,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -85407,6 +90852,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -85467,6 +90916,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -85490,6 +90941,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -85534,6 +90989,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -85557,6 +91014,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -85724,6 +91185,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -85746,6 +91209,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -85791,6 +91258,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -85813,6 +91282,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -85874,6 +91347,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -85896,6 +91371,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -85941,6 +91420,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -85963,6 +91444,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -86053,6 +91538,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -86075,6 +91562,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -86120,6 +91611,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -86142,6 +91635,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -86192,6 +91689,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -86214,6 +91713,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -86259,6 +91762,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -86281,6 +91786,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -86393,6 +91902,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -86415,6 +91926,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -86460,6 +91975,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -86482,6 +91999,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -86538,6 +92059,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -86560,6 +92083,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -86605,6 +92132,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -86627,6 +92156,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -86672,6 +92205,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -86694,6 +92229,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -86739,6 +92278,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -86761,6 +92302,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -86822,6 +92367,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -86844,6 +92391,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -86889,6 +92440,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -86911,6 +92464,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -86997,6 +92554,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -87020,6 +92579,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
@@ -87064,6 +92627,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -87087,6 +92652,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
@@ -87194,6 +92763,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -87217,6 +92788,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
@@ -87261,6 +92836,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -87284,6 +92861,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
@@ -87386,6 +92967,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -87408,6 +92991,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -87453,6 +93040,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -87475,6 +93064,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -87568,6 +93161,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -87590,6 +93185,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -87635,6 +93234,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -87657,6 +93258,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -87743,6 +93348,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -87765,6 +93372,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -87810,6 +93421,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -87832,6 +93445,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -87940,6 +93557,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -87962,6 +93581,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -88007,6 +93630,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -88029,6 +93654,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -88476,6 +94105,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -88499,6 +94130,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
@@ -88543,6 +94178,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -88566,6 +94203,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
@@ -88683,6 +94324,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -88706,6 +94349,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
@@ -88750,6 +94397,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -88773,6 +94422,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
@@ -88868,6 +94521,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -88891,6 +94546,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -88935,6 +94594,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -88958,6 +94619,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -89075,6 +94740,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -89098,6 +94765,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -89142,6 +94813,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -89165,6 +94838,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -89260,6 +94937,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -89283,6 +94962,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -89327,6 +95010,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -89350,6 +95035,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -89467,6 +95156,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -89490,6 +95181,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -89534,6 +95229,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -89557,6 +95254,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -89652,6 +95353,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -89675,6 +95378,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -89719,6 +95426,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -89742,6 +95451,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -89859,6 +95572,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -89882,6 +95597,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -89926,6 +95645,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -89949,6 +95670,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -89993,6 +95718,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -90016,6 +95743,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -90060,6 +95791,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -90083,6 +95816,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -90143,6 +95880,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -90166,6 +95905,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -90210,6 +95953,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -90233,6 +95978,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -90277,6 +96026,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -90300,6 +96051,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -90344,6 +96099,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -90367,6 +96124,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -90416,6 +96177,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -90439,6 +96202,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -90483,6 +96250,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -90506,6 +96275,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -90618,6 +96391,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -90641,6 +96416,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -90685,6 +96464,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -90708,6 +96489,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -90763,6 +96548,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -90786,6 +96573,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -90830,6 +96621,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -90853,6 +96646,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -90974,6 +96771,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -90997,6 +96796,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -91041,6 +96844,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -91064,6 +96869,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -91175,6 +96984,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -91198,6 +97009,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -91242,6 +97057,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -91265,6 +97082,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -91309,6 +97130,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -91332,6 +97155,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
@@ -91376,6 +97203,8 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -91399,6 +97228,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
@@ -91504,6 +97337,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -91527,6 +97362,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
@@ -91571,6 +97410,8 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -91594,6 +97435,10 @@ export namespace Prisma {
     matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
@@ -91656,6 +97501,1238 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     reminders?: BookingReminderUncheckedUpdateManyWithoutBookingNestedInput
+  }
+
+  export type UserCreateWithoutReferredUsersInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    avatar?: string | null
+    gender?: $Enums.Gender | null
+    role?: $Enums.Role
+    educationLevel?: $Enums.EduLevel | null
+    formYear?: number | null
+    county: string
+    points?: number
+    tier?: $Enums.Tier
+    streakDays?: number
+    lastActiveAt?: Date | string | null
+    isUnder18?: boolean
+    strikes?: number
+    createdAt?: Date | string
+    bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: string | null
+    dailyMessageCount?: number
+    dailySearchCount?: number
+    lastCountReset?: Date | string | null
+    subscriptionTier?: string | null
+    banned?: boolean
+    suspended?: boolean
+    plan?: string
+    planStartedAt?: Date | string | null
+    planExpiresAt?: Date | string | null
+    planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
+    achievements?: AchievementCreateNestedManyWithoutUserInput
+    comments?: CommentCreateNestedManyWithoutUserInput
+    challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
+    feedPosts?: FeedPostCreateNestedManyWithoutUserInput
+    messages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    postLikes?: PostLikeCreateNestedManyWithoutUserInput
+    reviewsRecv?: ReviewCreateNestedManyWithoutRevieweeInput
+    reviewsGiven?: ReviewCreateNestedManyWithoutReviewerInput
+    sessionsAsTutor?: SessionCreateNestedManyWithoutPartnerInput
+    sessionsAsStudent?: SessionCreateNestedManyWithoutStudentInput
+    studentProfile?: StudentProfileCreateNestedOneWithoutUserInput
+    tutorApplication?: TutorApplicationCreateNestedOneWithoutUserInput
+    tutorProfile?: TutorProfileCreateNestedOneWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
+    resourcePurchases?: ResourcePurchaseCreateNestedManyWithoutUserInput
+    resources?: ResourceCreateNestedManyWithoutSellerInput
+    sessionPaymentsAsStudent?: SessionPaymentCreateNestedManyWithoutStudentInput
+    sessionPaymentsAsTutor?: SessionPaymentCreateNestedManyWithoutTutorInput
+    payouts?: TutorPayoutCreateNestedManyWithoutTutorInput
+    matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
+    newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
+    userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
+    creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
+    sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
+    institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
+    institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
+  }
+
+  export type UserUncheckedCreateWithoutReferredUsersInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    avatar?: string | null
+    gender?: $Enums.Gender | null
+    role?: $Enums.Role
+    educationLevel?: $Enums.EduLevel | null
+    formYear?: number | null
+    county: string
+    points?: number
+    tier?: $Enums.Tier
+    streakDays?: number
+    lastActiveAt?: Date | string | null
+    isUnder18?: boolean
+    strikes?: number
+    createdAt?: Date | string
+    bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: string | null
+    dailyMessageCount?: number
+    dailySearchCount?: number
+    lastCountReset?: Date | string | null
+    subscriptionTier?: string | null
+    banned?: boolean
+    suspended?: boolean
+    plan?: string
+    planStartedAt?: Date | string | null
+    planExpiresAt?: Date | string | null
+    planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
+    achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
+    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
+    challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
+    feedPosts?: FeedPostUncheckedCreateNestedManyWithoutUserInput
+    messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
+    reviewsRecv?: ReviewUncheckedCreateNestedManyWithoutRevieweeInput
+    reviewsGiven?: ReviewUncheckedCreateNestedManyWithoutReviewerInput
+    sessionsAsTutor?: SessionUncheckedCreateNestedManyWithoutPartnerInput
+    sessionsAsStudent?: SessionUncheckedCreateNestedManyWithoutStudentInput
+    studentProfile?: StudentProfileUncheckedCreateNestedOneWithoutUserInput
+    tutorApplication?: TutorApplicationUncheckedCreateNestedOneWithoutUserInput
+    tutorProfile?: TutorProfileUncheckedCreateNestedOneWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
+    resourcePurchases?: ResourcePurchaseUncheckedCreateNestedManyWithoutUserInput
+    resources?: ResourceUncheckedCreateNestedManyWithoutSellerInput
+    sessionPaymentsAsStudent?: SessionPaymentUncheckedCreateNestedManyWithoutStudentInput
+    sessionPaymentsAsTutor?: SessionPaymentUncheckedCreateNestedManyWithoutTutorInput
+    payouts?: TutorPayoutUncheckedCreateNestedManyWithoutTutorInput
+    matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
+    newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
+    userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
+    creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
+    sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
+    institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
+    institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
+  }
+
+  export type UserCreateOrConnectWithoutReferredUsersInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutReferredUsersInput, UserUncheckedCreateWithoutReferredUsersInput>
+  }
+
+  export type UserCreateWithoutReferralsMadeInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    avatar?: string | null
+    gender?: $Enums.Gender | null
+    role?: $Enums.Role
+    educationLevel?: $Enums.EduLevel | null
+    formYear?: number | null
+    county: string
+    points?: number
+    tier?: $Enums.Tier
+    streakDays?: number
+    lastActiveAt?: Date | string | null
+    isUnder18?: boolean
+    strikes?: number
+    createdAt?: Date | string
+    bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: string | null
+    dailyMessageCount?: number
+    dailySearchCount?: number
+    lastCountReset?: Date | string | null
+    subscriptionTier?: string | null
+    banned?: boolean
+    suspended?: boolean
+    plan?: string
+    planStartedAt?: Date | string | null
+    planExpiresAt?: Date | string | null
+    planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
+    achievements?: AchievementCreateNestedManyWithoutUserInput
+    comments?: CommentCreateNestedManyWithoutUserInput
+    challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
+    feedPosts?: FeedPostCreateNestedManyWithoutUserInput
+    messages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    postLikes?: PostLikeCreateNestedManyWithoutUserInput
+    reviewsRecv?: ReviewCreateNestedManyWithoutRevieweeInput
+    reviewsGiven?: ReviewCreateNestedManyWithoutReviewerInput
+    sessionsAsTutor?: SessionCreateNestedManyWithoutPartnerInput
+    sessionsAsStudent?: SessionCreateNestedManyWithoutStudentInput
+    studentProfile?: StudentProfileCreateNestedOneWithoutUserInput
+    tutorApplication?: TutorApplicationCreateNestedOneWithoutUserInput
+    tutorProfile?: TutorProfileCreateNestedOneWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
+    resourcePurchases?: ResourcePurchaseCreateNestedManyWithoutUserInput
+    resources?: ResourceCreateNestedManyWithoutSellerInput
+    sessionPaymentsAsStudent?: SessionPaymentCreateNestedManyWithoutStudentInput
+    sessionPaymentsAsTutor?: SessionPaymentCreateNestedManyWithoutTutorInput
+    payouts?: TutorPayoutCreateNestedManyWithoutTutorInput
+    matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
+    newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
+    userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
+    creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
+    sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
+    institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
+    institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
+  }
+
+  export type UserUncheckedCreateWithoutReferralsMadeInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    avatar?: string | null
+    gender?: $Enums.Gender | null
+    role?: $Enums.Role
+    educationLevel?: $Enums.EduLevel | null
+    formYear?: number | null
+    county: string
+    points?: number
+    tier?: $Enums.Tier
+    streakDays?: number
+    lastActiveAt?: Date | string | null
+    isUnder18?: boolean
+    strikes?: number
+    createdAt?: Date | string
+    bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: string | null
+    dailyMessageCount?: number
+    dailySearchCount?: number
+    lastCountReset?: Date | string | null
+    subscriptionTier?: string | null
+    banned?: boolean
+    suspended?: boolean
+    plan?: string
+    planStartedAt?: Date | string | null
+    planExpiresAt?: Date | string | null
+    planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
+    achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
+    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
+    challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
+    feedPosts?: FeedPostUncheckedCreateNestedManyWithoutUserInput
+    messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
+    reviewsRecv?: ReviewUncheckedCreateNestedManyWithoutRevieweeInput
+    reviewsGiven?: ReviewUncheckedCreateNestedManyWithoutReviewerInput
+    sessionsAsTutor?: SessionUncheckedCreateNestedManyWithoutPartnerInput
+    sessionsAsStudent?: SessionUncheckedCreateNestedManyWithoutStudentInput
+    studentProfile?: StudentProfileUncheckedCreateNestedOneWithoutUserInput
+    tutorApplication?: TutorApplicationUncheckedCreateNestedOneWithoutUserInput
+    tutorProfile?: TutorProfileUncheckedCreateNestedOneWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
+    resourcePurchases?: ResourcePurchaseUncheckedCreateNestedManyWithoutUserInput
+    resources?: ResourceUncheckedCreateNestedManyWithoutSellerInput
+    sessionPaymentsAsStudent?: SessionPaymentUncheckedCreateNestedManyWithoutStudentInput
+    sessionPaymentsAsTutor?: SessionPaymentUncheckedCreateNestedManyWithoutTutorInput
+    payouts?: TutorPayoutUncheckedCreateNestedManyWithoutTutorInput
+    matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
+    newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
+    userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
+    creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
+    sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
+    institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
+    institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
+  }
+
+  export type UserCreateOrConnectWithoutReferralsMadeInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutReferralsMadeInput, UserUncheckedCreateWithoutReferralsMadeInput>
+  }
+
+  export type UserUpsertWithoutReferredUsersInput = {
+    update: XOR<UserUpdateWithoutReferredUsersInput, UserUncheckedUpdateWithoutReferredUsersInput>
+    create: XOR<UserCreateWithoutReferredUsersInput, UserUncheckedCreateWithoutReferredUsersInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutReferredUsersInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutReferredUsersInput, UserUncheckedUpdateWithoutReferredUsersInput>
+  }
+
+  export type UserUpdateWithoutReferredUsersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
+    formYear?: NullableIntFieldUpdateOperationsInput | number | null
+    county?: StringFieldUpdateOperationsInput | string
+    points?: IntFieldUpdateOperationsInput | number
+    tier?: EnumTierFieldUpdateOperationsInput | $Enums.Tier
+    streakDays?: IntFieldUpdateOperationsInput | number
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isUnder18?: BoolFieldUpdateOperationsInput | boolean
+    strikes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: NullableStringFieldUpdateOperationsInput | string | null
+    dailyMessageCount?: IntFieldUpdateOperationsInput | number
+    dailySearchCount?: IntFieldUpdateOperationsInput | number
+    lastCountReset?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    banned?: BoolFieldUpdateOperationsInput | boolean
+    suspended?: BoolFieldUpdateOperationsInput | boolean
+    plan?: StringFieldUpdateOperationsInput | string
+    planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    achievements?: AchievementUpdateManyWithoutUserNestedInput
+    comments?: CommentUpdateManyWithoutUserNestedInput
+    challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
+    feedPosts?: FeedPostUpdateManyWithoutUserNestedInput
+    messages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    postLikes?: PostLikeUpdateManyWithoutUserNestedInput
+    reviewsRecv?: ReviewUpdateManyWithoutRevieweeNestedInput
+    reviewsGiven?: ReviewUpdateManyWithoutReviewerNestedInput
+    sessionsAsTutor?: SessionUpdateManyWithoutPartnerNestedInput
+    sessionsAsStudent?: SessionUpdateManyWithoutStudentNestedInput
+    studentProfile?: StudentProfileUpdateOneWithoutUserNestedInput
+    tutorApplication?: TutorApplicationUpdateOneWithoutUserNestedInput
+    tutorProfile?: TutorProfileUpdateOneWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
+    resourcePurchases?: ResourcePurchaseUpdateManyWithoutUserNestedInput
+    resources?: ResourceUpdateManyWithoutSellerNestedInput
+    sessionPaymentsAsStudent?: SessionPaymentUpdateManyWithoutStudentNestedInput
+    sessionPaymentsAsTutor?: SessionPaymentUpdateManyWithoutTutorNestedInput
+    payouts?: TutorPayoutUpdateManyWithoutTutorNestedInput
+    matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
+    newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
+    userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
+    creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
+    sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
+    institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
+    institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutReferredUsersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
+    formYear?: NullableIntFieldUpdateOperationsInput | number | null
+    county?: StringFieldUpdateOperationsInput | string
+    points?: IntFieldUpdateOperationsInput | number
+    tier?: EnumTierFieldUpdateOperationsInput | $Enums.Tier
+    streakDays?: IntFieldUpdateOperationsInput | number
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isUnder18?: BoolFieldUpdateOperationsInput | boolean
+    strikes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: NullableStringFieldUpdateOperationsInput | string | null
+    dailyMessageCount?: IntFieldUpdateOperationsInput | number
+    dailySearchCount?: IntFieldUpdateOperationsInput | number
+    lastCountReset?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    banned?: BoolFieldUpdateOperationsInput | boolean
+    suspended?: BoolFieldUpdateOperationsInput | boolean
+    plan?: StringFieldUpdateOperationsInput | string
+    planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
+    challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
+    feedPosts?: FeedPostUncheckedUpdateManyWithoutUserNestedInput
+    messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
+    reviewsRecv?: ReviewUncheckedUpdateManyWithoutRevieweeNestedInput
+    reviewsGiven?: ReviewUncheckedUpdateManyWithoutReviewerNestedInput
+    sessionsAsTutor?: SessionUncheckedUpdateManyWithoutPartnerNestedInput
+    sessionsAsStudent?: SessionUncheckedUpdateManyWithoutStudentNestedInput
+    studentProfile?: StudentProfileUncheckedUpdateOneWithoutUserNestedInput
+    tutorApplication?: TutorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    tutorProfile?: TutorProfileUncheckedUpdateOneWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
+    resourcePurchases?: ResourcePurchaseUncheckedUpdateManyWithoutUserNestedInput
+    resources?: ResourceUncheckedUpdateManyWithoutSellerNestedInput
+    sessionPaymentsAsStudent?: SessionPaymentUncheckedUpdateManyWithoutStudentNestedInput
+    sessionPaymentsAsTutor?: SessionPaymentUncheckedUpdateManyWithoutTutorNestedInput
+    payouts?: TutorPayoutUncheckedUpdateManyWithoutTutorNestedInput
+    matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
+    newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
+    userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
+    creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
+    sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
+    institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
+    institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
+  }
+
+  export type UserUpsertWithoutReferralsMadeInput = {
+    update: XOR<UserUpdateWithoutReferralsMadeInput, UserUncheckedUpdateWithoutReferralsMadeInput>
+    create: XOR<UserCreateWithoutReferralsMadeInput, UserUncheckedCreateWithoutReferralsMadeInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutReferralsMadeInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutReferralsMadeInput, UserUncheckedUpdateWithoutReferralsMadeInput>
+  }
+
+  export type UserUpdateWithoutReferralsMadeInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
+    formYear?: NullableIntFieldUpdateOperationsInput | number | null
+    county?: StringFieldUpdateOperationsInput | string
+    points?: IntFieldUpdateOperationsInput | number
+    tier?: EnumTierFieldUpdateOperationsInput | $Enums.Tier
+    streakDays?: IntFieldUpdateOperationsInput | number
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isUnder18?: BoolFieldUpdateOperationsInput | boolean
+    strikes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: NullableStringFieldUpdateOperationsInput | string | null
+    dailyMessageCount?: IntFieldUpdateOperationsInput | number
+    dailySearchCount?: IntFieldUpdateOperationsInput | number
+    lastCountReset?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    banned?: BoolFieldUpdateOperationsInput | boolean
+    suspended?: BoolFieldUpdateOperationsInput | boolean
+    plan?: StringFieldUpdateOperationsInput | string
+    planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    achievements?: AchievementUpdateManyWithoutUserNestedInput
+    comments?: CommentUpdateManyWithoutUserNestedInput
+    challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
+    feedPosts?: FeedPostUpdateManyWithoutUserNestedInput
+    messages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    postLikes?: PostLikeUpdateManyWithoutUserNestedInput
+    reviewsRecv?: ReviewUpdateManyWithoutRevieweeNestedInput
+    reviewsGiven?: ReviewUpdateManyWithoutReviewerNestedInput
+    sessionsAsTutor?: SessionUpdateManyWithoutPartnerNestedInput
+    sessionsAsStudent?: SessionUpdateManyWithoutStudentNestedInput
+    studentProfile?: StudentProfileUpdateOneWithoutUserNestedInput
+    tutorApplication?: TutorApplicationUpdateOneWithoutUserNestedInput
+    tutorProfile?: TutorProfileUpdateOneWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
+    resourcePurchases?: ResourcePurchaseUpdateManyWithoutUserNestedInput
+    resources?: ResourceUpdateManyWithoutSellerNestedInput
+    sessionPaymentsAsStudent?: SessionPaymentUpdateManyWithoutStudentNestedInput
+    sessionPaymentsAsTutor?: SessionPaymentUpdateManyWithoutTutorNestedInput
+    payouts?: TutorPayoutUpdateManyWithoutTutorNestedInput
+    matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
+    newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
+    userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
+    creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
+    sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
+    institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
+    institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutReferralsMadeInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
+    formYear?: NullableIntFieldUpdateOperationsInput | number | null
+    county?: StringFieldUpdateOperationsInput | string
+    points?: IntFieldUpdateOperationsInput | number
+    tier?: EnumTierFieldUpdateOperationsInput | $Enums.Tier
+    streakDays?: IntFieldUpdateOperationsInput | number
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isUnder18?: BoolFieldUpdateOperationsInput | boolean
+    strikes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: NullableStringFieldUpdateOperationsInput | string | null
+    dailyMessageCount?: IntFieldUpdateOperationsInput | number
+    dailySearchCount?: IntFieldUpdateOperationsInput | number
+    lastCountReset?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    banned?: BoolFieldUpdateOperationsInput | boolean
+    suspended?: BoolFieldUpdateOperationsInput | boolean
+    plan?: StringFieldUpdateOperationsInput | string
+    planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
+    challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
+    feedPosts?: FeedPostUncheckedUpdateManyWithoutUserNestedInput
+    messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
+    reviewsRecv?: ReviewUncheckedUpdateManyWithoutRevieweeNestedInput
+    reviewsGiven?: ReviewUncheckedUpdateManyWithoutReviewerNestedInput
+    sessionsAsTutor?: SessionUncheckedUpdateManyWithoutPartnerNestedInput
+    sessionsAsStudent?: SessionUncheckedUpdateManyWithoutStudentNestedInput
+    studentProfile?: StudentProfileUncheckedUpdateOneWithoutUserNestedInput
+    tutorApplication?: TutorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    tutorProfile?: TutorProfileUncheckedUpdateOneWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
+    resourcePurchases?: ResourcePurchaseUncheckedUpdateManyWithoutUserNestedInput
+    resources?: ResourceUncheckedUpdateManyWithoutSellerNestedInput
+    sessionPaymentsAsStudent?: SessionPaymentUncheckedUpdateManyWithoutStudentNestedInput
+    sessionPaymentsAsTutor?: SessionPaymentUncheckedUpdateManyWithoutTutorNestedInput
+    payouts?: TutorPayoutUncheckedUpdateManyWithoutTutorNestedInput
+    matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
+    newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
+    userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
+    creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
+    sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
+    institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
+    institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
+  }
+
+  export type UserCreateWithoutMashContextInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    avatar?: string | null
+    gender?: $Enums.Gender | null
+    role?: $Enums.Role
+    educationLevel?: $Enums.EduLevel | null
+    formYear?: number | null
+    county: string
+    points?: number
+    tier?: $Enums.Tier
+    streakDays?: number
+    lastActiveAt?: Date | string | null
+    isUnder18?: boolean
+    strikes?: number
+    createdAt?: Date | string
+    bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: string | null
+    dailyMessageCount?: number
+    dailySearchCount?: number
+    lastCountReset?: Date | string | null
+    subscriptionTier?: string | null
+    banned?: boolean
+    suspended?: boolean
+    plan?: string
+    planStartedAt?: Date | string | null
+    planExpiresAt?: Date | string | null
+    planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
+    achievements?: AchievementCreateNestedManyWithoutUserInput
+    comments?: CommentCreateNestedManyWithoutUserInput
+    challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
+    feedPosts?: FeedPostCreateNestedManyWithoutUserInput
+    messages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    postLikes?: PostLikeCreateNestedManyWithoutUserInput
+    reviewsRecv?: ReviewCreateNestedManyWithoutRevieweeInput
+    reviewsGiven?: ReviewCreateNestedManyWithoutReviewerInput
+    sessionsAsTutor?: SessionCreateNestedManyWithoutPartnerInput
+    sessionsAsStudent?: SessionCreateNestedManyWithoutStudentInput
+    studentProfile?: StudentProfileCreateNestedOneWithoutUserInput
+    tutorApplication?: TutorApplicationCreateNestedOneWithoutUserInput
+    tutorProfile?: TutorProfileCreateNestedOneWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
+    resourcePurchases?: ResourcePurchaseCreateNestedManyWithoutUserInput
+    resources?: ResourceCreateNestedManyWithoutSellerInput
+    sessionPaymentsAsStudent?: SessionPaymentCreateNestedManyWithoutStudentInput
+    sessionPaymentsAsTutor?: SessionPaymentCreateNestedManyWithoutTutorInput
+    payouts?: TutorPayoutCreateNestedManyWithoutTutorInput
+    matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
+    newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
+    userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    analyticsEvents?: AnalyticsEventCreateNestedManyWithoutUserInput
+    creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
+    sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
+    institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
+    institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
+  }
+
+  export type UserUncheckedCreateWithoutMashContextInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    avatar?: string | null
+    gender?: $Enums.Gender | null
+    role?: $Enums.Role
+    educationLevel?: $Enums.EduLevel | null
+    formYear?: number | null
+    county: string
+    points?: number
+    tier?: $Enums.Tier
+    streakDays?: number
+    lastActiveAt?: Date | string | null
+    isUnder18?: boolean
+    strikes?: number
+    createdAt?: Date | string
+    bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: string | null
+    dailyMessageCount?: number
+    dailySearchCount?: number
+    lastCountReset?: Date | string | null
+    subscriptionTier?: string | null
+    banned?: boolean
+    suspended?: boolean
+    plan?: string
+    planStartedAt?: Date | string | null
+    planExpiresAt?: Date | string | null
+    planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
+    achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
+    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
+    challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
+    feedPosts?: FeedPostUncheckedCreateNestedManyWithoutUserInput
+    messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
+    reviewsRecv?: ReviewUncheckedCreateNestedManyWithoutRevieweeInput
+    reviewsGiven?: ReviewUncheckedCreateNestedManyWithoutReviewerInput
+    sessionsAsTutor?: SessionUncheckedCreateNestedManyWithoutPartnerInput
+    sessionsAsStudent?: SessionUncheckedCreateNestedManyWithoutStudentInput
+    studentProfile?: StudentProfileUncheckedCreateNestedOneWithoutUserInput
+    tutorApplication?: TutorApplicationUncheckedCreateNestedOneWithoutUserInput
+    tutorProfile?: TutorProfileUncheckedCreateNestedOneWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
+    resourcePurchases?: ResourcePurchaseUncheckedCreateNestedManyWithoutUserInput
+    resources?: ResourceUncheckedCreateNestedManyWithoutSellerInput
+    sessionPaymentsAsStudent?: SessionPaymentUncheckedCreateNestedManyWithoutStudentInput
+    sessionPaymentsAsTutor?: SessionPaymentUncheckedCreateNestedManyWithoutTutorInput
+    payouts?: TutorPayoutUncheckedCreateNestedManyWithoutTutorInput
+    matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
+    newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
+    userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    analyticsEvents?: AnalyticsEventUncheckedCreateNestedManyWithoutUserInput
+    creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
+    sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
+    institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
+    institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
+  }
+
+  export type UserCreateOrConnectWithoutMashContextInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutMashContextInput, UserUncheckedCreateWithoutMashContextInput>
+  }
+
+  export type UserUpsertWithoutMashContextInput = {
+    update: XOR<UserUpdateWithoutMashContextInput, UserUncheckedUpdateWithoutMashContextInput>
+    create: XOR<UserCreateWithoutMashContextInput, UserUncheckedCreateWithoutMashContextInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutMashContextInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutMashContextInput, UserUncheckedUpdateWithoutMashContextInput>
+  }
+
+  export type UserUpdateWithoutMashContextInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
+    formYear?: NullableIntFieldUpdateOperationsInput | number | null
+    county?: StringFieldUpdateOperationsInput | string
+    points?: IntFieldUpdateOperationsInput | number
+    tier?: EnumTierFieldUpdateOperationsInput | $Enums.Tier
+    streakDays?: IntFieldUpdateOperationsInput | number
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isUnder18?: BoolFieldUpdateOperationsInput | boolean
+    strikes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: NullableStringFieldUpdateOperationsInput | string | null
+    dailyMessageCount?: IntFieldUpdateOperationsInput | number
+    dailySearchCount?: IntFieldUpdateOperationsInput | number
+    lastCountReset?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    banned?: BoolFieldUpdateOperationsInput | boolean
+    suspended?: BoolFieldUpdateOperationsInput | boolean
+    plan?: StringFieldUpdateOperationsInput | string
+    planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    achievements?: AchievementUpdateManyWithoutUserNestedInput
+    comments?: CommentUpdateManyWithoutUserNestedInput
+    challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
+    feedPosts?: FeedPostUpdateManyWithoutUserNestedInput
+    messages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    postLikes?: PostLikeUpdateManyWithoutUserNestedInput
+    reviewsRecv?: ReviewUpdateManyWithoutRevieweeNestedInput
+    reviewsGiven?: ReviewUpdateManyWithoutReviewerNestedInput
+    sessionsAsTutor?: SessionUpdateManyWithoutPartnerNestedInput
+    sessionsAsStudent?: SessionUpdateManyWithoutStudentNestedInput
+    studentProfile?: StudentProfileUpdateOneWithoutUserNestedInput
+    tutorApplication?: TutorApplicationUpdateOneWithoutUserNestedInput
+    tutorProfile?: TutorProfileUpdateOneWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
+    resourcePurchases?: ResourcePurchaseUpdateManyWithoutUserNestedInput
+    resources?: ResourceUpdateManyWithoutSellerNestedInput
+    sessionPaymentsAsStudent?: SessionPaymentUpdateManyWithoutStudentNestedInput
+    sessionPaymentsAsTutor?: SessionPaymentUpdateManyWithoutTutorNestedInput
+    payouts?: TutorPayoutUpdateManyWithoutTutorNestedInput
+    matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
+    newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
+    userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    analyticsEvents?: AnalyticsEventUpdateManyWithoutUserNestedInput
+    creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
+    sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
+    institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
+    institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutMashContextInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
+    formYear?: NullableIntFieldUpdateOperationsInput | number | null
+    county?: StringFieldUpdateOperationsInput | string
+    points?: IntFieldUpdateOperationsInput | number
+    tier?: EnumTierFieldUpdateOperationsInput | $Enums.Tier
+    streakDays?: IntFieldUpdateOperationsInput | number
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isUnder18?: BoolFieldUpdateOperationsInput | boolean
+    strikes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: NullableStringFieldUpdateOperationsInput | string | null
+    dailyMessageCount?: IntFieldUpdateOperationsInput | number
+    dailySearchCount?: IntFieldUpdateOperationsInput | number
+    lastCountReset?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    banned?: BoolFieldUpdateOperationsInput | boolean
+    suspended?: BoolFieldUpdateOperationsInput | boolean
+    plan?: StringFieldUpdateOperationsInput | string
+    planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
+    challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
+    feedPosts?: FeedPostUncheckedUpdateManyWithoutUserNestedInput
+    messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
+    reviewsRecv?: ReviewUncheckedUpdateManyWithoutRevieweeNestedInput
+    reviewsGiven?: ReviewUncheckedUpdateManyWithoutReviewerNestedInput
+    sessionsAsTutor?: SessionUncheckedUpdateManyWithoutPartnerNestedInput
+    sessionsAsStudent?: SessionUncheckedUpdateManyWithoutStudentNestedInput
+    studentProfile?: StudentProfileUncheckedUpdateOneWithoutUserNestedInput
+    tutorApplication?: TutorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    tutorProfile?: TutorProfileUncheckedUpdateOneWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
+    resourcePurchases?: ResourcePurchaseUncheckedUpdateManyWithoutUserNestedInput
+    resources?: ResourceUncheckedUpdateManyWithoutSellerNestedInput
+    sessionPaymentsAsStudent?: SessionPaymentUncheckedUpdateManyWithoutStudentNestedInput
+    sessionPaymentsAsTutor?: SessionPaymentUncheckedUpdateManyWithoutTutorNestedInput
+    payouts?: TutorPayoutUncheckedUpdateManyWithoutTutorNestedInput
+    matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
+    newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
+    userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    analyticsEvents?: AnalyticsEventUncheckedUpdateManyWithoutUserNestedInput
+    creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
+    sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
+    institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
+    institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
+  }
+
+  export type UserCreateWithoutAnalyticsEventsInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    avatar?: string | null
+    gender?: $Enums.Gender | null
+    role?: $Enums.Role
+    educationLevel?: $Enums.EduLevel | null
+    formYear?: number | null
+    county: string
+    points?: number
+    tier?: $Enums.Tier
+    streakDays?: number
+    lastActiveAt?: Date | string | null
+    isUnder18?: boolean
+    strikes?: number
+    createdAt?: Date | string
+    bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: string | null
+    dailyMessageCount?: number
+    dailySearchCount?: number
+    lastCountReset?: Date | string | null
+    subscriptionTier?: string | null
+    banned?: boolean
+    suspended?: boolean
+    plan?: string
+    planStartedAt?: Date | string | null
+    planExpiresAt?: Date | string | null
+    planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
+    achievements?: AchievementCreateNestedManyWithoutUserInput
+    comments?: CommentCreateNestedManyWithoutUserInput
+    challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
+    feedPosts?: FeedPostCreateNestedManyWithoutUserInput
+    messages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    postLikes?: PostLikeCreateNestedManyWithoutUserInput
+    reviewsRecv?: ReviewCreateNestedManyWithoutRevieweeInput
+    reviewsGiven?: ReviewCreateNestedManyWithoutReviewerInput
+    sessionsAsTutor?: SessionCreateNestedManyWithoutPartnerInput
+    sessionsAsStudent?: SessionCreateNestedManyWithoutStudentInput
+    studentProfile?: StudentProfileCreateNestedOneWithoutUserInput
+    tutorApplication?: TutorApplicationCreateNestedOneWithoutUserInput
+    tutorProfile?: TutorProfileCreateNestedOneWithoutUserInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
+    resourcePurchases?: ResourcePurchaseCreateNestedManyWithoutUserInput
+    resources?: ResourceCreateNestedManyWithoutSellerInput
+    sessionPaymentsAsStudent?: SessionPaymentCreateNestedManyWithoutStudentInput
+    sessionPaymentsAsTutor?: SessionPaymentCreateNestedManyWithoutTutorInput
+    payouts?: TutorPayoutCreateNestedManyWithoutTutorInput
+    matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
+    newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
+    userCredits?: UserCreditsCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextCreateNestedOneWithoutUserInput
+    creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
+    sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
+    institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
+    institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
+  }
+
+  export type UserUncheckedCreateWithoutAnalyticsEventsInput = {
+    id?: string
+    email: string
+    phone?: string | null
+    name: string
+    avatar?: string | null
+    gender?: $Enums.Gender | null
+    role?: $Enums.Role
+    educationLevel?: $Enums.EduLevel | null
+    formYear?: number | null
+    county: string
+    points?: number
+    tier?: $Enums.Tier
+    streakDays?: number
+    lastActiveAt?: Date | string | null
+    isUnder18?: boolean
+    strikes?: number
+    createdAt?: Date | string
+    bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: string | null
+    dailyMessageCount?: number
+    dailySearchCount?: number
+    lastCountReset?: Date | string | null
+    subscriptionTier?: string | null
+    banned?: boolean
+    suspended?: boolean
+    plan?: string
+    planStartedAt?: Date | string | null
+    planExpiresAt?: Date | string | null
+    planBillingCycle?: string | null
+    referralCode?: string | null
+    referredBy?: string | null
+    achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
+    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
+    challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
+    feedPosts?: FeedPostUncheckedCreateNestedManyWithoutUserInput
+    messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
+    reviewsRecv?: ReviewUncheckedCreateNestedManyWithoutRevieweeInput
+    reviewsGiven?: ReviewUncheckedCreateNestedManyWithoutReviewerInput
+    sessionsAsTutor?: SessionUncheckedCreateNestedManyWithoutPartnerInput
+    sessionsAsStudent?: SessionUncheckedCreateNestedManyWithoutStudentInput
+    studentProfile?: StudentProfileUncheckedCreateNestedOneWithoutUserInput
+    tutorApplication?: TutorApplicationUncheckedCreateNestedOneWithoutUserInput
+    tutorProfile?: TutorProfileUncheckedCreateNestedOneWithoutUserInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
+    resourcePurchases?: ResourcePurchaseUncheckedCreateNestedManyWithoutUserInput
+    resources?: ResourceUncheckedCreateNestedManyWithoutSellerInput
+    sessionPaymentsAsStudent?: SessionPaymentUncheckedCreateNestedManyWithoutStudentInput
+    sessionPaymentsAsTutor?: SessionPaymentUncheckedCreateNestedManyWithoutTutorInput
+    payouts?: TutorPayoutUncheckedCreateNestedManyWithoutTutorInput
+    matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
+    newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
+    userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
+    referredUsers?: ReferralUncheckedCreateNestedManyWithoutReferrerInput
+    referralsMade?: ReferralUncheckedCreateNestedManyWithoutReferredInput
+    mashContext?: MashContextUncheckedCreateNestedOneWithoutUserInput
+    creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
+    sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
+    institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
+    institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
+    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
+    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
+    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
+    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
+  }
+
+  export type UserCreateOrConnectWithoutAnalyticsEventsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutAnalyticsEventsInput, UserUncheckedCreateWithoutAnalyticsEventsInput>
+  }
+
+  export type UserUpsertWithoutAnalyticsEventsInput = {
+    update: XOR<UserUpdateWithoutAnalyticsEventsInput, UserUncheckedUpdateWithoutAnalyticsEventsInput>
+    create: XOR<UserCreateWithoutAnalyticsEventsInput, UserUncheckedCreateWithoutAnalyticsEventsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutAnalyticsEventsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutAnalyticsEventsInput, UserUncheckedUpdateWithoutAnalyticsEventsInput>
+  }
+
+  export type UserUpdateWithoutAnalyticsEventsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
+    formYear?: NullableIntFieldUpdateOperationsInput | number | null
+    county?: StringFieldUpdateOperationsInput | string
+    points?: IntFieldUpdateOperationsInput | number
+    tier?: EnumTierFieldUpdateOperationsInput | $Enums.Tier
+    streakDays?: IntFieldUpdateOperationsInput | number
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isUnder18?: BoolFieldUpdateOperationsInput | boolean
+    strikes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: NullableStringFieldUpdateOperationsInput | string | null
+    dailyMessageCount?: IntFieldUpdateOperationsInput | number
+    dailySearchCount?: IntFieldUpdateOperationsInput | number
+    lastCountReset?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    banned?: BoolFieldUpdateOperationsInput | boolean
+    suspended?: BoolFieldUpdateOperationsInput | boolean
+    plan?: StringFieldUpdateOperationsInput | string
+    planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    achievements?: AchievementUpdateManyWithoutUserNestedInput
+    comments?: CommentUpdateManyWithoutUserNestedInput
+    challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
+    feedPosts?: FeedPostUpdateManyWithoutUserNestedInput
+    messages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    postLikes?: PostLikeUpdateManyWithoutUserNestedInput
+    reviewsRecv?: ReviewUpdateManyWithoutRevieweeNestedInput
+    reviewsGiven?: ReviewUpdateManyWithoutReviewerNestedInput
+    sessionsAsTutor?: SessionUpdateManyWithoutPartnerNestedInput
+    sessionsAsStudent?: SessionUpdateManyWithoutStudentNestedInput
+    studentProfile?: StudentProfileUpdateOneWithoutUserNestedInput
+    tutorApplication?: TutorApplicationUpdateOneWithoutUserNestedInput
+    tutorProfile?: TutorProfileUpdateOneWithoutUserNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
+    resourcePurchases?: ResourcePurchaseUpdateManyWithoutUserNestedInput
+    resources?: ResourceUpdateManyWithoutSellerNestedInput
+    sessionPaymentsAsStudent?: SessionPaymentUpdateManyWithoutStudentNestedInput
+    sessionPaymentsAsTutor?: SessionPaymentUpdateManyWithoutTutorNestedInput
+    payouts?: TutorPayoutUpdateManyWithoutTutorNestedInput
+    matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
+    newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
+    userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUpdateOneWithoutUserNestedInput
+    creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
+    sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
+    institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
+    institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutAnalyticsEventsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
+    formYear?: NullableIntFieldUpdateOperationsInput | number | null
+    county?: StringFieldUpdateOperationsInput | string
+    points?: IntFieldUpdateOperationsInput | number
+    tier?: EnumTierFieldUpdateOperationsInput | $Enums.Tier
+    streakDays?: IntFieldUpdateOperationsInput | number
+    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isUnder18?: BoolFieldUpdateOperationsInput | boolean
+    strikes?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
+    curriculum?: NullableStringFieldUpdateOperationsInput | string | null
+    dailyMessageCount?: IntFieldUpdateOperationsInput | number
+    dailySearchCount?: IntFieldUpdateOperationsInput | number
+    lastCountReset?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
+    banned?: BoolFieldUpdateOperationsInput | boolean
+    suspended?: BoolFieldUpdateOperationsInput | boolean
+    plan?: StringFieldUpdateOperationsInput | string
+    planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
+    challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
+    feedPosts?: FeedPostUncheckedUpdateManyWithoutUserNestedInput
+    messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
+    reviewsRecv?: ReviewUncheckedUpdateManyWithoutRevieweeNestedInput
+    reviewsGiven?: ReviewUncheckedUpdateManyWithoutReviewerNestedInput
+    sessionsAsTutor?: SessionUncheckedUpdateManyWithoutPartnerNestedInput
+    sessionsAsStudent?: SessionUncheckedUpdateManyWithoutStudentNestedInput
+    studentProfile?: StudentProfileUncheckedUpdateOneWithoutUserNestedInput
+    tutorApplication?: TutorApplicationUncheckedUpdateOneWithoutUserNestedInput
+    tutorProfile?: TutorProfileUncheckedUpdateOneWithoutUserNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
+    resourcePurchases?: ResourcePurchaseUncheckedUpdateManyWithoutUserNestedInput
+    resources?: ResourceUncheckedUpdateManyWithoutSellerNestedInput
+    sessionPaymentsAsStudent?: SessionPaymentUncheckedUpdateManyWithoutStudentNestedInput
+    sessionPaymentsAsTutor?: SessionPaymentUncheckedUpdateManyWithoutTutorNestedInput
+    payouts?: TutorPayoutUncheckedUpdateManyWithoutTutorNestedInput
+    matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
+    newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
+    userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
+    referredUsers?: ReferralUncheckedUpdateManyWithoutReferrerNestedInput
+    referralsMade?: ReferralUncheckedUpdateManyWithoutReferredNestedInput
+    mashContext?: MashContextUncheckedUpdateOneWithoutUserNestedInput
+    creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
+    sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
+    institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
+    institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
+    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
+    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
+    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
+    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
   }
 
   export type AchievementCreateManyUserInput = {
@@ -91870,6 +98947,29 @@ export namespace Prisma {
     status?: string
     createdAt?: Date | string
     updatedAt?: Date | string | null
+  }
+
+  export type ReferralCreateManyReferrerInput = {
+    id?: string
+    referredId: string
+    codeUsed: string
+    bonusAwarded?: boolean
+    createdAt?: Date | string
+  }
+
+  export type ReferralCreateManyReferredInput = {
+    id?: string
+    referrerId: string
+    codeUsed: string
+    bonusAwarded?: boolean
+    createdAt?: Date | string
+  }
+
+  export type AnalyticsEventCreateManyUserInput = {
+    id?: string
+    eventType: string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
   }
 
   export type CreditTransactionCreateManyUserInput = {
@@ -92648,6 +99748,75 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ReferralUpdateWithoutReferrerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    codeUsed?: StringFieldUpdateOperationsInput | string
+    bonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    referred?: UserUpdateOneRequiredWithoutReferralsMadeNestedInput
+  }
+
+  export type ReferralUncheckedUpdateWithoutReferrerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    referredId?: StringFieldUpdateOperationsInput | string
+    codeUsed?: StringFieldUpdateOperationsInput | string
+    bonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReferralUncheckedUpdateManyWithoutReferrerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    referredId?: StringFieldUpdateOperationsInput | string
+    codeUsed?: StringFieldUpdateOperationsInput | string
+    bonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReferralUpdateWithoutReferredInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    codeUsed?: StringFieldUpdateOperationsInput | string
+    bonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    referrer?: UserUpdateOneRequiredWithoutReferredUsersNestedInput
+  }
+
+  export type ReferralUncheckedUpdateWithoutReferredInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    referrerId?: StringFieldUpdateOperationsInput | string
+    codeUsed?: StringFieldUpdateOperationsInput | string
+    bonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReferralUncheckedUpdateManyWithoutReferredInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    referrerId?: StringFieldUpdateOperationsInput | string
+    codeUsed?: StringFieldUpdateOperationsInput | string
+    bonusAwarded?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AnalyticsEventUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AnalyticsEventUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AnalyticsEventUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type CreditTransactionUpdateWithoutUserInput = {

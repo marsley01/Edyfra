@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getUserData } from "./user";
 import { isFounderEmail } from "@/utils/admin-guard";
+import { notifyUser } from "./notifications";
 export async function login(formData: FormData) {
   const supabase = await createClient();
 
