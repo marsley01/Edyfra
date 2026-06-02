@@ -41,6 +41,10 @@ export function PushNotificationInit() {
       const reg = await navigator.serviceWorker.ready;
 
       const keyRes = await fetch("/api/push/vapid-public-key");
+      if (!keyRes.ok) {
+        toast.error("Push notifications not configured");
+        return;
+      }
       const { publicKey } = await keyRes.json();
       if (!publicKey) {
         toast.error("Push notifications not configured");

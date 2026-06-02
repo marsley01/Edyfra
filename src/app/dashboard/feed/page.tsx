@@ -99,11 +99,15 @@ export default function FeedPage() {
     if (!newPostContent.trim()) return;
     setIsSubmitting(true);
     try {
-      await createPost(newPostContent);
-      setNewPostContent("");
-      toast.success("Shared with the community!");
-      loadPosts();
-    } catch (error) {
+      const result = await createPost(newPostContent);
+      if (result.success) {
+        setNewPostContent("");
+        toast.success("Shared with the community!");
+        loadPosts();
+      } else {
+        toast.error(result.error || "Failed to share post");
+      }
+    } catch {
       toast.error("Failed to share post");
     } finally {
       setIsSubmitting(false);
