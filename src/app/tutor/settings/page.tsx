@@ -18,6 +18,7 @@ import {
 import { getUserData, updateProfile, updateTutorProfile, changePassword, changeEmail, downloadUserData, deleteUserAccount, updateAvatar, updateNotificationSettings } from "@/app/actions/user";
 import { getNotificationSettings } from "@/app/actions/notifications";
 import { PushNotificationInit } from "@/components/PushNotificationInit";
+import { TUTOR_CONFIG } from "@/lib/config";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { AvatarPicker, type AvatarStyle } from "@/components/ui/avatar-picker";
 import {
@@ -93,7 +94,7 @@ export default function TutorSettingsPage() {
         subjects: tp.subjects?.join(", ") || "",
         confidenceLevels: "",
         levelsTaught: tp.levelsTaught?.join(", ") || "",
-        hourlyRate: tp.hourlyRate?.toString() || "500",
+        hourlyRate: tp.hourlyRate?.toString() || TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH.toString(),
         mpesaNumber: tp.mpesaNumber || "",
         sessionPreference: tp.sessionPreference || "both",
         maxGroupStudents: tp.maxGroupStudents?.toString() || "3",
@@ -126,7 +127,7 @@ export default function TutorSettingsPage() {
         bio: formData.bio,
         subjects: formData.subjects.split(",").map((s: string) => s.trim()).filter(Boolean),
         levelsTaught: formData.levelsTaught.split(",").map((s: string) => s.trim()).filter(Boolean),
-        hourlyRate: parseInt(formData.hourlyRate) || 500,
+        hourlyRate: parseInt(formData.hourlyRate) || TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH,
         mpesaNumber: formData.mpesaNumber,
         sessionPreference: formData.sessionPreference,
         maxGroupStudents: parseInt(formData.maxGroupStudents) || 3,

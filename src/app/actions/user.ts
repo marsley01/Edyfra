@@ -380,7 +380,7 @@ export async function updateTutorProfile(data: {
         subjects: data.subjects || [],
         levelsTaught: data.levelsTaught || [],
         verificationPath: VerifPath.POINTS,
-        hourlyRate: data.hourlyRate || 500,
+        hourlyRate: data.hourlyRate || TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH,
         mpesaNumber: data.mpesaNumber || "",
         availability: data.availability || { isOnline: false },
       },

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Users, Star, Wallet, Clock, ArrowRight, Loader2, BookOpen, Sparkles, ShieldCheck, Calendar as CalendarIcon, Video } from "lucide-react";
+import { Users, Star, Wallet, Clock, ArrowRight, Loader2, BookOpen, Sparkles, ShieldCheck, Calendar as CalendarIcon, Video, Bell, UserPlus, Timer, Activity } from "lucide-react";
 import { getTutorProfile, toggleTutorStatus, getTutorSessions } from "@/app/actions/tutor";
 import { getUserData } from "@/app/actions/user";
 import { toast } from "sonner";
@@ -14,11 +14,16 @@ import { useRouter } from "next/navigation";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
 import { IncomingRequests } from "@/components/tutor/IncomingRequests";
 import { getUpcomingBookings } from "@/app/actions/bookings";
+import { createClient } from "@/utils/supabase/client";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface TutorProfile {
   totalSessions: number;
   hourlyRate: number;
   rating: number;
+  currentActiveSessions?: number;
+  maxConcurrentSessions?: number;
+  responseRate?: number;
   user: { name: string };
   availability: any;
 }
@@ -32,8 +37,117 @@ export default function TutorDashboard() {
   const [activeSessions, setActiveSessions] = useState<any[]>([]);
   const [upcomingBookings, setUpcomingBookings] = useState<any[]>([]);
   const [sessionLoading, setSessionLoading] = useState(true);
-  
+  const [searchingStudents, setSearchingStudents] = useState(0);
+  const [matchBanner, setMatchBanner] = useState<any>(null);
+  const [countdown, setCountdown] = useState(120);
+  const [showSound, setShowSound] = useState(true);
+
   const router = useRouter();
+  const supabase = createClient();
+
+  // Listen for new match requests in real time
+  useEffect(() => {
+    if (!isOnline) return;
+
+    const channel = supabase
+      .channel("tutor-match-stream")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "MatchRequest" },
+        (payload: any) => {
+          const req = payload.new;
+          if (req?.subject && !req.sessionId) {
+            setSearchingStudents(prev => prev + 1);
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "MatchRequest" },
+        (payload: any) => {
+          if (payload.new?.sessionId) {
+            setSearchingStudents(prev => Math.max(0, prev - 1));
+          }
+        }
+      )
+      .subscribe();
+
+    // Listen for broadcast matches
+    const broadcastChannel = supabase
+      .channel("global-matches")
+      .on("broadcast", { event: "new-request" }, (payload: any) => {
+        setSearchingStudents(prev => prev + 1);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+      supabase.removeChannel(broadcastChannel);
+    };
+  }, [isOnline, supabase]);
+
+  // Listen for matches directed to this tutor
+  useEffect(() => {
+    if (!isOnline || !profile?.user?.name) return;
+
+    const matchChannel = supabase
+      .channel("tutor-matched")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "MatchRequest",
+          filter: `sessionId=neq.null`,
+        },
+        async (payload: any) => {
+          // Check if this match involves the current tutor
+          if (payload.new?.sessionId) {
+            const session = await (await import("@/app/actions/match")).getSession(payload.new.sessionId);
+            if (session?.partnerId === profile?.user?.name || session?.partner?.name === profile?.user?.name) {
+              // This tutor was matched
+              const student = await (await import("@/app/actions/user")).getUserData();
+              setMatchBanner({
+                studentName: session?.student?.name || "A student",
+                subject: payload.new.subject || "a subject",
+                sessionId: payload.new.sessionId,
+              });
+              setCountdown(120);
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(matchChannel); };
+  }, [isOnline, profile, supabase]);
+
+  // Countdown timer for match banner
+  useEffect(() => {
+    if (!matchBanner || countdown <= 0) return;
+    const timer = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          // Auto-reassign: tutor didn't respond in 2 minutes
+          handleTimeout();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [matchBanner, countdown]);
+
+  const handleTimeout = async () => {
+    setMatchBanner(null);
+    setCountdown(120);
+    toast.error("Match timed out — student reassigned.");
+  };
+
+  const handleJoinMatch = (sessionId: string) => {
+    setMatchBanner(null);
+    router.push(`/study-room/${sessionId}`);
+  };
 
   useEffect(() => {
     loadProfile();
@@ -43,7 +157,7 @@ export default function TutorDashboard() {
   const loadProfile = async () => {
     const data = await getTutorProfile();
     if (data) {
-      setProfile(data);
+      setProfile(data as any);
       setIsOnline((data.availability as Record<string, boolean>)?.isOnline || false);
     }
     setLoading(false);
@@ -91,17 +205,44 @@ export default function TutorDashboard() {
     );
   }
 
-  const stats = [
-    { label: "Upcoming", value: pendingSessions.length, icon: CalendarIcon, color: "text-blue-500", bg: "bg-blue-500/10" },
-    { label: "Completed", value: profile?.totalSessions || 0, icon: Sparkles, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-    { label: "Earnings", value: `KSH ${(profile?.totalSessions || 0) * (profile?.hourlyRate || 0)}`, icon: Wallet, color: "text-primary", bg: "bg-primary/10" },
-    { label: "Rating", value: profile?.rating ? profile.rating.toFixed(1) : "New", icon: Star, color: "text-yellow-500", bg: "bg-yellow-500/10" },
-  ];
-  
   const tutorName = profile?.user?.name?.split(" ")[0] || "Tutor";
+  const responseRate = profile?.responseRate ?? 100;
 
   return (
     <div className="space-y-12 animate-in fade-in duration-700 font-sans p-2">
+      {/* Match Banner - Slides in when student is matched */}
+      <AnimatePresence>
+        {matchBanner && (
+          <motion.div
+            initial={{ y: -100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -100, opacity: 0 }}
+            className="fixed top-0 left-0 right-0 z-50 bg-emerald-500 text-white p-6 shadow-2xl"
+          >
+            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center animate-pulse">
+                  <UserPlus className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-lg font-black">Student matched! {matchBanner.studentName} needs help with {matchBanner.subject}</p>
+                  <p className="text-white/80 text-sm font-medium flex items-center gap-2">
+                    <Timer className="h-4 w-4" />
+                    Join within {Math.floor(countdown / 60)}:{(countdown % 60).toString().padStart(2, "0")} or the student will be reassigned
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={() => handleJoinMatch(matchBanner.sessionId)}
+                className="bg-white text-emerald-700 hover:bg-emerald-50 font-black text-xs tracking-widest uppercase rounded-full h-14 px-10 shadow-xl animate-pulse"
+              >
+                <Video className="h-5 w-5 mr-2" /> Join Session
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Premium Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
         <div className="space-y-2">
@@ -121,9 +262,42 @@ export default function TutorDashboard() {
         </div>
       </div>
 
+      {/* Live Status Card - when online */}
+      {isOnline && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-6 rounded-[2rem] bg-emerald-500/5 border border-emerald-500/20 space-y-3"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+            <p className="font-bold text-emerald-700 dark:text-emerald-300">
+              You are online and visible to students
+            </p>
+          </div>
+          <p className="text-muted-foreground font-medium flex items-center gap-2">
+            <Activity className="h-4 w-4" />
+            {searchingStudents > 0
+              ? `${searchingStudents} student${searchingStudents > 1 ? 's are' : ' is'} searching for ${profile?.user?.name?.split(" ")[0] || "your subject"} right now. You will be notified the moment a student is matched to you.`
+              : "No students are currently searching. Stay online — you'll be notified the moment a match is found."}
+          </p>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Bell className="h-3 w-3" />
+            <span>Active sessions: {profile?.currentActiveSessions || 0}/{profile?.maxConcurrentSessions || 3}</span>
+            <span className="mx-2">•</span>
+            <span>Response rate: {responseRate}%</span>
+          </div>
+        </motion.div>
+      )}
+
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        {stats.map((stat) => (
+        {[
+          { label: "Active Sessions", value: profile?.currentActiveSessions || 0, icon: Activity, color: "text-blue-500", bg: "bg-blue-500/10" },
+          { label: "Completed", value: profile?.totalSessions || 0, icon: Sparkles, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+          { label: "Response Rate", value: `${responseRate}%`, icon: ShieldCheck, color: responseRate >= 60 ? "text-emerald-500" : "text-red-500", bg: responseRate >= 60 ? "bg-emerald-500/10" : "bg-red-500/10" },
+          { label: "Rating", value: profile?.rating ? profile.rating.toFixed(1) : "New", icon: Star, color: "text-yellow-500", bg: "bg-yellow-500/10" },
+        ].map((stat) => (
           <Card key={stat.label} className="border-border bg-secondary/30 backdrop-blur-sm rounded-[2rem] overflow-hidden hover:border-primary/50 transition-all group">
             <CardContent className="p-6 md:p-8 flex flex-col gap-4">
               <div className={`${stat.bg} w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110`}>
@@ -139,7 +313,6 @@ export default function TutorDashboard() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 md:gap-12">
-        {/* Schedule List */}
         <div className="xl:col-span-2 space-y-8">
           <IncomingRequests />
 
@@ -208,7 +381,7 @@ export default function TutorDashboard() {
                         onClick={() => handleJoinRoom(session.roomId)}
                         className={`w-full sm:w-auto h-16 px-10 rounded-[1.8rem] font-black text-xs tracking-[0.2em] uppercase shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3 ${
                           session.status === "ACTIVE" 
-                            ? "bg-emerald-500 hover:bg-emerald-600 text-white" 
+                            ? "bg-emerald-500 hover:bg-emerald-600 text-white animate-pulse" 
                             : "bg-primary hover:bg-primary/90 text-white"
                         }`}
                       >
@@ -219,52 +392,68 @@ export default function TutorDashboard() {
                   </CardContent>
                 </Card>
               ))}
-              {upcomingBookings.map((booking) => (
-                <Card key={booking.id} className="border-border/50 bg-secondary/30 backdrop-blur-3xl hover:border-primary/50 transition-all duration-500 rounded-[3rem] overflow-hidden group shadow-xl hover:shadow-primary/5">
-                  <CardContent className="p-8 md:p-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-                    <div className="flex items-center gap-6 w-full lg:w-auto">
-                      <AvatarPremium
-                        seed={booking.student.name}
-                        src={booking.student.avatar || ""}
-                        size="lg"
-                      />
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-3">
-                          <h3 className="text-2xl font-black tracking-tightest">{booking.student.name}</h3>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge className="bg-primary/10 text-primary border-primary/20 text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full">
-                            {booking.subject}
-                          </Badge>
-                          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest bg-background border border-border px-3 py-1 rounded-full flex items-center gap-1">
-                            <Clock className="h-3 w-3" /> {new Date(booking.date).toLocaleDateString()} at {booking.startTime}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+              {upcomingBookings.map((booking) => {
+                const now = new Date();
+                const eatNow = new Date(now.getTime() + (3 * 60 * 60 * 1000));
+                const sessionStart = new Date(booking.date);
+                const [hours, minutes] = booking.startTime.split(":").map(Number);
+                sessionStart.setHours(hours, minutes, 0, 0);
+                const minutesUntilSession = (sessionStart.getTime() - eatNow.getTime()) / (1000 * 60);
+                const canJoin = minutesUntilSession <= 5 && minutesUntilSession >= -30;
 
-                    <div className="flex flex-col sm:flex-row items-center gap-6 w-full lg:w-auto">
-                      <div className="flex flex-col items-center sm:items-end w-full sm:w-auto">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Session Status</span>
-                        <span className="text-sm font-black text-foreground">Confirmed</span>
+                return (
+                  <Card key={booking.id} className="border-border/50 bg-secondary/30 backdrop-blur-3xl hover:border-primary/50 transition-all duration-500 rounded-[3rem] overflow-hidden group shadow-xl hover:shadow-primary/5">
+                    <CardContent className="p-8 md:p-10 flex flex-col lg:flex-row items-center justify-between gap-8">
+                      <div className="flex items-center gap-6 w-full lg:w-auto">
+                        <AvatarPremium
+                          seed={booking.student.name}
+                          src={booking.student.avatar || ""}
+                          size="lg"
+                        />
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-3">
+                            <h3 className="text-2xl font-black tracking-tightest">{booking.student.name}</h3>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge className="bg-primary/10 text-primary border-primary/20 text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full">
+                              {booking.subject}
+                            </Badge>
+                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest bg-background border border-border px-3 py-1 rounded-full flex items-center gap-1">
+                              <Clock className="h-3 w-3" /> {new Date(booking.date).toLocaleDateString()} at {booking.startTime} EAT
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <Button 
-                        onClick={() => handleJoinRoom(booking.id)}
-                        className={`w-full sm:w-auto h-16 px-10 rounded-[1.8rem] font-black text-xs tracking-[0.2em] uppercase shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3 bg-primary hover:bg-primary/90 text-white`}
-                      >
-                        <Video className="h-5 w-5" />
-                        Join Room
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+
+                      <div className="flex flex-col sm:flex-row items-center gap-6 w-full lg:w-auto">
+                        <div className="flex flex-col items-center sm:items-end w-full sm:w-auto">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Session Status</span>
+                          <span className="text-sm font-black text-foreground">Confirmed</span>
+                        </div>
+                        <Button 
+                          onClick={() => handleJoinRoom(booking.id)}
+                          disabled={!canJoin}
+                          className={`w-full sm:w-auto h-16 px-10 rounded-[1.8rem] font-black text-xs tracking-[0.2em] uppercase shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3 ${
+                            canJoin
+                              ? "bg-emerald-500 hover:bg-emerald-600 text-white animate-pulse"
+                              : minutesUntilSession > 5
+                                ? "bg-muted text-muted-foreground cursor-not-allowed"
+                                : "bg-primary hover:bg-primary/90 text-white"
+                          }`}
+                        >
+                          <Video className="h-5 w-5" />
+                          {minutesUntilSession > 5 ? "Join in 5 min" : canJoin ? "Join Session" : "Expired"}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
               </>
             )}
           </div>
         </div>
 
-        {/* Schedule & Info */}
         <div className="space-y-8">
            <Card className="border-none bg-primary text-white rounded-[3rem] overflow-hidden shadow-2xl shadow-primary/20">
               <CardHeader className="p-10 pb-4">
@@ -277,14 +466,13 @@ export default function TutorDashboard() {
               </CardHeader>
               <CardContent className="p-10 pt-4 space-y-6">
                  <div className="space-y-3">
-                    {/* Placeholder for availability slots */}
                     <div className="flex items-center justify-between p-4 rounded-2xl bg-white/10 border border-white/5 backdrop-blur-md">
                       <span className="font-bold text-sm">Mon - Fri</span>
-                      <span className="text-[10px] font-black uppercase tracking-widest opacity-80">2pm – 6pm</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest opacity-80">2pm – 6pm EAT</span>
                     </div>
                     <div className="flex items-center justify-between p-4 rounded-2xl bg-white/10 border border-white/5 backdrop-blur-md">
                       <span className="font-bold text-sm">Saturday</span>
-                      <span className="text-[10px] font-black uppercase tracking-widest opacity-80">9am – 1pm</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest opacity-80">9am – 1pm EAT</span>
                     </div>
                  </div>
                  <Button onClick={() => router.push("/tutor/settings")} className="w-full h-14 rounded-2xl bg-white text-primary font-black text-xs tracking-widest uppercase hover:bg-white/90 shadow-xl">

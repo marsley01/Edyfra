@@ -116,9 +116,22 @@ export default function SignupPage() {
               </div>
            </div>
 
-           {/* Gender Selection */}
-           <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-muted-foreground">I am</label>
+            {/* Referral Code */}
+            <div className="space-y-2">
+               <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-muted-foreground">Referral Code (optional)</label>
+               <Input
+                 name="referral_code"
+                 type="text"
+                 placeholder="e.g. MASH42"
+                 maxLength={6}
+                 className="h-14 rounded-2xl px-6 border-border bg-secondary font-medium focus-visible:ring-primary uppercase"
+               />
+               <p className="text-[9px] font-medium text-muted-foreground ml-4">Got a code from a friend? Enter it here for 50 bonus XP!</p>
+            </div>
+
+            {/* Gender Selection */}
+            <div className="space-y-2">
+               <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-muted-foreground">I am</label>
               <div className="grid grid-cols-2 gap-3">
                 {[
                   { value: "MALE", label: "Male", icon: Mars },

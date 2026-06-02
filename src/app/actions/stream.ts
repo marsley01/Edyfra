@@ -358,9 +358,12 @@ export async function handleMashMention(
 
   // Import AIService dynamically to avoid circular deps
   const { AIService } = await import("@/utils/ai-service");
+  const { buildMashSystemPrompt } = await import("@/utils/mash-context");
+
+  const studentContextPrompt = await buildMashSystemPrompt(user.id, sessionSubject);
 
   const systemPrompt = `
-    You are Mash AI, a supportive and expert Kenyan tutor on the Edyfra platform.
+    ${studentContextPrompt}
     Session Context:
     - Subject: ${sessionSubject}
     - Topic: ${sessionTopic || "General"}
@@ -375,17 +378,34 @@ export async function handleMashMention(
 
   const actualPrompt = prompt || `Greet me and ask how you can help with ${sessionSubject}${sessionTopic ? ` (${sessionTopic})` : ""}.`;
 
-  const aiResponse = await AIService.generateCompletion(actualPrompt, systemPrompt);
+  let aiResponse: string;
+
+  try {
+    aiResponse = await AIService.generateCompletion(actualPrompt, systemPrompt);
+
+    // If AI returned the error message, send a friendly fallback instead
+    if (aiResponse.includes("having a bit of trouble thinking") || aiResponse.includes("offline")) {
+      aiResponse = `Hey! 👋 I'm here to help with ${sessionSubject}. Could you tell me what specific topic or question you're working on? I can explain concepts, give practice questions, or help you work through problems step by step.`;
+    }
+  } catch (err) {
+    console.error("[handleMashMention] AI generation failed:", err);
+    aiResponse = `Hey! 👋 I'm here to help with ${sessionSubject}. What would you like to work on today?`;
+  }
 
   // Send response as mash-ai on the channel
-  const client = getServerClient();
-  await client.upsertUser({ id: "mash-ai", name: "Mash AI", role: "user" });
+  try {
+    const client = getServerClient();
+    await client.upsertUser({ id: "mash-ai", name: "Mash AI", role: "user" });
 
-  const channel = client.channel("messaging", channelId);
-  await channel.sendMessage({
-    text: aiResponse,
-    user_id: "mash-ai",
-  });
+    const channel = client.channel("messaging", channelId);
+    await channel.sendMessage({
+      text: aiResponse,
+      user_id: "mash-ai",
+    });
+  } catch (channelErr) {
+    console.error("[handleMashMention] Failed to send Stream message:", channelErr);
+    throw new Error("Failed to send Mash AI response");
+  }
 
   return { success: true };
 }

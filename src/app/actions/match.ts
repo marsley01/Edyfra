@@ -8,7 +8,7 @@ import { SESSION_CONFIG } from "@/lib/config";
 import { recalibrateTier } from "./user";
 import { MatchTier, Role, EduLevel, Tier } from "@/generated/client";
 import { randomBytes } from "crypto";
-import { executeSmartMatching, sweepAndAIFallback } from "./match-algorithm";
+import { executeSmartMatching, sweepAndAIFallback, decrementTutorActiveSessions } from "./match-algorithm";
 import { StreamChat } from "stream-chat";
 import { notifyUser } from "@/app/actions/notifications";
 import { getUserData } from "@/app/actions/user";
@@ -362,6 +362,35 @@ export async function completeSession(sessionId: string) {
     });
 
     let pointsAwarded = 0;
+
+    // Track analytics event for session completion
+    try {
+      const { trackAnalyticsEvent, awardReferralBonus } = await import("./analytics");
+      await trackAnalyticsEvent(session.studentId, "session_complete", {
+        sessionId: session.id,
+        subject: session.subject,
+        tier: session.tier,
+        durationMin,
+      });
+
+      // Check if this is the student's first session — award referral bonus
+      const studentSessionCount = await prisma.session.count({
+        where: { studentId: session.studentId, status: "COMPLETED" },
+      });
+      if (studentSessionCount === 1) {
+        await awardReferralBonus(session.studentId);
+        await trackAnalyticsEvent(session.studentId, "first_session", {
+          sessionId: session.id,
+        });
+      }
+    } catch (e) {
+      console.error("Failed to track analytics/referral:", e);
+    }
+
+    // Decrement tutor's active sessions
+    if (session.partnerId && session.tier === "TUTOR") {
+      await decrementTutorActiveSessions(session.partnerId);
+    }
 
     if (shouldAwardPoints) {
       pointsAwarded = SESSION_CONFIG.POINTS_STUDENT;

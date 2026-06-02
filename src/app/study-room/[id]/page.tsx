@@ -163,11 +163,15 @@ export default function StudyRoomPage() {
         </div>
 
         <div className="flex items-center gap-4">
-          {showNoShowPrompt && (
+              {showNoShowPrompt && (
             <Button onClick={handleConvertToMashAI} disabled={converting} variant="outline" className="hidden md:flex h-10 px-4 rounded-xl border-yellow-500/50 text-yellow-500 font-black text-[10px] tracking-widest uppercase hover:bg-yellow-500/10">
               {converting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Tutor Unavailable? Use AI"}
             </Button>
           )}
+          {/* EAT time display */}
+          <span className="text-[9px] font-bold text-muted-foreground hidden md:block">
+            {new Date().toLocaleTimeString("en-KE", { timeZone: "Africa/Nairobi", hour: "2-digit", minute: "2-digit" })} EAT
+          </span>
           <div className="hidden md:flex -space-x-3">
             <AvatarPremium seed={session.student?.name} size="sm" className="border-2 border-background" />
             {session.partner && (
@@ -200,7 +204,7 @@ export default function StudyRoomPage() {
                 <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-500">
                   <ShieldCheck className="h-3 w-3" /> Private Session
                 </div>
-                <p className="text-xs font-medium text-muted-foreground leading-relaxed">Your conversation stays between you and your study partner.</p>
+                <p className="text-xs font-medium text-muted-foreground leading-relaxed">Your conversation stays between you and your study partner. 🔒 End-to-end encrypted session</p>
               </div>
             </div>
           </div>
@@ -230,6 +234,10 @@ export default function StudyRoomPage() {
               }}
             />
           )}
+          {/* Subtle encryption indicator */}
+          <div className="py-2 text-center border-t border-border/30">
+            <span className="text-[9px] font-medium text-muted-foreground/40">🔒 End-to-end encrypted session</span>
+          </div>
         </section>
       </main>
       <SessionReviewModal

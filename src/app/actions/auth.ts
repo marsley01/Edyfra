@@ -69,6 +69,15 @@ export async function login(formData: FormData) {
   }
 }
 
+function generateReferralCode(length = 6): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let code = "";
+  for (let i = 0; i < length; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
 export async function signup(formData: FormData) {
   const supabase = await createClient();
 
@@ -77,6 +86,7 @@ export async function signup(formData: FormData) {
   const name = formData.get("name") as string;
   const gender = formData.get("gender") as string;
   const avatarStyle = formData.get("avatar") as string;
+  const referralCode = formData.get("referral_code") as string;
   const avatarUrl = `https://api.dicebear.com/7.x/${avatarStyle}/svg?seed=${encodeURIComponent(name || email)}`;
 
   const { data, error } = await supabase.auth.signUp({
@@ -88,6 +98,7 @@ export async function signup(formData: FormData) {
         role: "STUDENT",
         gender,
         avatar: avatarUrl,
+        referral_code: referralCode || null,
       },
       emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/auth/callback`,
     },
@@ -95,6 +106,81 @@ export async function signup(formData: FormData) {
 
   if (error) {
     return { error: error.message };
+  }
+
+  // Create the user in Prisma and handle referral
+  if (data.user) {
+    const generatedCode = generateReferralCode();
+    let referredBy: string | null = null;
+
+    // Check if referral code was provided
+    if (referralCode) {
+      const referrer = await prisma.user.findUnique({
+        where: { referralCode: referralCode.toUpperCase() },
+      });
+      if (referrer) {
+        referredBy = referrer.id;
+      }
+    }
+
+    await prisma.user.upsert({
+      where: { id: data.user.id },
+      update: {
+        referralCode: generatedCode,
+        referredBy,
+        name,
+        email,
+        gender: gender as any,
+        avatar: avatarUrl,
+      },
+      create: {
+        id: data.user.id,
+        email,
+        name,
+        role: "STUDENT",
+        gender: gender as any,
+        county: "Nairobi",
+        educationLevel: "HIGH_SCHOOL",
+        referralCode: generatedCode,
+        referredBy,
+        avatar: avatarUrl,
+        points: 0,
+        lastActiveAt: new Date(),
+      },
+    });
+
+    // Create referral record if referred
+    if (referredBy) {
+      await prisma.referral.create({
+        data: {
+          referrerId: referredBy,
+          referredId: data.user.id,
+          codeUsed: referralCode!.toUpperCase(),
+        },
+      });
+
+      // Award 50 bonus XP to the new user immediately
+      await prisma.user.update({
+        where: { id: data.user.id },
+        data: { points: { increment: 50 } },
+      });
+
+      await notifyUser(data.user.id, {
+        type: "REFERRAL_BONUS",
+        title: "🎉 Welcome! You got 50 bonus XP!",
+        body: "You were referred by a friend! Enjoy 50 bonus XP to get started.",
+        actionUrl: "/dashboard",
+      });
+    }
+
+    // Track signup analytics
+    try {
+      const { trackAnalyticsEvent } = await import("./analytics");
+      await trackAnalyticsEvent(data.user.id, "signup", {
+        referral_code: referralCode || null,
+        referred: referredBy !== null,
+      });
+    } catch {}
   }
 
   if (!data.session) {
