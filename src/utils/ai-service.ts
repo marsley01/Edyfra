@@ -1,23 +1,32 @@
 import OpenAI from "openai";
-import { getAdminGlobalSettings } from "@/app/actions/admin";
+import prisma from "@/lib/prisma";
 
-const DEFAULT_MODEL = "deepseek/deepseek-chat";
+const DEFAULT_MODEL = "openai/gpt-4o-mini";
 
 let openaiInstance: OpenAI | null = null;
 let currentKey: string | null = null;
 
+async function getAIKeyFromDB(): Promise<string | null> {
+  try {
+    const entry = await prisma.platformSettings.findUnique({
+      where: { key: "global" },
+      select: { value: true },
+    });
+    const value = entry?.value as Record<string, unknown> | undefined;
+    return (value?.googleAiKey as string) || null;
+  } catch (err) {
+    console.error("[AIService] Failed to fetch key from DB:", err);
+    return null;
+  }
+}
+
 async function getOpenAI() {
   // 1. Try environment variable first
-  let apiKey = process.env.OPENROUTER_API_KEY;
+  let apiKey: string | undefined = process.env.OPENROUTER_API_KEY;
 
-  // 2. Fallback to database settings
+  // 2. Fallback to database settings (no admin check needed)
   if (!apiKey) {
-    try {
-      const settings = await getAdminGlobalSettings();
-      apiKey = settings?.googleAiKey;
-    } catch (err) {
-      console.error("[AIService] Failed to fetch key from DB:", err);
-    }
+    apiKey = (await getAIKeyFromDB()) ?? undefined;
   }
 
   if (!apiKey) return null;
@@ -29,7 +38,7 @@ async function getOpenAI() {
       baseURL: "https://openrouter.ai/api/v1",
       apiKey: apiKey,
       defaultHeaders: {
-        "HTTP-Referer": "https://edyfra.space",
+        "HTTP-Referer": "https://edyfra-v2.vercel.app",
         "X-Title": "Edyfra",
       },
     });
@@ -66,12 +75,12 @@ export class AIService {
   }
 
   static async generateJSON(
-    prompt: string, 
-    schema?: any, 
+    prompt: string,
+    schema?: any,
     model: string = DEFAULT_MODEL
   ): Promise<any> {
     const systemPrompt = "You are a specialized assistant that returns ONLY valid JSON. No markdown, no commentary.";
-    
+
     try {
       const text = await this.generateCompletion(prompt, systemPrompt, model);
       // Clean potential markdown artifacts
