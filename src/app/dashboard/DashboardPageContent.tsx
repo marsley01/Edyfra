@@ -235,6 +235,15 @@ export default function DashboardPageContent() {
     );
   }
 
+  if (!userData) {
+    return (
+      <div className="p-12 text-center">
+        <p className="text-muted-foreground">Unable to load dashboard data. Please try again.</p>
+        <button onClick={handleRetry} className="mt-4 px-4 py-2 bg-primary text-white rounded-lg">Retry</button>
+      </div>
+    );
+  }
+
 
   const firstName = userData?.name?.split(" ")[0] || "there";
   const subjectFocus = userData?.studentProfile?.subjects?.[0] || "your toughest subject";
