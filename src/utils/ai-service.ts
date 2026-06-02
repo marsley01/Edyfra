@@ -1,14 +1,30 @@
 import OpenAI from "openai";
+import { getAdminGlobalSettings } from "@/app/actions/admin";
 
 const DEFAULT_MODEL = "deepseek/deepseek-chat";
 
 let openaiInstance: OpenAI | null = null;
+let currentKey: string | null = null;
 
-function getOpenAI() {
-  const apiKey = process.env.OPENROUTER_API_KEY;
+async function getOpenAI() {
+  // 1. Try environment variable first
+  let apiKey = process.env.OPENROUTER_API_KEY;
+
+  // 2. Fallback to database settings
+  if (!apiKey) {
+    try {
+      const settings = await getAdminGlobalSettings();
+      apiKey = settings?.googleAiKey;
+    } catch (err) {
+      console.error("[AIService] Failed to fetch key from DB:", err);
+    }
+  }
+
   if (!apiKey) return null;
-  
-  if (!openaiInstance) {
+
+  // If the key has changed, re-initialize the instance
+  if (!openaiInstance || currentKey !== apiKey) {
+    currentKey = apiKey;
     openaiInstance = new OpenAI({
       baseURL: "https://openrouter.ai/api/v1",
       apiKey: apiKey,
@@ -23,16 +39,15 @@ function getOpenAI() {
 
 export class AIService {
   static async generateCompletion(
-    prompt: string, 
+    prompt: string,
     systemPrompt: string = "You are an expert educational assistant.",
     model: string = DEFAULT_MODEL
   ): Promise<string> {
-    const openai = getOpenAI();
+    const openai = await getOpenAI();
     if (!openai) {
-      console.warn("[AIService] OPENROUTER_API_KEY is missing. Returning fallback.");
+      console.warn("[AIService] API Key is missing (checked ENV and DB). Returning offline message.");
       return "AI services are currently offline. Please ensure your API key is configured.";
     }
-
     try {
       const completion = await openai.chat.completions.create({
         model,
