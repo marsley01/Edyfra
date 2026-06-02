@@ -140,6 +140,7 @@ exports.Prisma.UserScalarFieldEnum = {
   strikes: 'strikes',
   createdAt: 'createdAt',
   bio: 'bio',
+  settings: 'settings',
   curriculum: 'curriculum',
   dailyMessageCount: 'dailyMessageCount',
   dailySearchCount: 'dailySearchCount',
@@ -449,7 +450,6 @@ exports.Prisma.UserPreferencesScalarFieldEnum = {
   showOnlineStatus: 'showOnlineStatus',
   allowTutorRequests: 'allowTutorRequests',
   enableMashFallback: 'enableMashFallback',
-  studyHoursPerWeek: 'studyHoursPerWeek',
   updatedAt: 'updatedAt'
 };
 
@@ -711,15 +711,15 @@ exports.Prisma.QueryMode = {
   insensitive: 'insensitive'
 };
 
-exports.Prisma.NullsOrder = {
-  first: 'first',
-  last: 'last'
-};
-
 exports.Prisma.JsonNullValueFilter = {
   DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
+};
+
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
 };
 exports.Gender = exports.$Enums.Gender = {
   MALE: 'MALE',

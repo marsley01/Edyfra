@@ -5413,10 +5413,10 @@ export namespace Prisma {
     newsArticles: number
     creditTransactions: number
     sellerEarnings: number
-    pushSubscriptions: number
+    institutionTutors: number
     institutionMembers: number
     uploadedDocuments: number
-    institutionTutors: number
+    pushSubscriptions: number
     tutorAvailabilities: number
     studentBookings: number
     tutorBookings: number
@@ -5446,10 +5446,10 @@ export namespace Prisma {
     newsArticles?: boolean | UserCountOutputTypeCountNewsArticlesArgs
     creditTransactions?: boolean | UserCountOutputTypeCountCreditTransactionsArgs
     sellerEarnings?: boolean | UserCountOutputTypeCountSellerEarningsArgs
-    pushSubscriptions?: boolean | UserCountOutputTypeCountPushSubscriptionsArgs
+    institutionTutors?: boolean | UserCountOutputTypeCountInstitutionTutorsArgs
     institutionMembers?: boolean | UserCountOutputTypeCountInstitutionMembersArgs
     uploadedDocuments?: boolean | UserCountOutputTypeCountUploadedDocumentsArgs
-    institutionTutors?: boolean | UserCountOutputTypeCountInstitutionTutorsArgs
+    pushSubscriptions?: boolean | UserCountOutputTypeCountPushSubscriptionsArgs
     tutorAvailabilities?: boolean | UserCountOutputTypeCountTutorAvailabilitiesArgs
     studentBookings?: boolean | UserCountOutputTypeCountStudentBookingsArgs
     tutorBookings?: boolean | UserCountOutputTypeCountTutorBookingsArgs
@@ -5618,8 +5618,8 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountPushSubscriptionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PushSubscriptionWhereInput
+  export type UserCountOutputTypeCountInstitutionTutorsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: InstitutionTutorWhereInput
   }
 
   /**
@@ -5639,8 +5639,8 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountInstitutionTutorsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: InstitutionTutorWhereInput
+  export type UserCountOutputTypeCountPushSubscriptionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PushSubscriptionWhereInput
   }
 
   /**
@@ -6116,6 +6116,7 @@ export namespace Prisma {
     strikes: number
     createdAt: number
     bio: number
+    settings: number
     curriculum: number
     dailyMessageCount: number
     dailySearchCount: number
@@ -6232,6 +6233,7 @@ export namespace Prisma {
     strikes?: true
     createdAt?: true
     bio?: true
+    settings?: true
     curriculum?: true
     dailyMessageCount?: true
     dailySearchCount?: true
@@ -6351,6 +6353,7 @@ export namespace Prisma {
     strikes: number
     createdAt: Date
     bio: string | null
+    settings: JsonValue
     curriculum: string | null
     dailyMessageCount: number
     dailySearchCount: number
@@ -6402,6 +6405,7 @@ export namespace Prisma {
     strikes?: boolean
     createdAt?: boolean
     bio?: boolean
+    settings?: boolean
     curriculum?: boolean
     dailyMessageCount?: boolean
     dailySearchCount?: boolean
@@ -6413,7 +6417,6 @@ export namespace Prisma {
     planStartedAt?: boolean
     planExpiresAt?: boolean
     planBillingCycle?: boolean
-    preferences?: boolean | User$preferencesArgs<ExtArgs>
     achievements?: boolean | User$achievementsArgs<ExtArgs>
     comments?: boolean | User$commentsArgs<ExtArgs>
     challenges?: boolean | User$challengesArgs<ExtArgs>
@@ -6439,11 +6442,11 @@ export namespace Prisma {
     userCredits?: boolean | User$userCreditsArgs<ExtArgs>
     creditTransactions?: boolean | User$creditTransactionsArgs<ExtArgs>
     sellerEarnings?: boolean | User$sellerEarningsArgs<ExtArgs>
-    pushSubscriptions?: boolean | User$pushSubscriptionsArgs<ExtArgs>
-    institutionMembers?: boolean | User$institutionMembersArgs<ExtArgs>
-    uploadedDocuments?: boolean | User$uploadedDocumentsArgs<ExtArgs>
     institutionStudent?: boolean | User$institutionStudentArgs<ExtArgs>
     institutionTutors?: boolean | User$institutionTutorsArgs<ExtArgs>
+    institutionMembers?: boolean | User$institutionMembersArgs<ExtArgs>
+    uploadedDocuments?: boolean | User$uploadedDocumentsArgs<ExtArgs>
+    pushSubscriptions?: boolean | User$pushSubscriptionsArgs<ExtArgs>
     tutorAvailabilities?: boolean | User$tutorAvailabilitiesArgs<ExtArgs>
     studentBookings?: boolean | User$studentBookingsArgs<ExtArgs>
     tutorBookings?: boolean | User$tutorBookingsArgs<ExtArgs>
@@ -6471,6 +6474,7 @@ export namespace Prisma {
     strikes?: boolean
     createdAt?: boolean
     bio?: boolean
+    settings?: boolean
     curriculum?: boolean
     dailyMessageCount?: boolean
     dailySearchCount?: boolean
@@ -6503,6 +6507,7 @@ export namespace Prisma {
     strikes?: boolean
     createdAt?: boolean
     bio?: boolean
+    settings?: boolean
     curriculum?: boolean
     dailyMessageCount?: boolean
     dailySearchCount?: boolean
@@ -6535,6 +6540,7 @@ export namespace Prisma {
     strikes?: boolean
     createdAt?: boolean
     bio?: boolean
+    settings?: boolean
     curriculum?: boolean
     dailyMessageCount?: boolean
     dailySearchCount?: boolean
@@ -6548,9 +6554,8 @@ export namespace Prisma {
     planBillingCycle?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "phone" | "name" | "avatar" | "gender" | "role" | "educationLevel" | "formYear" | "county" | "points" | "tier" | "streakDays" | "lastActiveAt" | "isUnder18" | "strikes" | "createdAt" | "bio" | "curriculum" | "dailyMessageCount" | "dailySearchCount" | "lastCountReset" | "subscriptionTier" | "banned" | "suspended" | "plan" | "planStartedAt" | "planExpiresAt" | "planBillingCycle", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "phone" | "name" | "avatar" | "gender" | "role" | "educationLevel" | "formYear" | "county" | "points" | "tier" | "streakDays" | "lastActiveAt" | "isUnder18" | "strikes" | "createdAt" | "bio" | "settings" | "curriculum" | "dailyMessageCount" | "dailySearchCount" | "lastCountReset" | "subscriptionTier" | "banned" | "suspended" | "plan" | "planStartedAt" | "planExpiresAt" | "planBillingCycle", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    preferences?: boolean | User$preferencesArgs<ExtArgs>
     achievements?: boolean | User$achievementsArgs<ExtArgs>
     comments?: boolean | User$commentsArgs<ExtArgs>
     challenges?: boolean | User$challengesArgs<ExtArgs>
@@ -6576,11 +6581,11 @@ export namespace Prisma {
     userCredits?: boolean | User$userCreditsArgs<ExtArgs>
     creditTransactions?: boolean | User$creditTransactionsArgs<ExtArgs>
     sellerEarnings?: boolean | User$sellerEarningsArgs<ExtArgs>
-    pushSubscriptions?: boolean | User$pushSubscriptionsArgs<ExtArgs>
-    institutionMembers?: boolean | User$institutionMembersArgs<ExtArgs>
-    uploadedDocuments?: boolean | User$uploadedDocumentsArgs<ExtArgs>
     institutionStudent?: boolean | User$institutionStudentArgs<ExtArgs>
     institutionTutors?: boolean | User$institutionTutorsArgs<ExtArgs>
+    institutionMembers?: boolean | User$institutionMembersArgs<ExtArgs>
+    uploadedDocuments?: boolean | User$uploadedDocumentsArgs<ExtArgs>
+    pushSubscriptions?: boolean | User$pushSubscriptionsArgs<ExtArgs>
     tutorAvailabilities?: boolean | User$tutorAvailabilitiesArgs<ExtArgs>
     studentBookings?: boolean | User$studentBookingsArgs<ExtArgs>
     tutorBookings?: boolean | User$tutorBookingsArgs<ExtArgs>
@@ -6594,7 +6599,6 @@ export namespace Prisma {
   export type $UserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "User"
     objects: {
-      preferences: Prisma.$UserPreferencesPayload<ExtArgs> | null
       achievements: Prisma.$AchievementPayload<ExtArgs>[]
       comments: Prisma.$CommentPayload<ExtArgs>[]
       challenges: Prisma.$DailyChallengeAttemptPayload<ExtArgs>[]
@@ -6620,11 +6624,11 @@ export namespace Prisma {
       userCredits: Prisma.$UserCreditsPayload<ExtArgs> | null
       creditTransactions: Prisma.$CreditTransactionPayload<ExtArgs>[]
       sellerEarnings: Prisma.$SellerEarningPayload<ExtArgs>[]
-      pushSubscriptions: Prisma.$PushSubscriptionPayload<ExtArgs>[]
-      institutionMembers: Prisma.$InstitutionMemberPayload<ExtArgs>[]
-      uploadedDocuments: Prisma.$InstitutionDocumentPayload<ExtArgs>[]
       institutionStudent: Prisma.$InstitutionStudentPayload<ExtArgs> | null
       institutionTutors: Prisma.$InstitutionTutorPayload<ExtArgs>[]
+      institutionMembers: Prisma.$InstitutionMemberPayload<ExtArgs>[]
+      uploadedDocuments: Prisma.$InstitutionDocumentPayload<ExtArgs>[]
+      pushSubscriptions: Prisma.$PushSubscriptionPayload<ExtArgs>[]
       tutorAvailabilities: Prisma.$TutorAvailabilityPayload<ExtArgs>[]
       studentBookings: Prisma.$BookingPayload<ExtArgs>[]
       tutorBookings: Prisma.$BookingPayload<ExtArgs>[]
@@ -6650,6 +6654,7 @@ export namespace Prisma {
       strikes: number
       createdAt: Date
       bio: string | null
+      settings: Prisma.JsonValue
       curriculum: string | null
       dailyMessageCount: number
       dailySearchCount: number
@@ -7055,7 +7060,6 @@ export namespace Prisma {
    */
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    preferences<T extends User$preferencesArgs<ExtArgs> = {}>(args?: Subset<T, User$preferencesArgs<ExtArgs>>): Prisma__UserPreferencesClient<$Result.GetResult<Prisma.$UserPreferencesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     achievements<T extends User$achievementsArgs<ExtArgs> = {}>(args?: Subset<T, User$achievementsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AchievementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     comments<T extends User$commentsArgs<ExtArgs> = {}>(args?: Subset<T, User$commentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     challenges<T extends User$challengesArgs<ExtArgs> = {}>(args?: Subset<T, User$challengesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DailyChallengeAttemptPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -7081,11 +7085,11 @@ export namespace Prisma {
     userCredits<T extends User$userCreditsArgs<ExtArgs> = {}>(args?: Subset<T, User$userCreditsArgs<ExtArgs>>): Prisma__UserCreditsClient<$Result.GetResult<Prisma.$UserCreditsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     creditTransactions<T extends User$creditTransactionsArgs<ExtArgs> = {}>(args?: Subset<T, User$creditTransactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CreditTransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sellerEarnings<T extends User$sellerEarningsArgs<ExtArgs> = {}>(args?: Subset<T, User$sellerEarningsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SellerEarningPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    pushSubscriptions<T extends User$pushSubscriptionsArgs<ExtArgs> = {}>(args?: Subset<T, User$pushSubscriptionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PushSubscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    institutionMembers<T extends User$institutionMembersArgs<ExtArgs> = {}>(args?: Subset<T, User$institutionMembersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InstitutionMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    uploadedDocuments<T extends User$uploadedDocumentsArgs<ExtArgs> = {}>(args?: Subset<T, User$uploadedDocumentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InstitutionDocumentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     institutionStudent<T extends User$institutionStudentArgs<ExtArgs> = {}>(args?: Subset<T, User$institutionStudentArgs<ExtArgs>>): Prisma__InstitutionStudentClient<$Result.GetResult<Prisma.$InstitutionStudentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     institutionTutors<T extends User$institutionTutorsArgs<ExtArgs> = {}>(args?: Subset<T, User$institutionTutorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InstitutionTutorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    institutionMembers<T extends User$institutionMembersArgs<ExtArgs> = {}>(args?: Subset<T, User$institutionMembersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InstitutionMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    uploadedDocuments<T extends User$uploadedDocumentsArgs<ExtArgs> = {}>(args?: Subset<T, User$uploadedDocumentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InstitutionDocumentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    pushSubscriptions<T extends User$pushSubscriptionsArgs<ExtArgs> = {}>(args?: Subset<T, User$pushSubscriptionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PushSubscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     tutorAvailabilities<T extends User$tutorAvailabilitiesArgs<ExtArgs> = {}>(args?: Subset<T, User$tutorAvailabilitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TutorAvailabilityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     studentBookings<T extends User$studentBookingsArgs<ExtArgs> = {}>(args?: Subset<T, User$studentBookingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     tutorBookings<T extends User$tutorBookingsArgs<ExtArgs> = {}>(args?: Subset<T, User$tutorBookingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -7138,6 +7142,7 @@ export namespace Prisma {
     readonly strikes: FieldRef<"User", 'Int'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly bio: FieldRef<"User", 'String'>
+    readonly settings: FieldRef<"User", 'Json'>
     readonly curriculum: FieldRef<"User", 'String'>
     readonly dailyMessageCount: FieldRef<"User", 'Int'>
     readonly dailySearchCount: FieldRef<"User", 'Int'>
@@ -7534,25 +7539,6 @@ export namespace Prisma {
      * Limit how many Users to delete.
      */
     limit?: number
-  }
-
-  /**
-   * User.preferences
-   */
-  export type User$preferencesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UserPreferences
-     */
-    select?: UserPreferencesSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UserPreferences
-     */
-    omit?: UserPreferencesOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserPreferencesInclude<ExtArgs> | null
-    where?: UserPreferencesWhereInput
   }
 
   /**
@@ -8136,27 +8122,46 @@ export namespace Prisma {
   }
 
   /**
-   * User.pushSubscriptions
+   * User.institutionStudent
    */
-  export type User$pushSubscriptionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type User$institutionStudentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PushSubscription
+     * Select specific fields to fetch from the InstitutionStudent
      */
-    select?: PushSubscriptionSelect<ExtArgs> | null
+    select?: InstitutionStudentSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the PushSubscription
+     * Omit specific fields from the InstitutionStudent
      */
-    omit?: PushSubscriptionOmit<ExtArgs> | null
+    omit?: InstitutionStudentOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PushSubscriptionInclude<ExtArgs> | null
-    where?: PushSubscriptionWhereInput
-    orderBy?: PushSubscriptionOrderByWithRelationInput | PushSubscriptionOrderByWithRelationInput[]
-    cursor?: PushSubscriptionWhereUniqueInput
+    include?: InstitutionStudentInclude<ExtArgs> | null
+    where?: InstitutionStudentWhereInput
+  }
+
+  /**
+   * User.institutionTutors
+   */
+  export type User$institutionTutorsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InstitutionTutor
+     */
+    select?: InstitutionTutorSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the InstitutionTutor
+     */
+    omit?: InstitutionTutorOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InstitutionTutorInclude<ExtArgs> | null
+    where?: InstitutionTutorWhereInput
+    orderBy?: InstitutionTutorOrderByWithRelationInput | InstitutionTutorOrderByWithRelationInput[]
+    cursor?: InstitutionTutorWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: PushSubscriptionScalarFieldEnum | PushSubscriptionScalarFieldEnum[]
+    distinct?: InstitutionTutorScalarFieldEnum | InstitutionTutorScalarFieldEnum[]
   }
 
   /**
@@ -8208,46 +8213,27 @@ export namespace Prisma {
   }
 
   /**
-   * User.institutionStudent
+   * User.pushSubscriptions
    */
-  export type User$institutionStudentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type User$pushSubscriptionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the InstitutionStudent
+     * Select specific fields to fetch from the PushSubscription
      */
-    select?: InstitutionStudentSelect<ExtArgs> | null
+    select?: PushSubscriptionSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the InstitutionStudent
+     * Omit specific fields from the PushSubscription
      */
-    omit?: InstitutionStudentOmit<ExtArgs> | null
+    omit?: PushSubscriptionOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: InstitutionStudentInclude<ExtArgs> | null
-    where?: InstitutionStudentWhereInput
-  }
-
-  /**
-   * User.institutionTutors
-   */
-  export type User$institutionTutorsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the InstitutionTutor
-     */
-    select?: InstitutionTutorSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the InstitutionTutor
-     */
-    omit?: InstitutionTutorOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: InstitutionTutorInclude<ExtArgs> | null
-    where?: InstitutionTutorWhereInput
-    orderBy?: InstitutionTutorOrderByWithRelationInput | InstitutionTutorOrderByWithRelationInput[]
-    cursor?: InstitutionTutorWhereUniqueInput
+    include?: PushSubscriptionInclude<ExtArgs> | null
+    where?: PushSubscriptionWhereInput
+    orderBy?: PushSubscriptionOrderByWithRelationInput | PushSubscriptionOrderByWithRelationInput[]
+    cursor?: PushSubscriptionWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: InstitutionTutorScalarFieldEnum | InstitutionTutorScalarFieldEnum[]
+    distinct?: PushSubscriptionScalarFieldEnum | PushSubscriptionScalarFieldEnum[]
   }
 
   /**
@@ -37023,18 +37009,8 @@ export namespace Prisma {
 
   export type AggregateUserPreferences = {
     _count: UserPreferencesCountAggregateOutputType | null
-    _avg: UserPreferencesAvgAggregateOutputType | null
-    _sum: UserPreferencesSumAggregateOutputType | null
     _min: UserPreferencesMinAggregateOutputType | null
     _max: UserPreferencesMaxAggregateOutputType | null
-  }
-
-  export type UserPreferencesAvgAggregateOutputType = {
-    studyHoursPerWeek: number | null
-  }
-
-  export type UserPreferencesSumAggregateOutputType = {
-    studyHoursPerWeek: number | null
   }
 
   export type UserPreferencesMinAggregateOutputType = {
@@ -37053,7 +37029,6 @@ export namespace Prisma {
     showOnlineStatus: boolean | null
     allowTutorRequests: boolean | null
     enableMashFallback: boolean | null
-    studyHoursPerWeek: number | null
     updatedAt: Date | null
   }
 
@@ -37073,7 +37048,6 @@ export namespace Prisma {
     showOnlineStatus: boolean | null
     allowTutorRequests: boolean | null
     enableMashFallback: boolean | null
-    studyHoursPerWeek: number | null
     updatedAt: Date | null
   }
 
@@ -37093,19 +37067,10 @@ export namespace Prisma {
     showOnlineStatus: number
     allowTutorRequests: number
     enableMashFallback: number
-    studyHoursPerWeek: number
     updatedAt: number
     _all: number
   }
 
-
-  export type UserPreferencesAvgAggregateInputType = {
-    studyHoursPerWeek?: true
-  }
-
-  export type UserPreferencesSumAggregateInputType = {
-    studyHoursPerWeek?: true
-  }
 
   export type UserPreferencesMinAggregateInputType = {
     id?: true
@@ -37123,7 +37088,6 @@ export namespace Prisma {
     showOnlineStatus?: true
     allowTutorRequests?: true
     enableMashFallback?: true
-    studyHoursPerWeek?: true
     updatedAt?: true
   }
 
@@ -37143,7 +37107,6 @@ export namespace Prisma {
     showOnlineStatus?: true
     allowTutorRequests?: true
     enableMashFallback?: true
-    studyHoursPerWeek?: true
     updatedAt?: true
   }
 
@@ -37163,7 +37126,6 @@ export namespace Prisma {
     showOnlineStatus?: true
     allowTutorRequests?: true
     enableMashFallback?: true
-    studyHoursPerWeek?: true
     updatedAt?: true
     _all?: true
   }
@@ -37206,18 +37168,6 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Select which fields to average
-    **/
-    _avg?: UserPreferencesAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: UserPreferencesSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
      * Select which fields to find the minimum value
     **/
     _min?: UserPreferencesMinAggregateInputType
@@ -37248,8 +37198,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: UserPreferencesCountAggregateInputType | true
-    _avg?: UserPreferencesAvgAggregateInputType
-    _sum?: UserPreferencesSumAggregateInputType
     _min?: UserPreferencesMinAggregateInputType
     _max?: UserPreferencesMaxAggregateInputType
   }
@@ -37270,11 +37218,8 @@ export namespace Prisma {
     showOnlineStatus: boolean
     allowTutorRequests: boolean
     enableMashFallback: boolean
-    studyHoursPerWeek: number | null
     updatedAt: Date
     _count: UserPreferencesCountAggregateOutputType | null
-    _avg: UserPreferencesAvgAggregateOutputType | null
-    _sum: UserPreferencesSumAggregateOutputType | null
     _min: UserPreferencesMinAggregateOutputType | null
     _max: UserPreferencesMaxAggregateOutputType | null
   }
@@ -37309,9 +37254,7 @@ export namespace Prisma {
     showOnlineStatus?: boolean
     allowTutorRequests?: boolean
     enableMashFallback?: boolean
-    studyHoursPerWeek?: boolean
     updatedAt?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["userPreferences"]>
 
   export type UserPreferencesSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -37330,9 +37273,7 @@ export namespace Prisma {
     showOnlineStatus?: boolean
     allowTutorRequests?: boolean
     enableMashFallback?: boolean
-    studyHoursPerWeek?: boolean
     updatedAt?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["userPreferences"]>
 
   export type UserPreferencesSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -37351,9 +37292,7 @@ export namespace Prisma {
     showOnlineStatus?: boolean
     allowTutorRequests?: boolean
     enableMashFallback?: boolean
-    studyHoursPerWeek?: boolean
     updatedAt?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["userPreferences"]>
 
   export type UserPreferencesSelectScalar = {
@@ -37372,26 +37311,14 @@ export namespace Prisma {
     showOnlineStatus?: boolean
     allowTutorRequests?: boolean
     enableMashFallback?: boolean
-    studyHoursPerWeek?: boolean
     updatedAt?: boolean
   }
 
-  export type UserPreferencesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "theme" | "accentColor" | "layout" | "fontSize" | "mashStyle" | "preferredLanguage" | "studyTime" | "sessionLength" | "sessionTypePref" | "showProfile" | "showOnlineStatus" | "allowTutorRequests" | "enableMashFallback" | "studyHoursPerWeek" | "updatedAt", ExtArgs["result"]["userPreferences"]>
-  export type UserPreferencesInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }
-  export type UserPreferencesIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }
-  export type UserPreferencesIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-  }
+  export type UserPreferencesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "theme" | "accentColor" | "layout" | "fontSize" | "mashStyle" | "preferredLanguage" | "studyTime" | "sessionLength" | "sessionTypePref" | "showProfile" | "showOnlineStatus" | "allowTutorRequests" | "enableMashFallback" | "updatedAt", ExtArgs["result"]["userPreferences"]>
 
   export type $UserPreferencesPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "UserPreferences"
-    objects: {
-      user: Prisma.$UserPayload<ExtArgs>
-    }
+    objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id: string
       userId: string
@@ -37408,7 +37335,6 @@ export namespace Prisma {
       showOnlineStatus: boolean
       allowTutorRequests: boolean
       enableMashFallback: boolean
-      studyHoursPerWeek: number | null
       updatedAt: Date
     }, ExtArgs["result"]["userPreferences"]>
     composites: {}
@@ -37804,7 +37730,6 @@ export namespace Prisma {
    */
   export interface Prisma__UserPreferencesClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -37849,7 +37774,6 @@ export namespace Prisma {
     readonly showOnlineStatus: FieldRef<"UserPreferences", 'Boolean'>
     readonly allowTutorRequests: FieldRef<"UserPreferences", 'Boolean'>
     readonly enableMashFallback: FieldRef<"UserPreferences", 'Boolean'>
-    readonly studyHoursPerWeek: FieldRef<"UserPreferences", 'Int'>
     readonly updatedAt: FieldRef<"UserPreferences", 'DateTime'>
   }
     
@@ -37867,10 +37791,6 @@ export namespace Prisma {
      * Omit specific fields from the UserPreferences
      */
     omit?: UserPreferencesOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserPreferencesInclude<ExtArgs> | null
     /**
      * Filter, which UserPreferences to fetch.
      */
@@ -37890,10 +37810,6 @@ export namespace Prisma {
      */
     omit?: UserPreferencesOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserPreferencesInclude<ExtArgs> | null
-    /**
      * Filter, which UserPreferences to fetch.
      */
     where: UserPreferencesWhereUniqueInput
@@ -37911,10 +37827,6 @@ export namespace Prisma {
      * Omit specific fields from the UserPreferences
      */
     omit?: UserPreferencesOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserPreferencesInclude<ExtArgs> | null
     /**
      * Filter, which UserPreferences to fetch.
      */
@@ -37964,10 +37876,6 @@ export namespace Prisma {
      */
     omit?: UserPreferencesOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserPreferencesInclude<ExtArgs> | null
-    /**
      * Filter, which UserPreferences to fetch.
      */
     where?: UserPreferencesWhereInput
@@ -38016,10 +37924,6 @@ export namespace Prisma {
      */
     omit?: UserPreferencesOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserPreferencesInclude<ExtArgs> | null
-    /**
      * Filter, which UserPreferences to fetch.
      */
     where?: UserPreferencesWhereInput
@@ -38063,10 +37967,6 @@ export namespace Prisma {
      */
     omit?: UserPreferencesOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserPreferencesInclude<ExtArgs> | null
-    /**
      * The data needed to create a UserPreferences.
      */
     data: XOR<UserPreferencesCreateInput, UserPreferencesUncheckedCreateInput>
@@ -38100,10 +38000,6 @@ export namespace Prisma {
      */
     data: UserPreferencesCreateManyInput | UserPreferencesCreateManyInput[]
     skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserPreferencesIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -38118,10 +38014,6 @@ export namespace Prisma {
      * Omit specific fields from the UserPreferences
      */
     omit?: UserPreferencesOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserPreferencesInclude<ExtArgs> | null
     /**
      * The data needed to update a UserPreferences.
      */
@@ -38174,10 +38066,6 @@ export namespace Prisma {
      * Limit how many UserPreferences to update.
      */
     limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserPreferencesIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -38192,10 +38080,6 @@ export namespace Prisma {
      * Omit specific fields from the UserPreferences
      */
     omit?: UserPreferencesOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserPreferencesInclude<ExtArgs> | null
     /**
      * The filter to search for the UserPreferences to update in case it exists.
      */
@@ -38222,10 +38106,6 @@ export namespace Prisma {
      * Omit specific fields from the UserPreferences
      */
     omit?: UserPreferencesOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserPreferencesInclude<ExtArgs> | null
     /**
      * Filter which UserPreferences to delete.
      */
@@ -38258,10 +38138,6 @@ export namespace Prisma {
      * Omit specific fields from the UserPreferences
      */
     omit?: UserPreferencesOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserPreferencesInclude<ExtArgs> | null
   }
 
 
@@ -62079,6 +61955,7 @@ export namespace Prisma {
     strikes: 'strikes',
     createdAt: 'createdAt',
     bio: 'bio',
+    settings: 'settings',
     curriculum: 'curriculum',
     dailyMessageCount: 'dailyMessageCount',
     dailySearchCount: 'dailySearchCount',
@@ -62469,7 +62346,6 @@ export namespace Prisma {
     showOnlineStatus: 'showOnlineStatus',
     allowTutorRequests: 'allowTutorRequests',
     enableMashFallback: 'enableMashFallback',
-    studyHoursPerWeek: 'studyHoursPerWeek',
     updatedAt: 'updatedAt'
   };
 
@@ -62806,14 +62682,6 @@ export namespace Prisma {
   export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
 
 
-  export const NullsOrder: {
-    first: 'first',
-    last: 'last'
-  };
-
-  export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
-
-
   export const JsonNullValueFilter: {
     DbNull: typeof DbNull,
     JsonNull: typeof JsonNull,
@@ -62821,6 +62689,14 @@ export namespace Prisma {
   };
 
   export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
+
+
+  export const NullsOrder: {
+    first: 'first',
+    last: 'last'
+  };
+
+  export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 
 
   /**
@@ -63056,6 +62932,7 @@ export namespace Prisma {
     strikes?: IntFilter<"User"> | number
     createdAt?: DateTimeFilter<"User"> | Date | string
     bio?: StringNullableFilter<"User"> | string | null
+    settings?: JsonFilter<"User">
     curriculum?: StringNullableFilter<"User"> | string | null
     dailyMessageCount?: IntFilter<"User"> | number
     dailySearchCount?: IntFilter<"User"> | number
@@ -63067,7 +62944,6 @@ export namespace Prisma {
     planStartedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     planExpiresAt?: DateTimeNullableFilter<"User"> | Date | string | null
     planBillingCycle?: StringNullableFilter<"User"> | string | null
-    preferences?: XOR<UserPreferencesNullableScalarRelationFilter, UserPreferencesWhereInput> | null
     achievements?: AchievementListRelationFilter
     comments?: CommentListRelationFilter
     challenges?: DailyChallengeAttemptListRelationFilter
@@ -63093,11 +62969,11 @@ export namespace Prisma {
     userCredits?: XOR<UserCreditsNullableScalarRelationFilter, UserCreditsWhereInput> | null
     creditTransactions?: CreditTransactionListRelationFilter
     sellerEarnings?: SellerEarningListRelationFilter
-    pushSubscriptions?: PushSubscriptionListRelationFilter
-    institutionMembers?: InstitutionMemberListRelationFilter
-    uploadedDocuments?: InstitutionDocumentListRelationFilter
     institutionStudent?: XOR<InstitutionStudentNullableScalarRelationFilter, InstitutionStudentWhereInput> | null
     institutionTutors?: InstitutionTutorListRelationFilter
+    institutionMembers?: InstitutionMemberListRelationFilter
+    uploadedDocuments?: InstitutionDocumentListRelationFilter
+    pushSubscriptions?: PushSubscriptionListRelationFilter
     tutorAvailabilities?: TutorAvailabilityListRelationFilter
     studentBookings?: BookingListRelationFilter
     tutorBookings?: BookingListRelationFilter
@@ -63124,6 +63000,7 @@ export namespace Prisma {
     strikes?: SortOrder
     createdAt?: SortOrder
     bio?: SortOrderInput | SortOrder
+    settings?: SortOrder
     curriculum?: SortOrderInput | SortOrder
     dailyMessageCount?: SortOrder
     dailySearchCount?: SortOrder
@@ -63135,7 +63012,6 @@ export namespace Prisma {
     planStartedAt?: SortOrderInput | SortOrder
     planExpiresAt?: SortOrderInput | SortOrder
     planBillingCycle?: SortOrderInput | SortOrder
-    preferences?: UserPreferencesOrderByWithRelationInput
     achievements?: AchievementOrderByRelationAggregateInput
     comments?: CommentOrderByRelationAggregateInput
     challenges?: DailyChallengeAttemptOrderByRelationAggregateInput
@@ -63161,11 +63037,11 @@ export namespace Prisma {
     userCredits?: UserCreditsOrderByWithRelationInput
     creditTransactions?: CreditTransactionOrderByRelationAggregateInput
     sellerEarnings?: SellerEarningOrderByRelationAggregateInput
-    pushSubscriptions?: PushSubscriptionOrderByRelationAggregateInput
-    institutionMembers?: InstitutionMemberOrderByRelationAggregateInput
-    uploadedDocuments?: InstitutionDocumentOrderByRelationAggregateInput
     institutionStudent?: InstitutionStudentOrderByWithRelationInput
     institutionTutors?: InstitutionTutorOrderByRelationAggregateInput
+    institutionMembers?: InstitutionMemberOrderByRelationAggregateInput
+    uploadedDocuments?: InstitutionDocumentOrderByRelationAggregateInput
+    pushSubscriptions?: PushSubscriptionOrderByRelationAggregateInput
     tutorAvailabilities?: TutorAvailabilityOrderByRelationAggregateInput
     studentBookings?: BookingOrderByRelationAggregateInput
     tutorBookings?: BookingOrderByRelationAggregateInput
@@ -63195,6 +63071,7 @@ export namespace Prisma {
     strikes?: IntFilter<"User"> | number
     createdAt?: DateTimeFilter<"User"> | Date | string
     bio?: StringNullableFilter<"User"> | string | null
+    settings?: JsonFilter<"User">
     curriculum?: StringNullableFilter<"User"> | string | null
     dailyMessageCount?: IntFilter<"User"> | number
     dailySearchCount?: IntFilter<"User"> | number
@@ -63206,7 +63083,6 @@ export namespace Prisma {
     planStartedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     planExpiresAt?: DateTimeNullableFilter<"User"> | Date | string | null
     planBillingCycle?: StringNullableFilter<"User"> | string | null
-    preferences?: XOR<UserPreferencesNullableScalarRelationFilter, UserPreferencesWhereInput> | null
     achievements?: AchievementListRelationFilter
     comments?: CommentListRelationFilter
     challenges?: DailyChallengeAttemptListRelationFilter
@@ -63232,11 +63108,11 @@ export namespace Prisma {
     userCredits?: XOR<UserCreditsNullableScalarRelationFilter, UserCreditsWhereInput> | null
     creditTransactions?: CreditTransactionListRelationFilter
     sellerEarnings?: SellerEarningListRelationFilter
-    pushSubscriptions?: PushSubscriptionListRelationFilter
-    institutionMembers?: InstitutionMemberListRelationFilter
-    uploadedDocuments?: InstitutionDocumentListRelationFilter
     institutionStudent?: XOR<InstitutionStudentNullableScalarRelationFilter, InstitutionStudentWhereInput> | null
     institutionTutors?: InstitutionTutorListRelationFilter
+    institutionMembers?: InstitutionMemberListRelationFilter
+    uploadedDocuments?: InstitutionDocumentListRelationFilter
+    pushSubscriptions?: PushSubscriptionListRelationFilter
     tutorAvailabilities?: TutorAvailabilityListRelationFilter
     studentBookings?: BookingListRelationFilter
     tutorBookings?: BookingListRelationFilter
@@ -63263,6 +63139,7 @@ export namespace Prisma {
     strikes?: SortOrder
     createdAt?: SortOrder
     bio?: SortOrderInput | SortOrder
+    settings?: SortOrder
     curriculum?: SortOrderInput | SortOrder
     dailyMessageCount?: SortOrder
     dailySearchCount?: SortOrder
@@ -63303,6 +63180,7 @@ export namespace Prisma {
     strikes?: IntWithAggregatesFilter<"User"> | number
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     bio?: StringNullableWithAggregatesFilter<"User"> | string | null
+    settings?: JsonWithAggregatesFilter<"User">
     curriculum?: StringNullableWithAggregatesFilter<"User"> | string | null
     dailyMessageCount?: IntWithAggregatesFilter<"User"> | number
     dailySearchCount?: IntWithAggregatesFilter<"User"> | number
@@ -65164,9 +65042,7 @@ export namespace Prisma {
     showOnlineStatus?: BoolFilter<"UserPreferences"> | boolean
     allowTutorRequests?: BoolFilter<"UserPreferences"> | boolean
     enableMashFallback?: BoolFilter<"UserPreferences"> | boolean
-    studyHoursPerWeek?: IntNullableFilter<"UserPreferences"> | number | null
     updatedAt?: DateTimeFilter<"UserPreferences"> | Date | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
   export type UserPreferencesOrderByWithRelationInput = {
@@ -65185,9 +65061,7 @@ export namespace Prisma {
     showOnlineStatus?: SortOrder
     allowTutorRequests?: SortOrder
     enableMashFallback?: SortOrder
-    studyHoursPerWeek?: SortOrderInput | SortOrder
     updatedAt?: SortOrder
-    user?: UserOrderByWithRelationInput
   }
 
   export type UserPreferencesWhereUniqueInput = Prisma.AtLeast<{
@@ -65209,9 +65083,7 @@ export namespace Prisma {
     showOnlineStatus?: BoolFilter<"UserPreferences"> | boolean
     allowTutorRequests?: BoolFilter<"UserPreferences"> | boolean
     enableMashFallback?: BoolFilter<"UserPreferences"> | boolean
-    studyHoursPerWeek?: IntNullableFilter<"UserPreferences"> | number | null
     updatedAt?: DateTimeFilter<"UserPreferences"> | Date | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id" | "userId">
 
   export type UserPreferencesOrderByWithAggregationInput = {
@@ -65230,13 +65102,10 @@ export namespace Prisma {
     showOnlineStatus?: SortOrder
     allowTutorRequests?: SortOrder
     enableMashFallback?: SortOrder
-    studyHoursPerWeek?: SortOrderInput | SortOrder
     updatedAt?: SortOrder
     _count?: UserPreferencesCountOrderByAggregateInput
-    _avg?: UserPreferencesAvgOrderByAggregateInput
     _max?: UserPreferencesMaxOrderByAggregateInput
     _min?: UserPreferencesMinOrderByAggregateInput
-    _sum?: UserPreferencesSumOrderByAggregateInput
   }
 
   export type UserPreferencesScalarWhereWithAggregatesInput = {
@@ -65258,7 +65127,6 @@ export namespace Prisma {
     showOnlineStatus?: BoolWithAggregatesFilter<"UserPreferences"> | boolean
     allowTutorRequests?: BoolWithAggregatesFilter<"UserPreferences"> | boolean
     enableMashFallback?: BoolWithAggregatesFilter<"UserPreferences"> | boolean
-    studyHoursPerWeek?: IntNullableWithAggregatesFilter<"UserPreferences"> | number | null
     updatedAt?: DateTimeWithAggregatesFilter<"UserPreferences"> | Date | string
   }
 
@@ -66891,6 +66759,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -66902,7 +66771,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -66928,11 +66796,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -66959,6 +66827,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -66970,7 +66839,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -66996,11 +66864,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -67027,6 +66895,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -67038,7 +66907,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -67064,11 +66932,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -67095,6 +66963,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -67106,7 +66975,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -67132,11 +67000,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -67163,6 +67031,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -67195,6 +67064,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -67227,6 +67097,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -69205,6 +69076,7 @@ export namespace Prisma {
 
   export type UserPreferencesCreateInput = {
     id?: string
+    userId: string
     theme?: string
     accentColor?: string
     layout?: string
@@ -69218,9 +69090,7 @@ export namespace Prisma {
     showOnlineStatus?: boolean
     allowTutorRequests?: boolean
     enableMashFallback?: boolean
-    studyHoursPerWeek?: number | null
     updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutPreferencesInput
   }
 
   export type UserPreferencesUncheckedCreateInput = {
@@ -69239,12 +69109,12 @@ export namespace Prisma {
     showOnlineStatus?: boolean
     allowTutorRequests?: boolean
     enableMashFallback?: boolean
-    studyHoursPerWeek?: number | null
     updatedAt?: Date | string
   }
 
   export type UserPreferencesUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
     theme?: StringFieldUpdateOperationsInput | string
     accentColor?: StringFieldUpdateOperationsInput | string
     layout?: StringFieldUpdateOperationsInput | string
@@ -69258,9 +69128,7 @@ export namespace Prisma {
     showOnlineStatus?: BoolFieldUpdateOperationsInput | boolean
     allowTutorRequests?: BoolFieldUpdateOperationsInput | boolean
     enableMashFallback?: BoolFieldUpdateOperationsInput | boolean
-    studyHoursPerWeek?: NullableIntFieldUpdateOperationsInput | number | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutPreferencesNestedInput
   }
 
   export type UserPreferencesUncheckedUpdateInput = {
@@ -69279,7 +69147,6 @@ export namespace Prisma {
     showOnlineStatus?: BoolFieldUpdateOperationsInput | boolean
     allowTutorRequests?: BoolFieldUpdateOperationsInput | boolean
     enableMashFallback?: BoolFieldUpdateOperationsInput | boolean
-    studyHoursPerWeek?: NullableIntFieldUpdateOperationsInput | number | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -69299,12 +69166,12 @@ export namespace Prisma {
     showOnlineStatus?: boolean
     allowTutorRequests?: boolean
     enableMashFallback?: boolean
-    studyHoursPerWeek?: number | null
     updatedAt?: Date | string
   }
 
   export type UserPreferencesUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
     theme?: StringFieldUpdateOperationsInput | string
     accentColor?: StringFieldUpdateOperationsInput | string
     layout?: StringFieldUpdateOperationsInput | string
@@ -69318,7 +69185,6 @@ export namespace Prisma {
     showOnlineStatus?: BoolFieldUpdateOperationsInput | boolean
     allowTutorRequests?: BoolFieldUpdateOperationsInput | boolean
     enableMashFallback?: BoolFieldUpdateOperationsInput | boolean
-    studyHoursPerWeek?: NullableIntFieldUpdateOperationsInput | number | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -69338,7 +69204,6 @@ export namespace Prisma {
     showOnlineStatus?: BoolFieldUpdateOperationsInput | boolean
     allowTutorRequests?: BoolFieldUpdateOperationsInput | boolean
     enableMashFallback?: BoolFieldUpdateOperationsInput | boolean
-    studyHoursPerWeek?: NullableIntFieldUpdateOperationsInput | number | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -71169,10 +71034,28 @@ export namespace Prisma {
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
+  export type JsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
 
-  export type UserPreferencesNullableScalarRelationFilter = {
-    is?: UserPreferencesWhereInput | null
-    isNot?: UserPreferencesWhereInput | null
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
   export type AchievementListRelationFilter = {
@@ -71303,10 +71186,15 @@ export namespace Prisma {
     none?: SellerEarningWhereInput
   }
 
-  export type PushSubscriptionListRelationFilter = {
-    every?: PushSubscriptionWhereInput
-    some?: PushSubscriptionWhereInput
-    none?: PushSubscriptionWhereInput
+  export type InstitutionStudentNullableScalarRelationFilter = {
+    is?: InstitutionStudentWhereInput | null
+    isNot?: InstitutionStudentWhereInput | null
+  }
+
+  export type InstitutionTutorListRelationFilter = {
+    every?: InstitutionTutorWhereInput
+    some?: InstitutionTutorWhereInput
+    none?: InstitutionTutorWhereInput
   }
 
   export type InstitutionMemberListRelationFilter = {
@@ -71321,15 +71209,10 @@ export namespace Prisma {
     none?: InstitutionDocumentWhereInput
   }
 
-  export type InstitutionStudentNullableScalarRelationFilter = {
-    is?: InstitutionStudentWhereInput | null
-    isNot?: InstitutionStudentWhereInput | null
-  }
-
-  export type InstitutionTutorListRelationFilter = {
-    every?: InstitutionTutorWhereInput
-    some?: InstitutionTutorWhereInput
-    none?: InstitutionTutorWhereInput
+  export type PushSubscriptionListRelationFilter = {
+    every?: PushSubscriptionWhereInput
+    some?: PushSubscriptionWhereInput
+    none?: PushSubscriptionWhereInput
   }
 
   export type TutorAvailabilityListRelationFilter = {
@@ -71433,7 +71316,7 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type PushSubscriptionOrderByRelationAggregateInput = {
+  export type InstitutionTutorOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -71445,7 +71328,7 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type InstitutionTutorOrderByRelationAggregateInput = {
+  export type PushSubscriptionOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -71484,6 +71367,7 @@ export namespace Prisma {
     strikes?: SortOrder
     createdAt?: SortOrder
     bio?: SortOrder
+    settings?: SortOrder
     curriculum?: SortOrder
     dailyMessageCount?: SortOrder
     dailySearchCount?: SortOrder
@@ -71722,61 +71606,6 @@ export namespace Prisma {
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
-
-  export type StringNullableListFilter<$PrismaModel = never> = {
-    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    has?: string | StringFieldRefInput<$PrismaModel> | null
-    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
-    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
-    isEmpty?: boolean
-  }
-  export type JsonFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
-
-  export type UserScalarRelationFilter = {
-    is?: UserWhereInput
-    isNot?: UserWhereInput
-  }
-
-  export type StudentProfileCountOrderByAggregateInput = {
-    userId?: SortOrder
-    subjects?: SortOrder
-    weakTopics?: SortOrder
-    studyStyle?: SortOrder
-    preferredTimes?: SortOrder
-    goals?: SortOrder
-  }
-
-  export type StudentProfileMaxOrderByAggregateInput = {
-    userId?: SortOrder
-    studyStyle?: SortOrder
-  }
-
-  export type StudentProfileMinOrderByAggregateInput = {
-    userId?: SortOrder
-    studyStyle?: SortOrder
-  }
   export type JsonWithAggregatesFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
@@ -71802,6 +71631,38 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedJsonFilter<$PrismaModel>
     _max?: NestedJsonFilter<$PrismaModel>
+  }
+
+  export type StringNullableListFilter<$PrismaModel = never> = {
+    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    has?: string | StringFieldRefInput<$PrismaModel> | null
+    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
+    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
+    isEmpty?: boolean
+  }
+
+  export type UserScalarRelationFilter = {
+    is?: UserWhereInput
+    isNot?: UserWhereInput
+  }
+
+  export type StudentProfileCountOrderByAggregateInput = {
+    userId?: SortOrder
+    subjects?: SortOrder
+    weakTopics?: SortOrder
+    studyStyle?: SortOrder
+    preferredTimes?: SortOrder
+    goals?: SortOrder
+  }
+
+  export type StudentProfileMaxOrderByAggregateInput = {
+    userId?: SortOrder
+    studyStyle?: SortOrder
+  }
+
+  export type StudentProfileMinOrderByAggregateInput = {
+    userId?: SortOrder
+    studyStyle?: SortOrder
   }
 
   export type EnumVerifPathFilter<$PrismaModel = never> = {
@@ -72904,12 +72765,7 @@ export namespace Prisma {
     showOnlineStatus?: SortOrder
     allowTutorRequests?: SortOrder
     enableMashFallback?: SortOrder
-    studyHoursPerWeek?: SortOrder
     updatedAt?: SortOrder
-  }
-
-  export type UserPreferencesAvgOrderByAggregateInput = {
-    studyHoursPerWeek?: SortOrder
   }
 
   export type UserPreferencesMaxOrderByAggregateInput = {
@@ -72928,7 +72784,6 @@ export namespace Prisma {
     showOnlineStatus?: SortOrder
     allowTutorRequests?: SortOrder
     enableMashFallback?: SortOrder
-    studyHoursPerWeek?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -72948,12 +72803,7 @@ export namespace Prisma {
     showOnlineStatus?: SortOrder
     allowTutorRequests?: SortOrder
     enableMashFallback?: SortOrder
-    studyHoursPerWeek?: SortOrder
     updatedAt?: SortOrder
-  }
-
-  export type UserPreferencesSumOrderByAggregateInput = {
-    studyHoursPerWeek?: SortOrder
   }
 
   export type ChallengeCompletionListRelationFilter = {
@@ -73912,12 +73762,6 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
-  export type UserPreferencesCreateNestedOneWithoutUserInput = {
-    create?: XOR<UserPreferencesCreateWithoutUserInput, UserPreferencesUncheckedCreateWithoutUserInput>
-    connectOrCreate?: UserPreferencesCreateOrConnectWithoutUserInput
-    connect?: UserPreferencesWhereUniqueInput
-  }
-
   export type AchievementCreateNestedManyWithoutUserInput = {
     create?: XOR<AchievementCreateWithoutUserInput, AchievementUncheckedCreateWithoutUserInput> | AchievementCreateWithoutUserInput[] | AchievementUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AchievementCreateOrConnectWithoutUserInput | AchievementCreateOrConnectWithoutUserInput[]
@@ -74089,11 +73933,17 @@ export namespace Prisma {
     connect?: SellerEarningWhereUniqueInput | SellerEarningWhereUniqueInput[]
   }
 
-  export type PushSubscriptionCreateNestedManyWithoutUserInput = {
-    create?: XOR<PushSubscriptionCreateWithoutUserInput, PushSubscriptionUncheckedCreateWithoutUserInput> | PushSubscriptionCreateWithoutUserInput[] | PushSubscriptionUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: PushSubscriptionCreateOrConnectWithoutUserInput | PushSubscriptionCreateOrConnectWithoutUserInput[]
-    createMany?: PushSubscriptionCreateManyUserInputEnvelope
-    connect?: PushSubscriptionWhereUniqueInput | PushSubscriptionWhereUniqueInput[]
+  export type InstitutionStudentCreateNestedOneWithoutUserInput = {
+    create?: XOR<InstitutionStudentCreateWithoutUserInput, InstitutionStudentUncheckedCreateWithoutUserInput>
+    connectOrCreate?: InstitutionStudentCreateOrConnectWithoutUserInput
+    connect?: InstitutionStudentWhereUniqueInput
+  }
+
+  export type InstitutionTutorCreateNestedManyWithoutUserInput = {
+    create?: XOR<InstitutionTutorCreateWithoutUserInput, InstitutionTutorUncheckedCreateWithoutUserInput> | InstitutionTutorCreateWithoutUserInput[] | InstitutionTutorUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: InstitutionTutorCreateOrConnectWithoutUserInput | InstitutionTutorCreateOrConnectWithoutUserInput[]
+    createMany?: InstitutionTutorCreateManyUserInputEnvelope
+    connect?: InstitutionTutorWhereUniqueInput | InstitutionTutorWhereUniqueInput[]
   }
 
   export type InstitutionMemberCreateNestedManyWithoutUserInput = {
@@ -74110,17 +73960,11 @@ export namespace Prisma {
     connect?: InstitutionDocumentWhereUniqueInput | InstitutionDocumentWhereUniqueInput[]
   }
 
-  export type InstitutionStudentCreateNestedOneWithoutUserInput = {
-    create?: XOR<InstitutionStudentCreateWithoutUserInput, InstitutionStudentUncheckedCreateWithoutUserInput>
-    connectOrCreate?: InstitutionStudentCreateOrConnectWithoutUserInput
-    connect?: InstitutionStudentWhereUniqueInput
-  }
-
-  export type InstitutionTutorCreateNestedManyWithoutUserInput = {
-    create?: XOR<InstitutionTutorCreateWithoutUserInput, InstitutionTutorUncheckedCreateWithoutUserInput> | InstitutionTutorCreateWithoutUserInput[] | InstitutionTutorUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: InstitutionTutorCreateOrConnectWithoutUserInput | InstitutionTutorCreateOrConnectWithoutUserInput[]
-    createMany?: InstitutionTutorCreateManyUserInputEnvelope
-    connect?: InstitutionTutorWhereUniqueInput | InstitutionTutorWhereUniqueInput[]
+  export type PushSubscriptionCreateNestedManyWithoutUserInput = {
+    create?: XOR<PushSubscriptionCreateWithoutUserInput, PushSubscriptionUncheckedCreateWithoutUserInput> | PushSubscriptionCreateWithoutUserInput[] | PushSubscriptionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PushSubscriptionCreateOrConnectWithoutUserInput | PushSubscriptionCreateOrConnectWithoutUserInput[]
+    createMany?: PushSubscriptionCreateManyUserInputEnvelope
+    connect?: PushSubscriptionWhereUniqueInput | PushSubscriptionWhereUniqueInput[]
   }
 
   export type TutorAvailabilityCreateNestedManyWithoutTutorInput = {
@@ -74156,12 +74000,6 @@ export namespace Prisma {
     connectOrCreate?: SessionFlagCreateOrConnectWithoutTutorInput | SessionFlagCreateOrConnectWithoutTutorInput[]
     createMany?: SessionFlagCreateManyTutorInputEnvelope
     connect?: SessionFlagWhereUniqueInput | SessionFlagWhereUniqueInput[]
-  }
-
-  export type UserPreferencesUncheckedCreateNestedOneWithoutUserInput = {
-    create?: XOR<UserPreferencesCreateWithoutUserInput, UserPreferencesUncheckedCreateWithoutUserInput>
-    connectOrCreate?: UserPreferencesCreateOrConnectWithoutUserInput
-    connect?: UserPreferencesWhereUniqueInput
   }
 
   export type AchievementUncheckedCreateNestedManyWithoutUserInput = {
@@ -74335,11 +74173,17 @@ export namespace Prisma {
     connect?: SellerEarningWhereUniqueInput | SellerEarningWhereUniqueInput[]
   }
 
-  export type PushSubscriptionUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<PushSubscriptionCreateWithoutUserInput, PushSubscriptionUncheckedCreateWithoutUserInput> | PushSubscriptionCreateWithoutUserInput[] | PushSubscriptionUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: PushSubscriptionCreateOrConnectWithoutUserInput | PushSubscriptionCreateOrConnectWithoutUserInput[]
-    createMany?: PushSubscriptionCreateManyUserInputEnvelope
-    connect?: PushSubscriptionWhereUniqueInput | PushSubscriptionWhereUniqueInput[]
+  export type InstitutionStudentUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<InstitutionStudentCreateWithoutUserInput, InstitutionStudentUncheckedCreateWithoutUserInput>
+    connectOrCreate?: InstitutionStudentCreateOrConnectWithoutUserInput
+    connect?: InstitutionStudentWhereUniqueInput
+  }
+
+  export type InstitutionTutorUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<InstitutionTutorCreateWithoutUserInput, InstitutionTutorUncheckedCreateWithoutUserInput> | InstitutionTutorCreateWithoutUserInput[] | InstitutionTutorUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: InstitutionTutorCreateOrConnectWithoutUserInput | InstitutionTutorCreateOrConnectWithoutUserInput[]
+    createMany?: InstitutionTutorCreateManyUserInputEnvelope
+    connect?: InstitutionTutorWhereUniqueInput | InstitutionTutorWhereUniqueInput[]
   }
 
   export type InstitutionMemberUncheckedCreateNestedManyWithoutUserInput = {
@@ -74356,17 +74200,11 @@ export namespace Prisma {
     connect?: InstitutionDocumentWhereUniqueInput | InstitutionDocumentWhereUniqueInput[]
   }
 
-  export type InstitutionStudentUncheckedCreateNestedOneWithoutUserInput = {
-    create?: XOR<InstitutionStudentCreateWithoutUserInput, InstitutionStudentUncheckedCreateWithoutUserInput>
-    connectOrCreate?: InstitutionStudentCreateOrConnectWithoutUserInput
-    connect?: InstitutionStudentWhereUniqueInput
-  }
-
-  export type InstitutionTutorUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<InstitutionTutorCreateWithoutUserInput, InstitutionTutorUncheckedCreateWithoutUserInput> | InstitutionTutorCreateWithoutUserInput[] | InstitutionTutorUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: InstitutionTutorCreateOrConnectWithoutUserInput | InstitutionTutorCreateOrConnectWithoutUserInput[]
-    createMany?: InstitutionTutorCreateManyUserInputEnvelope
-    connect?: InstitutionTutorWhereUniqueInput | InstitutionTutorWhereUniqueInput[]
+  export type PushSubscriptionUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<PushSubscriptionCreateWithoutUserInput, PushSubscriptionUncheckedCreateWithoutUserInput> | PushSubscriptionCreateWithoutUserInput[] | PushSubscriptionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PushSubscriptionCreateOrConnectWithoutUserInput | PushSubscriptionCreateOrConnectWithoutUserInput[]
+    createMany?: PushSubscriptionCreateManyUserInputEnvelope
+    connect?: PushSubscriptionWhereUniqueInput | PushSubscriptionWhereUniqueInput[]
   }
 
   export type TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput = {
@@ -74454,16 +74292,6 @@ export namespace Prisma {
 
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
-  }
-
-  export type UserPreferencesUpdateOneWithoutUserNestedInput = {
-    create?: XOR<UserPreferencesCreateWithoutUserInput, UserPreferencesUncheckedCreateWithoutUserInput>
-    connectOrCreate?: UserPreferencesCreateOrConnectWithoutUserInput
-    upsert?: UserPreferencesUpsertWithoutUserInput
-    disconnect?: UserPreferencesWhereInput | boolean
-    delete?: UserPreferencesWhereInput | boolean
-    connect?: UserPreferencesWhereUniqueInput
-    update?: XOR<XOR<UserPreferencesUpdateToOneWithWhereWithoutUserInput, UserPreferencesUpdateWithoutUserInput>, UserPreferencesUncheckedUpdateWithoutUserInput>
   }
 
   export type AchievementUpdateManyWithoutUserNestedInput = {
@@ -74800,18 +74628,28 @@ export namespace Prisma {
     deleteMany?: SellerEarningScalarWhereInput | SellerEarningScalarWhereInput[]
   }
 
-  export type PushSubscriptionUpdateManyWithoutUserNestedInput = {
-    create?: XOR<PushSubscriptionCreateWithoutUserInput, PushSubscriptionUncheckedCreateWithoutUserInput> | PushSubscriptionCreateWithoutUserInput[] | PushSubscriptionUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: PushSubscriptionCreateOrConnectWithoutUserInput | PushSubscriptionCreateOrConnectWithoutUserInput[]
-    upsert?: PushSubscriptionUpsertWithWhereUniqueWithoutUserInput | PushSubscriptionUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: PushSubscriptionCreateManyUserInputEnvelope
-    set?: PushSubscriptionWhereUniqueInput | PushSubscriptionWhereUniqueInput[]
-    disconnect?: PushSubscriptionWhereUniqueInput | PushSubscriptionWhereUniqueInput[]
-    delete?: PushSubscriptionWhereUniqueInput | PushSubscriptionWhereUniqueInput[]
-    connect?: PushSubscriptionWhereUniqueInput | PushSubscriptionWhereUniqueInput[]
-    update?: PushSubscriptionUpdateWithWhereUniqueWithoutUserInput | PushSubscriptionUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: PushSubscriptionUpdateManyWithWhereWithoutUserInput | PushSubscriptionUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: PushSubscriptionScalarWhereInput | PushSubscriptionScalarWhereInput[]
+  export type InstitutionStudentUpdateOneWithoutUserNestedInput = {
+    create?: XOR<InstitutionStudentCreateWithoutUserInput, InstitutionStudentUncheckedCreateWithoutUserInput>
+    connectOrCreate?: InstitutionStudentCreateOrConnectWithoutUserInput
+    upsert?: InstitutionStudentUpsertWithoutUserInput
+    disconnect?: InstitutionStudentWhereInput | boolean
+    delete?: InstitutionStudentWhereInput | boolean
+    connect?: InstitutionStudentWhereUniqueInput
+    update?: XOR<XOR<InstitutionStudentUpdateToOneWithWhereWithoutUserInput, InstitutionStudentUpdateWithoutUserInput>, InstitutionStudentUncheckedUpdateWithoutUserInput>
+  }
+
+  export type InstitutionTutorUpdateManyWithoutUserNestedInput = {
+    create?: XOR<InstitutionTutorCreateWithoutUserInput, InstitutionTutorUncheckedCreateWithoutUserInput> | InstitutionTutorCreateWithoutUserInput[] | InstitutionTutorUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: InstitutionTutorCreateOrConnectWithoutUserInput | InstitutionTutorCreateOrConnectWithoutUserInput[]
+    upsert?: InstitutionTutorUpsertWithWhereUniqueWithoutUserInput | InstitutionTutorUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: InstitutionTutorCreateManyUserInputEnvelope
+    set?: InstitutionTutorWhereUniqueInput | InstitutionTutorWhereUniqueInput[]
+    disconnect?: InstitutionTutorWhereUniqueInput | InstitutionTutorWhereUniqueInput[]
+    delete?: InstitutionTutorWhereUniqueInput | InstitutionTutorWhereUniqueInput[]
+    connect?: InstitutionTutorWhereUniqueInput | InstitutionTutorWhereUniqueInput[]
+    update?: InstitutionTutorUpdateWithWhereUniqueWithoutUserInput | InstitutionTutorUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: InstitutionTutorUpdateManyWithWhereWithoutUserInput | InstitutionTutorUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: InstitutionTutorScalarWhereInput | InstitutionTutorScalarWhereInput[]
   }
 
   export type InstitutionMemberUpdateManyWithoutUserNestedInput = {
@@ -74842,28 +74680,18 @@ export namespace Prisma {
     deleteMany?: InstitutionDocumentScalarWhereInput | InstitutionDocumentScalarWhereInput[]
   }
 
-  export type InstitutionStudentUpdateOneWithoutUserNestedInput = {
-    create?: XOR<InstitutionStudentCreateWithoutUserInput, InstitutionStudentUncheckedCreateWithoutUserInput>
-    connectOrCreate?: InstitutionStudentCreateOrConnectWithoutUserInput
-    upsert?: InstitutionStudentUpsertWithoutUserInput
-    disconnect?: InstitutionStudentWhereInput | boolean
-    delete?: InstitutionStudentWhereInput | boolean
-    connect?: InstitutionStudentWhereUniqueInput
-    update?: XOR<XOR<InstitutionStudentUpdateToOneWithWhereWithoutUserInput, InstitutionStudentUpdateWithoutUserInput>, InstitutionStudentUncheckedUpdateWithoutUserInput>
-  }
-
-  export type InstitutionTutorUpdateManyWithoutUserNestedInput = {
-    create?: XOR<InstitutionTutorCreateWithoutUserInput, InstitutionTutorUncheckedCreateWithoutUserInput> | InstitutionTutorCreateWithoutUserInput[] | InstitutionTutorUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: InstitutionTutorCreateOrConnectWithoutUserInput | InstitutionTutorCreateOrConnectWithoutUserInput[]
-    upsert?: InstitutionTutorUpsertWithWhereUniqueWithoutUserInput | InstitutionTutorUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: InstitutionTutorCreateManyUserInputEnvelope
-    set?: InstitutionTutorWhereUniqueInput | InstitutionTutorWhereUniqueInput[]
-    disconnect?: InstitutionTutorWhereUniqueInput | InstitutionTutorWhereUniqueInput[]
-    delete?: InstitutionTutorWhereUniqueInput | InstitutionTutorWhereUniqueInput[]
-    connect?: InstitutionTutorWhereUniqueInput | InstitutionTutorWhereUniqueInput[]
-    update?: InstitutionTutorUpdateWithWhereUniqueWithoutUserInput | InstitutionTutorUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: InstitutionTutorUpdateManyWithWhereWithoutUserInput | InstitutionTutorUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: InstitutionTutorScalarWhereInput | InstitutionTutorScalarWhereInput[]
+  export type PushSubscriptionUpdateManyWithoutUserNestedInput = {
+    create?: XOR<PushSubscriptionCreateWithoutUserInput, PushSubscriptionUncheckedCreateWithoutUserInput> | PushSubscriptionCreateWithoutUserInput[] | PushSubscriptionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PushSubscriptionCreateOrConnectWithoutUserInput | PushSubscriptionCreateOrConnectWithoutUserInput[]
+    upsert?: PushSubscriptionUpsertWithWhereUniqueWithoutUserInput | PushSubscriptionUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: PushSubscriptionCreateManyUserInputEnvelope
+    set?: PushSubscriptionWhereUniqueInput | PushSubscriptionWhereUniqueInput[]
+    disconnect?: PushSubscriptionWhereUniqueInput | PushSubscriptionWhereUniqueInput[]
+    delete?: PushSubscriptionWhereUniqueInput | PushSubscriptionWhereUniqueInput[]
+    connect?: PushSubscriptionWhereUniqueInput | PushSubscriptionWhereUniqueInput[]
+    update?: PushSubscriptionUpdateWithWhereUniqueWithoutUserInput | PushSubscriptionUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: PushSubscriptionUpdateManyWithWhereWithoutUserInput | PushSubscriptionUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: PushSubscriptionScalarWhereInput | PushSubscriptionScalarWhereInput[]
   }
 
   export type TutorAvailabilityUpdateManyWithoutTutorNestedInput = {
@@ -74934,16 +74762,6 @@ export namespace Prisma {
     update?: SessionFlagUpdateWithWhereUniqueWithoutTutorInput | SessionFlagUpdateWithWhereUniqueWithoutTutorInput[]
     updateMany?: SessionFlagUpdateManyWithWhereWithoutTutorInput | SessionFlagUpdateManyWithWhereWithoutTutorInput[]
     deleteMany?: SessionFlagScalarWhereInput | SessionFlagScalarWhereInput[]
-  }
-
-  export type UserPreferencesUncheckedUpdateOneWithoutUserNestedInput = {
-    create?: XOR<UserPreferencesCreateWithoutUserInput, UserPreferencesUncheckedCreateWithoutUserInput>
-    connectOrCreate?: UserPreferencesCreateOrConnectWithoutUserInput
-    upsert?: UserPreferencesUpsertWithoutUserInput
-    disconnect?: UserPreferencesWhereInput | boolean
-    delete?: UserPreferencesWhereInput | boolean
-    connect?: UserPreferencesWhereUniqueInput
-    update?: XOR<XOR<UserPreferencesUpdateToOneWithWhereWithoutUserInput, UserPreferencesUpdateWithoutUserInput>, UserPreferencesUncheckedUpdateWithoutUserInput>
   }
 
   export type AchievementUncheckedUpdateManyWithoutUserNestedInput = {
@@ -75280,18 +75098,28 @@ export namespace Prisma {
     deleteMany?: SellerEarningScalarWhereInput | SellerEarningScalarWhereInput[]
   }
 
-  export type PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<PushSubscriptionCreateWithoutUserInput, PushSubscriptionUncheckedCreateWithoutUserInput> | PushSubscriptionCreateWithoutUserInput[] | PushSubscriptionUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: PushSubscriptionCreateOrConnectWithoutUserInput | PushSubscriptionCreateOrConnectWithoutUserInput[]
-    upsert?: PushSubscriptionUpsertWithWhereUniqueWithoutUserInput | PushSubscriptionUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: PushSubscriptionCreateManyUserInputEnvelope
-    set?: PushSubscriptionWhereUniqueInput | PushSubscriptionWhereUniqueInput[]
-    disconnect?: PushSubscriptionWhereUniqueInput | PushSubscriptionWhereUniqueInput[]
-    delete?: PushSubscriptionWhereUniqueInput | PushSubscriptionWhereUniqueInput[]
-    connect?: PushSubscriptionWhereUniqueInput | PushSubscriptionWhereUniqueInput[]
-    update?: PushSubscriptionUpdateWithWhereUniqueWithoutUserInput | PushSubscriptionUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: PushSubscriptionUpdateManyWithWhereWithoutUserInput | PushSubscriptionUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: PushSubscriptionScalarWhereInput | PushSubscriptionScalarWhereInput[]
+  export type InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<InstitutionStudentCreateWithoutUserInput, InstitutionStudentUncheckedCreateWithoutUserInput>
+    connectOrCreate?: InstitutionStudentCreateOrConnectWithoutUserInput
+    upsert?: InstitutionStudentUpsertWithoutUserInput
+    disconnect?: InstitutionStudentWhereInput | boolean
+    delete?: InstitutionStudentWhereInput | boolean
+    connect?: InstitutionStudentWhereUniqueInput
+    update?: XOR<XOR<InstitutionStudentUpdateToOneWithWhereWithoutUserInput, InstitutionStudentUpdateWithoutUserInput>, InstitutionStudentUncheckedUpdateWithoutUserInput>
+  }
+
+  export type InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<InstitutionTutorCreateWithoutUserInput, InstitutionTutorUncheckedCreateWithoutUserInput> | InstitutionTutorCreateWithoutUserInput[] | InstitutionTutorUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: InstitutionTutorCreateOrConnectWithoutUserInput | InstitutionTutorCreateOrConnectWithoutUserInput[]
+    upsert?: InstitutionTutorUpsertWithWhereUniqueWithoutUserInput | InstitutionTutorUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: InstitutionTutorCreateManyUserInputEnvelope
+    set?: InstitutionTutorWhereUniqueInput | InstitutionTutorWhereUniqueInput[]
+    disconnect?: InstitutionTutorWhereUniqueInput | InstitutionTutorWhereUniqueInput[]
+    delete?: InstitutionTutorWhereUniqueInput | InstitutionTutorWhereUniqueInput[]
+    connect?: InstitutionTutorWhereUniqueInput | InstitutionTutorWhereUniqueInput[]
+    update?: InstitutionTutorUpdateWithWhereUniqueWithoutUserInput | InstitutionTutorUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: InstitutionTutorUpdateManyWithWhereWithoutUserInput | InstitutionTutorUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: InstitutionTutorScalarWhereInput | InstitutionTutorScalarWhereInput[]
   }
 
   export type InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput = {
@@ -75322,28 +75150,18 @@ export namespace Prisma {
     deleteMany?: InstitutionDocumentScalarWhereInput | InstitutionDocumentScalarWhereInput[]
   }
 
-  export type InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput = {
-    create?: XOR<InstitutionStudentCreateWithoutUserInput, InstitutionStudentUncheckedCreateWithoutUserInput>
-    connectOrCreate?: InstitutionStudentCreateOrConnectWithoutUserInput
-    upsert?: InstitutionStudentUpsertWithoutUserInput
-    disconnect?: InstitutionStudentWhereInput | boolean
-    delete?: InstitutionStudentWhereInput | boolean
-    connect?: InstitutionStudentWhereUniqueInput
-    update?: XOR<XOR<InstitutionStudentUpdateToOneWithWhereWithoutUserInput, InstitutionStudentUpdateWithoutUserInput>, InstitutionStudentUncheckedUpdateWithoutUserInput>
-  }
-
-  export type InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<InstitutionTutorCreateWithoutUserInput, InstitutionTutorUncheckedCreateWithoutUserInput> | InstitutionTutorCreateWithoutUserInput[] | InstitutionTutorUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: InstitutionTutorCreateOrConnectWithoutUserInput | InstitutionTutorCreateOrConnectWithoutUserInput[]
-    upsert?: InstitutionTutorUpsertWithWhereUniqueWithoutUserInput | InstitutionTutorUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: InstitutionTutorCreateManyUserInputEnvelope
-    set?: InstitutionTutorWhereUniqueInput | InstitutionTutorWhereUniqueInput[]
-    disconnect?: InstitutionTutorWhereUniqueInput | InstitutionTutorWhereUniqueInput[]
-    delete?: InstitutionTutorWhereUniqueInput | InstitutionTutorWhereUniqueInput[]
-    connect?: InstitutionTutorWhereUniqueInput | InstitutionTutorWhereUniqueInput[]
-    update?: InstitutionTutorUpdateWithWhereUniqueWithoutUserInput | InstitutionTutorUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: InstitutionTutorUpdateManyWithWhereWithoutUserInput | InstitutionTutorUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: InstitutionTutorScalarWhereInput | InstitutionTutorScalarWhereInput[]
+  export type PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<PushSubscriptionCreateWithoutUserInput, PushSubscriptionUncheckedCreateWithoutUserInput> | PushSubscriptionCreateWithoutUserInput[] | PushSubscriptionUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PushSubscriptionCreateOrConnectWithoutUserInput | PushSubscriptionCreateOrConnectWithoutUserInput[]
+    upsert?: PushSubscriptionUpsertWithWhereUniqueWithoutUserInput | PushSubscriptionUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: PushSubscriptionCreateManyUserInputEnvelope
+    set?: PushSubscriptionWhereUniqueInput | PushSubscriptionWhereUniqueInput[]
+    disconnect?: PushSubscriptionWhereUniqueInput | PushSubscriptionWhereUniqueInput[]
+    delete?: PushSubscriptionWhereUniqueInput | PushSubscriptionWhereUniqueInput[]
+    connect?: PushSubscriptionWhereUniqueInput | PushSubscriptionWhereUniqueInput[]
+    update?: PushSubscriptionUpdateWithWhereUniqueWithoutUserInput | PushSubscriptionUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: PushSubscriptionUpdateManyWithWhereWithoutUserInput | PushSubscriptionUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: PushSubscriptionScalarWhereInput | PushSubscriptionScalarWhereInput[]
   }
 
   export type TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput = {
@@ -76162,20 +75980,6 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutPushSubscriptionsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPushSubscriptionsInput, UserUpdateWithoutPushSubscriptionsInput>, UserUncheckedUpdateWithoutPushSubscriptionsInput>
-  }
-
-  export type UserCreateNestedOneWithoutPreferencesInput = {
-    create?: XOR<UserCreateWithoutPreferencesInput, UserUncheckedCreateWithoutPreferencesInput>
-    connectOrCreate?: UserCreateOrConnectWithoutPreferencesInput
-    connect?: UserWhereUniqueInput
-  }
-
-  export type UserUpdateOneRequiredWithoutPreferencesNestedInput = {
-    create?: XOR<UserCreateWithoutPreferencesInput, UserUncheckedCreateWithoutPreferencesInput>
-    connectOrCreate?: UserCreateOrConnectWithoutPreferencesInput
-    upsert?: UserUpsertWithoutPreferencesInput
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPreferencesInput, UserUpdateWithoutPreferencesInput>, UserUncheckedUpdateWithoutPreferencesInput>
   }
 
   export type ChallengeCreateoptionsInput = {
@@ -77470,49 +77274,6 @@ export namespace Prisma {
     _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
-  export type UserPreferencesCreateWithoutUserInput = {
-    id?: string
-    theme?: string
-    accentColor?: string
-    layout?: string
-    fontSize?: string
-    mashStyle?: string
-    preferredLanguage?: string
-    studyTime?: string | null
-    sessionLength?: string | null
-    sessionTypePref?: string | null
-    showProfile?: boolean
-    showOnlineStatus?: boolean
-    allowTutorRequests?: boolean
-    enableMashFallback?: boolean
-    studyHoursPerWeek?: number | null
-    updatedAt?: Date | string
-  }
-
-  export type UserPreferencesUncheckedCreateWithoutUserInput = {
-    id?: string
-    theme?: string
-    accentColor?: string
-    layout?: string
-    fontSize?: string
-    mashStyle?: string
-    preferredLanguage?: string
-    studyTime?: string | null
-    sessionLength?: string | null
-    sessionTypePref?: string | null
-    showProfile?: boolean
-    showOnlineStatus?: boolean
-    allowTutorRequests?: boolean
-    enableMashFallback?: boolean
-    studyHoursPerWeek?: number | null
-    updatedAt?: Date | string
-  }
-
-  export type UserPreferencesCreateOrConnectWithoutUserInput = {
-    where: UserPreferencesWhereUniqueInput
-    create: XOR<UserPreferencesCreateWithoutUserInput, UserPreferencesUncheckedCreateWithoutUserInput>
-  }
-
   export type AchievementCreateWithoutUserInput = {
     id?: string
     type: string
@@ -78315,29 +78076,48 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type PushSubscriptionCreateWithoutUserInput = {
+  export type InstitutionStudentCreateWithoutUserInput = {
     id?: string
-    endpoint: string
-    p256dh: string
-    auth: string
+    studentIdStr?: string | null
+    classYear?: string | null
+    createdAt?: Date | string
+    institution: InstitutionCreateNestedOneWithoutStudentsInput
+  }
+
+  export type InstitutionStudentUncheckedCreateWithoutUserInput = {
+    id?: string
+    institutionId: string
+    studentIdStr?: string | null
+    classYear?: string | null
     createdAt?: Date | string
   }
 
-  export type PushSubscriptionUncheckedCreateWithoutUserInput = {
+  export type InstitutionStudentCreateOrConnectWithoutUserInput = {
+    where: InstitutionStudentWhereUniqueInput
+    create: XOR<InstitutionStudentCreateWithoutUserInput, InstitutionStudentUncheckedCreateWithoutUserInput>
+  }
+
+  export type InstitutionTutorCreateWithoutUserInput = {
     id?: string
-    endpoint: string
-    p256dh: string
-    auth: string
+    status?: string
+    createdAt?: Date | string
+    institution: InstitutionCreateNestedOneWithoutTutorsInput
+  }
+
+  export type InstitutionTutorUncheckedCreateWithoutUserInput = {
+    id?: string
+    institutionId: string
+    status?: string
     createdAt?: Date | string
   }
 
-  export type PushSubscriptionCreateOrConnectWithoutUserInput = {
-    where: PushSubscriptionWhereUniqueInput
-    create: XOR<PushSubscriptionCreateWithoutUserInput, PushSubscriptionUncheckedCreateWithoutUserInput>
+  export type InstitutionTutorCreateOrConnectWithoutUserInput = {
+    where: InstitutionTutorWhereUniqueInput
+    create: XOR<InstitutionTutorCreateWithoutUserInput, InstitutionTutorUncheckedCreateWithoutUserInput>
   }
 
-  export type PushSubscriptionCreateManyUserInputEnvelope = {
-    data: PushSubscriptionCreateManyUserInput | PushSubscriptionCreateManyUserInput[]
+  export type InstitutionTutorCreateManyUserInputEnvelope = {
+    data: InstitutionTutorCreateManyUserInput | InstitutionTutorCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -78401,48 +78181,29 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type InstitutionStudentCreateWithoutUserInput = {
+  export type PushSubscriptionCreateWithoutUserInput = {
     id?: string
-    studentIdStr?: string | null
-    classYear?: string | null
-    createdAt?: Date | string
-    institution: InstitutionCreateNestedOneWithoutStudentsInput
-  }
-
-  export type InstitutionStudentUncheckedCreateWithoutUserInput = {
-    id?: string
-    institutionId: string
-    studentIdStr?: string | null
-    classYear?: string | null
+    endpoint: string
+    p256dh: string
+    auth: string
     createdAt?: Date | string
   }
 
-  export type InstitutionStudentCreateOrConnectWithoutUserInput = {
-    where: InstitutionStudentWhereUniqueInput
-    create: XOR<InstitutionStudentCreateWithoutUserInput, InstitutionStudentUncheckedCreateWithoutUserInput>
-  }
-
-  export type InstitutionTutorCreateWithoutUserInput = {
+  export type PushSubscriptionUncheckedCreateWithoutUserInput = {
     id?: string
-    status?: string
-    createdAt?: Date | string
-    institution: InstitutionCreateNestedOneWithoutTutorsInput
-  }
-
-  export type InstitutionTutorUncheckedCreateWithoutUserInput = {
-    id?: string
-    institutionId: string
-    status?: string
+    endpoint: string
+    p256dh: string
+    auth: string
     createdAt?: Date | string
   }
 
-  export type InstitutionTutorCreateOrConnectWithoutUserInput = {
-    where: InstitutionTutorWhereUniqueInput
-    create: XOR<InstitutionTutorCreateWithoutUserInput, InstitutionTutorUncheckedCreateWithoutUserInput>
+  export type PushSubscriptionCreateOrConnectWithoutUserInput = {
+    where: PushSubscriptionWhereUniqueInput
+    create: XOR<PushSubscriptionCreateWithoutUserInput, PushSubscriptionUncheckedCreateWithoutUserInput>
   }
 
-  export type InstitutionTutorCreateManyUserInputEnvelope = {
-    data: InstitutionTutorCreateManyUserInput | InstitutionTutorCreateManyUserInput[]
+  export type PushSubscriptionCreateManyUserInputEnvelope = {
+    data: PushSubscriptionCreateManyUserInput | PushSubscriptionCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -78628,55 +78389,6 @@ export namespace Prisma {
   export type SessionFlagCreateManyTutorInputEnvelope = {
     data: SessionFlagCreateManyTutorInput | SessionFlagCreateManyTutorInput[]
     skipDuplicates?: boolean
-  }
-
-  export type UserPreferencesUpsertWithoutUserInput = {
-    update: XOR<UserPreferencesUpdateWithoutUserInput, UserPreferencesUncheckedUpdateWithoutUserInput>
-    create: XOR<UserPreferencesCreateWithoutUserInput, UserPreferencesUncheckedCreateWithoutUserInput>
-    where?: UserPreferencesWhereInput
-  }
-
-  export type UserPreferencesUpdateToOneWithWhereWithoutUserInput = {
-    where?: UserPreferencesWhereInput
-    data: XOR<UserPreferencesUpdateWithoutUserInput, UserPreferencesUncheckedUpdateWithoutUserInput>
-  }
-
-  export type UserPreferencesUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    theme?: StringFieldUpdateOperationsInput | string
-    accentColor?: StringFieldUpdateOperationsInput | string
-    layout?: StringFieldUpdateOperationsInput | string
-    fontSize?: StringFieldUpdateOperationsInput | string
-    mashStyle?: StringFieldUpdateOperationsInput | string
-    preferredLanguage?: StringFieldUpdateOperationsInput | string
-    studyTime?: NullableStringFieldUpdateOperationsInput | string | null
-    sessionLength?: NullableStringFieldUpdateOperationsInput | string | null
-    sessionTypePref?: NullableStringFieldUpdateOperationsInput | string | null
-    showProfile?: BoolFieldUpdateOperationsInput | boolean
-    showOnlineStatus?: BoolFieldUpdateOperationsInput | boolean
-    allowTutorRequests?: BoolFieldUpdateOperationsInput | boolean
-    enableMashFallback?: BoolFieldUpdateOperationsInput | boolean
-    studyHoursPerWeek?: NullableIntFieldUpdateOperationsInput | number | null
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type UserPreferencesUncheckedUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    theme?: StringFieldUpdateOperationsInput | string
-    accentColor?: StringFieldUpdateOperationsInput | string
-    layout?: StringFieldUpdateOperationsInput | string
-    fontSize?: StringFieldUpdateOperationsInput | string
-    mashStyle?: StringFieldUpdateOperationsInput | string
-    preferredLanguage?: StringFieldUpdateOperationsInput | string
-    studyTime?: NullableStringFieldUpdateOperationsInput | string | null
-    sessionLength?: NullableStringFieldUpdateOperationsInput | string | null
-    sessionTypePref?: NullableStringFieldUpdateOperationsInput | string | null
-    showProfile?: BoolFieldUpdateOperationsInput | boolean
-    showOnlineStatus?: BoolFieldUpdateOperationsInput | boolean
-    allowTutorRequests?: BoolFieldUpdateOperationsInput | boolean
-    enableMashFallback?: BoolFieldUpdateOperationsInput | boolean
-    studyHoursPerWeek?: NullableIntFieldUpdateOperationsInput | number | null
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AchievementUpsertWithWhereUniqueWithoutUserInput = {
@@ -79412,32 +79124,58 @@ export namespace Prisma {
     createdAt?: DateTimeNullableFilter<"SellerEarning"> | Date | string | null
   }
 
-  export type PushSubscriptionUpsertWithWhereUniqueWithoutUserInput = {
-    where: PushSubscriptionWhereUniqueInput
-    update: XOR<PushSubscriptionUpdateWithoutUserInput, PushSubscriptionUncheckedUpdateWithoutUserInput>
-    create: XOR<PushSubscriptionCreateWithoutUserInput, PushSubscriptionUncheckedCreateWithoutUserInput>
+  export type InstitutionStudentUpsertWithoutUserInput = {
+    update: XOR<InstitutionStudentUpdateWithoutUserInput, InstitutionStudentUncheckedUpdateWithoutUserInput>
+    create: XOR<InstitutionStudentCreateWithoutUserInput, InstitutionStudentUncheckedCreateWithoutUserInput>
+    where?: InstitutionStudentWhereInput
   }
 
-  export type PushSubscriptionUpdateWithWhereUniqueWithoutUserInput = {
-    where: PushSubscriptionWhereUniqueInput
-    data: XOR<PushSubscriptionUpdateWithoutUserInput, PushSubscriptionUncheckedUpdateWithoutUserInput>
+  export type InstitutionStudentUpdateToOneWithWhereWithoutUserInput = {
+    where?: InstitutionStudentWhereInput
+    data: XOR<InstitutionStudentUpdateWithoutUserInput, InstitutionStudentUncheckedUpdateWithoutUserInput>
   }
 
-  export type PushSubscriptionUpdateManyWithWhereWithoutUserInput = {
-    where: PushSubscriptionScalarWhereInput
-    data: XOR<PushSubscriptionUpdateManyMutationInput, PushSubscriptionUncheckedUpdateManyWithoutUserInput>
+  export type InstitutionStudentUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    studentIdStr?: NullableStringFieldUpdateOperationsInput | string | null
+    classYear?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    institution?: InstitutionUpdateOneRequiredWithoutStudentsNestedInput
   }
 
-  export type PushSubscriptionScalarWhereInput = {
-    AND?: PushSubscriptionScalarWhereInput | PushSubscriptionScalarWhereInput[]
-    OR?: PushSubscriptionScalarWhereInput[]
-    NOT?: PushSubscriptionScalarWhereInput | PushSubscriptionScalarWhereInput[]
-    id?: StringFilter<"PushSubscription"> | string
-    userId?: StringFilter<"PushSubscription"> | string
-    endpoint?: StringFilter<"PushSubscription"> | string
-    p256dh?: StringFilter<"PushSubscription"> | string
-    auth?: StringFilter<"PushSubscription"> | string
-    createdAt?: DateTimeFilter<"PushSubscription"> | Date | string
+  export type InstitutionStudentUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    institutionId?: StringFieldUpdateOperationsInput | string
+    studentIdStr?: NullableStringFieldUpdateOperationsInput | string | null
+    classYear?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InstitutionTutorUpsertWithWhereUniqueWithoutUserInput = {
+    where: InstitutionTutorWhereUniqueInput
+    update: XOR<InstitutionTutorUpdateWithoutUserInput, InstitutionTutorUncheckedUpdateWithoutUserInput>
+    create: XOR<InstitutionTutorCreateWithoutUserInput, InstitutionTutorUncheckedCreateWithoutUserInput>
+  }
+
+  export type InstitutionTutorUpdateWithWhereUniqueWithoutUserInput = {
+    where: InstitutionTutorWhereUniqueInput
+    data: XOR<InstitutionTutorUpdateWithoutUserInput, InstitutionTutorUncheckedUpdateWithoutUserInput>
+  }
+
+  export type InstitutionTutorUpdateManyWithWhereWithoutUserInput = {
+    where: InstitutionTutorScalarWhereInput
+    data: XOR<InstitutionTutorUpdateManyMutationInput, InstitutionTutorUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type InstitutionTutorScalarWhereInput = {
+    AND?: InstitutionTutorScalarWhereInput | InstitutionTutorScalarWhereInput[]
+    OR?: InstitutionTutorScalarWhereInput[]
+    NOT?: InstitutionTutorScalarWhereInput | InstitutionTutorScalarWhereInput[]
+    id?: StringFilter<"InstitutionTutor"> | string
+    institutionId?: StringFilter<"InstitutionTutor"> | string
+    userId?: StringFilter<"InstitutionTutor"> | string
+    status?: StringFilter<"InstitutionTutor"> | string
+    createdAt?: DateTimeFilter<"InstitutionTutor"> | Date | string
   }
 
   export type InstitutionMemberUpsertWithWhereUniqueWithoutUserInput = {
@@ -79500,58 +79238,32 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"InstitutionDocument"> | Date | string
   }
 
-  export type InstitutionStudentUpsertWithoutUserInput = {
-    update: XOR<InstitutionStudentUpdateWithoutUserInput, InstitutionStudentUncheckedUpdateWithoutUserInput>
-    create: XOR<InstitutionStudentCreateWithoutUserInput, InstitutionStudentUncheckedCreateWithoutUserInput>
-    where?: InstitutionStudentWhereInput
+  export type PushSubscriptionUpsertWithWhereUniqueWithoutUserInput = {
+    where: PushSubscriptionWhereUniqueInput
+    update: XOR<PushSubscriptionUpdateWithoutUserInput, PushSubscriptionUncheckedUpdateWithoutUserInput>
+    create: XOR<PushSubscriptionCreateWithoutUserInput, PushSubscriptionUncheckedCreateWithoutUserInput>
   }
 
-  export type InstitutionStudentUpdateToOneWithWhereWithoutUserInput = {
-    where?: InstitutionStudentWhereInput
-    data: XOR<InstitutionStudentUpdateWithoutUserInput, InstitutionStudentUncheckedUpdateWithoutUserInput>
+  export type PushSubscriptionUpdateWithWhereUniqueWithoutUserInput = {
+    where: PushSubscriptionWhereUniqueInput
+    data: XOR<PushSubscriptionUpdateWithoutUserInput, PushSubscriptionUncheckedUpdateWithoutUserInput>
   }
 
-  export type InstitutionStudentUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    studentIdStr?: NullableStringFieldUpdateOperationsInput | string | null
-    classYear?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    institution?: InstitutionUpdateOneRequiredWithoutStudentsNestedInput
+  export type PushSubscriptionUpdateManyWithWhereWithoutUserInput = {
+    where: PushSubscriptionScalarWhereInput
+    data: XOR<PushSubscriptionUpdateManyMutationInput, PushSubscriptionUncheckedUpdateManyWithoutUserInput>
   }
 
-  export type InstitutionStudentUncheckedUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    institutionId?: StringFieldUpdateOperationsInput | string
-    studentIdStr?: NullableStringFieldUpdateOperationsInput | string | null
-    classYear?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type InstitutionTutorUpsertWithWhereUniqueWithoutUserInput = {
-    where: InstitutionTutorWhereUniqueInput
-    update: XOR<InstitutionTutorUpdateWithoutUserInput, InstitutionTutorUncheckedUpdateWithoutUserInput>
-    create: XOR<InstitutionTutorCreateWithoutUserInput, InstitutionTutorUncheckedCreateWithoutUserInput>
-  }
-
-  export type InstitutionTutorUpdateWithWhereUniqueWithoutUserInput = {
-    where: InstitutionTutorWhereUniqueInput
-    data: XOR<InstitutionTutorUpdateWithoutUserInput, InstitutionTutorUncheckedUpdateWithoutUserInput>
-  }
-
-  export type InstitutionTutorUpdateManyWithWhereWithoutUserInput = {
-    where: InstitutionTutorScalarWhereInput
-    data: XOR<InstitutionTutorUpdateManyMutationInput, InstitutionTutorUncheckedUpdateManyWithoutUserInput>
-  }
-
-  export type InstitutionTutorScalarWhereInput = {
-    AND?: InstitutionTutorScalarWhereInput | InstitutionTutorScalarWhereInput[]
-    OR?: InstitutionTutorScalarWhereInput[]
-    NOT?: InstitutionTutorScalarWhereInput | InstitutionTutorScalarWhereInput[]
-    id?: StringFilter<"InstitutionTutor"> | string
-    institutionId?: StringFilter<"InstitutionTutor"> | string
-    userId?: StringFilter<"InstitutionTutor"> | string
-    status?: StringFilter<"InstitutionTutor"> | string
-    createdAt?: DateTimeFilter<"InstitutionTutor"> | Date | string
+  export type PushSubscriptionScalarWhereInput = {
+    AND?: PushSubscriptionScalarWhereInput | PushSubscriptionScalarWhereInput[]
+    OR?: PushSubscriptionScalarWhereInput[]
+    NOT?: PushSubscriptionScalarWhereInput | PushSubscriptionScalarWhereInput[]
+    id?: StringFilter<"PushSubscription"> | string
+    userId?: StringFilter<"PushSubscription"> | string
+    endpoint?: StringFilter<"PushSubscription"> | string
+    p256dh?: StringFilter<"PushSubscription"> | string
+    auth?: StringFilter<"PushSubscription"> | string
+    createdAt?: DateTimeFilter<"PushSubscription"> | Date | string
   }
 
   export type TutorAvailabilityUpsertWithWhereUniqueWithoutTutorInput = {
@@ -79714,6 +79426,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -79725,7 +79438,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -79750,11 +79462,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -79781,6 +79493,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -79792,7 +79505,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -79817,11 +79529,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -79864,6 +79576,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -79875,7 +79588,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -79900,11 +79612,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -79931,6 +79643,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -79942,7 +79655,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -79967,11 +79679,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -79998,6 +79710,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -80009,7 +79722,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -80034,11 +79746,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -80065,6 +79777,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -80076,7 +79789,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -80101,11 +79813,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -80148,6 +79860,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -80159,7 +79872,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -80184,11 +79896,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -80215,6 +79927,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -80226,7 +79939,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -80251,11 +79963,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -80282,6 +79994,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -80293,7 +80006,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -80318,11 +80030,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -80349,6 +80061,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -80360,7 +80073,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -80385,11 +80097,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -80432,6 +80144,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -80443,7 +80156,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -80468,11 +80180,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -80499,6 +80211,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -80510,7 +80223,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -80535,11 +80247,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -80617,6 +80329,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -80628,7 +80341,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -80653,11 +80365,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -80684,6 +80396,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -80695,7 +80408,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -80720,11 +80432,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -80756,6 +80468,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -80767,7 +80480,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -80792,11 +80504,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -80823,6 +80535,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -80834,7 +80547,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -80859,11 +80571,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -80987,6 +80699,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -80998,7 +80711,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -81023,11 +80735,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -81054,6 +80766,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -81065,7 +80778,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -81090,11 +80802,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -81132,6 +80844,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -81143,7 +80856,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -81168,11 +80880,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -81199,6 +80911,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -81210,7 +80923,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -81235,11 +80947,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -81282,6 +80994,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -81293,7 +81006,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -81318,11 +81030,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -81349,6 +81061,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -81360,7 +81073,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -81385,11 +81097,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -81477,6 +81189,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -81488,7 +81201,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -81513,11 +81225,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -81544,6 +81256,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -81555,7 +81268,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -81580,11 +81292,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -81662,6 +81374,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -81673,7 +81386,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -81698,11 +81410,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -81729,6 +81441,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -81740,7 +81453,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -81765,11 +81477,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -81801,6 +81513,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -81812,7 +81525,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -81837,11 +81549,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -81868,6 +81580,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -81879,7 +81592,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -81904,11 +81616,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -81996,6 +81708,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -82007,7 +81720,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -82032,11 +81744,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -82063,6 +81775,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -82074,7 +81787,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -82099,11 +81811,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -82141,6 +81853,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -82152,7 +81865,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -82177,11 +81889,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -82208,6 +81920,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -82219,7 +81932,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -82244,11 +81956,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -82397,6 +82109,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -82408,7 +82121,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     feedPosts?: FeedPostCreateNestedManyWithoutUserInput
@@ -82433,11 +82145,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -82464,6 +82176,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -82475,7 +82188,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     feedPosts?: FeedPostUncheckedCreateNestedManyWithoutUserInput
@@ -82500,11 +82212,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -82582,6 +82294,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -82593,7 +82306,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     feedPosts?: FeedPostUpdateManyWithoutUserNestedInput
@@ -82618,11 +82330,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -82649,6 +82361,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -82660,7 +82373,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     feedPosts?: FeedPostUncheckedUpdateManyWithoutUserNestedInput
@@ -82685,11 +82397,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -82831,6 +82543,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -82842,7 +82555,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -82867,11 +82579,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -82898,6 +82610,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -82909,7 +82622,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -82934,11 +82646,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -82981,6 +82693,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -82992,7 +82705,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -83017,11 +82729,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -83048,6 +82760,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -83059,7 +82772,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -83084,11 +82796,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -83115,6 +82827,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -83126,7 +82839,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -83151,11 +82863,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -83182,6 +82894,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -83193,7 +82906,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -83218,11 +82930,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -83265,6 +82977,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -83276,7 +82989,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -83301,11 +83013,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -83332,6 +83044,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -83343,7 +83056,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -83368,11 +83080,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -83423,6 +83135,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -83434,7 +83147,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -83459,11 +83171,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -83490,6 +83202,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -83501,7 +83214,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -83526,11 +83238,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -83611,6 +83323,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -83622,7 +83335,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -83647,11 +83359,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -83678,6 +83390,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -83689,7 +83402,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -83714,11 +83426,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -83790,6 +83502,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -83801,7 +83514,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -83826,11 +83538,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -83857,6 +83569,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -83868,7 +83581,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -83893,11 +83605,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -83975,6 +83687,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -83986,7 +83699,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -84011,11 +83723,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -84042,6 +83754,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -84053,7 +83766,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -84078,11 +83790,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -84138,6 +83850,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -84149,7 +83862,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
     feedPosts?: FeedPostCreateNestedManyWithoutUserInput
@@ -84174,11 +83886,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -84205,6 +83917,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -84216,7 +83929,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
     feedPosts?: FeedPostUncheckedCreateNestedManyWithoutUserInput
@@ -84241,11 +83953,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -84323,6 +84035,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -84334,7 +84047,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
     feedPosts?: FeedPostUpdateManyWithoutUserNestedInput
@@ -84359,11 +84071,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -84390,6 +84102,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -84401,7 +84114,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
     feedPosts?: FeedPostUncheckedUpdateManyWithoutUserNestedInput
@@ -84426,11 +84138,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -84457,6 +84169,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -84468,7 +84181,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
     feedPosts?: FeedPostCreateNestedManyWithoutUserInput
@@ -84493,11 +84205,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -84524,6 +84236,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -84535,7 +84248,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
     feedPosts?: FeedPostUncheckedCreateNestedManyWithoutUserInput
@@ -84560,11 +84272,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -84607,6 +84319,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -84618,7 +84331,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
     feedPosts?: FeedPostUpdateManyWithoutUserNestedInput
@@ -84643,11 +84355,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -84674,6 +84386,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -84685,7 +84398,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
     feedPosts?: FeedPostUncheckedUpdateManyWithoutUserNestedInput
@@ -84710,11 +84422,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -84741,6 +84453,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -84752,7 +84465,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -84777,11 +84489,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -84808,6 +84520,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -84819,7 +84532,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -84844,11 +84556,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -84891,6 +84603,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -84902,7 +84615,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -84927,11 +84639,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -84958,6 +84670,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -84969,7 +84682,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -84994,11 +84706,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -85025,6 +84737,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -85036,7 +84749,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -85061,11 +84773,11 @@ export namespace Prisma {
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -85092,6 +84804,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -85103,7 +84816,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -85128,11 +84840,11 @@ export namespace Prisma {
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -85175,6 +84887,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -85186,7 +84899,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -85211,11 +84923,11 @@ export namespace Prisma {
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -85242,6 +84954,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -85253,7 +84966,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -85278,11 +84990,11 @@ export namespace Prisma {
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -85309,6 +85021,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -85320,7 +85033,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -85345,11 +85057,11 @@ export namespace Prisma {
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -85376,6 +85088,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -85387,7 +85100,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -85412,11 +85124,11 @@ export namespace Prisma {
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -85459,6 +85171,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -85470,7 +85183,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -85495,11 +85207,11 @@ export namespace Prisma {
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -85526,6 +85238,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -85537,7 +85250,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -85562,11 +85274,11 @@ export namespace Prisma {
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -85593,6 +85305,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -85604,7 +85317,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -85630,10 +85342,10 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -85660,6 +85372,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -85671,7 +85384,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -85697,10 +85409,10 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -85743,6 +85455,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -85754,7 +85467,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -85780,10 +85492,10 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -85810,290 +85522,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
-    curriculum?: NullableStringFieldUpdateOperationsInput | string | null
-    dailyMessageCount?: IntFieldUpdateOperationsInput | number
-    dailySearchCount?: IntFieldUpdateOperationsInput | number
-    lastCountReset?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
-    banned?: BoolFieldUpdateOperationsInput | boolean
-    suspended?: BoolFieldUpdateOperationsInput | boolean
-    plan?: StringFieldUpdateOperationsInput | string
-    planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
-    achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
-    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
-    challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
-    feedPosts?: FeedPostUncheckedUpdateManyWithoutUserNestedInput
-    messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
-    reviewsRecv?: ReviewUncheckedUpdateManyWithoutRevieweeNestedInput
-    reviewsGiven?: ReviewUncheckedUpdateManyWithoutReviewerNestedInput
-    sessionsAsTutor?: SessionUncheckedUpdateManyWithoutPartnerNestedInput
-    sessionsAsStudent?: SessionUncheckedUpdateManyWithoutStudentNestedInput
-    studentProfile?: StudentProfileUncheckedUpdateOneWithoutUserNestedInput
-    tutorApplication?: TutorApplicationUncheckedUpdateOneWithoutUserNestedInput
-    tutorProfile?: TutorProfileUncheckedUpdateOneWithoutUserNestedInput
-    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
-    resourcePurchases?: ResourcePurchaseUncheckedUpdateManyWithoutUserNestedInput
-    resources?: ResourceUncheckedUpdateManyWithoutSellerNestedInput
-    sessionPaymentsAsStudent?: SessionPaymentUncheckedUpdateManyWithoutStudentNestedInput
-    sessionPaymentsAsTutor?: SessionPaymentUncheckedUpdateManyWithoutTutorNestedInput
-    payouts?: TutorPayoutUncheckedUpdateManyWithoutTutorNestedInput
-    matchRequests?: MatchRequestUncheckedUpdateManyWithoutStudentNestedInput
-    newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
-    userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
-    creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
-    sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
-    institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
-    institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
-    tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
-    studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
-    tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
-    bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
-    sessionFlags?: SessionFlagUncheckedUpdateManyWithoutTutorNestedInput
-  }
-
-  export type UserCreateWithoutPreferencesInput = {
-    id?: string
-    email: string
-    phone?: string | null
-    name: string
-    avatar?: string | null
-    gender?: $Enums.Gender | null
-    role?: $Enums.Role
-    educationLevel?: $Enums.EduLevel | null
-    formYear?: number | null
-    county: string
-    points?: number
-    tier?: $Enums.Tier
-    streakDays?: number
-    lastActiveAt?: Date | string | null
-    isUnder18?: boolean
-    strikes?: number
-    createdAt?: Date | string
-    bio?: string | null
-    curriculum?: string | null
-    dailyMessageCount?: number
-    dailySearchCount?: number
-    lastCountReset?: Date | string | null
-    subscriptionTier?: string | null
-    banned?: boolean
-    suspended?: boolean
-    plan?: string
-    planStartedAt?: Date | string | null
-    planExpiresAt?: Date | string | null
-    planBillingCycle?: string | null
-    achievements?: AchievementCreateNestedManyWithoutUserInput
-    comments?: CommentCreateNestedManyWithoutUserInput
-    challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
-    feedPosts?: FeedPostCreateNestedManyWithoutUserInput
-    messages?: MessageCreateNestedManyWithoutSenderInput
-    notifications?: NotificationCreateNestedManyWithoutUserInput
-    postLikes?: PostLikeCreateNestedManyWithoutUserInput
-    reviewsRecv?: ReviewCreateNestedManyWithoutRevieweeInput
-    reviewsGiven?: ReviewCreateNestedManyWithoutReviewerInput
-    sessionsAsTutor?: SessionCreateNestedManyWithoutPartnerInput
-    sessionsAsStudent?: SessionCreateNestedManyWithoutStudentInput
-    studentProfile?: StudentProfileCreateNestedOneWithoutUserInput
-    tutorApplication?: TutorApplicationCreateNestedOneWithoutUserInput
-    tutorProfile?: TutorProfileCreateNestedOneWithoutUserInput
-    payments?: PaymentCreateNestedManyWithoutUserInput
-    resourcePurchases?: ResourcePurchaseCreateNestedManyWithoutUserInput
-    resources?: ResourceCreateNestedManyWithoutSellerInput
-    sessionPaymentsAsStudent?: SessionPaymentCreateNestedManyWithoutStudentInput
-    sessionPaymentsAsTutor?: SessionPaymentCreateNestedManyWithoutTutorInput
-    payouts?: TutorPayoutCreateNestedManyWithoutTutorInput
-    matchRequests?: MatchRequestCreateNestedManyWithoutStudentInput
-    newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
-    userCredits?: UserCreditsCreateNestedOneWithoutUserInput
-    creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
-    sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
-    institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
-    institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
-    tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
-    studentBookings?: BookingCreateNestedManyWithoutStudentInput
-    tutorBookings?: BookingCreateNestedManyWithoutTutorInput
-    bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
-    sessionFlags?: SessionFlagCreateNestedManyWithoutTutorInput
-  }
-
-  export type UserUncheckedCreateWithoutPreferencesInput = {
-    id?: string
-    email: string
-    phone?: string | null
-    name: string
-    avatar?: string | null
-    gender?: $Enums.Gender | null
-    role?: $Enums.Role
-    educationLevel?: $Enums.EduLevel | null
-    formYear?: number | null
-    county: string
-    points?: number
-    tier?: $Enums.Tier
-    streakDays?: number
-    lastActiveAt?: Date | string | null
-    isUnder18?: boolean
-    strikes?: number
-    createdAt?: Date | string
-    bio?: string | null
-    curriculum?: string | null
-    dailyMessageCount?: number
-    dailySearchCount?: number
-    lastCountReset?: Date | string | null
-    subscriptionTier?: string | null
-    banned?: boolean
-    suspended?: boolean
-    plan?: string
-    planStartedAt?: Date | string | null
-    planExpiresAt?: Date | string | null
-    planBillingCycle?: string | null
-    achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
-    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
-    challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
-    feedPosts?: FeedPostUncheckedCreateNestedManyWithoutUserInput
-    messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
-    reviewsRecv?: ReviewUncheckedCreateNestedManyWithoutRevieweeInput
-    reviewsGiven?: ReviewUncheckedCreateNestedManyWithoutReviewerInput
-    sessionsAsTutor?: SessionUncheckedCreateNestedManyWithoutPartnerInput
-    sessionsAsStudent?: SessionUncheckedCreateNestedManyWithoutStudentInput
-    studentProfile?: StudentProfileUncheckedCreateNestedOneWithoutUserInput
-    tutorApplication?: TutorApplicationUncheckedCreateNestedOneWithoutUserInput
-    tutorProfile?: TutorProfileUncheckedCreateNestedOneWithoutUserInput
-    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
-    resourcePurchases?: ResourcePurchaseUncheckedCreateNestedManyWithoutUserInput
-    resources?: ResourceUncheckedCreateNestedManyWithoutSellerInput
-    sessionPaymentsAsStudent?: SessionPaymentUncheckedCreateNestedManyWithoutStudentInput
-    sessionPaymentsAsTutor?: SessionPaymentUncheckedCreateNestedManyWithoutTutorInput
-    payouts?: TutorPayoutUncheckedCreateNestedManyWithoutTutorInput
-    matchRequests?: MatchRequestUncheckedCreateNestedManyWithoutStudentInput
-    newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
-    userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
-    creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
-    sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
-    institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
-    institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
-    tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
-    studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
-    tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
-    bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
-    sessionFlags?: SessionFlagUncheckedCreateNestedManyWithoutTutorInput
-  }
-
-  export type UserCreateOrConnectWithoutPreferencesInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutPreferencesInput, UserUncheckedCreateWithoutPreferencesInput>
-  }
-
-  export type UserUpsertWithoutPreferencesInput = {
-    update: XOR<UserUpdateWithoutPreferencesInput, UserUncheckedUpdateWithoutPreferencesInput>
-    create: XOR<UserCreateWithoutPreferencesInput, UserUncheckedCreateWithoutPreferencesInput>
-    where?: UserWhereInput
-  }
-
-  export type UserUpdateToOneWithWhereWithoutPreferencesInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutPreferencesInput, UserUncheckedUpdateWithoutPreferencesInput>
-  }
-
-  export type UserUpdateWithoutPreferencesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    name?: StringFieldUpdateOperationsInput | string
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
-    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
-    formYear?: NullableIntFieldUpdateOperationsInput | number | null
-    county?: StringFieldUpdateOperationsInput | string
-    points?: IntFieldUpdateOperationsInput | number
-    tier?: EnumTierFieldUpdateOperationsInput | $Enums.Tier
-    streakDays?: IntFieldUpdateOperationsInput | number
-    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isUnder18?: BoolFieldUpdateOperationsInput | boolean
-    strikes?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    bio?: NullableStringFieldUpdateOperationsInput | string | null
-    curriculum?: NullableStringFieldUpdateOperationsInput | string | null
-    dailyMessageCount?: IntFieldUpdateOperationsInput | number
-    dailySearchCount?: IntFieldUpdateOperationsInput | number
-    lastCountReset?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    subscriptionTier?: NullableStringFieldUpdateOperationsInput | string | null
-    banned?: BoolFieldUpdateOperationsInput | boolean
-    suspended?: BoolFieldUpdateOperationsInput | boolean
-    plan?: StringFieldUpdateOperationsInput | string
-    planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    achievements?: AchievementUpdateManyWithoutUserNestedInput
-    comments?: CommentUpdateManyWithoutUserNestedInput
-    challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
-    feedPosts?: FeedPostUpdateManyWithoutUserNestedInput
-    messages?: MessageUpdateManyWithoutSenderNestedInput
-    notifications?: NotificationUpdateManyWithoutUserNestedInput
-    postLikes?: PostLikeUpdateManyWithoutUserNestedInput
-    reviewsRecv?: ReviewUpdateManyWithoutRevieweeNestedInput
-    reviewsGiven?: ReviewUpdateManyWithoutReviewerNestedInput
-    sessionsAsTutor?: SessionUpdateManyWithoutPartnerNestedInput
-    sessionsAsStudent?: SessionUpdateManyWithoutStudentNestedInput
-    studentProfile?: StudentProfileUpdateOneWithoutUserNestedInput
-    tutorApplication?: TutorApplicationUpdateOneWithoutUserNestedInput
-    tutorProfile?: TutorProfileUpdateOneWithoutUserNestedInput
-    payments?: PaymentUpdateManyWithoutUserNestedInput
-    resourcePurchases?: ResourcePurchaseUpdateManyWithoutUserNestedInput
-    resources?: ResourceUpdateManyWithoutSellerNestedInput
-    sessionPaymentsAsStudent?: SessionPaymentUpdateManyWithoutStudentNestedInput
-    sessionPaymentsAsTutor?: SessionPaymentUpdateManyWithoutTutorNestedInput
-    payouts?: TutorPayoutUpdateManyWithoutTutorNestedInput
-    matchRequests?: MatchRequestUpdateManyWithoutStudentNestedInput
-    newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
-    userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
-    creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
-    sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
-    institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
-    institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
-    tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
-    studentBookings?: BookingUpdateManyWithoutStudentNestedInput
-    tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
-    bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
-    sessionFlags?: SessionFlagUpdateManyWithoutTutorNestedInput
-  }
-
-  export type UserUncheckedUpdateWithoutPreferencesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    phone?: NullableStringFieldUpdateOperationsInput | string | null
-    name?: StringFieldUpdateOperationsInput | string
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    gender?: NullableEnumGenderFieldUpdateOperationsInput | $Enums.Gender | null
-    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    educationLevel?: NullableEnumEduLevelFieldUpdateOperationsInput | $Enums.EduLevel | null
-    formYear?: NullableIntFieldUpdateOperationsInput | number | null
-    county?: StringFieldUpdateOperationsInput | string
-    points?: IntFieldUpdateOperationsInput | number
-    tier?: EnumTierFieldUpdateOperationsInput | $Enums.Tier
-    streakDays?: IntFieldUpdateOperationsInput | number
-    lastActiveAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isUnder18?: BoolFieldUpdateOperationsInput | boolean
-    strikes?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -86130,11 +85559,10 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -86284,6 +85712,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -86295,7 +85724,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -86320,11 +85748,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -86351,6 +85779,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -86362,7 +85791,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -86387,11 +85815,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -86434,6 +85862,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -86445,7 +85874,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -86470,11 +85898,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -86501,6 +85929,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -86512,7 +85941,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -86537,11 +85965,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -86613,6 +86041,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -86624,7 +86053,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -86649,11 +86077,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -86680,6 +86108,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -86691,7 +86120,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -86716,11 +86144,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -86752,6 +86180,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -86763,7 +86192,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -86788,11 +86216,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -86819,6 +86247,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -86830,7 +86259,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -86855,11 +86283,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -86953,6 +86381,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -86964,7 +86393,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -86989,11 +86417,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -87020,6 +86448,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -87031,7 +86460,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -87056,11 +86484,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -87098,6 +86526,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -87109,7 +86538,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -87134,11 +86562,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -87165,6 +86593,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -87176,7 +86605,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -87201,11 +86629,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -87232,6 +86660,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -87243,7 +86672,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -87268,11 +86696,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -87299,6 +86727,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -87310,7 +86739,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -87335,11 +86763,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -87382,6 +86810,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -87393,7 +86822,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -87418,11 +86846,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -87449,6 +86877,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -87460,7 +86889,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -87485,11 +86913,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -87557,6 +86985,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -87568,7 +86997,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -87593,11 +87021,11 @@ export namespace Prisma {
     newsArticles?: NewsArticleCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -87624,6 +87052,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -87635,7 +87064,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -87660,11 +87088,11 @@ export namespace Prisma {
     newsArticles?: NewsArticleUncheckedCreateNestedManyWithoutAuthorInput
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -87754,6 +87182,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -87765,7 +87194,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -87790,11 +87218,11 @@ export namespace Prisma {
     newsArticles?: NewsArticleUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -87821,6 +87249,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -87832,7 +87261,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -87857,11 +87285,11 @@ export namespace Prisma {
     newsArticles?: NewsArticleUncheckedUpdateManyWithoutAuthorNestedInput
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -87946,6 +87374,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -87957,7 +87386,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -87982,11 +87410,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -88013,6 +87441,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -88024,7 +87453,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -88049,11 +87477,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -88128,6 +87556,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -88139,7 +87568,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -88164,11 +87592,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -88195,6 +87623,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -88206,7 +87635,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -88231,11 +87659,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -88303,6 +87731,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -88314,7 +87743,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -88339,11 +87767,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -88370,6 +87798,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -88381,7 +87810,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -88406,11 +87834,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -88500,6 +87928,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -88511,7 +87940,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -88536,11 +87964,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -88567,6 +87995,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -88578,7 +88007,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -88603,11 +88031,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -89036,6 +88464,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -89047,7 +88476,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -89073,10 +88501,10 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
-    institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -89103,6 +88531,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -89114,7 +88543,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -89140,10 +88568,10 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
-    institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -89243,6 +88671,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -89254,7 +88683,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -89280,10 +88708,10 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
-    institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -89310,6 +88738,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -89321,7 +88750,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -89347,10 +88775,10 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
-    institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -89428,6 +88856,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -89439,7 +88868,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -89465,10 +88893,10 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
+    institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
-    institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -89495,6 +88923,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -89506,7 +88935,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -89532,10 +88960,10 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+    institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
-    institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -89635,6 +89063,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -89646,7 +89075,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -89672,10 +89100,10 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
+    institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
-    institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -89702,6 +89130,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -89713,7 +89142,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -89739,10 +89167,10 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
-    institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -89820,6 +89248,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -89831,7 +89260,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -89857,10 +89285,10 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -89887,6 +89315,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -89898,7 +89327,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -89924,10 +89352,10 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -90027,6 +89455,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -90038,7 +89467,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -90064,10 +89492,10 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -90094,6 +89522,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -90105,7 +89534,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -90131,10 +89559,10 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -90212,6 +89640,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -90223,7 +89652,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -90249,10 +89677,10 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -90279,6 +89707,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -90290,7 +89719,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -90316,10 +89744,10 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -90419,6 +89847,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -90430,7 +89859,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -90456,10 +89884,10 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -90486,6 +89914,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -90497,7 +89926,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -90523,10 +89951,10 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -90553,6 +89981,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -90564,7 +89993,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -90590,11 +90018,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
     bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
@@ -90620,6 +90048,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -90631,7 +90060,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -90657,11 +90085,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
     bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
@@ -90703,6 +90131,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -90714,7 +90143,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -90740,11 +90168,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
     bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
@@ -90770,6 +90198,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -90781,7 +90210,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -90807,11 +90235,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
     bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
@@ -90837,6 +90265,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -90848,7 +90277,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -90874,11 +90302,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
     bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
@@ -90904,6 +90332,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -90915,7 +90344,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -90941,11 +90369,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
     bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
@@ -90976,6 +90404,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -90987,7 +90416,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -91013,11 +90441,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     bookingReminders?: BookingReminderCreateNestedManyWithoutUserInput
@@ -91043,6 +90471,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -91054,7 +90483,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -91080,11 +90508,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     bookingReminders?: BookingReminderUncheckedCreateNestedManyWithoutUserInput
@@ -91178,6 +90606,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -91189,7 +90618,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -91215,11 +90643,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
     bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
@@ -91245,6 +90673,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -91256,7 +90685,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -91282,11 +90710,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
     bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
@@ -91323,6 +90751,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -91334,7 +90763,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -91360,11 +90788,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     bookingReminders?: BookingReminderUpdateManyWithoutUserNestedInput
@@ -91390,6 +90818,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -91401,7 +90830,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -91427,11 +90855,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     bookingReminders?: BookingReminderUncheckedUpdateManyWithoutUserNestedInput
@@ -91534,6 +90962,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -91545,7 +90974,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -91571,11 +90999,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -91601,6 +91029,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -91612,7 +91041,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -91638,11 +91066,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -91735,6 +91163,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -91746,7 +91175,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -91772,11 +91200,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -91802,6 +91230,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -91813,7 +91242,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -91839,11 +91267,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -91869,6 +91297,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -91880,7 +91309,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesCreateNestedOneWithoutUserInput
     achievements?: AchievementCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptCreateNestedManyWithoutUserInput
@@ -91906,11 +91334,11 @@ export namespace Prisma {
     userCredits?: UserCreditsCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityCreateNestedManyWithoutTutorInput
     studentBookings?: BookingCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingCreateNestedManyWithoutTutorInput
@@ -91936,6 +91364,7 @@ export namespace Prisma {
     strikes?: number
     createdAt?: Date | string
     bio?: string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: string | null
     dailyMessageCount?: number
     dailySearchCount?: number
@@ -91947,7 +91376,6 @@ export namespace Prisma {
     planStartedAt?: Date | string | null
     planExpiresAt?: Date | string | null
     planBillingCycle?: string | null
-    preferences?: UserPreferencesUncheckedCreateNestedOneWithoutUserInput
     achievements?: AchievementUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     challenges?: DailyChallengeAttemptUncheckedCreateNestedManyWithoutUserInput
@@ -91973,11 +91401,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedCreateNestedOneWithoutUserInput
     creditTransactions?: CreditTransactionUncheckedCreateNestedManyWithoutUserInput
     sellerEarnings?: SellerEarningUncheckedCreateNestedManyWithoutSellerInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
-    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
-    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
     institutionStudent?: InstitutionStudentUncheckedCreateNestedOneWithoutUserInput
     institutionTutors?: InstitutionTutorUncheckedCreateNestedManyWithoutUserInput
+    institutionMembers?: InstitutionMemberUncheckedCreateNestedManyWithoutUserInput
+    uploadedDocuments?: InstitutionDocumentUncheckedCreateNestedManyWithoutUploaderInput
+    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
     tutorAvailabilities?: TutorAvailabilityUncheckedCreateNestedManyWithoutTutorInput
     studentBookings?: BookingUncheckedCreateNestedManyWithoutStudentInput
     tutorBookings?: BookingUncheckedCreateNestedManyWithoutTutorInput
@@ -92064,6 +91492,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -92075,7 +91504,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUpdateOneWithoutUserNestedInput
     achievements?: AchievementUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUpdateManyWithoutUserNestedInput
@@ -92101,11 +91529,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUpdateManyWithoutTutorNestedInput
@@ -92131,6 +91559,7 @@ export namespace Prisma {
     strikes?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
+    settings?: JsonNullValueInput | InputJsonValue
     curriculum?: NullableStringFieldUpdateOperationsInput | string | null
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
     dailySearchCount?: IntFieldUpdateOperationsInput | number
@@ -92142,7 +91571,6 @@ export namespace Prisma {
     planStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     planBillingCycle?: NullableStringFieldUpdateOperationsInput | string | null
-    preferences?: UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
     achievements?: AchievementUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     challenges?: DailyChallengeAttemptUncheckedUpdateManyWithoutUserNestedInput
@@ -92168,11 +91596,11 @@ export namespace Prisma {
     userCredits?: UserCreditsUncheckedUpdateOneWithoutUserNestedInput
     creditTransactions?: CreditTransactionUncheckedUpdateManyWithoutUserNestedInput
     sellerEarnings?: SellerEarningUncheckedUpdateManyWithoutSellerNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
-    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
-    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
     institutionStudent?: InstitutionStudentUncheckedUpdateOneWithoutUserNestedInput
     institutionTutors?: InstitutionTutorUncheckedUpdateManyWithoutUserNestedInput
+    institutionMembers?: InstitutionMemberUncheckedUpdateManyWithoutUserNestedInput
+    uploadedDocuments?: InstitutionDocumentUncheckedUpdateManyWithoutUploaderNestedInput
+    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
     tutorAvailabilities?: TutorAvailabilityUncheckedUpdateManyWithoutTutorNestedInput
     studentBookings?: BookingUncheckedUpdateManyWithoutStudentNestedInput
     tutorBookings?: BookingUncheckedUpdateManyWithoutTutorNestedInput
@@ -92462,11 +91890,10 @@ export namespace Prisma {
     createdAt?: Date | string | null
   }
 
-  export type PushSubscriptionCreateManyUserInput = {
+  export type InstitutionTutorCreateManyUserInput = {
     id?: string
-    endpoint: string
-    p256dh: string
-    auth: string
+    institutionId: string
+    status?: string
     createdAt?: Date | string
   }
 
@@ -92490,10 +91917,11 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
-  export type InstitutionTutorCreateManyUserInput = {
+  export type PushSubscriptionCreateManyUserInput = {
     id?: string
-    institutionId: string
-    status?: string
+    endpoint: string
+    p256dh: string
+    auth: string
     createdAt?: Date | string
   }
 
@@ -93276,27 +92704,24 @@ export namespace Prisma {
     createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
-  export type PushSubscriptionUpdateWithoutUserInput = {
+  export type InstitutionTutorUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    endpoint?: StringFieldUpdateOperationsInput | string
-    p256dh?: StringFieldUpdateOperationsInput | string
-    auth?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    institution?: InstitutionUpdateOneRequiredWithoutTutorsNestedInput
+  }
+
+  export type InstitutionTutorUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    institutionId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type PushSubscriptionUncheckedUpdateWithoutUserInput = {
+  export type InstitutionTutorUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    endpoint?: StringFieldUpdateOperationsInput | string
-    p256dh?: StringFieldUpdateOperationsInput | string
-    auth?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PushSubscriptionUncheckedUpdateManyWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    endpoint?: StringFieldUpdateOperationsInput | string
-    p256dh?: StringFieldUpdateOperationsInput | string
-    auth?: StringFieldUpdateOperationsInput | string
+    institutionId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -93360,24 +92785,27 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type InstitutionTutorUpdateWithoutUserInput = {
+  export type PushSubscriptionUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    institution?: InstitutionUpdateOneRequiredWithoutTutorsNestedInput
-  }
-
-  export type InstitutionTutorUncheckedUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    institutionId?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
+    endpoint?: StringFieldUpdateOperationsInput | string
+    p256dh?: StringFieldUpdateOperationsInput | string
+    auth?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type InstitutionTutorUncheckedUpdateManyWithoutUserInput = {
+  export type PushSubscriptionUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    institutionId?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
+    endpoint?: StringFieldUpdateOperationsInput | string
+    p256dh?: StringFieldUpdateOperationsInput | string
+    auth?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PushSubscriptionUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    endpoint?: StringFieldUpdateOperationsInput | string
+    p256dh?: StringFieldUpdateOperationsInput | string
+    auth?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
