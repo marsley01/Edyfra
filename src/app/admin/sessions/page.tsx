@@ -19,7 +19,7 @@ export default function AdminSessionsPage() {
 
   useEffect(() => {
     fetchSessions();
-    const interval = setInterval(fetchSessions, 10000); // Auto refresh every 10s
+    const interval = setInterval(fetchSessions, 30000); // Auto refresh every 30s
     return () => clearInterval(interval);
   }, []);
 

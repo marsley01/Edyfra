@@ -17,7 +17,7 @@ export function NotificationBell() {
       setUnread(count);
     };
     fetch();
-    const interval = setInterval(fetch, 30000);
+    const interval = setInterval(fetch, 60000);
     return () => clearInterval(interval);
   }, []);
 

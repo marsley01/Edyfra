@@ -28,7 +28,6 @@ export default function StudyPage() {
   });
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
   const aiFallbackRef = useRef(false);
 
   useEffect(() => {
@@ -134,23 +133,12 @@ export default function StudyPage() {
       )
       .subscribe();
 
-    pollingRef.current = setInterval(async () => {
-      const res = await checkMatchStatus(currentRequestId);
-      if (res.success && res.sessionId) {
-        if (timerRef.current) clearInterval(timerRef.current);
-        if (pollingRef.current) clearInterval(pollingRef.current);
-        toast.success("Connection established! Entering room...");
-        router.push(`/study-room/${res.sessionId}`);
-      }
-    }, 3000);
-
     timerRef.current = setInterval(() => {
       setTimer((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
-      if (pollingRef.current) clearInterval(pollingRef.current);
       supabase.removeChannel(channel);
     };
   }, [currentRequestId, router, supabase]);

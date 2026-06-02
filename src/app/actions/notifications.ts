@@ -92,17 +92,27 @@ const PUSH_PREF_BY_TYPE: Record<string, string> = {
   ERROR_ALERT: "announcements",
 };
 
-async function shouldSendPush(userId: string, type: string): Promise<boolean> {
+async function shouldSendPush(userId: string, type: string, preloadedPrefs?: Record<string, boolean>): Promise<boolean> {
   try {
-    const settings = await prisma.notificationSettings.findUnique({
-      where: { userId },
-    });
-    const prefs = (settings?.preferences as Record<string, boolean>) || {};
+    const prefs = preloadedPrefs ?? (() => {
+      throw new Error("no prefs");
+    })();
     const prefKey = PUSH_PREF_BY_TYPE[type];
     if (!prefKey) return true;
     return prefs[prefKey] !== false;
   } catch {
-    return true;
+    // fallback: fetch individually
+    try {
+      const settings = await prisma.notificationSettings.findUnique({
+        where: { userId },
+      });
+      const prefs = (settings?.preferences as Record<string, boolean>) || {};
+      const prefKey = PUSH_PREF_BY_TYPE[type];
+      if (!prefKey) return true;
+      return prefs[prefKey] !== false;
+    } catch {
+      return true;
+    }
   }
 }
 
@@ -164,9 +174,17 @@ export async function notifyManyUsers(
   });
 
   const { sendNotificationPush } = await import("./push");
+  // Batch-load notification preferences for all users
+  const allSettings = await prisma.notificationSettings.findMany({
+    where: { userId: { in: userIds } },
+  });
+  const prefsMap = new Map(
+    allSettings.map(s => [s.userId, s.preferences as Record<string, boolean> || {}])
+  );
+
   await Promise.allSettled(
     userIds.map(async (userId) => {
-      if (!(await shouldSendPush(userId, data.type))) return;
+      if (!(await shouldSendPush(userId, data.type, prefsMap.get(userId)))) return;
       await sendNotificationPush(userId, {
         title: data.title,
         body: data.body,
