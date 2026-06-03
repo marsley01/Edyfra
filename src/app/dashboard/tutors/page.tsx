@@ -124,9 +124,11 @@ function TutorCard({ tutor }: { tutor: any }) {
               </div>
             </div>
           </div>
-          <Badge className="bg-primary/10 text-primary border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
-            KSH {profile?.hourlyRate}/hr
-          </Badge>
+          {profile?.totalSessions > 0 && (
+            <Badge className="bg-emerald-500/10 text-emerald-500 border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
+              {profile.totalSessions} Sessions
+            </Badge>
+          )}
         </div>
 
         <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed flex-1">

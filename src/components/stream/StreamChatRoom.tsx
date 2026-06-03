@@ -26,6 +26,7 @@ import "stream-chat-react/dist/css/index.css";
 import { polyfillClipboard } from "@/utils/clipboard-polyfill";
 import { Loader2, RefreshCw, Video, VideoOff, Maximize2, X, GraduationCap, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "next-themes";
 
 import { cn } from "@/lib/utils";
 
@@ -69,9 +70,8 @@ export default function StreamChatRoom({
   const [incomingCall, setIncomingCall] = useState<{ call: any; from: string } | null>(null);
   const clientRef = useRef<StreamChat | null>(null);
   const videoClientRef = useRef<StreamVideoClient | null>(null);
-
-
-
+  const { resolvedTheme } = useTheme();
+  const chatTheme = resolvedTheme === "dark" ? "str-chat__theme-dark" : "str-chat__theme-light";
   const init = useCallback(async () => {
     setError(null);
     setIsRetrying(true);
@@ -283,7 +283,7 @@ export default function StreamChatRoom({
   // ─── Loading State ───────────────────────────────────────────────────────────
   if (!chatClient || !channel) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-8 bg-[#050505] absolute inset-0 z-50">
+      <div className="flex flex-col items-center justify-center h-full gap-8 bg-background absolute inset-0 z-50">
         <div className="relative w-24 h-24">
           <div className="absolute inset-0 border-4 border-primary/20 rounded-full animate-spin [animation-duration:3s]" />
           <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin" />
@@ -294,12 +294,12 @@ export default function StreamChatRoom({
           <div className="absolute inset-0 bg-primary/20 blur-[30px] rounded-full animate-pulse" />
         </div>
         <div className="space-y-3 text-center z-10">
-          <p className="text-sm font-black uppercase tracking-[0.2em] text-white animate-pulse">
+          <p className="text-sm font-black uppercase tracking-[0.2em] text-foreground animate-pulse">
             Connecting to Room
           </p>
           <div className="flex items-center justify-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <p className="text-[10px] text-white/50 font-medium uppercase tracking-widest">
+            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">
               Securing End-to-End Encryption...
             </p>
           </div>
@@ -312,6 +312,7 @@ export default function StreamChatRoom({
   return (
     <div className="h-full w-full edyfra-chat-wrapper flex flex-col overflow-hidden">
       <style>{`
+        /* --- Dark Theme Overrides --- */
         .str-chat__theme-dark {
           --str-chat__primary-color: var(--primary, #06B6D4);
           --str-chat__background-core-elevation-0: transparent;
@@ -327,25 +328,46 @@ export default function StreamChatRoom({
           --str-chat__border-radius-circle: 50%;
         }
         
+        /* --- Light Theme Overrides --- */
+        .str-chat__theme-light {
+          --str-chat__primary-color: var(--primary, #06B6D4);
+          --str-chat__background-core-elevation-0: transparent;
+          --str-chat__background-core-elevation-1: rgba(255, 255, 255, 0.8);
+          --str-chat__background-core-elevation-2: rgba(248, 250, 252, 0.9);
+          --str-chat__font-family: var(--font-sans), system-ui;
+          --str-chat__radius-md: 20px;
+          --str-chat__radius-lg: 32px;
+          --str-chat__text-primary: #0f172a;
+          --str-chat__text-secondary: #64748b;
+          --str-chat__border-radius-circle: 50%;
+        }
+
         /* Glassmorphism for the Container */
         .edyfra-chat-wrapper {
-          background: #050505;
+          background: var(--background, #050505);
           position: relative;
         }
 
         /* Message List Container */
-        .str-chat__theme-dark .str-chat__message-list {
-          background: #050505;
+        .str-chat__theme-dark .str-chat__message-list,
+        .str-chat__theme-light .str-chat__message-list {
+          background: var(--background, transparent);
           padding: 1.5rem;
           scrollbar-width: thin;
+        }
+        .str-chat__theme-dark .str-chat__message-list {
           scrollbar-color: rgba(255,255,255,0.1) transparent;
+        }
+        .str-chat__theme-light .str-chat__message-list {
+          scrollbar-color: rgba(0,0,0,0.1) transparent;
         }
 
         /* Date Separator */
-        .str-chat__theme-dark .str-chat__date-separator-line {
-          border-color: rgba(255,255,255,0.05);
-        }
-        .str-chat__theme-dark .str-chat__date-separator-date {
+        .str-chat__theme-dark .str-chat__date-separator-line { border-color: rgba(255,255,255,0.05); }
+        .str-chat__theme-light .str-chat__date-separator-line { border-color: rgba(0,0,0,0.05); }
+        
+        .str-chat__theme-dark .str-chat__date-separator-date,
+        .str-chat__theme-light .str-chat__date-separator-date {
           font-size: 10px;
           font-weight: 900;
           text-transform: uppercase;
@@ -354,22 +376,29 @@ export default function StreamChatRoom({
         }
         
         /* Message Bubbles - High End Style */
-        .str-chat__theme-dark .str-chat__message-simple-text-inner {
+        .str-chat__message-simple-text-inner {
           border-radius: 1.75rem !important;
           padding: 0.85rem 1.35rem !important;
           font-size: 0.9rem;
           font-weight: 500;
           line-height: 1.6;
-          box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
           position: relative;
         }
         
         /* Outgoing Messages (Me) */
-        .str-chat__theme-dark .str-chat__message--me .str-chat__message-simple-text-inner {
+        .str-chat__theme-dark .str-chat__message--me .str-chat__message-simple-text-inner,
+        .str-chat__theme-light .str-chat__message--me .str-chat__message-simple-text-inner {
           background: linear-gradient(135deg, var(--primary, #06B6D4) 0%, #0891b2 100%) !important;
           color: white;
           border-bottom-right-radius: 6px !important;
+        }
+        .str-chat__theme-dark .str-chat__message--me .str-chat__message-simple-text-inner {
           border: 1px solid rgba(255,255,255,0.1);
+          box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+        .str-chat__theme-light .str-chat__message--me .str-chat__message-simple-text-inner {
+          border: 1px solid rgba(0,0,0,0.05);
+          box-shadow: 0 10px 30px -10px rgba(6, 182, 212, 0.3);
         }
 
         /* Incoming Messages (Others) */
@@ -378,10 +407,18 @@ export default function StreamChatRoom({
           border: 1px solid rgba(255,255,255,0.05);
           border-bottom-left-radius: 6px !important;
           color: #e2e8f0;
+          box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+        .str-chat__theme-light .str-chat__message--regular .str-chat__message-simple-text-inner {
+          background: #f1f5f9 !important;
+          border: 1px solid rgba(0,0,0,0.05);
+          border-bottom-left-radius: 6px !important;
+          color: #0f172a;
+          box-shadow: 0 5px 15px -5px rgba(0,0,0,0.05);
         }
 
         /* Message Metadata (Time/Status) */
-        .str-chat__theme-dark .str-chat__message-simple__timestamp {
+        .str-chat__message-simple__timestamp {
           font-size: 9px;
           font-weight: 700;
           text-transform: uppercase;
@@ -395,11 +432,24 @@ export default function StreamChatRoom({
           border-top: 1px solid rgba(255,255,255,0.05);
           padding: 1.25rem;
         }
+        .str-chat__theme-light .str-chat__message-input {
+          background: rgba(255, 255, 255, 0.8);
+          backdrop-blur: 12px;
+          border-top: 1px solid rgba(0,0,0,0.05);
+          padding: 1.25rem;
+        }
 
         .str-chat__theme-dark .str-chat__message-input-inner {
           background: rgba(255,255,255,0.03);
-          border-radius: 1.5rem;
           border: 1px solid rgba(255,255,255,0.08);
+        }
+        .str-chat__theme-light .str-chat__message-input-inner {
+          background: #f8fafc;
+          border: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .str-chat__message-input-inner {
+          border-radius: 1.5rem;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           padding: 4px;
         }
@@ -409,13 +459,19 @@ export default function StreamChatRoom({
           background: rgba(255,255,255,0.05);
           box-shadow: 0 0 30px -10px rgba(6, 182, 212, 0.3);
         }
+        .str-chat__theme-light .str-chat__message-input-inner:focus-within {
+          border-color: var(--primary, #06B6D4);
+          background: #ffffff;
+          box-shadow: 0 0 30px -10px rgba(6, 182, 212, 0.2);
+        }
 
-        .str-chat__theme-dark .str-chat__textarea {
+        .str-chat__textarea {
           background: transparent;
-          color: #ffffff;
           font-size: 0.95rem;
           padding: 12px 16px;
         }
+        .str-chat__theme-dark .str-chat__textarea { color: #ffffff; }
+        .str-chat__theme-light .str-chat__textarea { color: #0f172a; }
         
         /* Header - Minimalist */
         .str-chat__theme-dark .str-chat__header-livestream {
@@ -424,14 +480,21 @@ export default function StreamChatRoom({
           border-bottom: 1px solid rgba(255,255,255,0.05);
           padding: 1.25rem 2rem;
         }
+        .str-chat__theme-light .str-chat__header-livestream {
+          background: rgba(255, 255, 255, 0.8);
+          backdrop-blur: 20px;
+          border-bottom: 1px solid rgba(0,0,0,0.05);
+          padding: 1.25rem 2rem;
+        }
 
-        .str-chat__theme-dark .str-chat__header-livestream-left-title {
+        .str-chat__header-livestream-left-title {
           font-size: 14px;
           font-weight: 900;
           text-transform: uppercase;
           letter-spacing: 0.2em;
-          color: #ffffff;
         }
+        .str-chat__theme-dark .str-chat__header-livestream-left-title { color: #ffffff; }
+        .str-chat__theme-light .str-chat__header-livestream-left-title { color: #0f172a; }
 
         /* Custom Scrollbar for Edyfra */
         .edyfra-chat-wrapper ::-webkit-scrollbar {
@@ -441,7 +504,7 @@ export default function StreamChatRoom({
           background: transparent;
         }
         .edyfra-chat-wrapper ::-webkit-scrollbar-thumb {
-          background: rgba(255,255,255,0.1);
+          background: rgba(128,128,128,0.2);
           border-radius: 10px;
         }
         .edyfra-chat-wrapper ::-webkit-scrollbar-thumb:hover {
@@ -459,7 +522,7 @@ export default function StreamChatRoom({
           transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
       `}</style>
-      <Chat client={chatClient} theme="str-chat__theme-dark">
+      <Chat client={chatClient} theme={chatTheme}>
         <StreamVideo client={videoClient!}>
           <div className="flex flex-col h-full relative">
             {/* Custom Premium Header */}

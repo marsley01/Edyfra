@@ -57,20 +57,39 @@ export class AIService {
       console.warn("[AIService] API Key is missing (checked ENV and DB). Returning offline message.");
       return "AI services are currently offline. Please ensure your API key is configured.";
     }
-    try {
-      const completion = await openai.chat.completions.create({
-        model,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: prompt }
-        ],
-        temperature: 0.7,
-      });
 
-      return completion.choices[0]?.message?.content || "";
-    } catch (error) {
-      console.error("[AIService] Generation error:", error);
-      return "I'm having a bit of trouble thinking right now. Let's try again in a moment.";
+    const doCall = async (m: string, timeoutMs: number): Promise<string> => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const completion = await openai.chat.completions.create(
+          {
+            model: m,
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: prompt },
+            ],
+            temperature: 0.7,
+          },
+          { signal: controller.signal as any }
+        );
+        return completion.choices[0]?.message?.content || "";
+      } finally {
+        clearTimeout(timer);
+      }
+    };
+
+    try {
+      return await doCall(model, 15000);
+    } catch (firstErr: any) {
+      console.warn("[AIService] First attempt failed, retrying with fallback model:", firstErr?.message);
+      try {
+        // Retry once with the same model and a longer timeout
+        return await doCall("openai/gpt-4o-mini", 20000);
+      } catch (retryErr: any) {
+        console.error("[AIService] Retry also failed:", retryErr?.message);
+        return `I'm having a bit of trouble thinking right now. Let's try again in a moment.`;
+      }
     }
   }
 
