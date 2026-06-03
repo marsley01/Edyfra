@@ -1,4 +1,4 @@
-import prisma from "./src/lib/prisma.ts";
+import prisma from "./src/lib/prisma";
 
 async function run() {
   const entry = await prisma.platformSettings.findUnique({

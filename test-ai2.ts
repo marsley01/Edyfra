@@ -1,4 +1,4 @@
-import { AIService } from "./src/utils/ai-service.ts";
+import { AIService } from "./src/utils/ai-service";
 import "dotenv/config";
 
 async function run() {

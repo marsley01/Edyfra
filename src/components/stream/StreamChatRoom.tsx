@@ -559,19 +559,21 @@ export default function StreamChatRoom({
                       if (!vc) return;
                       try {
                         const call = vc.call("default", channelId);
-                        const members = (memberIds || [])
-                          .filter((m) => m !== userId)
-                          .map((id) => ({ user_id: id }));
-                        await call.getOrCreate({
-                          ring: true,
-                          data: { members: [{ user_id: userId }, ...members] },
-                        });
+                        if (!hasActiveCall) {
+                          const members = (memberIds || [])
+                            .filter((m) => m !== userId)
+                            .map((id) => ({ user_id: id }));
+                          await call.getOrCreate({
+                            ring: true,
+                            data: { members: [{ user_id: userId }, ...members] },
+                          });
+                        }
                         await call.join();
                         setActiveCall(call);
                         setIsVideoActive(true);
                         setHasActiveCall(true);
                       } catch (err) {
-                        console.error("Failed to start video call:", err);
+                        console.error("Failed to start/join video call:", err);
                       }
                     }}
                     variant={hasActiveCall ? "default" : "outline"}

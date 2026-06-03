@@ -27,12 +27,10 @@ export function VideoCallUI({ onLeave }: { onLeave: () => void }) {
 
   return (
     <div className="relative h-full w-full bg-black overflow-hidden rounded-2xl md:rounded-[2rem] border border-white/10 shadow-2xl flex flex-col">
-      <StreamCall>
-        <SpeakerLayout participantsBarPosition="bottom" />
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50">
-           <CallControls onLeave={onLeave} />
-        </div>
-      </StreamCall>
+      <SpeakerLayout participantsBarPosition="bottom" />
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50">
+         <CallControls onLeave={onLeave} />
+      </div>
       
       {/* Custom Header for the Video Call */}
       <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center bg-gradient-to-b from-black/60 to-transparent z-10">
