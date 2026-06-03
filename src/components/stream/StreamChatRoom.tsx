@@ -283,11 +283,27 @@ export default function StreamChatRoom({
   // ─── Loading State ───────────────────────────────────────────────────────────
   if (!chatClient || !channel) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-4">
-        <LoadingIndicator />
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-          Connecting to chat...
-        </p>
+      <div className="flex flex-col items-center justify-center h-full gap-8 bg-[#050505] absolute inset-0 z-50">
+        <div className="relative w-24 h-24">
+          <div className="absolute inset-0 border-4 border-primary/20 rounded-full animate-spin [animation-duration:3s]" />
+          <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="absolute inset-0 flex items-center justify-center bg-primary/10 rounded-full m-2 backdrop-blur-sm">
+            <GraduationCap className="h-8 w-8 text-primary animate-pulse" />
+          </div>
+          {/* Glowing effect behind */}
+          <div className="absolute inset-0 bg-primary/20 blur-[30px] rounded-full animate-pulse" />
+        </div>
+        <div className="space-y-3 text-center z-10">
+          <p className="text-sm font-black uppercase tracking-[0.2em] text-white animate-pulse">
+            Connecting to Room
+          </p>
+          <div className="flex items-center justify-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <p className="text-[10px] text-white/50 font-medium uppercase tracking-widest">
+              Securing End-to-End Encryption...
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
