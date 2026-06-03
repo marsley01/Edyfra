@@ -16,10 +16,15 @@ export default async function AdminDashboard() {
   }
 
   const isFounder = isFounderEmail(user.email);
-  const prismaUser = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { role: true },
-  });
+  let prismaUser: { role: string } | null = null;
+  try {
+    prismaUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { role: true },
+    });
+  } catch (err) {
+    console.error("[Admin] Failed to fetch user role:", err);
+  }
 
   const isDbAdmin = prismaUser?.role === Role.ADMIN;
 
@@ -27,45 +32,87 @@ export default async function AdminDashboard() {
     redirect("/dashboard");
   }
 
-  const metrics = await getAdminDashboardMetrics();
-  const pendingApplications = await getTutorApplications();
-  const analytics = await getAdminAnalytics();
+  // Fetch all data in parallel with individual error boundaries
+  // This prevents a single failing query from crashing the entire page
+  const [metrics, pendingApplications, analytics] = await Promise.all([
+    getAdminDashboardMetrics(),
+    getTutorApplications(),
+    getAdminAnalytics(),
+  ]);
 
-  // Additional tutor metrics
-  const tutorMetrics = await prisma.tutorProfile.aggregate({
-    _avg: { responseRate: true, rating: true },
-    _sum: { sessionsAssigned: true, sessionsResponded: true },
-    _count: true,
-  });
+  // Run remaining queries in parallel, each with its own try/catch
+  const [tutorMetrics, allTutorsForIdle, sessionMetrics, peakHours, bookingMetrics, recentSignups] =
+    await Promise.all([
+      // Tutor aggregate metrics
+      prisma.tutorProfile.aggregate({
+        _avg: { responseRate: true, rating: true },
+        _sum: { sessionsAssigned: true, sessionsResponded: true },
+        _count: true,
+      }).catch((err) => {
+        console.error("[Admin] tutorProfile.aggregate failed:", err);
+        return { _avg: { responseRate: null, rating: null }, _sum: { sessionsAssigned: null, sessionsResponded: null }, _count: 0 };
+      }),
 
-  const allTutorsForIdle = await prisma.user.findMany({
-    where: {
-      role: Role.TUTOR,
-      tutorProfile: {
-        currentActiveSessions: 0,
-        totalAssignmentsToday: 0,
-      },
-    },
-    include: { tutorProfile: true },
-  });
+      // Idle tutors
+      prisma.user.findMany({
+        where: {
+          role: Role.TUTOR,
+          tutorProfile: {
+            currentActiveSessions: 0,
+            totalAssignmentsToday: 0,
+          },
+        },
+        include: { tutorProfile: true },
+      }).catch((err) => {
+        console.error("[Admin] idle tutors query failed:", err);
+        return [];
+      }),
+
+      // Session groupBy
+      prisma.session.groupBy({
+        by: ["subject"],
+        _count: true,
+        where: { status: "COMPLETED" },
+        orderBy: { _count: { subject: "desc" } },
+        take: 5,
+      }).catch((err) => {
+        console.error("[Admin] session.groupBy failed:", err);
+        return [];
+      }),
+
+      // Peak hours
+      prisma.session.findMany({
+        select: { startedAt: true },
+        where: { status: "COMPLETED", startedAt: { not: null } },
+      }).catch((err) => {
+        console.error("[Admin] peak hours query failed:", err);
+        return [];
+      }),
+
+      // Booking counts (all in one Promise.all with individual catches)
+      Promise.all([
+        prisma.booking.count({ where: { status: "confirmed" } }).catch(() => 0),
+        prisma.booking.count({ where: { status: "declined" } }).catch(() => 0),
+        prisma.booking.count({ where: { status: "student_no_show" } }).catch(() => 0),
+        prisma.booking.count({ where: { status: "tutor_no_show" } }).catch(() => 0),
+        prisma.booking.count({ where: { date: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } } }).catch(() => 0),
+      ]),
+
+      // Recent signups
+      prisma.analyticsEvent.findMany({
+        where: { eventType: "signup", createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
+        take: 200,
+        orderBy: { createdAt: "desc" },
+      }).catch((err) => {
+        console.error("[Admin] analytics signups query failed:", err);
+        return [];
+      }),
+    ]);
+
   const idleTutors = allTutorsForIdle.filter(t => {
-    const availability = t.tutorProfile?.availability as any;
+    const availability = (t as any).tutorProfile?.availability as any;
     return availability?.isOnline === true;
   }).length;
-
-  // Session metrics
-  const sessionMetrics = await prisma.session.groupBy({
-    by: ["subject"],
-    _count: true,
-    where: { status: "COMPLETED" },
-    orderBy: { _count: { subject: "desc" } },
-    take: 5,
-  });
-
-  const peakHours = await prisma.session.findMany({
-    select: { startedAt: true },
-    where: { status: "COMPLETED", startedAt: { not: null } },
-  });
 
   const hourCounts: Record<number, number> = {};
   peakHours.forEach(s => {
@@ -79,21 +126,6 @@ export default async function AdminDashboard() {
     .sort((a, b) => b.count - a.count)
     .slice(0, 6);
 
-  // Booking metrics
-  const bookingMetrics = await Promise.all([
-    prisma.booking.count({ where: { status: "confirmed" } }),
-    prisma.booking.count({ where: { status: "declined" } }),
-    prisma.booking.count({ where: { status: "student_no_show" } }),
-    prisma.booking.count({ where: { status: "tutor_no_show" } }),
-    prisma.booking.count({ where: { date: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } } }),
-  ]);
-
-  // Recent signups for source tracking
-  const recentSignups = await prisma.analyticsEvent.findMany({
-    where: { eventType: "signup", createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
-    take: 200,
-    orderBy: { createdAt: "desc" },
-  });
   const referralSignups = recentSignups.filter(e => {
     const meta = e.metadata as any;
     return meta?.referred === true;
