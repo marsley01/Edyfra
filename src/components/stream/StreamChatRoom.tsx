@@ -71,7 +71,13 @@ export default function StreamChatRoom({
   const clientRef = useRef<StreamChat | null>(null);
   const videoClientRef = useRef<StreamVideoClient | null>(null);
   const { resolvedTheme } = useTheme();
-  const chatTheme = resolvedTheme === "dark" ? "str-chat__theme-dark" : "str-chat__theme-light";
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const chatTheme = mounted && resolvedTheme === "dark" ? "str-chat__theme-dark" : "str-chat__theme-light";
   const init = useCallback(async () => {
     setError(null);
     setIsRetrying(true);
@@ -344,7 +350,7 @@ export default function StreamChatRoom({
 
         /* Glassmorphism for the Container */
         .edyfra-chat-wrapper {
-          background: var(--background, #050505);
+          background: transparent;
           position: relative;
         }
 

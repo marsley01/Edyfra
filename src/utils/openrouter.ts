@@ -24,7 +24,7 @@ export async function generateAIResponse(
 ): Promise<string> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
-    return "AI service is not configured. Please set OPENROUTER_API_KEY in your environment.";
+    throw new Error("AI service is not configured. Please set OPENROUTER_API_KEY in your environment.");
   }
 
   const systemPrompt = `You are an expert tutor assistant on the Edyfra platform. 
