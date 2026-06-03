@@ -160,7 +160,7 @@ model Session {
   mpesaRef      String?
   messages      Message[]
   review        Review?
-  partner       User?            @relation("TutorSessions", fields: [partnerId], references: [id])
+  partner       User?            @relation("TutorSessions", fields: [partnerId], references: [id], onDelete: SetNull)
   student       User             @relation("StudentSessions", fields: [studentId], references: [id], onDelete: Cascade)
   payments      SessionPayment[]
 
@@ -178,7 +178,7 @@ model Message {
   flagged   Boolean  @default(false)
   createdAt DateTime @default(now())
   sender    User?    @relation(fields: [senderId], references: [id], onDelete: SetNull)
-  session   Session  @relation(fields: [sessionId], references: [id])
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 }
 
 model Review {
@@ -189,9 +189,9 @@ model Review {
   rating     Int
   comment    String?
   createdAt  DateTime @default(now())
-  reviewee   User     @relation("Reviewee", fields: [revieweeId], references: [id])
-  reviewer   User     @relation("Reviewer", fields: [reviewerId], references: [id])
-  session    Session  @relation(fields: [sessionId], references: [id])
+  reviewee   User     @relation("Reviewee", fields: [revieweeId], references: [id], onDelete: Cascade)
+  reviewer   User     @relation("Reviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+  session    Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 }
 
 model DailyChallenge {
@@ -287,7 +287,7 @@ model PostLike {
   postId    String
   userId    String
   createdAt DateTime @default(now())
-  post      FeedPost @relation(fields: [postId], references: [id])
+  post      FeedPost @relation(fields: [postId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId])
@@ -299,7 +299,7 @@ model Comment {
   userId    String
   content   String
   createdAt DateTime @default(now())
-  post      FeedPost @relation(fields: [postId], references: [id])
+  post      FeedPost @relation(fields: [postId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -371,7 +371,7 @@ model NewsArticle {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime? @updatedAt
 
-  author User? @relation(fields: [authorId], references: [id])
+  author User? @relation(fields: [authorId], references: [id], onDelete: SetNull)
 }
 
 model UserCredits {
@@ -775,7 +775,7 @@ model InstitutionDocument {
   createdAt     DateTime @default(now())
 
   institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-  uploader    User        @relation(fields: [uploadedBy], references: [id])
+  uploader    User        @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
 
   @@map("institution_documents")
 }

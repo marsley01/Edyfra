@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { getUserData } from "./user";
 import { isFounderEmail } from "@/utils/admin-guard";
 import { notifyUser } from "./notifications";
+import { generateReferralCode } from "@/utils/referral";
 export async function login(formData: FormData) {
   const supabase = await createClient();
 
@@ -70,14 +71,7 @@ export async function login(formData: FormData) {
   }
 }
 
-function generateReferralCode(length = 6): string {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let code = "";
-  for (let i = 0; i < length; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return code;
-}
+// generateReferralCode is now imported from @/utils/referral
 
 export async function signup(formData: FormData) {
   const supabase = await createClient();
@@ -111,7 +105,7 @@ export async function signup(formData: FormData) {
 
   // Create the user in Prisma and handle referral
   if (data.user) {
-    const generatedCode = generateReferralCode();
+    const generatedCode = generateReferralCode(name);
     let referredBy: string | null = null;
 
     // Check if referral code was provided

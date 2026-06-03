@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { SESSION_CONFIG, TUTOR_CONFIG, TIER_CONFIG } from "@/lib/config";
+import { generateReferralCode } from "@/utils/referral";
 
 const getRoleFromMetadata = (metadataRole: string | undefined): Role => {
   if (!metadataRole) return Role.STUDENT; // Default role if metadata is missing
@@ -61,6 +62,7 @@ export async function getUserData(): Promise<(User & { studentProfile: StudentPr
           lastActiveAt: new Date(),
           avatar: user.user_metadata?.avatar || null,
           gender: metaGender === "MALE" ? Gender.MALE : metaGender === "FEMALE" ? Gender.FEMALE : undefined,
+          referralCode: generateReferralCode(user.user_metadata?.name || user.user_metadata?.full_name || "User"),
         },
         include: {
           studentProfile: true,
@@ -87,6 +89,15 @@ export async function getUserData(): Promise<(User & { studentProfile: StudentPr
             studentProfile: true,
             tutorProfile: true
           }
+        });
+      }
+
+      // Backfill referral code if missing
+      if (!prismaUser.referralCode) {
+        prismaUser = await prisma.user.update({
+          where: { id: prismaUser.id },
+          data: { referralCode: generateReferralCode(prismaUser.name) },
+          include: { studentProfile: true, tutorProfile: true }
         });
       }
     }
@@ -227,6 +238,7 @@ export async function updateUserRole(role: "STUDENT" | "TUTOR") {
           tier: Tier.BRONZE,
           avatar: user.user_metadata?.avatar || null,
           gender: metaGender === "MALE" ? Gender.MALE : metaGender === "FEMALE" ? Gender.FEMALE : undefined,
+          referralCode: generateReferralCode(user.user_metadata?.name || user.user_metadata?.full_name || "New User"),
         }
       });
     }

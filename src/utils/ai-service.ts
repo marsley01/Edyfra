@@ -6,27 +6,40 @@ const DEFAULT_MODEL = "openai/gpt-4o-mini";
 let openaiInstance: OpenAI | null = null;
 let currentKey: string | null = null;
 
-async function getAIKeyFromDB(): Promise<string | null> {
+async function getAIKeyFromDB(): Promise<{ key: string | null, provider: string | null }> {
   try {
     const entry = await prisma.platformSettings.findUnique({
       where: { key: "global" },
       select: { value: true },
     });
     const value = entry?.value as Record<string, unknown> | undefined;
-    return (value?.googleAiKey as string) || null;
+    return {
+      key: (value?.googleAiKey as string) || null,
+      provider: (value?.aiProvider as string) || "openrouter",
+    };
   } catch (err) {
     console.error("[AIService] Failed to fetch key from DB:", err);
-    return null;
+    return { key: null, provider: null };
   }
 }
+
+let currentProvider: string = "openrouter";
 
 async function getOpenAI() {
   // 1. Try environment variable first
   let apiKey: string | undefined = process.env.OPENROUTER_API_KEY;
+  let provider = "openrouter";
 
   // 2. Fallback to database settings (no admin check needed)
   if (!apiKey) {
-    apiKey = (await getAIKeyFromDB()) ?? undefined;
+    const dbConfig = await getAIKeyFromDB();
+    apiKey = dbConfig.key ?? undefined;
+    provider = dbConfig.provider || "openrouter";
+  }
+
+  // Auto-detect Gemini keys if env var was accidentally used for Gemini
+  if (apiKey?.startsWith("AIzaSy")) {
+    provider = "gemini";
   }
 
   if (!apiKey) return null;
@@ -34,13 +47,19 @@ async function getOpenAI() {
   // If the key has changed, re-initialize the instance
   if (!openaiInstance || currentKey !== apiKey) {
     currentKey = apiKey;
+    currentProvider = provider;
+    
+    const baseURL = provider === "gemini" 
+      ? "https://generativelanguage.googleapis.com/v1beta/openai/" 
+      : "https://openrouter.ai/api/v1";
+
     openaiInstance = new OpenAI({
-      baseURL: "https://openrouter.ai/api/v1",
+      baseURL,
       apiKey: apiKey,
-      defaultHeaders: {
+      defaultHeaders: provider === "openrouter" ? {
         "HTTP-Referer": "https://edyfra-v2.vercel.app",
         "X-Title": "Edyfra",
-      },
+      } : undefined,
     });
   }
   return openaiInstance;
@@ -59,6 +78,11 @@ export class AIService {
     }
 
     const doCall = async (m: string, timeoutMs: number): Promise<string> => {
+      // Translate OpenRouter model to Gemini model if using Gemini provider
+      if (currentProvider === "gemini" && m.includes("gpt-4o-mini")) {
+        m = "gemini-1.5-flash";
+      }
+      
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeoutMs);
       try {
@@ -85,7 +109,7 @@ export class AIService {
       console.warn("[AIService] First attempt failed, retrying with fallback model:", firstErr?.message);
       try {
         // Retry once with the same model and a longer timeout
-        return await doCall("openai/gpt-4o-mini", 20000);
+        return await doCall(model, 20000);
       } catch (retryErr: any) {
         console.error("[AIService] Retry also failed:", retryErr?.message);
         return `I'm having a bit of trouble thinking right now. Let's try again in a moment.`;
