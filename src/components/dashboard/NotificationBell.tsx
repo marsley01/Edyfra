@@ -4,20 +4,61 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell } from "lucide-react";
-import { getUnreadCount } from "@/app/actions/notifications";
+import { getUnreadCount, getLatestNotification } from "@/app/actions/notifications";
 
 export function NotificationBell() {
   const [unread, setUnread] = useState(0);
+  const [lastNotifId, setLastNotifId] = useState<string | null>(null);
   const pathname = usePathname();
   const href = pathname.startsWith("/tutor") ? "/tutor/notifications" : "/dashboard/notifications";
 
   useEffect(() => {
-    const fetch = async () => {
-      const count = await getUnreadCount();
-      setUnread(count);
+    // Request notification permission if not already granted/denied
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+
+    const fetchCounts = async () => {
+      try {
+        const [count, latest] = await Promise.all([
+          getUnreadCount(),
+          getLatestNotification(),
+        ]);
+        
+        setUnread(count);
+
+        if (latest) {
+          setLastNotifId((prev) => {
+            // If we have a previous ID and this is a new one
+            if (prev && prev !== latest.id) {
+              // Only notify if it was created recently (e.g., within last 5 minutes)
+              const createdAge = Date.now() - new Date(latest.createdAt).getTime();
+              if (createdAge < 5 * 60 * 1000) {
+                // Play sound
+                const audio = new Audio("/sounds/ding.mp3");
+                audio.play().catch(e => console.warn("Audio play blocked", e));
+
+                // Show browser notification
+                if ("Notification" in window && Notification.permission === "granted") {
+                  new Notification(latest.title || "New Notification", {
+                    body: latest.body || "",
+                    icon: "/icons/icon-192.png",
+                  });
+                }
+              }
+            }
+            // Always update to the latest ID
+            return latest.id;
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch notifications for bell", err);
+      }
     };
-    fetch();
-    const interval = setInterval(fetch, 60000);
+
+    fetchCounts();
+    // Poll every 30 seconds for snappier foreground notifications
+    const interval = setInterval(fetchCounts, 30000);
     return () => clearInterval(interval);
   }, []);
 

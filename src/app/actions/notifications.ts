@@ -20,6 +20,21 @@ export async function getNotifications() {
   }
 }
 
+export async function getLatestNotification() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  try {
+    return await prisma.notification.findFirst({
+      where: { userId: user.id },
+      orderBy: { createdAt: "desc" },
+    });
+  } catch {
+    return null;
+  }
+}
+
 export async function getUnreadCount() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
