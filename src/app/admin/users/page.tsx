@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getAllUsers, deleteUser, updateUserRoleAdmin } from "@/app/actions/admin";
+import { getAllUsers, deleteUser, deleteUsersBatch, updateUserRoleAdmin } from "@/app/actions/admin";
 import {
   Users, Search, Trash2, Shield,
   MoreVertical, Mail, Calendar, MapPin,
@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
 import { cn } from "@/lib/utils";
 import {
@@ -26,6 +27,7 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
   useEffect(() => {
     fetchUsers();
@@ -52,9 +54,26 @@ export default function AdminUsersPage() {
         return;
       }
       toast.success("User deleted successfully.");
+      setSelectedUsers(prev => prev.filter(uId => uId !== id));
       fetchUsers();
     } catch (err) {
       toast.error("Failed to delete user.");
+    }
+  };
+
+  const handleBatchDelete = async () => {
+    if (!confirm(`Are you sure you want to delete ${selectedUsers.length} users?`)) return;
+    try {
+      const result = await deleteUsersBatch(selectedUsers);
+      if (result?.error) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success(`Successfully deleted ${selectedUsers.length} users.`);
+      setSelectedUsers([]);
+      fetchUsers();
+    } catch (err) {
+      toast.error("Failed to delete users.");
     }
   };
 
@@ -69,9 +88,25 @@ export default function AdminUsersPage() {
   };
 
   const filteredUsers = users.filter(u =>
-    u.name.toLowerCase().includes(search.toLowerCase()) ||
-    u.email.toLowerCase().includes(search.toLowerCase())
+    (u.name && u.name.toLowerCase().includes(search.toLowerCase())) ||
+    (u.email && u.email.toLowerCase().includes(search.toLowerCase()))
   );
+
+  const toggleSelectAll = () => {
+    if (selectedUsers.length === filteredUsers.length) {
+      setSelectedUsers([]);
+    } else {
+      setSelectedUsers(filteredUsers.map(u => u.id));
+    }
+  };
+
+  const toggleSelectUser = (id: string) => {
+    if (selectedUsers.includes(id)) {
+      setSelectedUsers(selectedUsers.filter(uId => uId !== id));
+    } else {
+      setSelectedUsers([...selectedUsers, id]);
+    }
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -92,15 +127,30 @@ export default function AdminUsersPage() {
       </div>
 
       <Card className="border-white/10 bg-black/40 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden">
-        <CardHeader className="p-8 border-b border-white/5 flex flex-row items-center justify-between">
-          <CardTitle className="text-xl font-black flex items-center gap-2">
-            <Users className="h-5 w-5 text-primary" /> Active Population
-          </CardTitle>
-          <div className="flex items-center gap-2">
+        <CardHeader className="p-8 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <CardTitle className="text-xl font-black flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" /> Active Population
+            </CardTitle>
             <Badge className="bg-primary/10 text-primary border-none font-black text-[9px] px-3 py-1 uppercase tracking-widest">
               {filteredUsers.length} Nodes Detected
             </Badge>
           </div>
+          {selectedUsers.length > 0 && (
+            <div className="flex items-center gap-4 animate-in slide-in-from-right-4">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                {selectedUsers.length} Selected
+              </span>
+              <Button 
+                onClick={handleBatchDelete}
+                variant="destructive" 
+                size="sm" 
+                className="h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2"
+              >
+                <Trash2 className="h-3.5 w-3.5" /> Terminate Selected
+              </Button>
+            </div>
+          )}
         </CardHeader>
         <CardContent className="p-0">
           {loading ? (
@@ -113,6 +163,13 @@ export default function AdminUsersPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-white/5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                    <th className="p-6 w-12">
+                      <Checkbox 
+                        checked={selectedUsers.length > 0 && selectedUsers.length === filteredUsers.length}
+                        onCheckedChange={toggleSelectAll}
+                        className="border-white/20 data-[state=checked]:bg-primary"
+                      />
+                    </th>
                     <th className="p-6">User Identity</th>
                     <th className="p-6">Role</th>
                     <th className="p-6">Origin</th>
@@ -123,6 +180,13 @@ export default function AdminUsersPage() {
                 <tbody className="divide-y divide-white/5">
                   {filteredUsers.map((u) => (
                     <tr key={u.id} className="hover:bg-white/[0.02] transition-colors group">
+                      <td className="p-6">
+                        <Checkbox 
+                          checked={selectedUsers.includes(u.id)}
+                          onCheckedChange={() => toggleSelectUser(u.id)}
+                          className="border-white/20 data-[state=checked]:bg-primary"
+                        />
+                      </td>
                       <td className="p-6">
                         <div className="flex items-center gap-4">
                           <AvatarPremium seed={u.id} src={u.avatar} name={u.name} size="md" />
