@@ -70,38 +70,10 @@ export async function POST(request: Request) {
       }
     }
 
-    if (!shouldRespond) {
-      return NextResponse.json({ success: true, message: "Skipped — no AI trigger" });
-    }
-
-    // Generate AI Response
-    const systemPrompt = `
-      You are Mash AI, a supportive and expert Kenyan tutor on the Edyfra platform.
-      Session Context:
-      - Subject: ${session.subject}
-      - Topic: ${session.topic || "General"}
-      - Session Type: ${session.tier === "MASH" ? "One-on-one AI tutoring" : "Study group with human participants"}
-
-      Guidelines:
-      - Be encouraging, professional, and clear.
-      - Do NOT just give the final answer. Guide the student with questions and hints.
-      - Use standard Kenyan English (professional tone).
-      - If they ask something outside of ${session.subject}, gently remind them to stay on topic.
-    `;
-
-    const aiResponse = await AIService.generateCompletion(prompt, systemPrompt);
-
-    // Ensure mash-ai user exists in Stream, then post response
-    const client = StreamChat.getInstance(STREAM_KEY, STREAM_SECRET);
-    await client.upsertUser({ id: "mash-ai", name: "Mash AI", role: "user" });
-
-    const channel = client.channel("messaging", channelId);
-    await channel.sendMessage({
-      text: aiResponse,
-      user_id: "mash-ai",
-    });
-
-    return NextResponse.json({ success: true });
+    // The AI generation logic has been removed from this webhook to prevent duplicate responses.
+    // Client-side triggers via `handleMashMention` in StreamChatRoom.tsx now fully handle all Mash AI logic,
+    // including custom fallback messages, without being restricted by short webhook timeouts.
+    return NextResponse.json({ success: true, message: "Handled by client-side server action" });
 
   } catch (error: any) {
     console.error("[StreamWebhook] Error:", error);

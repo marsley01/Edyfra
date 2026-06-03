@@ -22,11 +22,8 @@ export async function generateAIResponse(
   subject?: string,
   topic?: string
 ): Promise<string> {
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) {
-    throw new Error("AI service is not configured. Please set OPENROUTER_API_KEY in your environment.");
-  }
-
+  const { AIService } = await import("@/utils/ai-service");
+  
   const systemPrompt = `You are an expert tutor assistant on the Edyfra platform. 
 Subject context: ${subject || "general"}
 Topic context: ${topic || "general"}
@@ -35,43 +32,13 @@ Provide clear, educational responses appropriate for the academic level.
 Use simple language and include examples where helpful.`;
 
   try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
-        "X-Title": "Edyfra"
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.0-flash-exp:free",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: prompt }
-        ]
-      })
-    });
-
-    if (!response.ok) {
-      console.error("OpenRouter API error:", await response.text());
-      throw new Error(`OpenRouter API returned ${response.status}`);
+    const response = await AIService.generateCompletion(prompt, systemPrompt);
+    if (response && !response.includes("having a bit of trouble thinking")) {
+      return response;
     }
-
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || "";
-    if (content) return content;
-    throw new Error("Empty OpenRouter response");
+    throw new Error(response || "Empty response from AI");
   } catch (error) {
-    console.error("OpenRouter error, trying Google AI fallback:", error);
-    if (genAI) {
-      try {
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-        const result = await model.generateContent(`${systemPrompt}\n\n${prompt}`);
-        return result.response.text();
-      } catch (googleErr) {
-        console.error("Google AI fallback failed:", googleErr);
-      }
-    }
+    console.error("AI generation failed:", error);
     throw error instanceof Error ? error : new Error("AI generation failed");
   }
 }
