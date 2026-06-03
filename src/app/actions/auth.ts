@@ -80,10 +80,15 @@ export async function signup(formData: FormData) {
   const password = formData.get("password") as string;
   const name = formData.get("name") as string;
   const gender = formData.get("gender") as string;
+  const customAvatarUrl = formData.get("avatarUrl") as string;
   const avatarStyle = formData.get("avatar") as string;
   const referralCode = formData.get("referral_code") as string;
-  const avatarUrl = `https://api.dicebear.com/7.x/${avatarStyle}/svg?seed=${encodeURIComponent(name || email)}`;
+  
+  const defaultAvatarUrl = avatarStyle 
+    ? `https://api.dicebear.com/7.x/${avatarStyle}/svg?seed=${encodeURIComponent(name || email)}`
+    : `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(name || email)}`;
 
+  const avatarUrl = customAvatarUrl || defaultAvatarUrl;
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
