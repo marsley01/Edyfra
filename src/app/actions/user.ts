@@ -36,7 +36,7 @@ export async function getUserData(): Promise<(User & { studentProfile: StudentPr
       where: {
         OR: [
           { id: user.id },
-          { email: user.email! }
+          ...(user.email ? [{ email: user.email }] : [])
         ]
       },
       include: {
@@ -51,7 +51,7 @@ export async function getUserData(): Promise<(User & { studentProfile: StudentPr
       prismaUser = await prisma.user.create({
         data: {
           id: user.id,
-          email: user.email!,
+          email: user.email || `${user.id}@placeholder.edyfra.com`,
           name: user.user_metadata?.name || user.user_metadata?.full_name || "User",
           role: getRoleFromMetadata(user.user_metadata?.role),
           educationLevel: EduLevel.HIGH_SCHOOL,

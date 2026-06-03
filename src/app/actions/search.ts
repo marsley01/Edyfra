@@ -11,26 +11,43 @@ export interface Student {
   avatar_url?: string;
 }
 
+import prisma from "@/lib/prisma";
+import { Role } from "@/generated/client";
+
 export async function searchStudents(query: string) {
   if (!query || query.length < 2) return [];
 
-  const supabase = await createClient();
+  const normalizedQuery = query.trim().toLowerCase();
 
-  const { data, error } = await supabase
-    .rpc("search_users", { search_term: query });
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        role: Role.STUDENT,
+        OR: [
+          { name: { contains: normalizedQuery, mode: "insensitive" } },
+          { county: { contains: normalizedQuery, mode: "insensitive" } },
+          {
+            studentProfile: {
+              subjects: {
+                hasSome: [normalizedQuery, normalizedQuery.charAt(0).toUpperCase() + normalizedQuery.slice(1)]
+              }
+            }
+          }
+        ]
+      },
+      take: 20
+    });
 
-  if (error) {
+    return users.map((user) => ({
+      id: user.id,
+      name: user.name,
+      school: user.county || "Kenya",
+      course: "",
+      username: user.name.toLowerCase().replace(/\s/g, "_"),
+      avatar_url: user.avatar || `https://api.dicebear.com/7.x/notionists/svg?seed=${user.id}`
+    }));
+  } catch (error) {
     console.error("Search error:", error);
     return [];
   }
-
-  type SearchResult = { id: string; name: string; school?: string; role?: string; avatar?: string };
-  return (data as SearchResult[]).map((user) => ({
-    id: user.id,
-    name: user.name,
-    school: user.school,
-    course: "",
-    username: user.name.toLowerCase().replace(/\s/g, "_"),
-    avatar_url: user.avatar || `https://api.dicebear.com/7.x/notionists/svg?seed=${user.id}`
-  }));
 }

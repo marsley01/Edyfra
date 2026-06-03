@@ -126,7 +126,10 @@ export async function getVerifiedTutors(level?: EduLevel) {
       }
     };
     if (level) {
-      whereClause.tutorProfile.levelsTaught = { has: level };
+      whereClause.OR = [
+        { tutorProfile: { levelsTaught: { has: level } } },
+        { tutorProfile: { levelsTaught: { isEmpty: true } } }
+      ];
     }
 
     return await prisma.user.findMany({
