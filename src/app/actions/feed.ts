@@ -34,7 +34,7 @@ export async function createPost(content: string, subject?: string, image?: stri
   }
 }
 
-export async function getPosts(filter?: string) {
+export async function getPosts(filter?: string, topic?: string | null) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -50,6 +50,10 @@ export async function getPosts(filter?: string) {
 
     if (filter === "school" && userData.educationLevel) {
       where.level = userData.educationLevel;
+    }
+    
+    if (topic) {
+      where.subject = topic;
     }
 
     return await prisma.feedPost.findMany({

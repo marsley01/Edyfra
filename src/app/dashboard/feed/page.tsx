@@ -36,10 +36,16 @@ interface Post {
   comments: any[];
 }
 
+import { useSearchParams } from "next/navigation";
+
 export default function FeedPage() {
+  const searchParams = useSearchParams();
+  const initialTopic = searchParams.get("topic") || null;
+
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
+  const [topic, setTopic] = useState<string | null>(initialTopic);
   const [newPostContent, setNewPostContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -54,7 +60,7 @@ export default function FeedPage() {
     init();
     loadPosts();
     fetchTechNews();
-  }, [filter]);
+  }, [filter, topic]);
 
   const fetchTechNews = async () => {
     try {
@@ -69,7 +75,7 @@ export default function FeedPage() {
    const loadPosts = async () => {
       setLoading(true);
       try {
-        const data = await getPosts(filter);
+        const data = await getPosts(filter, topic);
        // Map Prisma types to client-side Post interface
        const mappedData = data.map(post => ({
          id: post.id,
@@ -99,7 +105,7 @@ export default function FeedPage() {
     if (!newPostContent.trim()) return;
     setIsSubmitting(true);
     try {
-      const result = await createPost(newPostContent);
+      const result = await createPost(newPostContent, topic || undefined);
       if (result.success) {
         setNewPostContent("");
         toast.success("Shared with the community!");
@@ -163,7 +169,16 @@ export default function FeedPage() {
          {/* Header & Filters */}
          <div className="space-y-4">
             <div className="flex items-center justify-between">
-               <h1 className="text-2xl lg:text-3xl font-black tracking-tighter">Community <span className="text-primary">Feed</span></h1>
+               <h1 className="text-2xl lg:text-3xl font-black tracking-tighter">
+                 {topic ? (
+                   <span className="flex items-center gap-2">
+                     <span className="text-primary">{topic}</span> Discussion
+                     <Button variant="ghost" size="sm" onClick={() => setTopic(null)} className="h-6 px-2 text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground">Clear</Button>
+                   </span>
+                 ) : (
+                   <>Community <span className="text-primary">Feed</span></>
+                 )}
+               </h1>
                <div className="flex bg-secondary p-1 rounded-xl gap-1">
                   {["all", "following", "school"].map((f) => (
                      <button

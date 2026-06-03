@@ -35,7 +35,7 @@ export function NotificationBell() {
               const createdAge = Date.now() - new Date(latest.createdAt).getTime();
               if (createdAge < 5 * 60 * 1000) {
                 // Play sound
-                const audio = new Audio("/sounds/ding.mp3");
+                const audio = new Audio("/sounds/popcorn.mp3");
                 audio.play().catch(e => console.warn("Audio play blocked", e));
 
                 // Show browser notification

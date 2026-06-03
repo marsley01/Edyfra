@@ -1,282 +1,253 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { 
-  GraduationCap, Users, Star, Globe, ShieldCheck, 
-  Loader2, UserCheck, Sparkles, Trophy, Flame,
-  Zap, ArrowRight, Crown, Medal, Target
-} from "lucide-react";
-import { AvatarPremium } from "@/components/ui/avatar-premium";
+import { motion } from "framer-motion";
 import Link from "next/link";
-import { getCommunityScholars } from "@/app/actions/user";
-import { Badge } from "@/components/ui/badge";
+import { formatDistanceToNow } from "date-fns";
+import { 
+  MessageSquare, Calculator, FlaskConical, Code2, 
+  GraduationCap, Building2, Coffee, Search, 
+  ChevronRight, Users, Loader2, Sparkles, Heart 
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getPublicPosts } from "@/app/actions/forum";
 
-interface Scholar {
-  id: string;
-  name: string;
-  county: string;
-  points: number;
-  tier: string;
-}
+const FORUM_CATEGORIES = [
+  {
+    id: "mathematics",
+    name: "Mathematics",
+    description: "Calculus, Algebra, Geometry, and everything numbers.",
+    icon: Calculator,
+    color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+  },
+  {
+    id: "sciences",
+    name: "Sciences",
+    description: "Physics, Chemistry, Biology experiments and theory.",
+    icon: FlaskConical,
+    color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+  },
+  {
+    id: "tech",
+    name: "Tech & Coding",
+    description: "Programming, Computer Science, and IT discussions.",
+    icon: Code2,
+    color: "bg-purple-500/10 text-purple-600 border-purple-500/20",
+  },
+  {
+    id: "kcse",
+    name: "KCSE Prep",
+    description: "Past papers, revision strategies, and national exam tips.",
+    icon: GraduationCap,
+    color: "bg-orange-500/10 text-orange-600 border-orange-500/20",
+  },
+  {
+    id: "university",
+    name: "University Admissions",
+    description: "KUCCPS, course selection, and campus life advice.",
+    icon: Building2,
+    color: "bg-rose-500/10 text-rose-600 border-rose-500/20",
+  },
+  {
+    id: "general",
+    name: "General Chat",
+    description: "Off-topic discussions, study motivation, and networking.",
+    icon: Coffee,
+    color: "bg-zinc-500/10 text-zinc-600 border-zinc-500/20",
+  },
+];
 
-export default function CommunityPage() {
-  const [scholars, setScholars] = useState<Scholar[]>([]);
+export default function ForumPage() {
+  const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+
   useEffect(() => {
-    fetchTopScholars();
+    async function loadRecentDiscussions() {
+      try {
+        const data = await getPublicPosts(15);
+        setPosts(data);
+      } catch (err) {
+        console.error("Failed to load forum posts", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadRecentDiscussions();
   }, []);
 
-  const fetchTopScholars = async () => {
-    try {
-      const data = await getCommunityScholars();
-      setScholars(
-        data.map((row) => ({
-          ...row,
-          tier: String(row.tier),
-        }))
-      );
-    } catch (e) {
-      console.error("Error fetching scholars:", e);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const filteredPosts = posts.filter(post => 
+    post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (post.subject && post.subject.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <div className="relative pt-32 pb-24 px-6 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/3 via-background to-background" />
-        <div className="absolute top-40 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-3xl" />
-        
-        <div className="container-max relative z-10">
-          <div className="max-w-5xl mx-auto text-center space-y-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-6"
-            >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-widest text-primary mb-2">
-                <Users className="h-4 w-4" />
-                Your Study Circle
+    <div className="min-h-screen bg-background pb-24">
+      {/* Forum Header */}
+      <div className="border-b border-border bg-secondary/30 pt-32 pb-12 px-6">
+        <div className="container-max">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+            <div className="space-y-4 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-widest text-primary">
+                <MessageSquare className="h-4 w-4" />
+                Edyfra Forums
               </div>
-              
-               <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tightest leading-none">
-                 Find people <br />
-                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/60">learning with you.</span>
-               </h1>
-               
-               <p className="text-lg md:text-2xl text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed">
-                 Meet students working through the same pressure, topics, and exams. Ask, share, and build momentum together.
-               </p>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tightest">
+                Join the discussion.
+              </h1>
+              <p className="text-lg text-muted-foreground font-medium">
+                Ask questions, share your knowledge, and connect with students and tutors across Kenya.
+              </p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4 shrink-0">
+              <Link href="/dashboard/feed">
+                <Button className="h-12 px-8 rounded-full bg-primary text-white hover:bg-primary/90 font-black text-[10px] tracking-widest uppercase shadow-lg transition-all">
+                  Start a Discussion
+                </Button>
+              </Link>
+            </div>
+          </div>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
-                <Link href="/signup">
-                  <Button className="h-14 px-10 rounded-full bg-foreground text-background hover:bg-foreground/90 font-black text-xs tracking-widest uppercase shadow-xl transition-all active:scale-95">
-                    Create My Profile
-                  </Button>
-                </Link>
-                <Link href="/dashboard/feed">
-                  <Button variant="ghost" className="h-14 px-10 rounded-full font-black text-xs tracking-widest uppercase group">
-                    See Student Posts <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
+          <div className="mt-12 relative max-w-xl">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input 
+              type="text" 
+              placeholder="Search discussions, subjects, or topics..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-14 pl-12 rounded-2xl bg-background border-border shadow-sm text-base"
+            />
           </div>
         </div>
       </div>
 
-      {/* Stats Bar */}
-      <div className="border-y border-border/50 bg-secondary/30">
-        <div className="container-max py-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { label: "Students", value: "Growing", icon: Users },
-              { label: "Points Earned", value: "Every Day", icon: Trophy },
-              { label: "Study Help", value: "Live", icon: Zap },
-              { label: "Reach", value: "Kenya", icon: Globe },
-            ].map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="flex items-center gap-4 p-6 bg-background/50 rounded-2xl border border-border/50"
-              >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
-                  <stat.icon className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="text-2xl font-black tracking-tightest">{stat.value}</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{stat.label}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Top Scholars Section */}
-      <div className="py-32">
-        <div className="container-max space-y-16">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                 <Crown className="h-8 w-8 text-primary" />
-                 <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Students showing up.</h2>
-               </div>
-               <p className="text-lg text-muted-foreground font-medium max-w-xl">
-                 A quick look at students building points through consistency, sessions, and daily effort.
-               </p>
-            </div>
-            <Link href="/dashboard/leaderboard">
-              <Button variant="ghost" className="font-black text-[10px] tracking-widest uppercase text-primary hover:text-primary group">
-                See Full Leaderboard <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-          </div>
-
-          {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            </div>
-          ) : scholars.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {scholars.map((s, i) => (
-                <motion.div
-                  key={s.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  className={`relative p-6 bg-background rounded-[2rem] border transition-all duration-500 hover:shadow-xl hover:translate-y-[-4px] ${
-                    i === 0 ? "border-primary/50 shadow-lg shadow-primary/5" : "border-border/50"
-                  }`}
+      <div className="container-max mt-12 grid grid-cols-1 lg:grid-cols-12 gap-12 px-6">
+        {/* Main Content - Categories */}
+        <div className="lg:col-span-8 space-y-12">
+          
+          <section className="space-y-6">
+            <h2 className="text-2xl font-black tracking-tight flex items-center gap-2">
+              <Users className="h-6 w-6 text-primary" />
+              Categories
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {FORUM_CATEGORIES.map((category) => (
+                <Link 
+                  key={category.id} 
+                  href={`/dashboard/feed?topic=${encodeURIComponent(category.name)}`}
+                  className="group block p-5 rounded-3xl border border-border bg-card hover:border-primary/50 hover:shadow-lg transition-all"
                 >
-                  {i === 0 && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-primary to-primary/80 text-white text-[8px] font-black uppercase tracking-widest shadow-lg">
-                      #1 Scholar
+                  <div className="flex items-start gap-4">
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border ${category.color}`}>
+                      <category.icon className="h-6 w-6" />
                     </div>
-                  )}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-4">
-                      <div className="text-2xl font-black text-muted-foreground/30 w-8">
-                        #{i + 1}
-                      </div>
-                      <AvatarPremium seed={s.id} name={s.name} size="lg" />
-                      <div className="min-w-0 flex-1">
-                        <h4 className="font-black text-base tracking-tight truncate">{s.name}</h4>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[9px] font-bold text-muted-foreground uppercase truncate">
-                            {s.county}
-                          </span>
-                          <span className="w-1 h-1 rounded-full bg-border" />
-                          <Badge variant="outline" className="h-4 px-1.5 text-[8px] font-black uppercase border-primary/30 text-primary">
-                            {s.tier}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="pt-4 border-t border-border/50 flex items-center justify-between">
-                      <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Total Points</span>
-                      <span className="text-lg font-black tracking-tightest text-primary">{s.points.toLocaleString()}</span>
+                    <div className="space-y-1 flex-1">
+                      <h3 className="font-bold text-lg group-hover:text-primary transition-colors flex items-center justify-between">
+                        {category.name}
+                        <ChevronRight className="h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                      </h3>
+                      <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                        {category.description}
+                      </p>
                     </div>
                   </div>
-                </motion.div>
+                </Link>
               ))}
             </div>
-          ) : (
-            <div className="py-20 text-center space-y-6 bg-secondary/20 rounded-[2rem] border border-border/50">
-               <UserCheck className="h-12 w-12 text-muted-foreground/20 mx-auto" />
-               <div className="space-y-2">
-                 <p className="text-xl font-black tracking-tightest">No rankings yet</p>
-                 <p className="text-muted-foreground">Start learning, earn points, and help set the pace for everyone else.</p>
-               </div>
-               <Link href="/signup">
-                 <Button className="rounded-full bg-primary">
-                   Get Started <Zap className="ml-2 h-4 w-4" />
-                 </Button>
-               </Link>
-             </div>
-          )}
-        </div>
-      </div>
+          </section>
 
-      {/* Community Feed Preview */}
-      <div className="py-32 bg-secondary/20">
-        <div className="container-max space-y-16">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <Sparkles className="h-8 w-8 text-primary" />
-                <h2 className="text-4xl md:text-5xl font-black tracking-tightest">What students are sharing.</h2>
-              </div>
-              <p className="text-lg text-muted-foreground font-medium max-w-xl">
-                Questions, wins, study notes, and honest progress from the Edyfra community.
-              </p>
-            </div>
-            <Link href="/dashboard/feed">
-              <Button className="h-12 px-10 rounded-full bg-primary hover:bg-primary/90 text-white font-black text-[10px] tracking-widest uppercase shadow-lg transition-all">
-                Open Student Feed <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-
-          <div className="py-20 text-center space-y-6 bg-background rounded-[3rem] border border-border/50">
-            <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mx-auto">
-              <Users className="h-10 w-10 text-muted-foreground/20" />
-            </div>
-            <div className="space-y-3 max-w-md mx-auto">
-              <h3 className="text-2xl font-black tracking-tightest">No one has posted yet.</h3>
-              <p className="text-muted-foreground">
-                Share the question you are working on, a topic you finally understood, or a win from today.
-              </p>
-            </div>
-            <Link href="/dashboard/feed">
-              <Button className="rounded-full bg-foreground text-background hover:bg-foreground/90 font-black text-xs tracking-widest uppercase">
-                Share My First Update <Sparkles className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* CTA Section */}
-      <div className="py-32">
-        <div className="container-max">
-          <div className="relative p-16 md:p-24 rounded-[4rem] bg-gradient-to-br from-primary via-primary/90 to-primary/70 text-white text-center overflow-hidden">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%22.05%22%3E%3Ccircle%20cx%3D%223%22%20cy%3D%223%22%20r%3D%223%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')] opacity-30" />
-            
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="relative z-10 space-y-8"
-            >
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tightest">
-                Ready to find your people?
+          {/* Recent Discussions list */}
+          <section className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-black tracking-tight flex items-center gap-2">
+                <Sparkles className="h-6 w-6 text-primary" />
+                Recent Discussions
               </h2>
-              <p className="text-xl md:text-2xl font-medium opacity-90 max-w-2xl mx-auto">
-                Build a profile, join the feed, and make studying feel less lonely.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link href="/signup">
-                  <Button className="h-14 px-12 rounded-full bg-white text-primary hover:bg-white/90 font-black text-xs tracking-widest uppercase shadow-xl transition-all active:scale-95">
-                    Get Started Free
-                  </Button>
-                </Link>
-                <Link href="/onboarding">
-                  <Button variant="ghost" className="h-14 px-12 rounded-full text-white border border-white/30 hover:bg-white/10 font-black text-xs tracking-widest uppercase">
-                    Learn More
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
+            </div>
+
+            <div className="rounded-3xl border border-border bg-card overflow-hidden">
+              {loading ? (
+                <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                  <Loader2 className="h-8 w-8 animate-spin mb-4 text-primary" />
+                  <p className="text-xs font-black uppercase tracking-widest">Loading latest posts...</p>
+                </div>
+              ) : filteredPosts.length > 0 ? (
+                <div className="divide-y divide-border">
+                  {filteredPosts.map((post) => (
+                    <Link key={post.id} href={`/dashboard/feed`} className="flex items-start gap-4 p-5 hover:bg-secondary/50 transition-colors group">
+                      <Avatar className="h-10 w-10 border border-border">
+                        <AvatarImage src={post.user.avatar || undefined} />
+                        <AvatarFallback className="text-xs font-bold">{post.user.name[0]}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0 space-y-1.5">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-black uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                            {post.subject || "General"}
+                          </span>
+                          <span className="text-sm font-bold text-foreground truncate">
+                            {post.user.name}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            • {formatDistanceToNow(new Date(post.createdAt))} ago
+                          </span>
+                        </div>
+                        <h4 className="text-base font-medium text-foreground/90 line-clamp-2 leading-snug group-hover:text-primary transition-colors">
+                          {post.content}
+                        </h4>
+                      </div>
+                      <div className="hidden sm:flex flex-col items-end gap-2 shrink-0 text-muted-foreground">
+                        <div className="flex items-center gap-3 text-xs font-bold">
+                          <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" /> {post._count.comments}</span>
+                          <span className="flex items-center gap-1"><Heart className="h-3 w-3" /> {post.likes}</span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-24 text-center space-y-4">
+                  <MessageSquare className="h-12 w-12 text-muted-foreground/30 mx-auto" />
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-bold">No discussions found</h3>
+                    <p className="text-sm text-muted-foreground font-medium">Try adjusting your search or start a new topic.</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+
+        </div>
+
+        {/* Right Sidebar */}
+        <div className="lg:col-span-4 space-y-6">
+          <div className="p-6 rounded-3xl border border-border bg-gradient-to-br from-primary/10 to-primary/5 space-y-6">
+            <h3 className="text-xl font-black tracking-tight">Community Guidelines</h3>
+            <ul className="space-y-4 text-sm font-medium text-foreground/80">
+              <li className="flex items-start gap-3">
+                <span className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 font-black text-xs">1</span>
+                Be respectful and supportive to other learners.
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 font-black text-xs">2</span>
+                Keep discussions focused on education and self-improvement.
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 font-black text-xs">3</span>
+                Search before you post to avoid duplicate questions.
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 font-black text-xs">4</span>
+                No spam or unauthorized promotional content.
+              </li>
+            </ul>
+            <Link href="/dashboard/feed">
+              <Button className="w-full rounded-full font-black text-[10px] tracking-widest uppercase">
+                Read Full Guidelines
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
