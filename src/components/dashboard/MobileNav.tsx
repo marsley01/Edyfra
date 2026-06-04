@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import DashboardSidebar from "./Sidebar";
 import { User } from "@supabase/supabase-js";
 import Link from "next/link";
+import Image from "next/image";
 import { NotificationBell } from "@/components/dashboard/NotificationBell";
 
 export default function MobileNav({ user }: { user: User }) {
@@ -49,7 +50,7 @@ export default function MobileNav({ user }: { user: User }) {
             </button>
           )}
           <Link href="/dashboard" className="flex items-center gap-2 min-w-0" onClick={() => setIsOpen(false)}>
-            <img src="/image.png" alt="Edyfra Logo" className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl shadow-lg object-cover" />
+            <Image src="/image.png" alt="Edyfra Logo" width={36} height={36} className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl shadow-lg object-cover" priority />
             <span className="text-lg sm:text-xl font-black text-foreground tracking-tighter">Edyfra</span>
           </Link>
         </div>

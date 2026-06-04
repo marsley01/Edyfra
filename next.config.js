@@ -36,7 +36,12 @@ const nextConfig = {
       { key: "X-Frame-Options", value: "SAMEORIGIN" },
       { key: "X-Content-Type-Options", value: "nosniff" },
       { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-      { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+      {
+        key: "Permissions-Policy",
+        // Stream Video SDK needs camera + mic on this origin to place calls.
+        // geolocation stays blocked (we don't use it).
+        value: "camera=(self), microphone=(self), geolocation=()",
+      },
       {
         key: "Strict-Transport-Security",
         value: "max-age=63072000; includeSubDomains; preload",
@@ -59,6 +64,27 @@ const nextConfig = {
       {
         source: "/(.*)",
         headers: securityHeaders,
+      },
+      // Long cache for hashed static assets (1 year, immutable)
+      {
+        source: "/_next/static/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      // Long cache for the public logo and other static images
+      {
+        source: "/:path(image\\.png|favicon\\.ico|icon\\.png|apple-touch-icon\\.png|og-image\\.png|.*\\.svg)",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" },
+        ],
+      },
+      // Public static folder assets
+      {
+        source: "/static/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" },
+        ],
       },
       {
         source: "/api/:path*",

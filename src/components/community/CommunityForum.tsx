@@ -112,22 +112,37 @@ export function CommunityForum({
 
   useEffect(() => { loadList(); }, [loadList]);
 
-  // Real-time-ish "alive" ping: refetch the bootstrap every 25s so the
-  // "online" count moves and new topics float up.
+  // Real-time-ish "alive" ping: refetch the bootstrap every 45s so the
+  // "online" count moves and new topics float up. Slower on mobile to save
+  // battery; pauses when the tab is hidden or the device is offline.
   useEffect(() => {
     if (view !== "list") return;
-    const id = setInterval(loadList, 25_000);
-    return () => clearInterval(id);
+    let id: ReturnType<typeof setInterval> | null = null;
+    const tick = () => {
+      if (document.hidden) return;
+      if (typeof navigator !== "undefined" && navigator.onLine === false) return;
+      loadList();
+    };
+    id = setInterval(tick, 45_000);
+    return () => {
+      if (id) clearInterval(id);
+    };
   }, [view, loadList]);
 
-  // Refetch the thread every 12s for the same reason
+  // Refetch the thread every 20s — slower to save mobile data. Pauses on
+  // hidden tab.
   useEffect(() => {
     if (view !== "thread" || !activeTopicId) return;
-    const id = setInterval(async () => {
+    let id: ReturnType<typeof setInterval> | null = null;
+    const tick = async () => {
+      if (document.hidden) return;
       const res = await getForumTopic(activeTopicId);
       if (res.ok) setThread(res);
-    }, 12_000);
-    return () => clearInterval(id);
+    };
+    id = setInterval(tick, 20_000);
+    return () => {
+      if (id) clearInterval(id);
+    };
   }, [view, activeTopicId]);
 
   const filtered = useMemo(() => {

@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 import prisma from "@/lib/prisma";
 import { getUserData } from "@/app/actions/user";
 import { notifyUser, notifyManyUsers } from "@/app/actions/notifications";
@@ -22,6 +22,16 @@ const CATEGORY_SEED: Array<{ slug: string; name: string; emoji: string; blurb: s
   { slug: "life",        name: "Life & Vibe",   emoji: "🌅", blurb: "Mental health, motivation, side hustles, friendships.", order: 7 },
   { slug: "help",        name: "Ask for Help",  emoji: "🙋", blurb: "Stuck on something? Drop a topic. Someone's awake.", order: 8 },
 ];
+
+// Categories are seeded once and never change at runtime. Cache the read for
+// 1 hour so the bootstrap doesn't pay a DB round-trip on every page load.
+const getCategories = unstable_cache(
+  async () => {
+    return prisma.communityCategory.findMany({ orderBy: { order: "asc" } });
+  },
+  ["community-categories"],
+  { revalidate: 3600, tags: ["community-categories"] },
+);
 
 async function ensureCategories() {
   const existing = await prisma.communityCategory.count();
@@ -116,11 +126,11 @@ function timeAgo(d: Date) {
    ────────────────────────────────────────────────────────────────────────── */
 
 export async function getForumBootstrap(): Promise<CommunityBootstrap> {
+  // ensureCategories only writes on the very first load; getCategories is
+  // cached for an hour after that.
   await ensureCategories();
   const me = await getUserData();
-  const categories = await prisma.communityCategory.findMany({
-    orderBy: { order: "asc" },
-  });
+  const categories = await getCategories();
 
   // 25 most-recent active topics with a single line of context
   const topics = await prisma.communityTopic.findMany({

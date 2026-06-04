@@ -6,6 +6,7 @@ import { ArrowRight, ArrowLeft, Loader2, AlertCircle, ShieldCheck, Eye, EyeOff, 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import Image from "next/image";
 import { signup } from "@/app/actions/auth";
 
 import { toast } from "sonner";
@@ -117,7 +118,7 @@ export default function SignupPage() {
         {/* Header & Logo */}
         <div className="flex flex-col items-center gap-2 text-center">
            <Link href="/" className="flex items-center gap-3 group mb-2">
-              <img src="/image.png" alt="Edyfra Logo" className="w-9 h-9 rounded-xl shadow-lg object-cover" />
+              <Image src="/image.png" alt="Edyfra Logo" width={36} height={36} className="w-9 h-9 rounded-xl shadow-lg object-cover" priority />
               <span className="text-3xl font-black text-foreground tracking-tighter">Edyfra</span>
            </Link>
            <h1 className="text-3xl font-black tracking-tightest">

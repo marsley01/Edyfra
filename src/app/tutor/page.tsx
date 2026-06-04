@@ -169,12 +169,14 @@ export default function TutorDashboard() {
 
   // Polling fallback for "searching students" count
   // Realtime on MatchRequest can be disabled at the Supabase project level —
-  // this 12s poll guarantees the counter never gets stuck at 0 even when it is.
+  // this 20s poll guarantees the counter never gets stuck at 0 even when it is.
+  // Pauses on hidden tab to save mobile battery.
   useEffect(() => {
     if (!isOnline) return;
     let cancelled = false;
 
     const tick = async () => {
+      if (document.hidden) return;
       try {
         const { getFilteredMatchRequests } = await import("@/app/actions/match-algorithm");
         const reqs = await getFilteredMatchRequests(
@@ -188,7 +190,7 @@ export default function TutorDashboard() {
     };
 
     tick();
-    const id = setInterval(tick, 12_000);
+    const id = setInterval(tick, 20_000);
     return () => {
       cancelled = true;
       clearInterval(id);
@@ -203,6 +205,7 @@ export default function TutorDashboard() {
     let cancelled = false;
 
     const tick = async () => {
+      if (document.hidden) return;
       try {
         setMatchRequestsLoading(true);
         const { getFilteredMatchRequests } = await import("@/app/actions/match-algorithm");
@@ -219,7 +222,7 @@ export default function TutorDashboard() {
     };
 
     tick();
-    const id = setInterval(tick, 12_000);
+    const id = setInterval(tick, 20_000);
     return () => {
       cancelled = true;
       clearInterval(id);

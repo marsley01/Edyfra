@@ -1,12 +1,13 @@
 "use server";
 
+import { cache } from "react";
 import { Role, VerifPath, EduLevel } from "@/generated/client";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getUserData } from "./user";
 import { TUTOR_CONFIG } from "@/lib/config";
 
-export async function getTutorProfile() {
+export const getTutorProfile = cache(async () => {
   try {
     const user = await getUserData();
     if (!user) return null;
@@ -37,7 +38,7 @@ export async function getTutorProfile() {
     console.error("Error in getTutorProfile:", error);
     return null;
   }
-}
+});
 
 export async function toggleTutorStatus(isOnline: boolean) {
   try {

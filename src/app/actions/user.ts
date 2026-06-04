@@ -1,5 +1,6 @@
 "use server";
 
+import { cache } from "react";
 import { Role, EduLevel, Tier, VerifPath, Prisma, User, StudentProfile, TutorProfile, Gender } from "@/generated/client";
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
@@ -26,7 +27,7 @@ async function syncSupabaseRoleFromPrisma(supabase: Awaited<ReturnType<typeof cr
   }
 }
 
-export async function getUserData(): Promise<(User & { studentProfile: StudentProfile | null, tutorProfile: TutorProfile | null }) | null> {
+export const getUserData = cache(async (): Promise<(User & { studentProfile: StudentProfile | null, tutorProfile: TutorProfile | null }) | null> => {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -121,7 +122,7 @@ export async function getUserData(): Promise<(User & { studentProfile: StudentPr
     console.error("Error in getUserData:", error);
     return null;
   }
-}
+});
 
 export async function updateProfile(data: { 
   name: string; 
