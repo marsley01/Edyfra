@@ -23,7 +23,7 @@ import { NotificationBell, NotificationCountBadge } from "@/components/dashboard
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/notifications", label: "Notifications", icon: Bell, showCount: true },
-  { href: "/dashboard/feed", label: "Community", icon: Share2 },
+  { href: "/dashboard/community", label: "Community", icon: Share2 },
   { href: "/dashboard/groups", label: "Study Groups", icon: Users },
   { href: "/dashboard/search", label: "Study Partners", icon: UserSearch },
   { href: "/dashboard/study", label: "Start a Session", icon: Zap },

@@ -759,6 +759,62 @@ exports.Prisma.AiChatMessageScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.CommunityCategoryScalarFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  name: 'name',
+  emoji: 'emoji',
+  blurb: 'blurb',
+  order: 'order',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.CommunityTopicScalarFieldEnum = {
+  id: 'id',
+  authorId: 'authorId',
+  categoryId: 'categoryId',
+  title: 'title',
+  body: 'body',
+  pinned: 'pinned',
+  locked: 'locked',
+  views: 'views',
+  lastActivityAt: 'lastActivityAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.CommunityPostScalarFieldEnum = {
+  id: 'id',
+  topicId: 'topicId',
+  authorId: 'authorId',
+  body: 'body',
+  parentId: 'parentId',
+  isAnswer: 'isAnswer',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.CommunityReactionScalarFieldEnum = {
+  id: 'id',
+  topicId: 'topicId',
+  postId: 'postId',
+  userId: 'userId',
+  type: 'type',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.CommunitySubscriptionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  topicId: 'topicId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.CommunityReadScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  topicId: 'topicId',
+  lastReadAt: 'lastReadAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -897,7 +953,13 @@ exports.Prisma.ModelName = {
   MashContext: 'MashContext',
   AnalyticsEvent: 'AnalyticsEvent',
   Feedback: 'Feedback',
-  AiChatMessage: 'AiChatMessage'
+  AiChatMessage: 'AiChatMessage',
+  CommunityCategory: 'CommunityCategory',
+  CommunityTopic: 'CommunityTopic',
+  CommunityPost: 'CommunityPost',
+  CommunityReaction: 'CommunityReaction',
+  CommunitySubscription: 'CommunitySubscription',
+  CommunityRead: 'CommunityRead'
 };
 
 /**

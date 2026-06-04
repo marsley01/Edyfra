@@ -11,6 +11,7 @@ import {
   Window,
   LoadingIndicator,
   Thread,
+  WithComponents,
 } from "stream-chat-react";
 import {
   StreamVideoClient,
@@ -21,6 +22,8 @@ import {
 } from "@stream-io/video-react-sdk";
 import { VideoCallUI } from "./VideoCallUI";
 import { DynamicIsland } from "./DynamicIsland";
+import { StreamAttachment } from "./StreamAttachment";
+import { MediaDiagnostic } from "./MediaDiagnostic";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 import { getStreamToken, upsertStreamUser } from "@/app/actions/stream";
 
@@ -110,6 +113,7 @@ export default function StreamChatRoom({
   const [incomingCall, setIncomingCall] = useState<{ from: string } | null>(null);
   const [permDenied, setPermDenied] = useState(false);
   const [permWarmed, setPermWarmed] = useState(false);
+  const [permRetryNonce, setPermRetryNonce] = useState(0);
 
   const clientRef = useRef<StreamChat | null>(null);
   const videoClientRef = useRef<StreamVideoClient | null>(null);
@@ -223,9 +227,12 @@ export default function StreamChatRoom({
           mashAI?.subject || "General",
           mashAI?.topic,
           mashAI?.tier
-        ).catch((err) =>
-          console.warn("[StreamChatRoom] handleMashMention error:", err)
-        );
+        ).catch((err) => {
+          console.warn("[StreamChatRoom] handleMashMention error:", err);
+          toast.error("Mash couldn't reply", {
+            description: err?.message || "Try again in a sec.",
+          });
+        });
       });
     } catch (err: any) {
       console.error("[StreamChatRoom] Initialization failed:", err);
@@ -362,6 +369,34 @@ export default function StreamChatRoom({
     };
   }, []);
 
+  // ─── Permission-state poller ───────────────────────────────────────────────
+  // When the warning banner is visible, poll `navigator.permissions` every 2s.
+  // If the user fixes the lock icon (or Windows privacy) while we're idle,
+  // the banner auto-dismisses so they don't have to click the button.
+  useEffect(() => {
+    if (!permDenied || typeof navigator === "undefined" || !navigator.permissions?.query) return;
+
+    const id = setInterval(async () => {
+      try {
+        const [cam, mic] = await Promise.allSettled([
+          navigator.permissions.query({ name: "camera" as PermissionName }),
+          navigator.permissions.query({ name: "microphone" as PermissionName }),
+        ]);
+        const states = [cam, mic].map((r) =>
+          r.status === "fulfilled" ? r.value.state : "prompt",
+        );
+        if (states.every((s) => s === "granted")) {
+          setPermDenied(false);
+          setPermWarmed(true);
+        }
+      } catch {
+        // silent
+      }
+    }, 2000);
+
+    return () => clearInterval(id);
+  }, [permDenied]);
+
   // ─── Pre-flight: explicitly request camera + mic so the browser prompt ─────
   // fires BEFORE the user clicks "Start Call". This was the #1 cause of "I
   // clicked but nothing happened" — the prompt is being suppressed because
@@ -402,6 +437,9 @@ export default function StreamChatRoom({
           description: err?.message || "Check your device settings.",
         });
       }
+      // Bump the diagnostic nonce so the MediaDiagnostic re-runs and shows the
+      // exact error name + deep links to fix it.
+      setPermRetryNonce((n) => n + 1);
       return false;
     }
   }, []);
@@ -781,7 +819,12 @@ export default function StreamChatRoom({
           backdrop-filter: blur(8px);
         }
       `}</style>
-      <Chat client={chatClient} theme={chatTheme}>
+      <WithComponents
+        overrides={{
+          Attachment: StreamAttachment as any,
+        }}
+      >
+        <Chat client={chatClient} theme={chatTheme}>
         <StreamVideo client={videoClient!}>
           <div className="flex flex-col h-full relative">
             {!hideHeader && (
@@ -868,6 +911,14 @@ export default function StreamChatRoom({
                     If you don&apos;t see a lock icon, your browser may be in Incognito mode or the device
                     may be in use by another app (Zoom, Meet, etc.). Close those first.
                   </p>
+                  <MediaDiagnostic
+                    trigger={permRetryNonce}
+                    onResolved={() => {
+                      setPermDenied(false);
+                      setPermWarmed(true);
+                      toast.success("Microphone access works — try Start Call again.");
+                    }}
+                  />
                 </div>
               </div>
             )}
@@ -935,6 +986,7 @@ export default function StreamChatRoom({
           </div>
         </StreamVideo>
       </Chat>
+    </WithComponents>
     </div>
   );
 }

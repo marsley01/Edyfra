@@ -412,14 +412,31 @@ export async function handleMashMention(
     const client = getServerClient();
     await client.upsertUser({ id: "mash-ai", name: "Mash AI", role: "user" });
 
-    const channel = client.channel("messaging", channelId);
+    const channel = client.channel("messaging", channelId, {
+      members: [user.id, "mash-ai"],
+    } as any);
+
+    // Ensure the channel exists server-side before sending.
+    // The client creates it via c.watch() but the server has its own Channel
+    // reference; sendMessage will fail with "channel does not exist" otherwise.
+    try {
+      await channel.create();
+    } catch (createErr: any) {
+      // "channel already exists" is fine — anything else we rethrow
+      const msg = String(createErr?.message || "");
+      if (!/already exists/i.test(msg)) throw createErr;
+    }
+
     await channel.sendMessage({
       text: aiResponse,
       user_id: "mash-ai",
     });
   } catch (channelErr) {
     console.error("[handleMashMention] Failed to send Stream message:", channelErr);
-    throw new Error("Failed to send Mash AI response");
+    throw new Error(
+      "Failed to send Mash AI response: " +
+        (channelErr instanceof Error ? channelErr.message : String(channelErr))
+    );
   }
 
   // Persist Mash's reply (best-effort, non-blocking)

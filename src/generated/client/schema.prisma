@@ -71,6 +71,11 @@ model User {
   analyticsEvents          AnalyticsEvent[]
   feedback                 Feedback[]
   aiChatMessages           AiChatMessage[]
+  communityTopics          CommunityTopic[]        @relation("CommunityTopicAuthor")
+  communityPosts           CommunityPost[]         @relation("CommunityPostAuthor")
+  communityReactions       CommunityReaction[]
+  communitySubscriptions   CommunitySubscription[]
+  communityReads           CommunityRead[]
   creditTransactions       CreditTransaction[]
   sellerEarnings           SellerEarning[]
   institutionStudent       InstitutionStudent?
@@ -938,4 +943,101 @@ model AiChatMessage {
   @@index([userId, bot, createdAt])
   @@index([bot, createdAt])
   @@map("ai_chat_messages")
+}
+
+// ─── Community Forum ──────────────────────────────────────────────────────
+// A simple, warm "Discord-meets-Reddit" forum. Topics = threads. Posts =
+// nested replies (parentId). Reactions are emoji but denormalised by type.
+// Subscriptions power "notify me" + the bell. Reads power unread badges.
+// Access is implicit: every action is gated by `getUserData()` so only
+// Edyfra users can read/post/react.
+model CommunityCategory {
+  id        String           @id @default(cuid())
+  slug      String           @unique
+  name      String
+  emoji     String
+  blurb     String
+  order     Int              @default(0)
+  topics    CommunityTopic[]
+  createdAt DateTime         @default(now())
+}
+
+model CommunityTopic {
+  id             String                  @id @default(cuid())
+  authorId       String
+  categoryId     String
+  title          String
+  body           String
+  pinned         Boolean                 @default(false)
+  locked         Boolean                 @default(false)
+  views          Int                     @default(0)
+  lastActivityAt DateTime                @default(now())
+  createdAt      DateTime                @default(now())
+  author         User                    @relation("CommunityTopicAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  category       CommunityCategory       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  posts          CommunityPost[]
+  reactions      CommunityReaction[]
+  subscriptions  CommunitySubscription[]
+  reads          CommunityRead[]
+
+  @@index([categoryId, pinned, lastActivityAt])
+  @@index([authorId, createdAt])
+}
+
+model CommunityPost {
+  id        String              @id @default(cuid())
+  topicId   String
+  authorId  String
+  body      String
+  parentId  String?
+  isAnswer  Boolean             @default(false)
+  createdAt DateTime            @default(now())
+  topic     CommunityTopic      @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  author    User                @relation("CommunityPostAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  parent    CommunityPost?      @relation("CommunityReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies   CommunityPost[]     @relation("CommunityReplies")
+  reactions CommunityReaction[]
+
+  @@index([topicId, createdAt])
+  @@index([authorId, createdAt])
+}
+
+model CommunityReaction {
+  id        String          @id @default(cuid())
+  topicId   String?
+  postId    String?
+  userId    String
+  type      String
+  createdAt DateTime        @default(now())
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic     CommunityTopic? @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  post      CommunityPost?  @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([topicId, userId, type])
+  @@unique([postId, userId, type])
+  @@index([topicId, type])
+  @@index([postId, type])
+}
+
+model CommunitySubscription {
+  id        String         @id @default(cuid())
+  userId    String
+  topicId   String
+  createdAt DateTime       @default(now())
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic     CommunityTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, topicId])
+}
+
+model CommunityRead {
+  id         String         @id @default(cuid())
+  userId     String
+  topicId    String
+  lastReadAt DateTime       @default(now())
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic      CommunityTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, topicId])
+  @@index([userId])
 }

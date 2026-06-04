@@ -205,7 +205,7 @@ export function OverviewTab() {
                         <span className="text-sm font-black text-foreground">{session.status === "ACTIVE" ? "In Progress" : "Upcoming"}</span>
                       </div>
                       <Button 
-                        onClick={() => handleJoinRoom(session.roomId)}
+                        onClick={() => handleJoinRoom(session.id)}
                         className={`w-full sm:w-auto h-16 px-10 rounded-[1.8rem] font-black text-xs tracking-[0.2em] uppercase shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3 ${
                           session.status === "ACTIVE" 
                             ? "bg-emerald-500 hover:bg-emerald-600 text-white" 

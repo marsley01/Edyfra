@@ -7,7 +7,7 @@ import { User } from "@supabase/supabase-js";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Settings, LogOut, Trophy,
-  Menu, X, ChevronLeft, Bell
+  Menu, X, ChevronLeft, Bell, Users
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -79,6 +79,7 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
 
   const navItems = [
     { href: "/tutor", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/tutor/community", label: "Community", icon: Users },
     { href: "/tutor/notifications", label: "Notifications", icon: Bell, showCount: true },
     { href: "/tutor/settings", label: "Settings", icon: Settings },
   ];

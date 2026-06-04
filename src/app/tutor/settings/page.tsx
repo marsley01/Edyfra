@@ -270,7 +270,6 @@ export default function TutorSettingsPage() {
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1"><Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" /> {userData?.tutorProfile?.rating || "New"}</span>
                   <span className="flex items-center gap-1"><BookOpen className="h-3.5 w-3.5" /> {formData.subjects || "No subjects set"}</span>
-                  {formData.hourlyRate && <span className="flex items-center gap-1"><Wallet className="h-3.5 w-3.5" /> Ksh {formData.hourlyRate}/hr</span>}
                 </div>
               </div>
               <div className="hidden sm:flex flex-col items-end gap-1">

@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
             type: "SESSION",
             title: "Session Paid",
             body: `${session.student.name} has paid for your ${session.subject} session. You can now start the call.`,
-            actionUrl: `/study-room/${session.roomId}`,
+            actionUrl: `/study-room/${session.id}`,
           });
 
           // Notify Student
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
             type: "SESSION",
             title: "Payment Confirmed",
             body: `Your payment of KES ${gross} has been received. Your tutor has been notified.`,
-            actionUrl: `/study-room/${session.roomId}`,
+            actionUrl: `/study-room/${session.id}`,
           });
         }
       } else if (payment.paymentType === "resource") {

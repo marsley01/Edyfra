@@ -154,6 +154,34 @@ export default function TutorDashboard() {
     loadBookings();
   }, []);
 
+  // Polling fallback for "searching students" count
+  // Realtime on MatchRequest can be disabled at the Supabase project level —
+  // this 12s poll guarantees the counter never gets stuck at 0 even when it is.
+  useEffect(() => {
+    if (!isOnline) return;
+    let cancelled = false;
+
+    const tick = async () => {
+      try {
+        const { getFilteredMatchRequests } = await import("@/app/actions/match-algorithm");
+        const reqs = await getFilteredMatchRequests(
+          (profile as any)?.subjects || []
+        );
+        if (cancelled) return;
+        setSearchingStudents(reqs.length);
+      } catch (e) {
+        // silent — next tick will retry
+      }
+    };
+
+    tick();
+    const id = setInterval(tick, 12_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [isOnline, profile]);
+
   const loadProfile = async () => {
     const data = await getTutorProfile();
     if (data) {
@@ -378,7 +406,7 @@ export default function TutorDashboard() {
                         <span className="text-sm font-black text-foreground">{session.status === "ACTIVE" ? "In Progress" : "Upcoming"}</span>
                       </div>
                       <Button 
-                        onClick={() => handleJoinRoom(session.roomId)}
+                        onClick={() => handleJoinRoom(session.id)}
                         className={`w-full sm:w-auto h-16 px-10 rounded-[1.8rem] font-black text-xs tracking-[0.2em] uppercase shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3 ${
                           session.status === "ACTIVE" 
                             ? "bg-emerald-500 hover:bg-emerald-600 text-white animate-pulse" 

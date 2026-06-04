@@ -105,6 +105,9 @@ const PUSH_PREF_BY_TYPE: Record<string, string> = {
   PAYMENT_SUCCESS: "announcements",
   SESSION_COMPLETE: "newMatch",
   ERROR_ALERT: "announcements",
+  FORUM_REPLY: "announcements",
+  FORUM_MENTION: "announcements",
+  FORUM_PICK: "announcements",
 };
 
 async function shouldSendPush(userId: string, type: string, preloadedPrefs?: Record<string, boolean>): Promise<boolean> {
