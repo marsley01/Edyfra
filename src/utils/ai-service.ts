@@ -30,11 +30,17 @@ async function getOpenAI() {
   let apiKey: string | undefined = process.env.OPENROUTER_API_KEY;
   let provider = "openrouter";
 
+  console.log("[AIService] getOpenAI() called");
+  console.log(`[AIService] process.env.OPENROUTER_API_KEY = ${apiKey ? `${apiKey.substring(0, 20)}...` : "undefined"}`);
+
   // 2. Fallback to database settings (no admin check needed)
   if (!apiKey) {
+    console.log("[AIService] Env var not found, checking database...");
     const dbConfig = await getAIKeyFromDB();
     apiKey = dbConfig.key ?? undefined;
     provider = dbConfig.provider || "openrouter";
+    console.log(`[AIService] Database key = ${apiKey ? `${apiKey.substring(0, 20)}...` : "undefined"}`);
+    console.log(`[AIService] Database provider = ${provider}`);
   }
 
   // Auto-detect Gemini keys if env var was accidentally used for Gemini
@@ -42,7 +48,12 @@ async function getOpenAI() {
     provider = "gemini";
   }
 
-  if (!apiKey) return null;
+  if (!apiKey) {
+    console.error("[AIService] ❌ NO API KEY FOUND!");
+    return null;
+  }
+
+  console.log(`[AIService] ✅ Using ${provider} with key: ${apiKey.substring(0, 20)}...`);
 
   // If the key has changed, re-initialize the instance
   if (!openaiInstance || currentKey !== apiKey) {
@@ -74,6 +85,7 @@ export class AIService {
     const openai = await getOpenAI();
     if (!openai) {
       console.warn("[AIService] API Key is missing (checked ENV and DB). Returning offline message.");
+      console.warn("[AIService] Check: OPENROUTER_API_KEY env var or platformSettings table in DB");
       return "AI services are currently offline. Please ensure your API key is configured.";
     }
 
@@ -82,6 +94,8 @@ export class AIService {
       if (currentProvider === "gemini" && m.includes("gpt-4o-mini")) {
         m = "gemini-1.5-flash";
       }
+      
+      console.log(`[AIService] Calling ${currentProvider} with model: ${m}, timeout: ${timeoutMs}ms`);
       
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -97,21 +111,34 @@ export class AIService {
           },
           { signal: controller.signal as any }
         );
-        return completion.choices[0]?.message?.content || "";
+        const response = completion.choices[0]?.message?.content || "";
+        console.log(`[AIService] ✅ Success! Response length: ${response.length} chars`);
+        return response;
+      } catch (apiErr: any) {
+        console.error(`[AIService] API Error:`, {
+          status: apiErr.status,
+          code: apiErr.code,
+          message: apiErr.message,
+          error: apiErr.error?.message,
+        });
+        throw apiErr;
       } finally {
         clearTimeout(timer);
       }
     };
 
     try {
+      console.log(`[AIService] First attempt with model: ${model}`);
       return await doCall(model, 15000);
     } catch (firstErr: any) {
-      console.warn("[AIService] First attempt failed, retrying with fallback model:", firstErr?.message);
+      console.warn(`[AIService] First attempt failed: ${firstErr?.message}`);
       try {
         // Retry once with the same model and a longer timeout
+        console.log(`[AIService] Retrying with extended timeout...`);
         return await doCall(model, 20000);
       } catch (retryErr: any) {
-        console.error("[AIService] Retry also failed:", retryErr?.message);
+        console.error(`[AIService] Retry also failed: ${retryErr?.message}`);
+        console.error(`[AIService] Provider: ${currentProvider}, Model: ${model}`);
         return `I'm having a bit of trouble thinking right now. Let's try again in a moment.`;
       }
     }

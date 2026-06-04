@@ -381,14 +381,18 @@ export async function handleMashMention(
   let aiResponse: string;
 
   try {
+    console.log(`[handleMashMention] Generating AI response for prompt: "${actualPrompt.substring(0, 50)}..."`);
     aiResponse = await AIService.generateCompletion(actualPrompt, systemPrompt);
+    console.log(`[handleMashMention] AI response generated successfully: ${aiResponse.substring(0, 100)}`);
 
     // If AI returned the error message, send a friendly fallback instead
     if (aiResponse.includes("having a bit of trouble thinking") || aiResponse.includes("offline")) {
+      console.warn("[handleMashMention] AI returned error message, using fallback");
       aiResponse = `Hey! 👋 I'm here to help with ${sessionSubject}. Could you tell me what specific topic or question you're working on? I can explain concepts, give practice questions, or help you work through problems step by step.`;
     }
-  } catch (err) {
-    console.error("[handleMashMention] AI generation failed:", err);
+  } catch (err: any) {
+    console.error("[handleMashMention] AI generation failed:", err?.message || err);
+    console.error("[handleMashMention] Error stack:", err?.stack);
     aiResponse = `Hey! 👋 I'm here to help with ${sessionSubject}. What would you like to work on today?`;
   }
 
