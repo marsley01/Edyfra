@@ -5,17 +5,17 @@ import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  LayoutDashboard, Users, GraduationCap, 
-  Settings, LogOut, Zap, Calendar, Wallet, Trophy,
-  Menu, X, ChevronLeft, BookOpen, Bell
+import {
+  LayoutDashboard, Settings, LogOut, Trophy,
+  Menu, X, ChevronLeft, Bell
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getUserData } from "@/app/actions/user";
-import { NotificationBell } from "@/components/dashboard/NotificationBell";
+import { NotificationBell, NotificationCountBadge } from "@/components/dashboard/NotificationBell";
+import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 
 export default function TutorLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -34,7 +34,6 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
         return;
       }
 
-      // Use Prisma as the source of truth for role, with Supabase metadata fallback
       const dbUser = await getUserData();
       const role = dbUser?.role || (user.user_metadata?.role || "").toUpperCase();
 
@@ -67,7 +66,6 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -81,7 +79,7 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
 
   const navItems = [
     { href: "/tutor", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/tutor/notifications", label: "Notifications", icon: Bell },
+    { href: "/tutor/notifications", label: "Notifications", icon: Bell, showCount: true },
     { href: "/tutor/settings", label: "Settings", icon: Settings },
   ];
 
@@ -96,15 +94,15 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
   return (
     <div className="flex flex-col lg:flex-row min-h-[100dvh] bg-background font-sans overflow-x-hidden">
       {/* Mobile Header */}
-      <header className="lg:hidden h-20 bg-card border-b border-border px-4 flex items-center justify-between sticky top-0 z-40 pt-[env(safe-area-inset-top,0px)]">
+      <header className="lg:hidden h-16 bg-card/80 backdrop-blur-xl border-b border-border px-4 flex items-center justify-between sticky top-0 z-40 pt-[env(safe-area-inset-top,0px)]">
         <div className="flex items-center gap-2">
-          <button 
+          <button
             onClick={() => setIsMobileMenuOpen(true)}
             className="p-2 rounded-xl bg-secondary hover:bg-primary/5 transition-all"
             aria-label="Open tutor menu"
             aria-expanded={isMobileMenuOpen}
           >
-            <Menu className="h-6 w-6 text-foreground" />
+            <Menu className="h-5 w-5 text-foreground" />
           </button>
           {pathname !== "/tutor" && (
             <button
@@ -116,9 +114,12 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
             </button>
           )}
           <Link href="/tutor" className="flex items-center gap-2">
-            <img src="/image.png" alt="Edyfra Logo" className="w-9 h-9 rounded-xl shadow-lg object-cover" />
-            <span className="text-xl font-black text-foreground tracking-tighter">Edyfra</span>
+            <img src="/image.png" alt="Edyfra Logo" className="w-8 h-8 rounded-xl shadow-lg object-cover" />
+            <span className="text-lg font-black text-foreground tracking-tighter">Edyfra</span>
           </Link>
+        </div>
+        <div className="flex items-center gap-2">
+          <NotificationBell variant="topbar" />
         </div>
       </header>
 
@@ -142,8 +143,8 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
             >
               <div className="sticky top-0 z-50 flex items-center justify-between p-4 border-b border-border bg-card">
                 <Link href="/tutor" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2">
-                  <img src="/image.png" alt="Edyfra Logo" className="w-9 h-9 rounded-xl shadow-lg object-cover" />
-                  <span className="text-xl font-black text-foreground tracking-tighter">Edyfra</span>
+                  <img src="/image.png" alt="Edyfra Logo" className="w-8 h-8 rounded-xl shadow-lg object-cover" />
+                  <span className="text-lg font-black text-foreground tracking-tighter">Edyfra</span>
                 </Link>
                 <div className="flex items-center gap-2">
                   <Link
@@ -154,7 +155,7 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
                   >
                     <LayoutDashboard className="h-5 w-5" />
                   </Link>
-                  <button 
+                  <button
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="p-2 rounded-xl bg-secondary hover:bg-secondary/80"
                   >
@@ -162,11 +163,11 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
                   </button>
                 </div>
               </div>
-              <TutorSidebarContent 
-                user={user} 
-                pathname={pathname} 
-                points={points} 
-                navItems={navItems} 
+              <TutorSidebarContent
+                user={user}
+                pathname={pathname}
+                points={points}
+                navItems={navItems}
                 supabase={supabase}
                 router={router}
                 onClose={() => setIsMobileMenuOpen(false)}
@@ -178,28 +179,47 @@ export default function TutorLayout({ children }: { children: React.ReactNode })
 
       {/* Premium Desktop Sidebar */}
       <aside className="w-72 bg-card border-r border-border hidden lg:flex flex-col fixed h-full z-50">
-        <TutorSidebarContent 
-          user={user} 
-          pathname={pathname} 
-          points={points} 
-          navItems={navItems} 
+        <TutorSidebarContent
+          user={user}
+          pathname={pathname}
+          points={points}
+          navItems={navItems}
           supabase={supabase}
           router={router}
         />
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 lg:ml-72 p-6 lg:p-16">
-        <div className="max-w-6xl mx-auto">
-           {children}
-        </div>
-      </main>
+      {/* Main Content with Topbar (top-right bell) */}
+      <div className="flex-1 lg:ml-72 flex flex-col min-w-0">
+        {/* Desktop Topbar */}
+        <header className="hidden lg:flex h-20 bg-background/80 backdrop-blur-xl border-b border-border px-8 items-center justify-end sticky top-0 z-30 gap-4">
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mr-auto">
+            Tutor Dashboard
+          </span>
+          <ThemeToggle />
+          <NotificationBell variant="topbar" />
+          <button
+            onClick={() => supabase.auth.signOut().then(() => router.push("/login"))}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border/60 bg-card/60 backdrop-blur-md text-foreground/80 transition-all hover:bg-destructive/10 hover:text-destructive hover:border-destructive/40"
+            aria-label="Sign out"
+          >
+            <LogOut className="h-5 w-5" />
+          </button>
+        </header>
+
+        <main className="flex-1 p-6 lg:p-16">
+          <div className="max-w-6xl mx-auto">
+            {children}
+          </div>
+        </main>
+        <FeedbackButton context="tutor" />
+      </div>
     </div>
   );
 }
 
-function TutorSidebarContent({ 
-  user, pathname, points, navItems, supabase, router, onClose 
+function TutorSidebarContent({
+  user, pathname, points, navItems, supabase, router, onClose
 }: any) {
   return (
     <div className="flex flex-col h-full">
@@ -218,42 +238,41 @@ function TutorSidebarContent({
           "grid gap-1.5",
           onClose ? "grid-cols-2" : "grid-cols-1"
         )}>
-          {navItems.map((item: any) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onClose}
-              className={cn(
-                "flex items-center gap-3 rounded-xl font-black uppercase tracking-widest transition-all duration-300",
-                onClose 
-                  ? "flex-col px-3 py-4 text-[9px] justify-center"
-                  : "px-5 py-4 text-[11px]",
-                pathname === item.href
-                  ? "bg-primary text-white shadow-xl shadow-primary/10"
-                  : "text-muted-foreground hover:text-primary hover:bg-primary/5"
-              )}
-            >
-              <item.icon className={cn(onClose ? "h-5 w-5" : "h-4 w-4")} />
-              {item.label}
-            </Link>
-          ))}
+          {navItems.map((item: any) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onClose}
+                className={cn(
+                  "flex items-center gap-3 rounded-xl font-black uppercase tracking-widest transition-all duration-300",
+                  onClose
+                    ? "flex-col px-3 py-4 text-[9px] justify-center relative"
+                    : "px-5 py-4 text-[11px]",
+                  isActive
+                    ? "bg-primary text-white shadow-xl shadow-primary/10"
+                    : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+                )}
+              >
+                <item.icon className={cn(onClose ? "h-5 w-5" : "h-4 w-4")} />
+                <span className="truncate">{item.label}</span>
+                {item.showCount && !isActive && <NotificationCountBadge />}
+                {item.showCount && isActive && (
+                  <span className={cn(
+                    "ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-white/20 text-white text-[10px] font-black flex items-center justify-center leading-none",
+                    onClose && "absolute top-1 right-1"
+                  )}>
+                    <NotificationCountBadge className="!bg-white !text-primary !shadow-none" />
+                  </span>
+                )}
+              </Link>
+            );
+          })}
         </div>
       </nav>
 
       <div className="p-6 border-t border-border/50 space-y-6 bg-secondary/20">
-        <div className="flex items-center justify-between px-2">
-           <ThemeToggle />
-           <div className="flex items-center gap-1">
-             <NotificationBell />
-             <button 
-                onClick={() => supabase.auth.signOut().then(() => router.push("/login"))}
-                className="p-3 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
-             >
-                <LogOut className="h-5 w-5" />
-             </button>
-           </div>
-        </div>
-        
         <div className="p-4 rounded-[1.5rem] bg-card border border-border flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center font-black text-lg shadow-lg shadow-primary/20">
             {user?.email?.[0].toUpperCase() || "U"}

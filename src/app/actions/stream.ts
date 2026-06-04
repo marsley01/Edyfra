@@ -378,6 +378,21 @@ export async function handleMashMention(
 
   const actualPrompt = prompt || `Greet me and ask how you can help with ${sessionSubject}${sessionTopic ? ` (${sessionTopic})` : ""}.`;
 
+  // Persist the user's Mash mention (best-effort, non-blocking)
+  void (async () => {
+    try {
+      const { saveAiChatMessage } = await import("@/app/actions/feedback");
+      await saveAiChatMessage({
+        bot: "mash",
+        role: "user",
+        content: messageText,
+        metadata: { channelId, subject: sessionSubject, topic: sessionTopic, tier: sessionTier },
+      });
+    } catch (e) {
+      // silent
+    }
+  })();
+
   let aiResponse: string;
 
   try {
@@ -406,6 +421,21 @@ export async function handleMashMention(
     console.error("[handleMashMention] Failed to send Stream message:", channelErr);
     throw new Error("Failed to send Mash AI response");
   }
+
+  // Persist Mash's reply (best-effort, non-blocking)
+  void (async () => {
+    try {
+      const { saveAiChatMessage } = await import("@/app/actions/feedback");
+      await saveAiChatMessage({
+        bot: "mash",
+        role: "assistant",
+        content: aiResponse,
+        metadata: { channelId, subject: sessionSubject, topic: sessionTopic },
+      });
+    } catch (e) {
+      // silent
+    }
+  })();
 
   return { success: true };
 }

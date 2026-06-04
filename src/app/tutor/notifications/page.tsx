@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, BellRing, Megaphone, Zap, Star, Trophy, Loader2, CheckCheck } from "lucide-react";
+import { Bell, BellRing, Megaphone, Zap, Star, Trophy, Loader2, CheckCheck, Wifi, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { getNotifications, markAllRead, markNotificationRead } from "@/app/actions/notifications";
+import { createClient } from "@/utils/supabase/client";
+import { LottieAnimation } from "@/components/lottie-animation";
 
 const TYPE_ICONS: Record<string, any> = {
   ANNOUNCEMENT: Megaphone,
@@ -39,9 +41,9 @@ export default function TutorNotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [marking, setMarking] = useState(false);
+  const [connected, setConnected] = useState(false);
 
-  const load = async () => {
-    setLoading(true);
+  const load = useCallback(async () => {
     try {
       const data = await getNotifications();
       setNotifications(data as Notification[]);
@@ -50,9 +52,49 @@ export default function TutorNotificationsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  useEffect(() => {
+    const supabase = createClient();
+    let cancelled = false;
+
+    supabase.auth.getUser().then(({ data }: { data: { user: any } }) => {
+      if (cancelled || !data.user) return;
+      const userId = data.user.id;
+
+      const channel = supabase
+        .channel(`tutor-notifications-${userId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "Notification",
+            filter: `userId=eq.${userId}`,
+          },
+          () => {
+            load();
+          }
+        )
+        .subscribe((status: string) => {
+          setConnected(status === "SUBSCRIBED");
+        });
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }).catch((err: unknown) => {
+      console.error("[TutorNotifications] realtime setup failed", err);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [load]);
 
   const handleMarkAllRead = async () => {
     setMarking(true);
@@ -96,8 +138,15 @@ export default function TutorNotificationsPage() {
               </Badge>
             )}
           </h1>
-          <p className="text-muted-foreground font-medium">
+          <p className="text-muted-foreground font-medium flex items-center gap-2 flex-wrap">
             Student requests, matches, earnings, and announcements.
+            <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+              {connected ? (
+                <><Wifi className="h-3 w-3 text-emerald-500" /> Live</>
+              ) : (
+                <><WifiOff className="h-3 w-3 text-muted-foreground" /> Refreshing</>
+              )}
+            </span>
           </p>
         </div>
         {unreadCount > 0 && (
@@ -114,21 +163,21 @@ export default function TutorNotificationsPage() {
       </div>
 
       {notifications.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 space-y-6 border-2 border-dashed border-border rounded-3xl">
-          <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center">
-            <Bell className="h-10 w-10 text-muted-foreground/40" />
+        <div className="flex flex-col items-center justify-center py-16 space-y-6 border-2 border-dashed border-border rounded-3xl">
+          <div className="w-48 h-48">
+            <LottieAnimation url="/animations/confetti.json" loop autoplay={false} />
           </div>
-          <div className="text-center space-y-2">
-            <h3 className="text-xl font-black">All caught up!</h3>
+          <div className="text-center space-y-2 max-w-sm">
+            <h3 className="text-xl font-black">You&apos;re all clear</h3>
             <p className="text-muted-foreground font-medium">
-              New student requests, session updates, and earnings alerts will appear here.
+              New student requests, session updates, and earnings alerts will pop up here as they come in.
             </p>
           </div>
         </div>
       ) : (
         <div className="space-y-3">
-          <AnimatePresence>
-            {notifications.map((n, i) => {
+          <AnimatePresence initial={false}>
+            {notifications.map((n) => {
               const Icon = TYPE_ICONS[n.type] || TYPE_ICONS.DEFAULT;
               const colorClass = TYPE_COLORS[n.type] || TYPE_COLORS.DEFAULT;
 
@@ -137,7 +186,8 @@ export default function TutorNotificationsPage() {
                   key={n.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.03 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  layout
                   onClick={() => handleMarkRead(n.id, n.actionUrl)}
                   className={`flex items-start gap-4 p-5 rounded-2xl border transition-all cursor-pointer group ${
                     n.read
@@ -151,7 +201,7 @@ export default function TutorNotificationsPage() {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                      <p className={`text-sm font-black leading-tight ${n.read ? "text-foreground" : "text-foreground"}`}>
+                      <p className="text-sm font-black leading-tight text-foreground">
                         {n.title}
                       </p>
                       {!n.read && (

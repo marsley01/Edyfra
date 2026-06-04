@@ -9,12 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Star, CheckCircle2, Clock, Calendar, Search } from "lucide-react";
+import { Loader2, Star, CheckCircle2, Clock, Calendar, Search, Sparkles, Zap, GraduationCap } from "lucide-react";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { LottieAnimation } from "@/components/lottie-animation";
 
 export default function TutorsPage() {
   const [tutors, setTutors] = useState<any[]>([]);
@@ -50,8 +52,8 @@ export default function TutorsPage() {
       <div className="flex flex-col sm:flex-row gap-4 bg-secondary/30 p-4 rounded-[2rem] border border-border">
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input 
-            placeholder="Search tutors or subjects..." 
+          <Input
+            placeholder="Search tutors or subjects..."
             className="pl-12 h-14 rounded-xl border-border bg-background focus-visible:ring-primary text-base font-bold"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -74,19 +76,42 @@ export default function TutorsPage() {
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
         </div>
       ) : filteredTutors.length === 0 ? (
-        <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 bg-secondary/30 rounded-[3rem] border border-dashed border-border">
-          <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-2">
-            <Search className="h-8 w-8 text-muted-foreground" />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="py-12 flex flex-col items-center justify-center text-center space-y-6 bg-secondary/30 rounded-[3rem] border border-dashed border-border"
+        >
+          <div className="w-48 h-48">
+            <LottieAnimation url="/animations/confetti.json" loop autoplay={false} />
           </div>
-          <h3 className="text-2xl font-black tracking-tightest">No tutors available right now.</h3>
-          <p className="text-muted-foreground">Try adjusting your filters, or study with Mash AI instantly.</p>
-          <Button 
-            onClick={() => router.push("/dashboard/study")}
-            className="mt-4 h-12 px-8 rounded-full font-black text-xs tracking-widest uppercase bg-emerald-500 hover:bg-emerald-600 text-white shadow-xl shadow-emerald-500/20 transition-all active:scale-95"
-          >
-            Study with Mash AI
-          </Button>
-        </div>
+          <div className="space-y-2 max-w-md">
+            <h3 className="text-2xl md:text-3xl font-black tracking-tightest">
+              {search || level !== "ALL" ? "No matches just yet" : "No tutors online right now"}
+            </h3>
+            <p className="text-muted-foreground font-medium">
+              {search || level !== "ALL"
+                ? "Try clearing the filters, or jump into a study session and we'll match you instantly."
+                : "Tutors take breaks too. In the meantime, Mash AI is always ready to help you learn."}
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              onClick={() => router.push("/dashboard/study")}
+              className="h-12 px-8 rounded-full font-black text-xs tracking-widest uppercase bg-emerald-500 hover:bg-emerald-600 text-white shadow-xl shadow-emerald-500/20 transition-all active:scale-95 gap-2"
+            >
+              <Zap className="h-4 w-4 fill-current" /> Find me someone now
+            </Button>
+            {(search || level !== "ALL") && (
+              <Button
+                variant="outline"
+                onClick={() => { setSearch(""); setLevel("ALL"); }}
+                className="h-12 px-6 rounded-full font-bold text-xs uppercase tracking-widest"
+              >
+                Clear filters
+              </Button>
+            )}
+          </div>
+        </motion.div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredTutors.map((tutor) => (

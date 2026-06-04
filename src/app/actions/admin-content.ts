@@ -31,8 +31,14 @@ export async function getReports() {
 
 export async function dismissReport(reportId: string) {
   await guard();
-  await prisma.report.update({ where: { id: reportId }, data: { status: "dismissed" } });
-  revalidatePath("/admin/moderation");
+  try {
+    await prisma.report.update({ where: { id: reportId }, data: { status: "dismissed" } });
+    revalidatePath("/admin/moderation");
+    return { success: true };
+  } catch (err) {
+    console.error("[dismissReport] error:", err);
+    return { error: "Could not dismiss report." };
+  }
 }
 
 export async function actionReport(reportId: string, action: "warn" | "suspend" | "ban") {
@@ -43,6 +49,39 @@ export async function actionReport(reportId: string, action: "warn" | "suspend" 
   if (action === "suspend") await prisma.user.update({ where: { id: report.reportedUserId }, data: { suspended: true } });
   if (action === "ban") await prisma.user.update({ where: { id: report.reportedUserId }, data: { banned: true } });
   revalidatePath("/admin/moderation");
+}
+
+/**
+ * Apply a moderation action directly to a user (no report required).
+ * Used by the Flagged Users list when admin clicks Suspend / Ban.
+ */
+export async function moderateUser(
+  userId: string,
+  action: "warn" | "suspend" | "unsuspend" | "ban" | "unban",
+) {
+  await guard();
+  try {
+    if (action === "suspend") {
+      await prisma.user.update({ where: { id: userId }, data: { suspended: true } });
+    } else if (action === "unsuspend") {
+      await prisma.user.update({ where: { id: userId }, data: { suspended: false } });
+    } else if (action === "ban") {
+      await prisma.user.update({ where: { id: userId }, data: { banned: true } });
+    } else if (action === "unban") {
+      await prisma.user.update({ where: { id: userId }, data: { banned: false } });
+    } else if (action === "warn") {
+      // Increment strikes by 1 as a soft warning
+      await prisma.user.update({
+        where: { id: userId },
+        data: { strikes: { increment: 1 } },
+      });
+    }
+    revalidatePath("/admin/moderation");
+    return { success: true, action, userId };
+  } catch (err: any) {
+    console.error("[moderateUser] error:", err);
+    return { error: err?.message || "Could not apply moderation action." };
+  }
 }
 
 // --- ANNOUNCEMENTS ---

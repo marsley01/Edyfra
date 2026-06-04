@@ -734,6 +734,31 @@ exports.Prisma.AnalyticsEventScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.FeedbackScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  userRole: 'userRole',
+  category: 'category',
+  rating: 'rating',
+  subject: 'subject',
+  message: 'message',
+  context: 'context',
+  status: 'status',
+  adminNote: 'adminNote',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AiChatMessageScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  bot: 'bot',
+  role: 'role',
+  content: 'content',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -870,7 +895,9 @@ exports.Prisma.ModelName = {
   SessionFlag: 'SessionFlag',
   Referral: 'Referral',
   MashContext: 'MashContext',
-  AnalyticsEvent: 'AnalyticsEvent'
+  AnalyticsEvent: 'AnalyticsEvent',
+  Feedback: 'Feedback',
+  AiChatMessage: 'AiChatMessage'
 };
 
 /**

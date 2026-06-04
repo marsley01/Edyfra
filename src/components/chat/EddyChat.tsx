@@ -36,10 +36,18 @@ export default function EddyChat() {
   const pathname = usePathname();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const scrollViewportRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    // Scroll to bottom whenever messages change or a new token arrives.
+    // Uses the ref first (reliable), falls back to the messagesEnd sentinel.
+    const viewport = scrollViewportRef.current;
+    if (viewport) {
+      viewport.scrollTo({ top: viewport.scrollHeight, behavior: "smooth" });
+    } else {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isLoading]);
 
   useEffect(() => {
     if (isOpen) {
@@ -84,6 +92,10 @@ export default function EddyChat() {
     setMessages([WELCOME]);
   };
 
+  if (pathname?.startsWith("/study-room")) {
+    return null;
+  }
+
   return (
     <>
       <button
@@ -111,8 +123,8 @@ export default function EddyChat() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 16, scale: 0.95 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="fixed bottom-6 right-6 z-50 flex w-[380px] max-w-[calc(100vw-2rem)] flex-col rounded-2xl border bg-popover shadow-2xl"
-              style={{ maxHeight: "min(560px, calc(100vh - 80px))" }}
+              className="fixed bottom-6 right-6 z-50 flex w-[380px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border bg-popover shadow-2xl"
+              style={{ height: "min(560px, calc(100vh - 80px))" }}
             >
               <div className="flex items-center gap-3 border-b px-4 py-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
@@ -141,8 +153,20 @@ export default function EddyChat() {
                 </button>
               </div>
 
-              <ScrollArea className="flex-1 px-4 py-3">
-                <div className="space-y-3">
+              <ScrollArea className="flex-1 min-h-0 overflow-y-auto px-4 py-3">
+                <div
+                  ref={(el) => {
+                    // Capture the ScrollArea's viewport element so the
+                    // auto-scroll effect can scroll it reliably.
+                    if (el) {
+                      const viewport = el.closest(
+                        '[data-slot="scroll-area-viewport"]',
+                      ) as HTMLDivElement | null;
+                      scrollViewportRef.current = viewport;
+                    }
+                  }}
+                  className="space-y-3"
+                >
                   {messages.map((msg) => (
                     <div
                       key={msg.id}
@@ -169,7 +193,7 @@ export default function EddyChat() {
                           )}
                         </div>
                         <div
-                          className={`rounded-2xl px-3.5 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
+                          className={`rounded-2xl px-3.5 py-2 text-sm leading-relaxed whitespace-pre-wrap break-words max-h-72 overflow-y-auto ${
                             msg.role === "user"
                               ? "bg-primary text-primary-foreground"
                               : "bg-muted"

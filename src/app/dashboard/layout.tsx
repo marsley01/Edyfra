@@ -4,6 +4,7 @@ import DashboardSidebar from "@/components/dashboard/Sidebar";
 import MatchNotification from "@/components/dashboard/MatchNotification";
 import MobileNav from "@/components/dashboard/MobileNav";
 import DashboardProviders from "./DashboardProviders";
+import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 
 export default async function DashboardLayout({
   children,
@@ -26,6 +27,7 @@ export default async function DashboardLayout({
           {children}
         </main>
         <MatchNotification />
+        <FeedbackButton context="dashboard" />
       </div>
     </DashboardProviders>
   );

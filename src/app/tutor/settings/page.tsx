@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { getUserData, updateProfile, updateTutorProfile, changePassword, changeEmail, downloadUserData, deleteUserAccount, updateAvatar, updateNotificationSettings } from "@/app/actions/user";
 import { getNotificationSettings } from "@/app/actions/notifications";
-import { PushNotificationInit } from "@/components/PushNotificationInit";
+import { PushNotificationManager } from "@/components/PushNotificationManager";
 import { TUTOR_CONFIG } from "@/lib/config";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { AvatarPicker, type AvatarStyle } from "@/components/ui/avatar-picker";
@@ -518,13 +518,7 @@ export default function TutorSettingsPage() {
                     </div>
                   ))}
                   <Separator className="my-4" />
-                  <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/20 border border-border/30 gap-3">
-                    <div className="min-w-0">
-                      <Label className="text-sm font-medium">Push Notifications</Label>
-                      <p className="text-xs text-muted-foreground">Receive alerts even when the tab is closed</p>
-                    </div>
-                    <PushNotificationInit />
-                  </div>
+                  <PushNotificationManager />
                 </CardContent>
               </Card>
             )}

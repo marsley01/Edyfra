@@ -1,80 +1,123 @@
 import { NextResponse } from "next/server";
-import { StreamChat } from "stream-chat";
-import { AIService } from "@/utils/ai-service";
+import { CheckSignature } from "stream-chat";
 import prisma from "@/lib/prisma";
 
 const STREAM_KEY = process.env.NEXT_PUBLIC_STREAM_KEY!;
 const STREAM_SECRET = process.env.STREAM_SECRET!;
 
 /**
- * Stream Chat Webhook Handler
+ * Stream Webhook Handler
  *
- * Receives message.new events from Stream Chat when users send messages.
- * Responds to @mash mentions in human sessions and auto-responds in MASH AI sessions.
+ * This webhook now handles Stream VIDEO events (call.ring, call.session_started,
+ * call.ended, etc.). The chat message.new webhook has been removed to prevent
+ * duplicate Mash AI responses — Mash AI is now triggered client-side by the
+ * sender of an @mash mention (see StreamChatRoom.tsx → `message.new` handler).
  *
- * NOTE: This webhook requires the URL to be configured in the Stream Dashboard:
- *   Dashboard → Chat → Webhooks → Add webhook URL
- *   URL: https://your-domain.com/api/webhooks/stream
- *   Events: message.new
- *
- * If the webhook URL is not configured, @mash still works via the client-side
- * fallback in StreamChatRoom.tsx which calls handleMashMention() directly.
+ * Configure in Stream Dashboard:
+ *   Dashboard → Video & Audio → Webhooks → Add webhook URL
+ *   URL: https://edyfra-v2.vercel.app/api/webhooks/stream
+ *   Events: call.* (all call-related events)
  */
 export async function POST(request: Request) {
   try {
-    const payload = await request.json();
-    const { type, message, cid } = payload;
+    const signature = request.headers.get("x-signature") || "";
+    const rawBody = await request.text();
 
-    // Only handle new messages
-    if (type !== "message.new" || !message || !cid) {
-      return NextResponse.json({ success: true, message: "Ignored event type" });
-    }
-
-    // Prevent infinite loops (ignore messages sent by mash-ai)
-    if (message.user?.id === "mash-ai") {
-      return NextResponse.json({ success: true, message: "Ignored AI's own message" });
-    }
-
-    // Channel ID = session UUID (matches the DB session id)
-    const cidParts = cid.split(":");
-    const channelId = cidParts.length > 1 ? cidParts[1] : cidParts[0];
-
-    // Fetch session — Stream channel ID is the session UUID
-    const session = await prisma.session.findUnique({
-      where: { id: channelId },
-      select: { id: true, tier: true, subject: true, topic: true, studentId: true, partnerId: true }
-    });
-
-    if (!session) {
-      return NextResponse.json({ success: true, message: "No session found for this channel" });
-    }
-
-    // Determine if AI should respond
-    let prompt = message.text || "";
-    let shouldRespond = false;
-
-    if (session.tier === "MASH") {
-      // AI-only session — auto-respond to every student message
-      shouldRespond = true;
-    } else {
-      // Human session — only respond when @mentioned
-      const mentionPattern = /@(?:Mash|AI|mash|ai|mash-ai|MASH)\b/;
-      const mention = prompt.match(mentionPattern);
-      if (mention) {
-        shouldRespond = true;
-        prompt = prompt.replace(mentionPattern, "").trim();
-        // If they only said @mash with no question, give a greeting
-        if (!prompt) {
-          prompt = `Greet me and ask how you can help with ${session.subject}${session.topic ? ` (${session.topic})` : ""}.`;
-        }
+    // Verify webhook signature if a secret is configured.
+    // (Stream uses HMAC-SHA256 over the raw body, keyed by your app secret.)
+    if (STREAM_SECRET && signature) {
+      const isValid = CheckSignature(rawBody, STREAM_SECRET, signature);
+      if (!isValid) {
+        console.warn("[StreamWebhook] Invalid signature");
+        return NextResponse.json({ success: false, error: "Invalid signature" }, { status: 401 });
       }
     }
 
-    // The AI generation logic has been removed from this webhook to prevent duplicate responses.
-    // Client-side triggers via `handleMashMention` in StreamChatRoom.tsx now fully handle all Mash AI logic,
-    // including custom fallback messages, without being restricted by short webhook timeouts.
-    return NextResponse.json({ success: true, message: "Handled by client-side server action" });
+    const payload = JSON.parse(rawBody);
+    const eventType: string = payload?.type || "";
+    const call = payload?.call || {};
+    const session = payload?.session || {};
+    const createdBy = call?.created_by || {};
 
+    // We only care about call events. Silently ack everything else.
+    if (!eventType.startsWith("call.")) {
+      return NextResponse.json({ success: true, message: "Ignored non-call event" });
+    }
+
+    const callId: string = call?.id || call?.cid?.split(":")?.[1] || "unknown";
+    const callType: string = call?.type || call?.cid?.split(":")?.[0] || "default";
+
+    // Find the Edyfra session that matches this Stream call/channel id.
+    // We store the Stream channel id as the Edyfra session id, so we can
+    // look it up directly. The call id is the same as the channel id.
+    let edyfraSession: { id: string; subject: string; studentId: string; partnerId: string | null } | null = null;
+    try {
+      edyfraSession = await prisma.session.findUnique({
+        where: { id: callId },
+        select: { id: true, subject: true, studentId: true, partnerId: true },
+      });
+    } catch (e) {
+      console.warn("[StreamWebhook] Session lookup failed:", e);
+    }
+
+    switch (eventType) {
+      case "call.created": {
+        console.log(`[StreamWebhook] call.created`, {
+          callId, callType, createdBy: createdBy?.id,
+          edyfraSessionId: edyfraSession?.id,
+        });
+        break;
+      }
+      case "call.ring": {
+        console.log(`[StreamWebhook] call.ring`, {
+          callId, callType, createdBy: createdBy?.id,
+          edyfraSessionId: edyfraSession?.id,
+        });
+        break;
+      }
+      case "call.session_started": {
+        console.log(`[StreamWebhook] call.session_started`, {
+          callId, callType, startedBy: createdBy?.id,
+          sessionId: session?.id, edyfraSessionId: edyfraSession?.id,
+        });
+        break;
+      }
+      case "call.ended": {
+        const endedBy = payload?.ended_by || {};
+        const durationSeconds = session?.ended_at && session?.started_at
+          ? Math.max(0, Math.floor((new Date(session.ended_at).getTime() - new Date(session.started_at).getTime()) / 1000))
+          : null;
+        console.log(`[StreamWebhook] call.ended`, {
+          callId, endedBy: endedBy?.id, durationSeconds,
+          reason: payload?.reason, edyfraSessionId: edyfraSession?.id,
+        });
+        break;
+      }
+      case "call.rejected": {
+        console.log(`[StreamWebhook] call.rejected`, {
+          callId, rejectedBy: createdBy?.id, edyfraSessionId: edyfraSession?.id,
+        });
+        break;
+      }
+      case "call.session_participant_joined": {
+        console.log(`[StreamWebhook] call.session_participant_joined`, {
+          callId, participant: payload?.participant?.user_id,
+          edyfraSessionId: edyfraSession?.id,
+        });
+        break;
+      }
+      case "call.session_participant_left": {
+        console.log(`[StreamWebhook] call.session_participant_left`, {
+          callId, participant: payload?.participant?.user_id,
+          edyfraSessionId: edyfraSession?.id,
+        });
+        break;
+      }
+      default:
+        console.log(`[StreamWebhook] ${eventType}`, { callId, callType });
+    }
+
+    return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error("[StreamWebhook] Error:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/client";
 import {
-  ChevronLeft, Menu, Activity, Globe, Users, LayoutDashboard, GraduationCap, ShieldCheck, FileText, BookMarked, Bell, Newspaper, Star, MessageSquare, Award, TrendingUp, Settings, Search, Terminal, LogOut, Cpu
+  ChevronLeft, Menu, Activity, Globe, Users, LayoutDashboard, GraduationCap, ShieldCheck, FileText, BookMarked, Bell, Newspaper, Star, MessageSquare, Award, TrendingUp, Settings, Search, Terminal, LogOut, Cpu, Inbox, Bot
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import Link from "next/link";
@@ -93,6 +93,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin/news", label: "Knowledge Feed", icon: Newspaper },
     { href: "/admin/testimonials", label: "Testimonials", icon: Star },
     { href: "/admin/feedback", label: "Tutor Feedback", icon: MessageSquare },
+    { href: "/admin/feedback-inbox", label: "User Feedback Inbox", icon: Inbox },
+    { href: "/admin/ai-history", label: "AI History", icon: Bot },
     { href: "/admin/challenges", label: "AI Challenges", icon: Award },
     { href: "/admin/insights", label: "Site Insights", icon: TrendingUp },
     { href: "/admin/settings", label: "Settings", icon: Settings },
