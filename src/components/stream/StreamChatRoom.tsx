@@ -23,7 +23,6 @@ import {
 import { VideoCallUI } from "./VideoCallUI";
 import { DynamicIsland } from "./DynamicIsland";
 import { StreamAttachment } from "./StreamAttachment";
-import { MediaDiagnostic } from "./MediaDiagnostic";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 import { getStreamToken, upsertStreamUser } from "@/app/actions/stream";
 
@@ -113,7 +112,6 @@ export default function StreamChatRoom({
   const [incomingCall, setIncomingCall] = useState<{ from: string } | null>(null);
   const [permDenied, setPermDenied] = useState(false);
   const [permWarmed, setPermWarmed] = useState(false);
-  const [permRetryNonce, setPermRetryNonce] = useState(0);
 
   const clientRef = useRef<StreamChat | null>(null);
   const videoClientRef = useRef<StreamVideoClient | null>(null);
@@ -311,56 +309,30 @@ export default function StreamChatRoom({
     };
   }, [videoClient, channelId]);
 
-  // ─── Proactive permission probe + warm-up ─────────────────────────────────
-  // On mount we do TWO things:
-  //  (1) Check `navigator.permissions` to detect previously-denied state and
-  //      show the warning banner immediately (Chrome/Edge only).
-  //  (2) Issue a no-op `getUserMedia` request with `audio: true` only, which
-  //      is the lightest possible prompt Chrome will accept. This is the
-  //      "warm-up" — the user gets the browser prompt right after page load
-  //      (or sees a status indicator) instead of being ambushed by it the
-  //      moment they click "Start Call". Tracks are stopped immediately.
+  // ─── Quiet permission state check ──────────────────────────────────────────
+  // On mount we ONLY run the Permissions API query (which is safe outside a
+  // user gesture). We do NOT call `getUserMedia` here — Chrome auto-denies
+  // `getUserMedia` when it isn't triggered by a user gesture, which is what
+  // produced the big red "Camera & microphone are blocked" banner. The
+  // permission prompt now only fires from a real click (the "Allow" pill
+  // below or the "Start Call" button), where Chrome actually shows it.
   useEffect(() => {
-    if (typeof navigator === "undefined") return;
+    if (typeof navigator === "undefined" || !navigator.permissions?.query) return;
     let cancelled = false;
 
     (async () => {
-      // (1) Permissions API check — silently fail on Firefox/Safari
-      if (navigator.permissions?.query) {
-        try {
-          const checks = await Promise.allSettled([
-            navigator.permissions.query({ name: "camera" as PermissionName }),
-            navigator.permissions.query({ name: "microphone" as PermissionName }),
-          ]);
-          if (cancelled) return;
-          const blocked = checks.some(
-            (c) => c.status === "fulfilled" && c.value.state === "denied",
-          );
-          if (blocked) setPermDenied(true);
-        } catch {
-          // Permissions API not fully supported — silent fallback
-        }
-      }
-
-      // (2) Warm-up: request audio-only first (lightest prompt). If user
-      // accepts, we mark `permWarmed = true`. If they deny, the banner
-      // appears. If they ignore the prompt, the click handler will retry
-      // with both audio + video.
-      if (navigator.mediaDevices?.getUserMedia && !cancelled) {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          stream.getTracks().forEach((t) => t.stop());
-          if (!cancelled) {
-            setPermWarmed(true);
-            setPermDenied(false);
-          }
-        } catch (err: any) {
-          if (cancelled) return;
-          const isDenied =
-            err?.name === "NotAllowedError" ||
-            err?.name === "PermissionDeniedError";
-          if (isDenied) setPermDenied(true);
-        }
+      try {
+        const checks = await Promise.allSettled([
+          navigator.permissions.query({ name: "camera" as PermissionName }),
+          navigator.permissions.query({ name: "microphone" as PermissionName }),
+        ]);
+        if (cancelled) return;
+        const blocked = checks.some(
+          (c) => c.status === "fulfilled" && c.value.state === "denied",
+        );
+        if (blocked) setPermDenied(true);
+      } catch {
+        // Permissions API not fully supported — silent fallback
       }
     })();
 
@@ -368,34 +340,6 @@ export default function StreamChatRoom({
       cancelled = true;
     };
   }, []);
-
-  // ─── Permission-state poller ───────────────────────────────────────────────
-  // When the warning banner is visible, poll `navigator.permissions` every 2s.
-  // If the user fixes the lock icon (or Windows privacy) while we're idle,
-  // the banner auto-dismisses so they don't have to click the button.
-  useEffect(() => {
-    if (!permDenied || typeof navigator === "undefined" || !navigator.permissions?.query) return;
-
-    const id = setInterval(async () => {
-      try {
-        const [cam, mic] = await Promise.allSettled([
-          navigator.permissions.query({ name: "camera" as PermissionName }),
-          navigator.permissions.query({ name: "microphone" as PermissionName }),
-        ]);
-        const states = [cam, mic].map((r) =>
-          r.status === "fulfilled" ? r.value.state : "prompt",
-        );
-        if (states.every((s) => s === "granted")) {
-          setPermDenied(false);
-          setPermWarmed(true);
-        }
-      } catch {
-        // silent
-      }
-    }, 2000);
-
-    return () => clearInterval(id);
-  }, [permDenied]);
 
   // ─── Pre-flight: explicitly request camera + mic so the browser prompt ─────
   // fires BEFORE the user clicks "Start Call". This was the #1 cause of "I
@@ -437,9 +381,6 @@ export default function StreamChatRoom({
           description: err?.message || "Check your device settings.",
         });
       }
-      // Bump the diagnostic nonce so the MediaDiagnostic re-runs and shows the
-      // exact error name + deep links to fix it.
-      setPermRetryNonce((n) => n + 1);
       return false;
     }
   }, []);
@@ -895,31 +836,19 @@ export default function StreamChatRoom({
             )}
 
             {permDenied && !inCall && (
-              <div className="px-6 py-4 bg-red-500/5 border-b border-red-500/20 flex items-start gap-3">
-                <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
-                <div className="text-xs text-red-600 dark:text-red-300 leading-relaxed flex-1 space-y-2">
-                  <p>
-                    <strong>Camera & microphone are blocked.</strong> Your browser is preventing
-                    this site from using your camera and mic.
-                  </p>
-                  <ol className="list-decimal list-inside space-y-1 text-red-600/90 dark:text-red-300/90">
-                    <li>Click the <span className="font-bold">lock icon</span> (or camera icon) next to the URL in your address bar.</li>
-                    <li>Set <strong>Camera</strong> and <strong>Microphone</strong> to <em>Allow</em>.</li>
-                    <li>Click the <em>Permissions needed</em> button below to try again.</li>
-                  </ol>
-                  <p className="text-[11px] text-red-600/70 dark:text-red-300/70">
-                    If you don&apos;t see a lock icon, your browser may be in Incognito mode or the device
-                    may be in use by another app (Zoom, Meet, etc.). Close those first.
-                  </p>
-                  <MediaDiagnostic
-                    trigger={permRetryNonce}
-                    onResolved={() => {
-                      setPermDenied(false);
-                      setPermWarmed(true);
-                      toast.success("Microphone access works — try Start Call again.");
-                    }}
-                  />
-                </div>
+              <div className="px-6 py-2.5 bg-amber-500/10 border-b border-amber-500/20 flex items-center gap-3">
+                <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-300 shrink-0" />
+                <p className="text-xs text-amber-800 dark:text-amber-200 font-medium flex-1">
+                  Camera & mic blocked. Click the lock icon in your address bar, allow both, then click below.
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={requestMediaPermissions}
+                  className="h-7 rounded-full text-[10px] font-black uppercase tracking-widest border-amber-500/40 text-amber-700 dark:text-amber-200 hover:bg-amber-500/15 px-3"
+                >
+                  Allow
+                </Button>
               </div>
             )}
 
