@@ -79,43 +79,36 @@ export const getUserData = cache(async (): Promise<(User & { studentProfile: Stu
         lastActive.getMonth() !== today.getMonth() || 
         lastActive.getFullYear() !== today.getFullYear();
 
-      if (isNewDay) {
-        prismaUser = await prisma.user.update({
-          where: { id: prismaUser.id },
-          data: {
-            points: { increment: SESSION_CONFIG.DAILY_ACTIVITY_REWARD },
-            lastActiveAt: today,
-          },
-          include: {
-            studentProfile: true,
-            tutorProfile: true
-          }
-        });
-      }
-
-      // Backfill referral code if missing
-      if (!prismaUser.referralCode) {
-        prismaUser = await prisma.user.update({
-          where: { id: prismaUser.id },
-          data: { referralCode: generateReferralCode(prismaUser.name) },
-          include: { studentProfile: true, tutorProfile: true }
-        });
-      }
-    }
-
-    // Tier recalibration: keep tier in sync with points
-    const correctTier = TIER_CONFIG.getTierFromPoints(prismaUser.points);
-    if (prismaUser.tier !== correctTier) {
-      prismaUser = await prisma.user.update({
+    if (isNewDay) {
+      await prisma.user.update({
         where: { id: prismaUser.id },
-        data: { tier: correctTier as Tier },
-        include: { studentProfile: true, tutorProfile: true }
+        data: {
+          points: { increment: SESSION_CONFIG.DAILY_ACTIVITY_REWARD },
+          lastActiveAt: today,
+        },
       });
+      // Update local object to avoid re-fetching
+      prismaUser.points += SESSION_CONFIG.DAILY_ACTIVITY_REWARD;
+      prismaUser.lastActiveAt = today;
     }
 
-    // Keep Supabase metadata aligned for routing checks (middleware/layouts).
-    // Do NOT overwrite Prisma role based on metadata (metadata can be missing/outdated).
-    await syncSupabaseRoleFromPrisma(supabase, prismaUser.role);
+    // Backfill referral code if missing - Rare operation
+    if (!prismaUser.referralCode) {
+      const code = generateReferralCode(prismaUser.name);
+      await prisma.user.update({
+        where: { id: prismaUser.id },
+        data: { referralCode: code },
+      });
+      prismaUser.referralCode = code;
+    }
+
+    // Keep Supabase metadata aligned - only update if different to avoid API overhead
+    const { data } = await supabase.auth.getUser();
+    const currentMetaRole = (data.user?.user_metadata?.role || "").toUpperCase();
+    const actualRole = prismaUser.role.toString().toUpperCase();
+    if (currentMetaRole !== actualRole) {
+      await supabase.auth.updateUser({ data: { role: actualRole } });
+    }
 
     return prismaUser;
   } catch (error) {
