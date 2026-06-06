@@ -69,6 +69,7 @@ export function SettingsClient({
       });
       if (!res.ok) showError({ title: "We couldn't save those settings", cause: res.error, fix: "Try again, or refresh the page." });
       else showSuccess("Settings saved", { description: "Your school profile is up to date." });
+    });
   }
 
   return (
@@ -246,6 +247,7 @@ function TermForm({
       });
       if (!res.ok) showError({ title: "We couldn't save that term", cause: res.error, fix: "Check the dates and try again." });
       else showSuccess("Term saved", { description: "Your academic calendar is updated." });
+    });
   }
 
   return (
