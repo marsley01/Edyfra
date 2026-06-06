@@ -82,6 +82,16 @@ model User {
   institutionTutors        InstitutionTutor[]
   institutionMembers       InstitutionMember[]
   uploadedDocuments        InstitutionDocument[]
+  institutionAdminAccounts InstitutionAdmin[]
+  studentResults           StudentResult[]         @relation("StudentResults")
+  uploadedResults          StudentResult[]         @relation("ResultUploader")
+  coachingAsStudent        CoachingAssignment[]    @relation("CoachingStudent")
+  coachingAsTeacher        CoachingAssignment[]    @relation("CoachingTeacher")
+  activityAsActor          InstitutionActivity[]   @relation("ActivityActor")
+  activityAsTarget         InstitutionActivity[]   @relation("ActivityTarget")
+  teacherAssignments       TeacherSubjectAssignment[] @relation("TeacherAssignments")
+  sentInvitations          InstitutionInvitation[] @relation("InvitedBy")
+  resultAnalyses           StudentResultsAnalysis[] @relation("ResultAnalysisStudent")
   pushSubscriptions        PushSubscription[]
   tutorAvailabilities      TutorAvailability[]     @relation("TutorAvailability")
   studentBookings          Booking[]               @relation("StudentBookings")
@@ -628,6 +638,7 @@ enum Role {
   STUDENT
   TUTOR
   ADMIN
+  FOUNDER
 }
 
 enum EduLevel {
@@ -693,6 +704,103 @@ enum resource_status {
   rejected
 }
 
+enum InstitutionStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  REJECTED
+}
+
+enum SchoolType {
+  PRIMARY
+  SECONDARY
+  COLLEGE
+  UNIVERSITY
+}
+
+enum Curriculum {
+  CBC
+  EIGHT_FOUR_FOUR
+  IGCSE
+  MIXED
+  UNIVERSITY
+}
+
+enum AdminTitle {
+  PRINCIPAL
+  DEPUTY
+  HOD
+  REGISTRAR
+  OTHER
+}
+
+enum InstitutionPlan {
+  STARTER
+  GROWTH
+  ENTERPRISE
+}
+
+enum ResultFlag {
+  CRITICAL
+  AT_RISK
+  MONITORING
+  ON_TRACK
+  EXCELLENT
+}
+
+enum ResultTrend {
+  IMPROVING
+  DECLINING
+  STABLE
+}
+
+enum OverallStatus {
+  RED
+  YELLOW
+  GREEN
+}
+
+enum InstitutionRole {
+  INSTITUTION_ADMIN
+  INSTITUTION_DEPUTY
+  INSTITUTION_TEACHER
+  INSTITUTION_STUDENT
+}
+
+enum CoachingStatus {
+  SCHEDULED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum InvitationRole {
+  TEACHER
+  STUDENT
+  ADMIN
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+}
+
+enum ActivityType {
+  STUDENT_JOINED
+  STUDENT_REMOVED
+  TEACHER_INVITED
+  TEACHER_JOINED
+  TEACHER_REMOVED
+  RESULTS_UPLOADED
+  REPORT_GENERATED
+  COACHING_ASSIGNED
+  COACHING_BOOKED
+  ADMIN_ADDED
+  SETTINGS_UPDATED
+}
+
 model Institution {
   id             String   @id @default(cuid())
   name           String
@@ -711,11 +819,37 @@ model Institution {
   updatedAt      DateTime @updatedAt
   isActive       Boolean  @default(true)
 
-  staff     InstitutionStaff[]
-  students  InstitutionStudent[]
-  tutors    InstitutionTutor[]
-  members   InstitutionMember[]
-  documents InstitutionDocument[]
+  // Institution System v2 fields
+  status           InstitutionStatus @default(PENDING)
+  schoolType       SchoolType?
+  curriculum       Curriculum?
+  county           String?
+  subCounty        String?
+  studentCount     Int?
+  adminName        String?
+  adminTitle       AdminTitle?
+  adminPhone       String?
+  adminEmail       String?
+  primaryAdminUserId String?
+  planTier         InstitutionPlan?
+  currentTermId    String?
+  approvedAt       DateTime?
+  approvedByUserId String?
+  motto            String?
+  address          String?
+
+  staff       InstitutionStaff[]
+  students    InstitutionStudent[]
+  tutors      InstitutionTutor[]
+  members     InstitutionMember[]
+  documents   InstitutionDocument[]
+  adminAccounts InstitutionAdmin[]
+  academicTerms AcademicTerm[]
+  results       StudentResult[]
+  coachingAssignments CoachingAssignment[]
+  activity      InstitutionActivity[]
+  teacherAssignments TeacherSubjectAssignment[]
+  invitations   InstitutionInvitation[]
 }
 
 model InstitutionStaff {
@@ -1036,8 +1170,178 @@ model CommunityRead {
   topicId    String
   lastReadAt DateTime       @default(now())
   user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  topic      CommunityTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topic     CommunityTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
 
   @@unique([userId, topicId])
   @@index([userId])
+}
+
+// =====================================================================
+// Institution System v2 — application, calendar, results, coaching
+// =====================================================================
+
+model InstitutionAdmin {
+  id            String   @id @default(cuid())
+  institutionId String
+  userId        String
+  title         AdminTitle
+  isPrimary     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([institutionId, userId])
+  @@index([institutionId])
+}
+
+model AcademicTerm {
+  id            String   @id @default(cuid())
+  institutionId String
+  term          Int
+  year          Int
+  startDate     DateTime
+  endDate       DateTime
+  holidayStart  DateTime?
+  holidayEnd    DateTime?
+  isCurrent     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  @@unique([institutionId, term, year])
+  @@index([institutionId, isCurrent])
+}
+
+model StudentResult {
+  id              String   @id @default(cuid())
+  institutionId   String
+  studentUserId   String
+  admissionNumber String
+  studentName     String
+  subject         String
+  marks           Float
+  grade           String?
+  term            Int
+  year            Int
+  form            String
+  uploadedById    String
+  createdAt       DateTime @default(now())
+
+  institution Institution           @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  student     User                  @relation("StudentResults", fields: [studentUserId], references: [id], onDelete: Cascade)
+  uploader    User                  @relation("ResultUploader", fields: [uploadedById], references: [id], onDelete: Cascade)
+  analysis    StudentResultsAnalysis?
+
+  @@index([institutionId, term, year])
+  @@index([studentUserId, term, year])
+  @@index([admissionNumber, institutionId])
+}
+
+model StudentResultsAnalysis {
+  id              String        @id @default(cuid())
+  studentResultId String        @unique
+  subject         String
+  term            Int
+  year            Int
+  studentUserId   String
+  institutionId   String
+  marks           Float
+  lastTermMarks   Float?
+  trend           ResultTrend
+  flag            ResultFlag
+  overallStatus   OverallStatus
+  aiInsight       String?
+  aiGeneratedAt   DateTime?
+  createdAt       DateTime      @default(now())
+
+  result  StudentResult @relation(fields: [studentResultId], references: [id], onDelete: Cascade)
+  student User          @relation("ResultAnalysisStudent", fields: [studentUserId], references: [id], onDelete: Cascade)
+
+  @@index([institutionId, term, year])
+  @@index([studentUserId, term, year])
+  @@index([flag])
+  @@index([overallStatus])
+}
+
+model CoachingAssignment {
+  id                String         @id @default(cuid())
+  institutionId     String
+  studentUserId     String
+  teacherUserId     String
+  subject           String
+  schedule          String?
+  startDate         DateTime
+  endDate           DateTime
+  isHoliday         Boolean        @default(false)
+  sessionsAttended  Int            @default(0)
+  sessionsScheduled Int            @default(0)
+  status            CoachingStatus @default(SCHEDULED)
+  notes             String?
+  createdAt         DateTime       @default(now())
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  student     User        @relation("CoachingStudent", fields: [studentUserId], references: [id], onDelete: Cascade)
+  teacher     User        @relation("CoachingTeacher", fields: [teacherUserId], references: [id], onDelete: Cascade)
+
+  @@index([institutionId, status])
+  @@index([studentUserId])
+  @@index([teacherUserId])
+}
+
+model InstitutionActivity {
+  id            String       @id @default(cuid())
+  institutionId String
+  type          ActivityType
+  actorUserId   String?
+  targetUserId  String?
+  title         String
+  body          String?
+  metadata      Json         @default("{}")
+  createdAt     DateTime     @default(now())
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  actor       User?       @relation("ActivityActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  target      User?       @relation("ActivityTarget", fields: [targetUserId], references: [id], onDelete: SetNull)
+
+  @@index([institutionId, createdAt])
+  @@index([institutionId, type])
+}
+
+model TeacherSubjectAssignment {
+  id            String   @id @default(cuid())
+  institutionId String
+  teacherUserId String
+  subject       String
+  formYear      String?
+  createdAt     DateTime @default(now())
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  teacher     User        @relation("TeacherAssignments", fields: [teacherUserId], references: [id], onDelete: Cascade)
+
+  @@unique([institutionId, teacherUserId, subject])
+  @@index([institutionId])
+}
+
+model InstitutionInvitation {
+  id            String           @id @default(cuid())
+  institutionId String
+  email         String
+  name          String
+  role          InvitationRole
+  subjects      String[]
+  formYear      String?
+  status        InvitationStatus @default(PENDING)
+  token         String           @unique
+  invitedById   String
+  expiresAt     DateTime
+  acceptedAt    DateTime?
+  createdAt     DateTime         @default(now())
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  invitedBy   User        @relation("InvitedBy", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  @@unique([institutionId, email, role])
+  @@index([token])
+  @@index([institutionId, status])
 }

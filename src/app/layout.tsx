@@ -12,6 +12,7 @@ import { PushSubscriptionManager } from "@/components/push-subscription-manager"
 import { StreamVideoProvider } from "@/components/stream/StreamVideoProvider";
 import EddyChatWrapper from "@/components/chat/EddyChatWrapper";
 import { OverlayManagerProvider } from "@/lib/overlay-manager";
+import { BottomDock } from "@/components/bottom-dock";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -103,6 +104,7 @@ export default function RootLayout({
               <PushSubscriptionManager />
               <EddyChatWrapper />
               <Toaster richColors position="top-right" />
+              <BottomDock />
               <Analytics />
               <SpeedInsights />
             </OverlayManagerProvider>

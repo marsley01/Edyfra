@@ -605,7 +605,24 @@ exports.Prisma.InstitutionScalarFieldEnum = {
   plan: 'plan',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  isActive: 'isActive'
+  isActive: 'isActive',
+  status: 'status',
+  schoolType: 'schoolType',
+  curriculum: 'curriculum',
+  county: 'county',
+  subCounty: 'subCounty',
+  studentCount: 'studentCount',
+  adminName: 'adminName',
+  adminTitle: 'adminTitle',
+  adminPhone: 'adminPhone',
+  adminEmail: 'adminEmail',
+  primaryAdminUserId: 'primaryAdminUserId',
+  planTier: 'planTier',
+  currentTermId: 'currentTermId',
+  approvedAt: 'approvedAt',
+  approvedByUserId: 'approvedByUserId',
+  motto: 'motto',
+  address: 'address'
 };
 
 exports.Prisma.InstitutionStaffScalarFieldEnum = {
@@ -815,6 +832,116 @@ exports.Prisma.CommunityReadScalarFieldEnum = {
   lastReadAt: 'lastReadAt'
 };
 
+exports.Prisma.InstitutionAdminScalarFieldEnum = {
+  id: 'id',
+  institutionId: 'institutionId',
+  userId: 'userId',
+  title: 'title',
+  isPrimary: 'isPrimary',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AcademicTermScalarFieldEnum = {
+  id: 'id',
+  institutionId: 'institutionId',
+  term: 'term',
+  year: 'year',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  holidayStart: 'holidayStart',
+  holidayEnd: 'holidayEnd',
+  isCurrent: 'isCurrent',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.StudentResultScalarFieldEnum = {
+  id: 'id',
+  institutionId: 'institutionId',
+  studentUserId: 'studentUserId',
+  admissionNumber: 'admissionNumber',
+  studentName: 'studentName',
+  subject: 'subject',
+  marks: 'marks',
+  grade: 'grade',
+  term: 'term',
+  year: 'year',
+  form: 'form',
+  uploadedById: 'uploadedById',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.StudentResultsAnalysisScalarFieldEnum = {
+  id: 'id',
+  studentResultId: 'studentResultId',
+  subject: 'subject',
+  term: 'term',
+  year: 'year',
+  studentUserId: 'studentUserId',
+  institutionId: 'institutionId',
+  marks: 'marks',
+  lastTermMarks: 'lastTermMarks',
+  trend: 'trend',
+  flag: 'flag',
+  overallStatus: 'overallStatus',
+  aiInsight: 'aiInsight',
+  aiGeneratedAt: 'aiGeneratedAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.CoachingAssignmentScalarFieldEnum = {
+  id: 'id',
+  institutionId: 'institutionId',
+  studentUserId: 'studentUserId',
+  teacherUserId: 'teacherUserId',
+  subject: 'subject',
+  schedule: 'schedule',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  isHoliday: 'isHoliday',
+  sessionsAttended: 'sessionsAttended',
+  sessionsScheduled: 'sessionsScheduled',
+  status: 'status',
+  notes: 'notes',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.InstitutionActivityScalarFieldEnum = {
+  id: 'id',
+  institutionId: 'institutionId',
+  type: 'type',
+  actorUserId: 'actorUserId',
+  targetUserId: 'targetUserId',
+  title: 'title',
+  body: 'body',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.TeacherSubjectAssignmentScalarFieldEnum = {
+  id: 'id',
+  institutionId: 'institutionId',
+  teacherUserId: 'teacherUserId',
+  subject: 'subject',
+  formYear: 'formYear',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.InstitutionInvitationScalarFieldEnum = {
+  id: 'id',
+  institutionId: 'institutionId',
+  email: 'email',
+  name: 'name',
+  role: 'role',
+  subjects: 'subjects',
+  formYear: 'formYear',
+  status: 'status',
+  token: 'token',
+  invitedById: 'invitedById',
+  expiresAt: 'expiresAt',
+  acceptedAt: 'acceptedAt',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -852,7 +979,8 @@ exports.Gender = exports.$Enums.Gender = {
 exports.Role = exports.$Enums.Role = {
   STUDENT: 'STUDENT',
   TUTOR: 'TUTOR',
-  ADMIN: 'ADMIN'
+  ADMIN: 'ADMIN',
+  FOUNDER: 'FOUNDER'
 };
 
 exports.EduLevel = exports.$Enums.EduLevel = {
@@ -897,6 +1025,96 @@ exports.AppStatus = exports.$Enums.AppStatus = {
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',
   REJECTED: 'REJECTED'
+};
+
+exports.InstitutionStatus = exports.$Enums.InstitutionStatus = {
+  PENDING: 'PENDING',
+  ACTIVE: 'ACTIVE',
+  SUSPENDED: 'SUSPENDED',
+  REJECTED: 'REJECTED'
+};
+
+exports.SchoolType = exports.$Enums.SchoolType = {
+  PRIMARY: 'PRIMARY',
+  SECONDARY: 'SECONDARY',
+  COLLEGE: 'COLLEGE',
+  UNIVERSITY: 'UNIVERSITY'
+};
+
+exports.Curriculum = exports.$Enums.Curriculum = {
+  CBC: 'CBC',
+  EIGHT_FOUR_FOUR: 'EIGHT_FOUR_FOUR',
+  IGCSE: 'IGCSE',
+  MIXED: 'MIXED',
+  UNIVERSITY: 'UNIVERSITY'
+};
+
+exports.AdminTitle = exports.$Enums.AdminTitle = {
+  PRINCIPAL: 'PRINCIPAL',
+  DEPUTY: 'DEPUTY',
+  HOD: 'HOD',
+  REGISTRAR: 'REGISTRAR',
+  OTHER: 'OTHER'
+};
+
+exports.InstitutionPlan = exports.$Enums.InstitutionPlan = {
+  STARTER: 'STARTER',
+  GROWTH: 'GROWTH',
+  ENTERPRISE: 'ENTERPRISE'
+};
+
+exports.ResultTrend = exports.$Enums.ResultTrend = {
+  IMPROVING: 'IMPROVING',
+  DECLINING: 'DECLINING',
+  STABLE: 'STABLE'
+};
+
+exports.ResultFlag = exports.$Enums.ResultFlag = {
+  CRITICAL: 'CRITICAL',
+  AT_RISK: 'AT_RISK',
+  MONITORING: 'MONITORING',
+  ON_TRACK: 'ON_TRACK',
+  EXCELLENT: 'EXCELLENT'
+};
+
+exports.OverallStatus = exports.$Enums.OverallStatus = {
+  RED: 'RED',
+  YELLOW: 'YELLOW',
+  GREEN: 'GREEN'
+};
+
+exports.CoachingStatus = exports.$Enums.CoachingStatus = {
+  SCHEDULED: 'SCHEDULED',
+  ACTIVE: 'ACTIVE',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED'
+};
+
+exports.ActivityType = exports.$Enums.ActivityType = {
+  STUDENT_JOINED: 'STUDENT_JOINED',
+  STUDENT_REMOVED: 'STUDENT_REMOVED',
+  TEACHER_INVITED: 'TEACHER_INVITED',
+  TEACHER_JOINED: 'TEACHER_JOINED',
+  TEACHER_REMOVED: 'TEACHER_REMOVED',
+  RESULTS_UPLOADED: 'RESULTS_UPLOADED',
+  REPORT_GENERATED: 'REPORT_GENERATED',
+  COACHING_ASSIGNED: 'COACHING_ASSIGNED',
+  COACHING_BOOKED: 'COACHING_BOOKED',
+  ADMIN_ADDED: 'ADMIN_ADDED',
+  SETTINGS_UPDATED: 'SETTINGS_UPDATED'
+};
+
+exports.InvitationRole = exports.$Enums.InvitationRole = {
+  TEACHER: 'TEACHER',
+  STUDENT: 'STUDENT',
+  ADMIN: 'ADMIN'
+};
+
+exports.InvitationStatus = exports.$Enums.InvitationStatus = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  EXPIRED: 'EXPIRED',
+  REVOKED: 'REVOKED'
 };
 
 exports.Prisma.ModelName = {
@@ -959,7 +1177,15 @@ exports.Prisma.ModelName = {
   CommunityPost: 'CommunityPost',
   CommunityReaction: 'CommunityReaction',
   CommunitySubscription: 'CommunitySubscription',
-  CommunityRead: 'CommunityRead'
+  CommunityRead: 'CommunityRead',
+  InstitutionAdmin: 'InstitutionAdmin',
+  AcademicTerm: 'AcademicTerm',
+  StudentResult: 'StudentResult',
+  StudentResultsAnalysis: 'StudentResultsAnalysis',
+  CoachingAssignment: 'CoachingAssignment',
+  InstitutionActivity: 'InstitutionActivity',
+  TeacherSubjectAssignment: 'TeacherSubjectAssignment',
+  InstitutionInvitation: 'InstitutionInvitation'
 };
 
 /**

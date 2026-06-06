@@ -286,6 +286,49 @@ export async function getTutorSessions(status: "ACTIVE" | "COMPLETED" | "PENDING
   }
 }
 
+/**
+ * Returns the top verified tutors ranked by rating, with totalSessions as a
+ * tiebreaker. Used by `/tutor/leaderboard`. Excludes tutors with zero sessions
+ * so the board reflects real activity.
+ */
+export async function getTutorLeaderboard(limit = 20) {
+  try {
+    const leaders = await prisma.user.findMany({
+      where: {
+        role: Role.TUTOR,
+        tutorProfile: {
+          is: { isVerified: true },
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+        points: true,
+        county: true,
+        tutorProfile: {
+          select: {
+            subjects: true,
+            rating: true,
+            totalSessions: true,
+            responseRate: true,
+          },
+        },
+      },
+      orderBy: [
+        { tutorProfile: { rating: "desc" } },
+        { tutorProfile: { totalSessions: "desc" } },
+        { points: "desc" },
+      ],
+      take: limit,
+    });
+    return leaders;
+  } catch (error) {
+    console.error("Error in getTutorLeaderboard:", error);
+    return [];
+  }
+}
+
 export async function bookTutorSession(tutorId: string, subject: string, topic: string, scheduledTime: string) {
   try {
     const user = await getUserData();

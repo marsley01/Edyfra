@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 
-function getResend(): Resend {
+export function getResend(): Resend {
   return new Resend(process.env.RESEND_API_KEY || "re_placeholder_123");
 }
 

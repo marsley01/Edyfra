@@ -42,7 +42,8 @@ export async function updateSession(request: NextRequest) {
   const isStudentRoute = request.nextUrl.pathname.startsWith('/dashboard');
   const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
   const isTutorRoute = request.nextUrl.pathname.startsWith('/tutor');
-  const isProtectedRoute = isStudentRoute || isTutorRoute || isAdminRoute || request.nextUrl.pathname.startsWith('/study-room') || request.nextUrl.pathname.startsWith('/onboarding');
+  const isInstitutionRoute = request.nextUrl.pathname.startsWith('/institution');
+  const isProtectedRoute = isStudentRoute || isTutorRoute || isAdminRoute || isInstitutionRoute || request.nextUrl.pathname.startsWith('/study-room') || request.nextUrl.pathname.startsWith('/onboarding');
 
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();

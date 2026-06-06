@@ -19,6 +19,13 @@ export interface DynamicIslandProps {
   className?: string;
   thinkingMessage?: string | null;
   onDismissThinking?: () => void;
+  /**
+   * Fires when the user taps the compact pill. Use this to restore a
+   * minimised fullscreen call (the parent owns the minimised/maximised
+   * state). Internal compact/expanded toggling of the island's own panel
+   * is still handled by the island.
+   */
+  onPillClick?: () => void;
 }
 
 /**
@@ -50,6 +57,7 @@ export function DynamicIsland({
   className,
   thinkingMessage,
   onDismissThinking,
+  onPillClick,
 }: DynamicIslandProps) {
   const [mode, setMode] = useState<IslandMode>("compact");
   const [longPressOpen, setLongPressOpen] = useState(false);
@@ -101,8 +109,9 @@ export function DynamicIsland({
   }, [cam.camera]);
 
   const handlePillClick = useCallback(() => {
+    onPillClick?.();
     if (isJoined) setMode((m) => (m === "compact" ? "expanded" : "compact"));
-  }, [isJoined]);
+  }, [isJoined, onPillClick]);
 
   // Mash AI thinking bubble takes priority over the call pill when not on a call.
   if (thinkingMessage && !isJoined && !isJoining) {
