@@ -21,6 +21,9 @@ import {
   X as XIcon,
   Hand,
   ScreenShare,
+  ShieldCheck,
+  Users,
+  Settings,
 } from "lucide-react";
 import {
   useCallStateHooks,
@@ -373,7 +376,7 @@ export function DynamicIsland({
     </motion.button>
   );
 
-  // ── EXPANDED panel (iOS expanded Dynamic Island) ───────────────────────────
+  // ── EXPANDED panel (Zoom-like Conference Room) ───────────────────────────
   const ExpandedPanel = (
     <motion.div
       key="expanded"
@@ -384,27 +387,24 @@ export function DynamicIsland({
       exit={{ opacity: 0, scale: 0.92 }}
       transition={{ type: "spring", stiffness: 280, damping: 28 }}
       className={cn(
-        "relative w-[min(96vw,1080px)] h-[min(86vh,700px)] rounded-[28px] overflow-hidden",
-        "bg-black border border-white/10 shadow-[0_24px_80px_rgba(0,0,0,0.65)]",
-        "flex flex-col",
+        "relative w-[min(96vw,1200px)] h-[min(88vh,800px)] rounded-[32px] overflow-hidden",
+        "bg-[#0a0a0a] border border-white/10 shadow-[0_24px_80px_rgba(0,0,0,0.65)]",
+        "flex flex-col group/expanded",
         className,
       )}
     >
-      {/* Top status bar — iOS expanded style */}
-      <div className="flex justify-between items-center p-3 sm:p-4 bg-gradient-to-b from-black/85 via-black/50 to-transparent z-10">
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          {/* Remote avatar */}
-          <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-br from-cyan-500 to-violet-500 flex items-center justify-center text-white text-xs font-black ring-1 ring-white/20 shrink-0">
-            {remoteImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={remoteImage} alt="" className="h-full w-full rounded-full object-cover" />
-            ) : (
-              (remoteName?.[0] || "·").toUpperCase()
-            )}
+      {/* Top status bar */}
+      <div className="flex justify-between items-center p-4 sm:p-6 bg-gradient-to-b from-black/90 via-black/40 to-transparent z-20">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full">
+            <ShieldCheck className="h-3 w-3 text-emerald-500" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">
+              End-to-End Encrypted
+            </span>
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <span className="relative flex h-2 w-2">
+          <div className="h-4 w-[1px] bg-white/10" />
+          <div className="flex items-center gap-2">
+             <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
               </span>
@@ -414,51 +414,35 @@ export function DynamicIsland({
               <span className="text-[10px] text-white/60 font-bold tabular-nums">
                 {mm}:{ss}
               </span>
-            </div>
-            <p className="text-[11px] sm:text-xs font-bold text-white truncate max-w-[200px] sm:max-w-[300px]">
-              {remoteName || "Study Room"}
-            </p>
           </div>
         </div>
+
         <div className="flex items-center gap-2">
-          {isRecording && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-red-500/15 border border-red-500/30 text-[9px] font-black uppercase tracking-widest text-red-300">
-              REC
-            </span>
-          )}
-          <span
-            className={cn(
-              "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[9px] font-black uppercase tracking-widest",
-              quality === "good" && "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30",
-              quality === "ok" && "bg-yellow-500/15 text-yellow-300 border border-yellow-500/30",
-              quality === "bad" && "bg-red-500/15 text-red-300 border border-red-500/30",
-            )}
-          >
-            {quality === "good" ? "HD" : quality === "ok" ? "SD" : "Low"}
-          </span>
-          <button
+           <button
             type="button"
             onClick={() => setMode("compact")}
-            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-white/10 hover:bg-white/20 text-white text-[10px] font-black uppercase tracking-widest transition-colors"
+            className="inline-flex items-center gap-1.5 h-10 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-white text-[10px] font-black uppercase tracking-widest transition-colors border border-white/5"
           >
-            <Minimize2 className="h-3 w-3" /> Minimize
+            <Minimize2 className="h-4 w-4" /> Minimize
           </button>
         </div>
       </div>
 
-      {/* Video grid */}
-      <div className="flex-1 flex items-center justify-center px-3 pb-24 pt-1">
-        {remotes.length === 0 ? (
-          <WaitingForOthers local={local} />
-        ) : (
-          <SpeakerLayout participantsBarPosition="bottom" />
-        )}
+      {/* Video content */}
+      <div className="flex-1 relative flex items-center justify-center px-4 pb-28 pt-2">
+        <StreamTheme>
+          {remotes.length === 0 ? (
+            <WaitingForOthers local={local} />
+          ) : (
+            <SpeakerLayout participantsBarPosition="bottom" />
+          )}
+        </StreamTheme>
       </div>
 
-      {/* Bottom controls — iOS-style glass dock */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
-        <StreamTheme>
-          <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-full bg-zinc-950/95 backdrop-blur-xl border border-white/10 shadow-2xl">
+      {/* Modern Control Dock */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-2xl px-6">
+        <div className="bg-zinc-900/80 backdrop-blur-3xl border border-white/10 p-4 rounded-[2rem] shadow-2xl flex items-center justify-between">
+          <div className="flex items-center gap-2">
             <IslandIconButton
               onClick={toggleMic}
               active={!isMuted}
@@ -475,15 +459,37 @@ export function DynamicIsland({
             >
               {isCamOff ? <CameraOff className="h-4 w-4" /> : <Camera className="h-4 w-4" />}
             </IslandIconButton>
+          </div>
+
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onLeave}
-              className="ml-1 inline-flex items-center gap-2 h-9 px-4 rounded-full bg-red-500 hover:bg-red-600 text-white text-[11px] font-black uppercase tracking-widest transition-colors shadow-[0_0_16px_rgba(239,68,68,0.5)]"
+              className="h-12 px-6 rounded-2xl bg-red-500 hover:bg-red-600 text-white text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-red-500/25 flex items-center gap-2"
             >
-              <PhoneOff className="h-4 w-4" /> End
+              <PhoneOff className="h-4 w-4" /> End Call
             </button>
           </div>
-        </StreamTheme>
+
+          <div className="flex items-center gap-2">
+             <IslandIconButton
+              onClick={() => {}}
+              active={true}
+              label="Participants"
+              size="md"
+            >
+              <Users className="h-4 w-4" />
+            </IslandIconButton>
+             <IslandIconButton
+              onClick={() => {}}
+              active={true}
+              label="Settings"
+              size="md"
+            >
+              <Settings className="h-4 w-4" />
+            </IslandIconButton>
+          </div>
+        </div>
       </div>
     </motion.div>
   );

@@ -9,6 +9,7 @@ import { ThemeColorManager } from "@/components/theme-color-manager";
 import { ConditionalShell } from "@/components/conditional-shell";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { PushSubscriptionManager } from "@/components/push-subscription-manager";
+import { StreamVideoProvider } from "@/components/stream/StreamVideoProvider";
 import EddyChatWrapper from "@/components/chat/EddyChatWrapper";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -93,14 +94,16 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <ThemeColorManager />
-          <ConditionalShell>{children}</ConditionalShell>
-          <ServiceWorkerRegister />
-          <PushSubscriptionManager />
-          <EddyChatWrapper />
-          <Toaster richColors position="top-right" />
-          <Analytics />
-          <SpeedInsights />
+          <StreamVideoProvider>
+            <ThemeColorManager />
+            <ConditionalShell>{children}</ConditionalShell>
+            <ServiceWorkerRegister />
+            <PushSubscriptionManager />
+            <EddyChatWrapper />
+            <Toaster richColors position="top-right" />
+            <Analytics />
+            <SpeedInsights />
+          </StreamVideoProvider>
         </ThemeProvider>
       </body>
     </html>

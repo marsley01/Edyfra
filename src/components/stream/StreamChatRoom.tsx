@@ -14,7 +14,6 @@ import {
   WithComponents,
 } from "stream-chat-react";
 import {
-  StreamVideoClient,
   StreamVideo,
   StreamCall,
   User,
@@ -25,6 +24,7 @@ import { DynamicIsland } from "./DynamicIsland";
 import { StreamAttachment } from "./StreamAttachment";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 import { getStreamToken, upsertStreamUser } from "@/app/actions/stream";
+import { useStreamVideo } from "./StreamVideoProvider";
 
 import "stream-chat-react/dist/css/index.css";
 import { polyfillClipboard } from "@/utils/clipboard-polyfill";
@@ -102,20 +102,16 @@ export default function StreamChatRoom({
   mashAI,
 }: StreamChatRoomProps) {
   const [chatClient, setChatClient] = useState<StreamChat | null>(null);
-  const [videoClient, setVideoClient] = useState<StreamVideoClient | null>(null);
+  const { client: videoClient, activeCall, setActiveCall } = useStreamVideo();
   const [channel, setChannel] = useState<any>(null);
-  const [activeCall, setActiveCall] = useState<Call | null>(null);
   const [callState, setCallState] = useState<CallState>("idle");
   const [error, setError] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
   const [hasActiveCall, setHasActiveCall] = useState(false);
-  const [incomingCall, setIncomingCall] = useState<{ from: string } | null>(null);
   const [permDenied, setPermDenied] = useState(false);
   const [permWarmed, setPermWarmed] = useState(false);
 
   const clientRef = useRef<StreamChat | null>(null);
-  const videoClientRef = useRef<StreamVideoClient | null>(null);
-  const videoClientUserIdRef = useRef<string | null>(null);
   const activeCallRef = useRef<Call | null>(null);
   const initOnceRef = useRef<string | null>(null);
   const { resolvedTheme } = useTheme();
@@ -128,12 +124,12 @@ export default function StreamChatRoom({
   const chatTheme =
     mounted && resolvedTheme === "dark" ? "str-chat__theme-dark" : "str-chat__theme-light";
 
-  // ─── Init chat + video client once per (userId, channelId) ──────────────────
+  // ─── Init chat once per (userId, channelId) ────────────────────────────────
   const init = useCallback(async () => {
     setError(null);
     setIsRetrying(true);
     try {
-      console.log(`[StreamChatRoom] Initializing for user: ${userId}, channel: ${channelId}`);
+      console.log(`[StreamChatRoom] Initializing chat for user: ${userId}, channel: ${channelId}`);
 
       const client = StreamChat.getInstance(STREAM_KEY);
 
@@ -156,24 +152,6 @@ export default function StreamChatRoom({
           token
         );
         console.log(`[StreamChatRoom] Chat connected: ${userId}`);
-      } else {
-        await getToken();
-      }
-
-      // Create video client ONCE per user. Subsequent mounts reuse the same
-      // client so existing call subscriptions stay alive.
-      if (!videoClientRef.current || videoClientUserIdRef.current !== userId) {
-        const freshToken = await getToken();
-        const vClient = new StreamVideoClient({
-          apiKey: STREAM_KEY,
-          user: { id: userId, name: userName, image: userImage || undefined },
-          token: freshToken,
-          options: { logLevel: "warn" },
-        });
-        videoClientRef.current = vClient;
-        videoClientUserIdRef.current = userId;
-        setVideoClient(vClient);
-        console.log(`[StreamChatRoom] Video client created: ${userId}`);
       }
 
       try {
@@ -252,11 +230,6 @@ export default function StreamChatRoom({
   useEffect(() => {
     return () => {
       initOnceRef.current = null;
-      const vClient = videoClientRef.current;
-      if (vClient) {
-        vClient.disconnectUser().catch(() => {});
-        videoClientRef.current = null;
-      }
       const c = clientRef.current;
       if (c && c.userID) {
         c.disconnectUser().catch(() => {});
@@ -265,7 +238,7 @@ export default function StreamChatRoom({
     };
   }, []);
 
-  // ─── Listen for call events on the video client ─────────────────────────────
+  // ─── Listen for call events on the global video client ─────────────────────
   useEffect(() => {
     if (!videoClient) return;
 
@@ -273,17 +246,9 @@ export default function StreamChatRoom({
       if (event.call?.id !== channelId) return;
 
       switch (event.type) {
-        case "call.ring": {
-          if (activeCallRef.current) return;
-          setIncomingCall({
-            from: event.user?.name || event.user?.id || "Someone",
-          });
-          break;
-        }
         case "call.created":
         case "call.session_started": {
           setHasActiveCall(true);
-          setIncomingCall(null);
           break;
         }
         case "call.ended": {
@@ -291,13 +256,11 @@ export default function StreamChatRoom({
           setCallState("ended");
           setActiveCall(null);
           activeCallRef.current = null;
-          setIncomingCall(null);
           break;
         }
         case "call.rejected": {
           setHasActiveCall(false);
           setCallState("idle");
-          setIncomingCall(null);
           toast.info("Call was declined");
           break;
         }
@@ -307,7 +270,7 @@ export default function StreamChatRoom({
     return () => {
       unsubscribe();
     };
-  }, [videoClient, channelId]);
+  }, [videoClient, channelId, setActiveCall]);
 
   // ─── Quiet permission state check ──────────────────────────────────────────
   // On mount we ONLY run the Permissions API query (which is safe outside a
@@ -387,8 +350,7 @@ export default function StreamChatRoom({
 
   // ─── Start a call (or join an existing one) ────────────────────────────────
   const startOrJoinCall = useCallback(async () => {
-    const vc = videoClientRef.current;
-    if (!vc) {
+    if (!videoClient) {
       toast.error("Video service not ready", {
         description: "Try refreshing the page.",
       });
@@ -409,13 +371,13 @@ export default function StreamChatRoom({
     }
 
     try {
-      const call = vc.call("default", channelId, CALL_SETTINGS as any);
+      const call = videoClient.call("default", channelId);
 
       const otherMembers = (memberIds || [])
         .filter((m) => m && m !== userId)
         .map((id) => ({ user_id: id }));
 
-      const newCall = await call.getOrCreate({
+      await call.getOrCreate({
         ring: true,
         data: {
           members: [{ user_id: userId, role: "admin" }, ...otherMembers],
@@ -428,7 +390,6 @@ export default function StreamChatRoom({
       });
 
       // High-quality preferences: 1080p, adaptive bitrate, noise suppression.
-      // The SDK ignores unknown keys so this is safe to re-apply.
       try {
         await call.update({
           settings_override: {
@@ -456,52 +417,7 @@ export default function StreamChatRoom({
         description: err?.message || "Check your connection and try again.",
       });
     }
-  }, [channelId, userId, memberIds, mashAI?.subject, mashAI?.topic, requestMediaPermissions]);
-
-  // ─── Accept an incoming call ───────────────────────────────────────────────
-  const acceptIncomingCall = useCallback(async () => {
-    const vc = videoClientRef.current;
-    if (!vc) {
-      setIncomingCall(null);
-      return;
-    }
-
-    const ok = await requestMediaPermissions();
-    if (!ok) {
-      setIncomingCall(null);
-      return;
-    }
-
-    try {
-      const call = vc.call("default", channelId);
-      await call.join();
-      setActiveCall(call);
-      activeCallRef.current = call;
-      setCallState("joined");
-      setHasActiveCall(true);
-      setIncomingCall(null);
-    } catch (err: any) {
-      console.error("[StreamChatRoom] accept failed:", err);
-      toast.error("Couldn't join the call", { description: err?.message });
-      setIncomingCall(null);
-    }
-  }, [channelId, requestMediaPermissions]);
-
-  // ─── Reject an incoming call ───────────────────────────────────────────────
-  const rejectIncomingCall = useCallback(async () => {
-    const vc = videoClientRef.current;
-    if (!vc) {
-      setIncomingCall(null);
-      return;
-    }
-    try {
-      const call = vc.call("default", channelId);
-      await call.reject();
-    } catch (err) {
-      console.warn("[StreamChatRoom] reject failed (non-fatal):", err);
-    }
-    setIncomingCall(null);
-  }, [channelId]);
+  }, [channelId, userId, memberIds, mashAI?.subject, mashAI?.topic, requestMediaPermissions, videoClient, setActiveCall]);
 
   // ─── Leave the call ────────────────────────────────────────────────────────
   const leaveCall = useCallback(async () => {
@@ -517,7 +433,7 @@ export default function StreamChatRoom({
     activeCallRef.current = null;
     setCallState("idle");
     setHasActiveCall(false);
-  }, []);
+  }, [setActiveCall]);
 
   // ─── Error state ──────────────────────────────────────────────────────────
   if (error) {
@@ -766,7 +682,6 @@ export default function StreamChatRoom({
         }}
       >
         <Chat client={chatClient} theme={chatTheme}>
-        <StreamVideo client={videoClient!}>
           <div className="flex flex-col h-full relative">
             {!hideHeader && (
               <div className="flex items-center justify-between px-6 py-4 bg-background/50 backdrop-blur-xl border-b border-white/5 z-20">
@@ -853,50 +768,8 @@ export default function StreamChatRoom({
             )}
 
             <div className="flex-1 relative overflow-hidden">
-              <AnimatePresence>
-                {incomingCall && !inCall && (
-                  <motion.div
-                    key="incoming"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md"
-                  >
-                    <div className="rounded-3xl bg-zinc-900 border border-white/10 p-8 text-center space-y-6 shadow-2xl max-w-sm mx-4">
-                      <div className="w-16 h-16 mx-auto rounded-full bg-primary/20 flex items-center justify-center animate-pulse">
-                        <Phone className="h-8 w-8 text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-                          Incoming Video Call
-                        </p>
-                        <p className="text-lg font-bold mt-1">{incomingCall.from}</p>
-                      </div>
-                      <div className="flex gap-3 justify-center">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="rounded-full border-red-500/30 text-red-500 hover:bg-red-500/10 h-12 px-6 gap-2"
-                          onClick={rejectIncomingCall}
-                        >
-                          <PhoneOff className="h-4 w-4" /> Decline
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="rounded-full bg-emerald-500 hover:bg-emerald-600 h-12 px-6 gap-2"
-                          onClick={acceptIncomingCall}
-                        >
-                          <Phone className="h-4 w-4" /> Accept
-                        </Button>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
               {inCall && activeCall && (
                 <>
-                  {/* Soft gradient backdrop so the dynamic island reads against chat */}
                   <div className="edyfra-island-backdrop" />
                   <StreamCall call={activeCall}>
                     <DynamicIsland onLeave={leaveCall} />
@@ -913,7 +786,6 @@ export default function StreamChatRoom({
               </Channel>
             </div>
           </div>
-        </StreamVideo>
       </Chat>
     </WithComponents>
     </div>
