@@ -44,6 +44,30 @@ html {
   --input: #e5e5e7;
   --ring: #0071e3;
   --radius: 1.5rem;
+
+  /* ── Edyfra layer system ───────────────────────────────────────────────
+     See src/lib/layers.ts. Components MUST use these vars instead of
+     hardcoded z-50 / z-[9999]. */
+  --edyfra-z-base: 0;
+  --edyfra-z-content: 1;
+  --edyfra-z-sticky: 10;
+  --edyfra-z-popover: 20;
+  --edyfra-z-floating: 30;
+  --edyfra-z-fab: 40;
+  --edyfra-z-modal: 50;
+  --edyfra-z-ringing: 60;
+  --edyfra-z-toast: 70;
+  --edyfra-z-fullscreen: 100;
+
+  /* ── Overlay safe-area insets ──────────────────────────────────────────
+     Updated by the OverlayManager in response to active overlays.
+     Floating UI (Eddy Chat, Dynamic Island, FABs) should position itself
+     relative to these vars so it never collides with the Mobile Nav,
+     the iOS Dynamic Island, or a Call Session. */
+  --edyfra-overlay-top: 0px;
+  --edyfra-overlay-bottom: 0px;
+  --edyfra-overlay-bottom-dynamic: 0px;
+  --edyfra-overlay-right: 0px;
 }
 
 .dark {

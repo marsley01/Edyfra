@@ -11,6 +11,7 @@ import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { PushSubscriptionManager } from "@/components/push-subscription-manager";
 import { StreamVideoProvider } from "@/components/stream/StreamVideoProvider";
 import EddyChatWrapper from "@/components/chat/EddyChatWrapper";
+import { OverlayManagerProvider } from "@/lib/overlay-manager";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -95,14 +96,16 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <StreamVideoProvider>
-            <ThemeColorManager />
-            <ConditionalShell>{children}</ConditionalShell>
-            <ServiceWorkerRegister />
-            <PushSubscriptionManager />
-            <EddyChatWrapper />
-            <Toaster richColors position="top-right" />
-            <Analytics />
-            <SpeedInsights />
+            <OverlayManagerProvider>
+              <ThemeColorManager />
+              <ConditionalShell>{children}</ConditionalShell>
+              <ServiceWorkerRegister />
+              <PushSubscriptionManager />
+              <EddyChatWrapper />
+              <Toaster richColors position="top-right" />
+              <Analytics />
+              <SpeedInsights />
+            </OverlayManagerProvider>
           </StreamVideoProvider>
         </ThemeProvider>
       </body>

@@ -1,95 +1,27 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
-import { StreamChat } from "stream-chat";
-import {
-  Chat,
-  Channel,
-  ChannelHeader,
-  MessageList,
-  MessageComposer,
-  Window,
-  LoadingIndicator,
-  Thread,
-  WithComponents,
-} from "stream-chat-react";
-import {
-  StreamVideo,
-  StreamCall,
-  User,
-  Call,
-} from "@stream-io/video-react-sdk";
-import { VideoCallUI } from "./VideoCallUI";
-import { DynamicIsland } from "./DynamicIsland";
-import { StreamAttachment } from "./StreamAttachment";
-import "@stream-io/video-react-sdk/dist/css/styles.css";
-import { getStreamToken, upsertStreamUser } from "@/app/actions/stream";
-import { useStreamVideo } from "./StreamVideoProvider";
-
+import { useMemo } from "react";
+import { Chat, Channel, MessageList, MessageComposer, Window, Thread, WithComponents } from "stream-chat-react";
+import { Call } from "@stream-io/video-react-sdk";
 import "stream-chat-react/dist/css/index.css";
+import "@stream-io/video-react-sdk/dist/css/styles.css";
 import { polyfillClipboard } from "@/utils/clipboard-polyfill";
-import {
-  Loader2,
-  RefreshCw,
-  Video,
-  VideoOff,
-  Phone,
-  PhoneOff,
-  X,
-  GraduationCap,
-  Sparkles,
-  AlertCircle,
-  CheckCircle2,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useTheme } from "next-themes";
-import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
-
-import { cn } from "@/lib/utils";
+import { useStreamVideo } from "./StreamVideoProvider";
+import { useStreamChatInit } from "./hooks/useStreamChatInit";
+import { useCallSession } from "./hooks/useCallSession";
+import { useMediaPermissions } from "./hooks/useMediaPermissions";
+import { useStreamChatTheme } from "./hooks/useStreamChatTheme";
+import { ChatHeader } from "./atomic/ChatHeader";
+import { ChatErrorState } from "./atomic/ChatErrorState";
+import { ChatLoadingState } from "./atomic/ChatLoadingState";
+import { PermissionBanner } from "./atomic/PermissionBanner";
+import { CallActiveOverlay } from "./atomic/CallActiveOverlay";
+import { StreamAttachment } from "./StreamAttachment";
+import { DynamicIsland } from "./DynamicIsland";
+import { EDYFRA_CHAT_THEME_CSS } from "./styles/chatTheme";
+import type { StreamChatRoomProps } from "./types";
 
 polyfillClipboard();
-
-const STREAM_KEY = process.env.NEXT_PUBLIC_STREAM_KEY!;
-
-interface StreamChatRoomProps {
-  channelId: string;
-  userId: string;
-  userName: string;
-  userImage?: string;
-  memberIds?: string[];
-  channelName?: string;
-  hideHeader?: boolean;
-  mashAI?: {
-    tier?: string;
-    subject: string;
-    topic?: string;
-  };
-}
-
-type CallState = "idle" | "starting" | "joining" | "joined" | "ended" | "error";
-
-/**
- * Quality + capability settings applied to every call we create.
- * Tuned for high quality: 1080p target, adaptive bitrate, noise suppression,
- * dynacast simulcast so remote viewers get a quality layer matched to their
- * viewport + bandwidth.
- */
-const CALL_SETTINGS = {
-  audio: {
-    mic_default_on: true,
-    default_device: "speaker",
-    noise_cancellation: { mode: "auto" },
-  },
-  video: {
-    camera_default_on: true,
-    camera_facing: "user",
-    target_resolution: { width: 1920, height: 1080 },
-    enabled_for_caller: true,
-  },
-  broadcasting: { enabled: false },
-  recording: { enabled: false },
-} as const;
 
 export default function StreamChatRoom({
   channelId,
@@ -101,680 +33,77 @@ export default function StreamChatRoom({
   hideHeader,
   mashAI,
 }: StreamChatRoomProps) {
-  const [chatClient, setChatClient] = useState<StreamChat | null>(null);
   const { client: videoClient, activeCall, setActiveCall } = useStreamVideo();
-  const [channel, setChannel] = useState<any>(null);
-  const [callState, setCallState] = useState<CallState>("idle");
-  const [error, setError] = useState<string | null>(null);
-  const [isRetrying, setIsRetrying] = useState(false);
-  const [hasActiveCall, setHasActiveCall] = useState(false);
-  const [permDenied, setPermDenied] = useState(false);
-  const [permWarmed, setPermWarmed] = useState(false);
+  const chatTheme = useStreamChatTheme();
+  const { permDenied, permWarmed, requestMediaPermissions } = useMediaPermissions();
 
-  const clientRef = useRef<StreamChat | null>(null);
-  const activeCallRef = useRef<Call | null>(null);
-  const initOnceRef = useRef<string | null>(null);
-  const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const { chatClient, channel, error, isRetrying, retry } = useStreamChatInit({
+    channelId,
+    userId,
+    userName,
+    userImage,
+    memberIds,
+    channelName,
+    mashAI,
+  });
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const chatTheme =
-    mounted && resolvedTheme === "dark" ? "str-chat__theme-dark" : "str-chat__theme-light";
-
-  // ─── Init chat once per (userId, channelId) ────────────────────────────────
-  const init = useCallback(async () => {
-    setError(null);
-    setIsRetrying(true);
-    try {
-      console.log(`[StreamChatRoom] Initializing chat for user: ${userId}, channel: ${channelId}`);
-
-      const client = StreamChat.getInstance(STREAM_KEY);
-
-      const getToken = async (): Promise<string> => {
-        try {
-          return await getStreamToken(userId);
-        } catch (err) {
-          console.warn("[StreamChatRoom] server-action token failed, trying HTTP", err);
-          const res = await fetch("/api/stream/token", { method: "POST" });
-          if (!res.ok) throw new Error("Failed to authenticate with chat service");
-          const data = await res.json();
-          return data.token;
-        }
-      };
-
-      if (client.userID !== userId) {
-        const token = await getToken();
-        await client.connectUser(
-          { id: userId, name: userName, image: userImage || undefined },
-          token
-        );
-        console.log(`[StreamChatRoom] Chat connected: ${userId}`);
-      }
-
-      try {
-        await upsertStreamUser(userId, userName, userImage || undefined);
-      } catch (err) {
-        console.warn("[StreamChatRoom] upsertStreamUser non-fatal:", err);
-      }
-
-      const allMembers = [
-        userId,
-        ...(memberIds?.filter((m) => m !== userId) || []),
-        "mash-ai",
-      ];
-
-      const c = client.channel("messaging", channelId, {
-        members: allMembers,
-      } as any);
-
-      if (channelName) {
-        try {
-          await c.update({ name: channelName } as any);
-        } catch {}
-      }
-
-      await c.watch();
-      console.log(`[StreamChatRoom] Channel ready: ${channelId}`);
-
-      clientRef.current = client;
-      setChannel(c);
-      setChatClient(client);
-
-      c.on("message.new", async (event: any) => {
-        const msg = event.message;
-        if (!msg || msg.user?.id === "mash-ai") return;
-
-        // Idempotency: only the SENDER of the @mash message triggers the AI.
-        // Without this, every connected client would call handleMashMention
-        // when the message arrives, producing duplicate responses.
-        if (msg.user_id !== userId) return;
-
-        const text = msg.text || "";
-        const mentionRegex = /@(?:Mash|AI|mash|ai|mash-ai|MASH)\b/;
-        if (!mentionRegex.test(text)) return;
-
-        const { handleMashMention } = await import("@/app/actions/stream");
-        handleMashMention(
-          channelId,
-          text,
-          mashAI?.subject || "General",
-          mashAI?.topic,
-          mashAI?.tier
-        ).catch((err) => {
-          console.warn("[StreamChatRoom] handleMashMention error:", err);
-          toast.error("Mash couldn't reply", {
-            description: err?.message || "Try again in a sec.",
-          });
-        });
-      });
-    } catch (err: any) {
-      console.error("[StreamChatRoom] Initialization failed:", err);
-      setError(err?.message || "Chat failed to load");
-    } finally {
-      setIsRetrying(false);
-    }
-  }, [channelId, userId, userName, userImage, channelName, JSON.stringify(memberIds)]);
-
-  // Run init exactly once per (userId, channelId). This was the previous bug —
-  // every member-list change recreated the video client and tore down the call.
-  useEffect(() => {
-    const key = `${userId}::${channelId}`;
-    if (initOnceRef.current === key) return;
-    initOnceRef.current = key;
-    init();
-  }, [userId, channelId, init]);
-
-  useEffect(() => {
-    return () => {
-      initOnceRef.current = null;
-      const c = clientRef.current;
-      if (c && c.userID) {
-        c.disconnectUser().catch(() => {});
-        clientRef.current = null;
-      }
-    };
-  }, []);
-
-  // ─── Listen for call events on the global video client ─────────────────────
-  useEffect(() => {
-    if (!videoClient) return;
-
-    const unsubscribe = videoClient.on("all", (event: any) => {
-      if (event.call?.id !== channelId) return;
-
-      switch (event.type) {
-        case "call.created":
-        case "call.session_started": {
-          setHasActiveCall(true);
-          break;
-        }
-        case "call.ended": {
-          setHasActiveCall(false);
-          setCallState("ended");
-          setActiveCall(null);
-          activeCallRef.current = null;
-          break;
-        }
-        case "call.rejected": {
-          setHasActiveCall(false);
-          setCallState("idle");
-          toast.info("Call was declined");
-          break;
-        }
-      }
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [videoClient, channelId, setActiveCall]);
-
-  // ─── Quiet permission state check ──────────────────────────────────────────
-  // On mount we ONLY run the Permissions API query (which is safe outside a
-  // user gesture). We do NOT call `getUserMedia` here — Chrome auto-denies
-  // `getUserMedia` when it isn't triggered by a user gesture, which is what
-  // produced the big red "Camera & microphone are blocked" banner. The
-  // permission prompt now only fires from a real click (the "Allow" pill
-  // below or the "Start Call" button), where Chrome actually shows it.
-  useEffect(() => {
-    if (typeof navigator === "undefined" || !navigator.permissions?.query) return;
-    let cancelled = false;
-
-    (async () => {
-      try {
-        const checks = await Promise.allSettled([
-          navigator.permissions.query({ name: "camera" as PermissionName }),
-          navigator.permissions.query({ name: "microphone" as PermissionName }),
-        ]);
-        if (cancelled) return;
-        const blocked = checks.some(
-          (c) => c.status === "fulfilled" && c.value.state === "denied",
-        );
-        if (blocked) setPermDenied(true);
-      } catch {
-        // Permissions API not fully supported — silent fallback
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // ─── Pre-flight: explicitly request camera + mic so the browser prompt ─────
-  // fires BEFORE the user clicks "Start Call". This was the #1 cause of "I
-  // clicked but nothing happened" — the prompt is being suppressed because
-  // the call was joined before getUserMedia resolved.
-  const requestMediaPermissions = useCallback(async (): Promise<boolean> => {
-    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
-      toast.error("Camera/mic not supported", {
-        description: "Your browser or device doesn't support video calls. Try Chrome or Edge.",
-      });
-      setPermDenied(true);
-      return false;
-    }
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      // Immediately stop the test tracks — the SDK will open its own streams
-      // when it joins the call.
-      stream.getTracks().forEach((t) => t.stop());
-      setPermDenied(false);
-      setPermWarmed(true);
-      return true;
-    } catch (err: any) {
-      console.warn("[StreamChatRoom] getUserMedia failed:", err);
-      setPermDenied(true);
-      const isDenied =
-        err?.name === "NotAllowedError" ||
-        err?.name === "PermissionDeniedError";
-      const isNoDevice = err?.name === "NotFoundError";
-      if (isDenied) {
-        toast.error("Camera or microphone access blocked", {
-          description: "Click the lock icon in your address bar, allow camera + mic, then try again.",
-        });
-      } else if (isNoDevice) {
-        toast.error("No camera or microphone found", {
-          description: "Connect a device, then click Start Call again.",
-        });
-      } else {
-        toast.error("Couldn't access your camera/mic", {
-          description: err?.message || "Check your device settings.",
-        });
-      }
-      return false;
-    }
-  }, []);
-
-  // ─── Start a call (or join an existing one) ────────────────────────────────
-  const startOrJoinCall = useCallback(async () => {
-    if (!videoClient) {
-      toast.error("Video service not ready", {
-        description: "Try refreshing the page.",
-      });
-      return;
-    }
-
-    if (activeCallRef.current) {
-      setCallState("joined");
-      return;
-    }
-
-    setCallState("starting");
-
-    const ok = await requestMediaPermissions();
-    if (!ok) {
-      setCallState("error");
-      return;
-    }
-
-    try {
-      const call = videoClient.call("default", channelId);
-
-      const otherMembers = (memberIds || [])
-        .filter((m) => m && m !== userId)
-        .map((id) => ({ user_id: id }));
-
-      await call.getOrCreate({
-        ring: true,
-        data: {
-          members: [{ user_id: userId, role: "admin" }, ...otherMembers],
-          custom: {
-            startedBy: userId,
-            subject: mashAI?.subject,
-            topic: mashAI?.topic,
-          },
-        },
-      });
-
-      // High-quality preferences: 1080p, adaptive bitrate, noise suppression.
-      try {
-        await call.update({
-          settings_override: {
-            video: { target_resolution: { width: 1920, height: 1080 } },
-          },
-        } as any);
-      } catch (err) {
-        console.warn("[StreamChatRoom] settings_override failed (non-fatal):", err);
-      }
-
-      setActiveCall(call);
-      activeCallRef.current = call;
-      setHasActiveCall(true);
-      setCallState("joining");
-
-      await call.join();
-      setCallState("joined");
-      console.log(`[StreamChatRoom] Joined call: ${channelId}`);
-    } catch (err: any) {
-      console.error("[StreamChatRoom] startOrJoinCall failed:", err);
-      setCallState("error");
-      setActiveCall(null);
-      activeCallRef.current = null;
-      toast.error("Couldn't start the call", {
-        description: err?.message || "Check your connection and try again.",
-      });
-    }
-  }, [channelId, userId, memberIds, mashAI?.subject, mashAI?.topic, requestMediaPermissions, videoClient, setActiveCall]);
-
-  // ─── Leave the call ────────────────────────────────────────────────────────
-  const leaveCall = useCallback(async () => {
-    const call = activeCallRef.current;
-    if (call) {
-      try {
-        await call.leave();
-      } catch (err) {
-        console.warn("[StreamChatRoom] leave failed:", err);
-      }
-    }
-    setActiveCall(null);
-    activeCallRef.current = null;
-    setCallState("idle");
-    setHasActiveCall(false);
-  }, [setActiveCall]);
-
-  // ─── Error state ──────────────────────────────────────────────────────────
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full p-8 gap-6 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center">
-          <RefreshCw className="h-8 w-8 text-red-500" />
-        </div>
-        <div className="space-y-2">
-          <p className="font-black text-sm uppercase tracking-widest text-foreground">
-            Chat failed to load
-          </p>
-          <p className="text-xs text-muted-foreground font-medium max-w-xs">{error}.</p>
-        </div>
-        <Button
-          onClick={() => {
-            initOnceRef.current = null;
-            init();
-          }}
-          disabled={isRetrying}
-          className="h-12 px-8 rounded-full bg-primary hover:bg-primary/90 text-white font-black text-xs tracking-widest uppercase"
-        >
-          {isRetrying ? <Loader2 className="h-4 w-4 animate-spin" /> : "Retry Connection"}
-        </Button>
-      </div>
-    );
-  }
-
-  // ─── Loading state ─────────────────────────────────────────────────────────
-  if (!chatClient || !channel) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full gap-8 bg-background absolute inset-0 z-50">
-        <div className="relative w-24 h-24">
-          <div className="absolute inset-0 border-4 border-primary/20 rounded-full animate-spin [animation-duration:3s]" />
-          <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <div className="absolute inset-0 flex items-center justify-center bg-primary/10 rounded-full m-2 backdrop-blur-sm">
-            <GraduationCap className="h-8 w-8 text-primary animate-pulse" />
-          </div>
-        </div>
-        <div className="space-y-3 text-center z-10">
-          <p className="text-sm font-black uppercase tracking-[0.2em] text-foreground animate-pulse">
-            Connecting to Room
-          </p>
-          <div className="flex items-center justify-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">
-              Securing End-to-End Encryption...
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const {
+    callState,
+    hasActiveCall,
+    startOrJoinCall,
+    leaveCall,
+  } = useCallSession({
+    channelId,
+    userId,
+    memberIds,
+    videoClient,
+    setActiveCall,
+    onRequestPermissions: requestMediaPermissions,
+  });
 
   const inCall = callState === "joined" || callState === "joining";
   const starting = callState === "starting";
 
+  const memberCount = useMemo(() => memberIds?.length ?? 0, [memberIds]);
+
+  // ─── Error state ─────────────────────────────────────────────────────────
+  if (error) {
+    return <ChatErrorState error={error} isRetrying={isRetrying} onRetry={retry} />;
+  }
+
+  // ─── Loading state ───────────────────────────────────────────────────────
+  if (!chatClient || !channel) {
+    return <ChatLoadingState />;
+  }
+
   return (
     <div className="h-full w-full edyfra-chat-wrapper flex flex-col overflow-hidden">
-      <style>{`
-        .str-chat__theme-dark {
-          --str-chat__primary-color: var(--primary, #06B6D4);
-          --str-chat__background-core-elevation-0: transparent;
-          --str-chat__background-core-elevation-1: rgba(10, 10, 10, 0.4);
-          --str-chat__background-core-elevation-2: rgba(17, 17, 17, 0.6);
-          --str-chat__background-core-elevation-3: rgba(26, 26, 26, 0.8);
-          --str-chat__background-core-elevation-4: rgba(34, 34, 34, 0.9);
-          --str-chat__font-family: var(--font-sans), system-ui;
-          --str-chat__radius-md: 20px;
-          --str-chat__radius-lg: 32px;
-          --str-chat__text-primary: #ffffff;
-          --str-chat__text-secondary: #94a3b8;
-          --str-chat__border-radius-circle: 50%;
-        }
-        .str-chat__theme-light {
-          --str-chat__primary-color: var(--primary, #06B6D4);
-          --str-chat__background-core-elevation-0: transparent;
-          --str-chat__background-core-elevation-1: rgba(255, 255, 255, 0.8);
-          --str-chat__background-core-elevation-2: rgba(248, 250, 252, 0.9);
-          --str-chat__background-core-elevation-3: rgba(255, 255, 255, 0.95);
-          --str-chat__background-core-elevation-4: rgba(255, 255, 255, 0.98);
-          --str-chat__font-family: var(--font-sans), system-ui;
-          --str-chat__radius-md: 20px;
-          --str-chat__radius-lg: 32px;
-          --str-chat__text-primary: #0f172a;
-          --str-chat__text-secondary: #64748b;
-          --str-chat__border-radius-circle: 50%;
-        }
-        .edyfra-chat-wrapper { background: transparent; position: relative; }
-        .str-chat__theme-dark .str-chat__message-list,
-        .str-chat__theme-light .str-chat__message-list {
-          background: var(--background, transparent);
-          padding: 1.5rem;
-          scrollbar-width: thin;
-        }
-        .str-chat__theme-dark .str-chat__message-list { scrollbar-color: rgba(255,255,255,0.1) transparent; }
-        .str-chat__theme-light .str-chat__message-list { scrollbar-color: rgba(0,0,0,0.1) transparent; }
-        .str-chat__theme-dark .str-chat__date-separator-line { border-color: rgba(255,255,255,0.05); }
-        .str-chat__theme-light .str-chat__date-separator-line { border-color: rgba(0,0,0,0.05); }
-        .str-chat__theme-dark .str-chat__date-separator-date,
-        .str-chat__theme-light .str-chat__date-separator-date {
-          font-size: 10px;
-          font-weight: 900;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          color: #64748b;
-        }
-        .str-chat__message-simple-text-inner {
-          border-radius: 1.75rem !important;
-          padding: 0.85rem 1.35rem !important;
-          font-size: 0.9rem;
-          font-weight: 500;
-          line-height: 1.6;
-          position: relative;
-        }
-        .str-chat__theme-dark .str-chat__message--me .str-chat__message-simple-text-inner,
-        .str-chat__theme-light .str-chat__message--me .str-chat__message-simple-text-inner {
-          background: linear-gradient(135deg, var(--primary, #06B6D4) 0%, #0891b2 100%) !important;
-          color: white;
-          border-bottom-right-radius: 6px !important;
-        }
-        .str-chat__theme-dark .str-chat__message--me .str-chat__message-simple-text-inner {
-          border: 1px solid rgba(255,255,255,0.1);
-          box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
-        }
-        .str-chat__theme-light .str-chat__message--me .str-chat__message-simple-text-inner {
-          border: 1px solid rgba(0,0,0,0.05);
-          box-shadow: 0 10px 30px -10px rgba(6, 182, 212, 0.3);
-        }
-        .str-chat__theme-dark .str-chat__message--regular .str-chat__message-simple-text-inner {
-          background: #111111 !important;
-          border: 1px solid rgba(255,255,255,0.05);
-          border-bottom-left-radius: 6px !important;
-          color: #e2e8f0;
-          box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
-        }
-        .str-chat__theme-light .str-chat__message--regular .str-chat__message-simple-text-inner {
-          background: #f1f5f9 !important;
-          border: 1px solid rgba(0,0,0,0.05);
-          border-bottom-left-radius: 6px !important;
-          color: #0f172a;
-          box-shadow: 0 5px 15px -5px rgba(0,0,0,0.05);
-        }
-        .str-chat__message-simple__timestamp {
-          font-size: 9px;
-          font-weight: 700;
-          text-transform: uppercase;
-          opacity: 0.5;
-        }
-        .str-chat__theme-dark .str-chat__message-input {
-          background: rgba(5, 5, 5, 0.8);
-          backdrop-blur: 12px;
-          border-top: 1px solid rgba(255,255,255,0.05);
-          padding: 1.25rem;
-        }
-        .str-chat__theme-light .str-chat__message-input {
-          background: rgba(255, 255, 255, 0.8);
-          backdrop-blur: 12px;
-          border-top: 1px solid rgba(0,0,0,0.05);
-          padding: 1.25rem;
-        }
-        .str-chat__theme-dark .str-chat__message-input-inner {
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.08);
-        }
-        .str-chat__theme-light .str-chat__message-input-inner {
-          background: #f8fafc;
-          border: 1px solid rgba(0,0,0,0.08);
-        }
-        .str-chat__message-input-inner {
-          border-radius: 1.5rem;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          padding: 4px;
-        }
-        .str-chat__theme-dark .str-chat__message-input-inner:focus-within {
-          border-color: var(--primary, #06B6D4);
-          background: rgba(255,255,255,0.05);
-          box-shadow: 0 0 30px -10px rgba(6, 182, 212, 0.3);
-        }
-        .str-chat__theme-light .str-chat__message-input-inner:focus-within {
-          border-color: var(--primary, #06B6D4);
-          background: #ffffff;
-          box-shadow: 0 0 30px -10px rgba(6, 182, 212, 0.2);
-        }
-        .str-chat__textarea { background: transparent; font-size: 0.95rem; padding: 12px 16px; }
-        .str-chat__theme-dark .str-chat__textarea { color: #ffffff; }
-        .str-chat__theme-light .str-chat__textarea { color: #0f172a; }
-        .str-chat__theme-dark .str-chat__header-livestream {
-          background: rgba(10, 10, 10, 0.8);
-          backdrop-blur: 20px;
-          border-bottom: 1px solid rgba(255,255,255,0.05);
-          padding: 1.25rem 2rem;
-        }
-        .str-chat__theme-light .str-chat__header-livestream {
-          background: rgba(255, 255, 255, 0.8);
-          backdrop-blur: 20px;
-          border-bottom: 1px solid rgba(0,0,0,0.05);
-          padding: 1.25rem 2rem;
-        }
-        .str-chat__header-livestream-left-title {
-          font-size: 14px;
-          font-weight: 900;
-          text-transform: uppercase;
-          letter-spacing: 0.2em;
-        }
-        .str-chat__theme-dark .str-chat__header-livestream-left-title { color: #ffffff; }
-        .str-chat__theme-light .str-chat__header-livestream-left-title { color: #0f172a; }
-        .edyfra-chat-wrapper ::-webkit-scrollbar { width: 4px; }
-        .edyfra-chat-wrapper ::-webkit-scrollbar-track { background: transparent; }
-        .edyfra-chat-wrapper ::-webkit-scrollbar-thumb {
-          background: rgba(128,128,128,0.2);
-          border-radius: 10px;
-        }
-        .edyfra-chat-wrapper ::-webkit-scrollbar-thumb:hover {
-          background: var(--primary, #06B6D4);
-        }
-        .video-call-overlay {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          z-index: 40;
-          background: #000;
-          transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        /* Sleek backdrop behind the dynamic island pill */
-        .edyfra-island-backdrop {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 80px;
-          z-index: 30;
-          pointer-events: none;
-          background: linear-gradient(180deg,
-            rgba(0,0,0,0.55) 0%,
-            rgba(0,0,0,0.25) 40%,
-            rgba(0,0,0,0) 100%);
-          backdrop-filter: blur(8px);
-        }
-      `}</style>
-      <WithComponents
-        overrides={{
-          Attachment: StreamAttachment as any,
-        }}
-      >
+      <style>{EDYFRA_CHAT_THEME_CSS}</style>
+      <WithComponents overrides={{ Attachment: StreamAttachment as any }}>
         <Chat client={chatClient} theme={chatTheme}>
           <div className="flex flex-col h-full relative">
             {!hideHeader && (
-              <div className="flex items-center justify-between px-6 py-4 bg-background/50 backdrop-blur-xl border-b border-white/5 z-20">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
-                    <GraduationCap className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-black uppercase tracking-widest text-foreground">
-                      {channelName || "Study Room"}
-                    </h3>
-                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">
-                      {(memberIds?.length ?? 0) + 2} Members
-                      <span className="ml-2 text-emerald-500">
-                        · <Sparkles className="inline h-3 w-3 -mt-0.5" /> Mash AI
-                      </span>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  {permWarmed && !permDenied && !inCall && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-300">
-                      <CheckCircle2 className="h-3 w-3" />
-                      Mic ready
-                    </span>
-                  )}
-                  <Button
-                    onClick={startOrJoinCall}
-                    disabled={starting}
-                    variant={inCall ? "default" : hasActiveCall ? "default" : "outline"}
-                    size="sm"
-                    className={cn(
-                      "rounded-full transition-all h-10 px-5 gap-2 font-black text-[10px] uppercase tracking-widest",
-                      inCall
-                        ? "bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_20px_rgba(16,185,129,0.45)]"
-                        : hasActiveCall
-                          ? "bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30 animate-pulse"
-                          : permDenied
-                            ? "bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500/20"
-                            : "bg-secondary hover:bg-primary hover:text-white border-white/5"
-                    )}
-                  >
-                    {starting ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : inCall ? (
-                      <Video className="h-4 w-4" />
-                    ) : permDenied ? (
-                      <VideoOff className="h-4 w-4" />
-                    ) : (
-                      <Video className="h-4 w-4" />
-                    )}
-                    <span>
-                      {inCall
-                        ? "In Call"
-                        : starting
-                          ? "Starting…"
-                          : hasActiveCall
-                            ? "Join Live Call"
-                            : permDenied
-                              ? "Permissions needed"
-                              : "Start Call"}
-                    </span>
-                  </Button>
-                </div>
-              </div>
+              <ChatHeader
+                channelName={channelName || "Study Room"}
+                memberCount={memberCount}
+                inCall={inCall}
+                starting={starting}
+                hasActiveCall={hasActiveCall}
+                permDenied={permDenied}
+                permWarmed={permWarmed}
+                onStartCall={startOrJoinCall}
+              />
             )}
 
             {permDenied && !inCall && (
-              <div className="px-6 py-2.5 bg-amber-500/10 border-b border-amber-500/20 flex items-center gap-3">
-                <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-300 shrink-0" />
-                <p className="text-xs text-amber-800 dark:text-amber-200 font-medium flex-1">
-                  Camera & mic blocked. Click the lock icon in your address bar, allow both, then click below.
-                </p>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={requestMediaPermissions}
-                  className="h-7 rounded-full text-[10px] font-black uppercase tracking-widest border-amber-500/40 text-amber-700 dark:text-amber-200 hover:bg-amber-500/15 px-3"
-                >
-                  Allow
-                </Button>
-              </div>
+              <PermissionBanner onAllow={requestMediaPermissions} />
             )}
 
             <div className="flex-1 relative overflow-hidden">
               {inCall && activeCall && (
-                <>
-                  <div className="edyfra-island-backdrop" />
-                  <StreamCall call={activeCall}>
-                    <DynamicIsland onLeave={leaveCall} />
-                  </StreamCall>
-                </>
+                <CallActiveOverlay call={activeCall as Call}>
+                  <DynamicIsland onLeave={leaveCall} />
+                </CallActiveOverlay>
               )}
 
               <Channel channel={channel}>
@@ -786,8 +115,8 @@ export default function StreamChatRoom({
               </Channel>
             </div>
           </div>
-      </Chat>
-    </WithComponents>
+        </Chat>
+      </WithComponents>
     </div>
   );
 }

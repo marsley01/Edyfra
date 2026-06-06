@@ -18,9 +18,11 @@ import { getStreamToken } from "@/app/actions/stream";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
 import { usePathname, useRouter } from "next/navigation";
-import { Loader2, Phone, PhoneOff, X } from "lucide-react";
+import { Phone, PhoneOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion } from "framer-motion";
+import { useRegisterOverlay } from "@/lib/overlay-manager";
+import { Z } from "@/lib/layers";
 
 const STREAM_KEY = process.env.NEXT_PUBLIC_STREAM_KEY!;
 
@@ -43,7 +45,6 @@ export function StreamVideoProvider({ children }: { children: ReactNode }) {
   const [activeCall, setActiveCall] = useState<Call | null>(null);
   const [incomingCall, setIncomingCall] = useState<Call | null>(null);
   const [ringingUser, setRingingUser] = useState<{ name: string; avatar?: string } | null>(null);
-  
   const initRef = useRef(false);
   const router = useRouter();
   const pathname = usePathname();
@@ -74,7 +75,6 @@ export function StreamVideoProvider({ children }: { children: ReactNode }) {
 
         setClient(vClient);
 
-        // Listen for incoming calls
         const unsubscribe = vClient.on("call.ring", (event) => {
           if (event.call) {
             const call = vClient.call(event.call.type, event.call.id);
@@ -105,9 +105,7 @@ export function StreamVideoProvider({ children }: { children: ReactNode }) {
       setActiveCall(incomingCall);
       setIncomingCall(null);
       setRingingUser(null);
-      
-      // If we aren't already in the study room for this call, redirect
-      if (!pathname.includes(incomingCall.id)) {
+      if (!pathname?.includes(incomingCall.id)) {
         router.push(`/study-room/${incomingCall.id}`);
       }
     } catch (err) {
@@ -120,11 +118,11 @@ export function StreamVideoProvider({ children }: { children: ReactNode }) {
     if (!incomingCall) return;
     try {
       await incomingCall.reject();
-      setIncomingCall(null);
-      setRingingUser(null);
-    } catch (err) {
-      setIncomingCall(null);
+    } catch {
+      /* noop */
     }
+    setIncomingCall(null);
+    setRingingUser(null);
   };
 
   return (
@@ -132,58 +130,82 @@ export function StreamVideoProvider({ children }: { children: ReactNode }) {
       {client ? (
         <StreamVideo client={client}>
           {children}
-          
-          {/* Global Incoming Call UI */}
-          <AnimatePresence>
-            {incomingCall && (
-              <motion.div
-                initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 50, scale: 0.9 }}
-                className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] w-[90%] max-w-md"
-              >
-                <div className="bg-zinc-900/90 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-6 shadow-2xl flex flex-col items-center text-center">
-                  <div className="relative mb-4">
-                    <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full animate-pulse" />
-                    <div className="w-20 h-20 rounded-full border-2 border-primary/50 overflow-hidden relative z-10 bg-zinc-800 flex items-center justify-center">
-                      {ringingUser?.avatar ? (
-                        <img src={ringingUser.avatar} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-2xl font-black text-white/20">{ringingUser?.name[0]}</span>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <h3 className="text-lg font-black text-white uppercase tracking-tightest">
-                    Incoming Call
-                  </h3>
-                  <p className="text-sm text-white/60 font-medium mb-8">
-                    {ringingUser?.name} is ready to study
-                  </p>
-
-                  <div className="flex items-center gap-4 w-full">
-                    <Button
-                      onClick={handleReject}
-                      variant="ghost"
-                      className="flex-1 h-14 rounded-2xl bg-white/5 hover:bg-red-500/10 hover:text-red-500 text-white/40 transition-all border border-white/5"
-                    >
-                      <PhoneOff className="h-5 w-5 mr-2" /> Decline
-                    </Button>
-                    <Button
-                      onClick={handleAccept}
-                      className="flex-1 h-14 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black shadow-lg shadow-primary/20 transition-all"
-                    >
-                      <Phone className="h-5 w-5 mr-2 animate-bounce" /> Accept
-                    </Button>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <RingingOverlay
+            incomingCall={incomingCall}
+            ringingUser={ringingUser}
+            onAccept={handleAccept}
+            onReject={handleReject}
+          />
         </StreamVideo>
       ) : (
         children
       )}
     </StreamVideoContext.Provider>
+  );
+}
+
+interface RingingOverlayProps {
+  incomingCall: Call | null;
+  ringingUser: { name: string; avatar?: string } | null;
+  onAccept: () => void;
+  onReject: () => void;
+}
+
+function RingingOverlay({ incomingCall, ringingUser, onAccept, onReject }: RingingOverlayProps) {
+  const visible = !!incomingCall;
+
+  useRegisterOverlay(
+    { id: "incoming-call", edge: "bottom", slot: "ringing", size: visible ? 200 : 0 },
+    [visible],
+  );
+
+  return (
+    <AnimatePresence>
+      {visible && incomingCall && (
+        <motion.div
+          initial={{ opacity: 0, y: 50, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 50, scale: 0.9 }}
+          className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-md"
+          style={{ zIndex: Z.RINGING }}
+        >
+          <div className="bg-zinc-900/90 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-6 shadow-2xl flex flex-col items-center text-center">
+            <div className="relative mb-4">
+              <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full animate-pulse" />
+              <div className="w-20 h-20 rounded-full border-2 border-primary/50 overflow-hidden relative z-10 bg-zinc-800 flex items-center justify-center">
+                {ringingUser?.avatar ? (
+                  <img src={ringingUser.avatar} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-2xl font-black text-white/20">{ringingUser?.name?.[0]}</span>
+                )}
+              </div>
+            </div>
+
+            <h3 className="text-lg font-black text-white uppercase tracking-tightest">
+              Incoming Call
+            </h3>
+            <p className="text-sm text-white/60 font-medium mb-8">
+              {ringingUser?.name} is ready to study
+            </p>
+
+            <div className="flex items-center gap-4 w-full">
+              <Button
+                onClick={onReject}
+                variant="ghost"
+                className="flex-1 h-14 rounded-2xl bg-white/5 hover:bg-red-500/10 hover:text-red-500 text-white/40 transition-all border border-white/5"
+              >
+                <PhoneOff className="h-5 w-5 mr-2" /> Decline
+              </Button>
+              <Button
+                onClick={onAccept}
+                className="flex-1 h-14 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black shadow-lg shadow-primary/20 transition-all"
+              >
+                <Phone className="h-5 w-5 mr-2 animate-bounce" /> Accept
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

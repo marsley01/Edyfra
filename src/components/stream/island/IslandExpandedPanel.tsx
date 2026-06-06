@@ -14,6 +14,8 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useClickOutside, useEscapeToClose } from "../hooks/useIslandGestures";
 import { useRef } from "react";
+import { useRegisterOverlay } from "@/lib/overlay-manager";
+import { Z } from "@/lib/layers";
 import { IslandEndCallButton } from "./IslandEndCallButton";
 import { IslandIconButton } from "./IslandIconButton";
 import { IslandQualityChip } from "./IslandQualityChip";
@@ -58,6 +60,11 @@ export function IslandExpandedPanel({
   useClickOutside(panelRef, true, onMinimize);
   useEscapeToClose(true, onMinimize);
 
+  useRegisterOverlay(
+    { id: "dynamic-island-expanded", edge: "fullscreen", slot: "dynamic-island", size: 800 },
+    [],
+  );
+
   return (
     <motion.div
       key="expanded"
@@ -73,6 +80,7 @@ export function IslandExpandedPanel({
         "flex flex-col group/expanded",
         className,
       )}
+      style={{ zIndex: Z.FAB }}
     >
       <div className="flex justify-between items-center p-4 sm:p-6 bg-gradient-to-b from-black/90 via-black/40 to-transparent z-20">
         <div className="flex items-center gap-4">
