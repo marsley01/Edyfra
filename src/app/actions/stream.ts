@@ -9,8 +9,6 @@ import {
   MASH_AI_USER_ID,
 } from "@/lib/user-sync";
 
-export { MASH_AI_USER_ID };
-
 // ─── Token Generation ─────────────────────────────────────────────────────────
 /**
  * Generates a Stream chat token for the authenticated user.
