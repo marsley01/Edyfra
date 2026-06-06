@@ -42,6 +42,7 @@ export default function MarketplacePage() {
   const [selectedResource, setSelectedResource] = useState<any>(null);
   const [isPaying, setIsPaying] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (tab === "browse") {
@@ -319,11 +320,34 @@ export default function MarketplacePage() {
                   <h3 className="text-lg font-black tracking-tightest">{purchase.resource?.title || "Resource"}</h3>
                   <p className="text-sm text-muted-foreground font-medium">Purchased on {new Date(purchase.paid_at).toLocaleDateString()}</p>
                 </div>
-                <Button 
-                  onClick={() => window.open(purchase.resource?.file_path, "_blank")}
+                <Button
+                  disabled={downloadingId === purchase.resource?.id}
+                  onClick={async () => {
+                    if (!purchase.resource?.id) return;
+                    setDownloadingId(purchase.resource.id);
+                    try {
+                      const { getResourceDownloadUrl } = await import("@/app/actions/resources");
+                      const res = await getResourceDownloadUrl(purchase.resource.id);
+                      if (res.error) {
+                        toast.error(res.error);
+                      } else if (res.url) {
+                        window.open(res.url, "_blank");
+                        toast.success("Download starting…");
+                      }
+                    } catch (err) {
+                      toast.error("Download failed. Please try again.");
+                    } finally {
+                      setDownloadingId(null);
+                    }
+                  }}
                   className="w-full h-12 rounded-xl bg-primary text-white hover:bg-primary/90 font-black text-xs uppercase tracking-widest"
                 >
-                  <Download className="h-4 w-4 mr-2" /> Download
+                  {downloadingId === purchase.resource?.id ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4 mr-2" />
+                  )}
+                  Download
                 </Button>
               </div>
             ))}

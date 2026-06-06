@@ -48,6 +48,10 @@ export function useSafeUserData() {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
+        if (response.status === 401) {
+          window.location.href = '/login';
+          return;
+        }
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to load user data');
       }

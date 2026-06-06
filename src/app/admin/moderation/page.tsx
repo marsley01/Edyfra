@@ -142,20 +142,55 @@ export default function ModerationPage() {
                   <div className="flex items-center gap-2">
                     {u.strikes >= 3 && !u.suspended && (
                       <Button size="sm" variant="outline" className="rounded-xl text-amber-500 text-[10px]" onClick={async () => {
-                        const { actionReport } = await import("@/app/actions/admin-content");
-                        await actionReport("bulk_" + u.id, "suspend");
-                        toast.success("Suspended");
+                        const { moderateUser } = await import("@/app/actions/admin-content");
+                        const res = await moderateUser(u.id, "suspend");
+                        if (res?.error) {
+                          toast.error(res.error);
+                        } else {
+                          toast.success(`Suspended ${u.name || "user"}`);
+                        }
                       }}>
                         Suspend
                       </Button>
                     )}
+                    {u.suspended && (
+                      <Button size="sm" variant="outline" className="rounded-xl text-emerald-500 text-[10px]" onClick={async () => {
+                        const { moderateUser } = await import("@/app/actions/admin-content");
+                        const res = await moderateUser(u.id, "unsuspend");
+                        if (res?.error) {
+                          toast.error(res.error);
+                        } else {
+                          toast.success(`Unsuspended ${u.name || "user"}`);
+                        }
+                      }}>
+                        Unsuspend
+                      </Button>
+                    )}
                     {u.strikes >= 5 && !u.banned && (
                       <Button size="sm" className="rounded-xl bg-destructive text-destructive-foreground text-[10px]" onClick={async () => {
-                        const { actionReport } = await import("@/app/actions/admin-content");
-                        await actionReport("bulk_" + u.id, "ban");
-                        toast.success("Banned");
+                        if (!confirm(`Permanently ban ${u.name || "this user"}? They will not be able to sign in.`)) return;
+                        const { moderateUser } = await import("@/app/actions/admin-content");
+                        const res = await moderateUser(u.id, "ban");
+                        if (res?.error) {
+                          toast.error(res.error);
+                        } else {
+                          toast.success(`Banned ${u.name || "user"}`);
+                        }
                       }}>
                         <Ban className="h-3 w-3 mr-1" /> Ban
+                      </Button>
+                    )}
+                    {u.banned && (
+                      <Button size="sm" variant="outline" className="rounded-xl text-emerald-500 text-[10px]" onClick={async () => {
+                        const { moderateUser } = await import("@/app/actions/admin-content");
+                        const res = await moderateUser(u.id, "unban");
+                        if (res?.error) {
+                          toast.error(res.error);
+                        } else {
+                          toast.success(`Unbanned ${u.name || "user"}`);
+                        }
+                      }}>
+                        Unban
                       </Button>
                     )}
                   </div>

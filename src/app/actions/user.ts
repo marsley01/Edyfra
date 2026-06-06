@@ -1,10 +1,12 @@
 "use server";
 
+import { cache } from "react";
 import { Role, EduLevel, Tier, VerifPath, Prisma, User, StudentProfile, TutorProfile, Gender } from "@/generated/client";
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { SESSION_CONFIG, TUTOR_CONFIG, TIER_CONFIG } from "@/lib/config";
+import { generateReferralCode } from "@/utils/referral";
 
 const getRoleFromMetadata = (metadataRole: string | undefined): Role => {
   if (!metadataRole) return Role.STUDENT; // Default role if metadata is missing
@@ -25,7 +27,7 @@ async function syncSupabaseRoleFromPrisma(supabase: Awaited<ReturnType<typeof cr
   }
 }
 
-export async function getUserData(): Promise<(User & { studentProfile: StudentProfile | null, tutorProfile: TutorProfile | null }) | null> {
+export const getUserData = cache(async (): Promise<(User & { studentProfile: StudentProfile | null, tutorProfile: TutorProfile | null }) | null> => {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -36,7 +38,7 @@ export async function getUserData(): Promise<(User & { studentProfile: StudentPr
       where: {
         OR: [
           { id: user.id },
-          { email: user.email! }
+          ...(user.email ? [{ email: user.email }] : [])
         ]
       },
       include: {
@@ -46,12 +48,11 @@ export async function getUserData(): Promise<(User & { studentProfile: StudentPr
     });
 
     if (!prismaUser) {
-
       const metaGender = user.user_metadata?.gender;
       prismaUser = await prisma.user.create({
         data: {
           id: user.id,
-          email: user.email!,
+          email: user.email || `${user.id}@placeholder.edyfra.com`,
           name: user.user_metadata?.name || user.user_metadata?.full_name || "User",
           role: getRoleFromMetadata(user.user_metadata?.role),
           educationLevel: EduLevel.HIGH_SCHOOL,
@@ -61,6 +62,7 @@ export async function getUserData(): Promise<(User & { studentProfile: StudentPr
           lastActiveAt: new Date(),
           avatar: user.user_metadata?.avatar || null,
           gender: metaGender === "MALE" ? Gender.MALE : metaGender === "FEMALE" ? Gender.FEMALE : undefined,
+          referralCode: generateReferralCode(user.user_metadata?.name || user.user_metadata?.full_name || "User"),
         },
         include: {
           studentProfile: true,
@@ -77,40 +79,53 @@ export async function getUserData(): Promise<(User & { studentProfile: StudentPr
         lastActive.getFullYear() !== today.getFullYear();
 
       if (isNewDay) {
-        prismaUser = await prisma.user.update({
+        await prisma.user.update({
           where: { id: prismaUser.id },
           data: {
             points: { increment: SESSION_CONFIG.DAILY_ACTIVITY_REWARD },
             lastActiveAt: today,
           },
-          include: {
-            studentProfile: true,
-            tutorProfile: true
-          }
         });
+        // Update local object to avoid re-fetching
+        prismaUser.points += SESSION_CONFIG.DAILY_ACTIVITY_REWARD;
+        prismaUser.lastActiveAt = today;
+      }
+
+      // Backfill referral code if missing - Rare operation
+      if (!prismaUser.referralCode) {
+        const code = generateReferralCode(prismaUser.name);
+        await prisma.user.update({
+          where: { id: prismaUser.id },
+          data: { referralCode: code },
+        });
+        prismaUser.referralCode = code;
       }
     }
 
-    // Tier recalibration: keep tier in sync with points
+    // Tier recalibration: only update if changed
     const correctTier = TIER_CONFIG.getTierFromPoints(prismaUser.points);
     if (prismaUser.tier !== correctTier) {
-      prismaUser = await prisma.user.update({
+      await prisma.user.update({
         where: { id: prismaUser.id },
         data: { tier: correctTier as Tier },
-        include: { studentProfile: true, tutorProfile: true }
       });
+      prismaUser.tier = correctTier as Tier;
     }
 
-    // Keep Supabase metadata aligned for routing checks (middleware/layouts).
-    // Do NOT overwrite Prisma role based on metadata (metadata can be missing/outdated).
-    await syncSupabaseRoleFromPrisma(supabase, prismaUser.role);
+    // Keep Supabase metadata aligned - only update if different to avoid API overhead
+    const { data } = await supabase.auth.getUser();
+    const currentMetaRole = (data.user?.user_metadata?.role || "").toUpperCase();
+    const actualRole = prismaUser.role.toString().toUpperCase();
+    if (currentMetaRole !== actualRole) {
+      await supabase.auth.updateUser({ data: { role: actualRole } });
+    }
 
     return prismaUser;
   } catch (error) {
     console.error("Error in getUserData:", error);
     return null;
   }
-}
+});
 
 export async function updateProfile(data: { 
   name: string; 
@@ -227,6 +242,7 @@ export async function updateUserRole(role: "STUDENT" | "TUTOR") {
           tier: Tier.BRONZE,
           avatar: user.user_metadata?.avatar || null,
           gender: metaGender === "MALE" ? Gender.MALE : metaGender === "FEMALE" ? Gender.FEMALE : undefined,
+          referralCode: generateReferralCode(user.user_metadata?.name || user.user_metadata?.full_name || "New User"),
         }
       });
     }
@@ -380,7 +396,7 @@ export async function updateTutorProfile(data: {
         subjects: data.subjects || [],
         levelsTaught: data.levelsTaught || [],
         verificationPath: VerifPath.POINTS,
-        hourlyRate: data.hourlyRate || 500,
+        hourlyRate: data.hourlyRate || TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH,
         mpesaNumber: data.mpesaNumber || "",
         availability: data.availability || { isOnline: false },
       },

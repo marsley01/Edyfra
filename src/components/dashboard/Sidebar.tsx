@@ -1,14 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { User } from "@supabase/supabase-js";
-import { 
+import {
   LayoutDashboard, BookOpen, GraduationCap,
   Settings, LogOut, Zap, Flame, Trophy,
   Sparkles, Share2, UserSearch, Users, MessageSquare, LibraryBig,
-  ChevronsUpDown, Search, X
+  ChevronsUpDown, Search, X, Bell
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -18,11 +19,12 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { getUserData } from "@/app/actions/user";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { NotificationBell } from "@/components/dashboard/NotificationBell";
+import { NotificationBell, NotificationCountBadge } from "@/components/dashboard/NotificationBell";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/feed", label: "Community", icon: Share2 },
+  { href: "/dashboard/notifications", label: "Notifications", icon: Bell, showCount: true },
+  { href: "/dashboard/community", label: "Community", icon: Share2 },
   { href: "/dashboard/groups", label: "Study Groups", icon: Users },
   { href: "/dashboard/search", label: "Study Partners", icon: UserSearch },
   { href: "/dashboard/study", label: "Start a Session", icon: Zap },
@@ -75,7 +77,7 @@ export default function DashboardSidebar({ user, onClose }: { user: User; onClos
       {/* Workspace Switcher */}
       <div className="px-4 py-3 border-b border-border/50">
         <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-secondary/80 transition-all cursor-pointer group active:scale-[0.98]">
-          <img src="/image.png" alt="Edyfra Logo" className="w-9 h-9 rounded-xl shadow-lg object-cover" />
+          <Image src="/image.png" alt="Edyfra Logo" width={36} height={36} className="w-9 h-9 rounded-xl shadow-lg object-cover" priority />
           <div className="flex-1 min-w-0">
             <span className="text-xl font-black truncate tracking-tighter">Edyfra</span>
           </div>
@@ -98,32 +100,36 @@ export default function DashboardSidebar({ user, onClose }: { user: User; onClos
 
       {/* Navigation */}
         <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto scrollbar-none">
-        {navItems.map(({ href, label, icon: Icon }) => (
-          <Link
-            key={href}
-            href={href}
-            onClick={onClose}
-            className={cn(
-              "flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 group relative",
-              pathname === href
-                ? "bg-secondary text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
-            )}
-          >
-            <Icon className={cn(
-              "h-4 w-4 transition-colors",
-              pathname === href ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
-            )} />
-            {label}
-            {pathname === href && (
-              <motion.div 
-                layoutId="active-nav"
-                className="absolute left-0 w-1 h-4 bg-primary rounded-r-full"
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              />
-            )}
-          </Link>
-        ))}
+        {navItems.map(({ href, label, icon: Icon, showCount }: any) => {
+          const isActive = pathname === href;
+          return (
+            <Link
+              key={href}
+              href={href}
+              onClick={onClose}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 group relative",
+                isActive
+                  ? "bg-secondary text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
+              )}
+            >
+              <Icon className={cn(
+                "h-4 w-4 transition-colors",
+                isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+              )} />
+              <span className="truncate">{label}</span>
+              {showCount && <NotificationCountBadge />}
+              {isActive && (
+                <motion.div
+                  layoutId="active-nav"
+                  className="absolute left-0 w-1 h-4 bg-primary rounded-r-full"
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
+              )}
+            </Link>
+          );
+        })}
       </nav>
 
 

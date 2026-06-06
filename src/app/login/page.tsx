@@ -6,6 +6,7 @@ import { ArrowRight, Loader2, AlertCircle, Eye, EyeOff, GraduationCap } from "lu
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import Image from "next/image";
 import { login } from "@/app/actions/auth";
 
 export default function LoginPage() {
@@ -38,7 +39,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="flex flex-col items-center gap-4 text-center">
            <Link href="/" className="flex items-center gap-3 group mb-4">
-              <img src="/image.png" alt="Edyfra Logo" className="w-9 h-9 rounded-xl shadow-lg object-cover" />
+              <Image src="/image.png" alt="Edyfra Logo" width={36} height={36} className="w-9 h-9 rounded-xl shadow-lg object-cover" priority />
               <span className="text-3xl font-black text-foreground tracking-tighter">Edyfra</span>
            </Link>
            <h1 className="text-4xl font-black tracking-tightest">Welcome back.</h1>

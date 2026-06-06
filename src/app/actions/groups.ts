@@ -55,19 +55,19 @@ export async function getGroupById(id: string) {
 
   if (!group) throw new Error("Group not found");
 
-  // Get sender info for each message
-  const messagesWithSenders = await Promise.all(
-    group.groupMessages.map(async (msg) => {
-      if (msg.senderId) {
-        const sender = await prisma.user.findUnique({
-          where: { id: msg.senderId },
-          select: { name: true, avatar: true }
-        });
-        return { ...msg, sender };
-      }
-      return msg;
-    })
-  );
+  // Get sender info for each message — batched
+  const senderIds = [...new Set(group.groupMessages.map(m => m.senderId).filter(Boolean))] as string[];
+  const senders = senderIds.length > 0
+    ? await prisma.user.findMany({
+        where: { id: { in: senderIds } },
+        select: { id: true, name: true, avatar: true }
+      })
+    : [];
+  const senderMap = new Map(senders.map(s => [s.id, s]));
+  const messagesWithSenders = group.groupMessages.map(msg => ({
+    ...msg,
+    sender: msg.senderId ? senderMap.get(msg.senderId) ?? null : null
+  }));
 
   return { ...group, groupMessages: messagesWithSenders };
 }

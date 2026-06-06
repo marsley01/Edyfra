@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
@@ -27,17 +27,19 @@ export function Navigation() {
   const router = useRouter();
   const pathname = usePathname();
 
+  const scrolledRef = useRef(scrolled);
+  scrolledRef.current = scrolled;
+
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 20) {
-        if (!scrolled) setScrolled(true);
-      } else {
-        if (scrolled) setScrolled(false);
+      const shouldBeScrolled = window.scrollY > 20;
+      if (shouldBeScrolled !== scrolledRef.current) {
+        setScrolled(shouldBeScrolled);
       }
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [scrolled]);
+  }, []);
 
   useEffect(() => {
     setIsOpen(false);

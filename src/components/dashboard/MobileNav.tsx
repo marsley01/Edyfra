@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import DashboardSidebar from "./Sidebar";
 import { User } from "@supabase/supabase-js";
 import Link from "next/link";
+import Image from "next/image";
+import { NotificationBell } from "@/components/dashboard/NotificationBell";
 
 export default function MobileNav({ user }: { user: User }) {
   const router = useRouter();
@@ -36,8 +38,8 @@ export default function MobileNav({ user }: { user: User }) {
   return (
     <div className="lg:hidden">
       {/* Mobile Header */}
-         <header className="h-14 sm:h-16 bg-background/80 backdrop-blur-md border-b border-border px-3 sm:px-4 flex items-center justify-between sticky top-0 z-40">
-        <div className="flex items-center gap-2">
+      <header className="h-14 sm:h-16 bg-background/80 backdrop-blur-md border-b border-border px-3 sm:px-4 flex items-center justify-between sticky top-0 z-40 gap-2">
+        <div className="flex items-center gap-2 min-w-0">
           {showBackButton && (
             <button
               onClick={() => router.back()}
@@ -47,21 +49,24 @@ export default function MobileNav({ user }: { user: User }) {
               <ChevronLeft className="h-5 w-5" />
             </button>
           )}
-          <Link href="/dashboard" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
-            <img src="/image.png" alt="Edyfra Logo" className="w-9 h-9 rounded-xl shadow-lg object-cover" />
+          <Link href="/dashboard" className="flex items-center gap-2 min-w-0" onClick={() => setIsOpen(false)}>
+            <Image src="/image.png" alt="Edyfra Logo" width={36} height={36} className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl shadow-lg object-cover" priority />
             <span className="text-lg sm:text-xl font-black text-foreground tracking-tighter">Edyfra</span>
           </Link>
         </div>
-             <Button 
-           variant="ghost" 
-           size="icon" 
-           onClick={() => setIsOpen(true)}
-           className="rounded-xl hover:bg-primary/5"
-           aria-label="Open dashboard menu"
-           aria-expanded={isOpen}
-         >
-           <Menu className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
-         </Button>
+        <div className="flex items-center gap-1 sm:gap-2">
+          <NotificationBell variant="topbar" />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsOpen(true)}
+            className="rounded-xl hover:bg-primary/5"
+            aria-label="Open dashboard menu"
+            aria-expanded={isOpen}
+          >
+            <Menu className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
+          </Button>
+        </div>
       </header>
 
       {/* Side Drawer */}

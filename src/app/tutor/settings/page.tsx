@@ -17,7 +17,8 @@ import {
 } from "lucide-react";
 import { getUserData, updateProfile, updateTutorProfile, changePassword, changeEmail, downloadUserData, deleteUserAccount, updateAvatar, updateNotificationSettings } from "@/app/actions/user";
 import { getNotificationSettings } from "@/app/actions/notifications";
-import { PushNotificationInit } from "@/components/PushNotificationInit";
+import { PushNotificationManager } from "@/components/PushNotificationManager";
+import { TUTOR_CONFIG } from "@/lib/config";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { AvatarPicker, type AvatarStyle } from "@/components/ui/avatar-picker";
 import {
@@ -93,7 +94,7 @@ export default function TutorSettingsPage() {
         subjects: tp.subjects?.join(", ") || "",
         confidenceLevels: "",
         levelsTaught: tp.levelsTaught?.join(", ") || "",
-        hourlyRate: tp.hourlyRate?.toString() || "500",
+        hourlyRate: tp.hourlyRate?.toString() || TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH.toString(),
         mpesaNumber: tp.mpesaNumber || "",
         sessionPreference: tp.sessionPreference || "both",
         maxGroupStudents: tp.maxGroupStudents?.toString() || "3",
@@ -126,7 +127,7 @@ export default function TutorSettingsPage() {
         bio: formData.bio,
         subjects: formData.subjects.split(",").map((s: string) => s.trim()).filter(Boolean),
         levelsTaught: formData.levelsTaught.split(",").map((s: string) => s.trim()).filter(Boolean),
-        hourlyRate: parseInt(formData.hourlyRate) || 500,
+        hourlyRate: parseInt(formData.hourlyRate) || TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH,
         mpesaNumber: formData.mpesaNumber,
         sessionPreference: formData.sessionPreference,
         maxGroupStudents: parseInt(formData.maxGroupStudents) || 3,
@@ -269,7 +270,6 @@ export default function TutorSettingsPage() {
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1"><Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" /> {userData?.tutorProfile?.rating || "New"}</span>
                   <span className="flex items-center gap-1"><BookOpen className="h-3.5 w-3.5" /> {formData.subjects || "No subjects set"}</span>
-                  {formData.hourlyRate && <span className="flex items-center gap-1"><Wallet className="h-3.5 w-3.5" /> Ksh {formData.hourlyRate}/hr</span>}
                 </div>
               </div>
               <div className="hidden sm:flex flex-col items-end gap-1">
@@ -517,13 +517,7 @@ export default function TutorSettingsPage() {
                     </div>
                   ))}
                   <Separator className="my-4" />
-                  <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/20 border border-border/30 gap-3">
-                    <div className="min-w-0">
-                      <Label className="text-sm font-medium">Push Notifications</Label>
-                      <p className="text-xs text-muted-foreground">Receive alerts even when the tab is closed</p>
-                    </div>
-                    <PushNotificationInit />
-                  </div>
+                  <PushNotificationManager />
                 </CardContent>
               </Card>
             )}

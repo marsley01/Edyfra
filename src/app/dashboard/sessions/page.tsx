@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Calendar, Clock, User, ArrowRight, Loader2, MessageSquare, ExternalLink } from "lucide-react";
+import { BookOpen, Clock, User, Loader2, MessageSquare } from "lucide-react";
 import { getUserData } from "@/app/actions/user";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -122,15 +122,7 @@ export default function SessionsPage() {
                     </div>
                   </div>
 
-                  {/* Action */}
-                  <div className="p-4 flex items-center justify-center bg-primary/[0.02] border-t md:border-t-0 md:border-l border-primary/10">
-                    <Link href={`/study-room/${session.roomId || session.id}`} className="w-full md:w-auto">
-                      <Button variant="ghost" className="h-full w-full md:w-auto px-6 py-8 md:py-0 rounded-none group-hover:bg-primary/5 transition-colors flex flex-col md:flex-row gap-2">
-                         <span className="text-sm font-bold text-primary">View Session</span>
-                         <ExternalLink className="h-4 w-4 text-primary" />
-                      </Button>
-                    </Link>
-                  </div>
+
                 </div>
               </CardContent>
             </Card>

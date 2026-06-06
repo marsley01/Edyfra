@@ -3,23 +3,75 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
-
-// Mock server actions (to be implemented in actions/bookings.ts)
 import { getIncomingBookingRequests, updateBookingStatus } from "@/app/actions/bookings";
+import { createClient } from "@/utils/supabase/client";
 
 export function IncomingRequests() {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const supabase = createClient();
 
   useEffect(() => {
     loadRequests();
-    // Poll every minute
-    const interval = setInterval(loadRequests, 60000);
-    return () => clearInterval(interval);
-  }, []);
+
+    // Real-time subscription for new booking requests
+    const channel = supabase
+      .channel("incoming-bookings")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "bookings",
+          filter: `status=eq.pending`,
+        },
+        (payload: any) => {
+          const newBooking = payload.new;
+          // Fetch student details
+          fetch(`/api/users/${newBooking.student_id}`)
+            .then(res => res.json())
+            .then(student => {
+              setRequests(prev => {
+                if (prev.find(r => r.id === newBooking.id)) return prev;
+                return [{
+                  ...newBooking,
+                  student: { name: student.name || "Student", avatar: student.avatar },
+                }, ...prev];
+              });
+              toast.info("New booking request received!");
+            })
+            .catch(() => {
+              setRequests(prev => {
+                if (prev.find(r => r.id === newBooking.id)) return prev;
+                return [{
+                  ...newBooking,
+                  student: { name: "A student", avatar: "" },
+                }, ...prev];
+              });
+            });
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "bookings",
+          filter: `status=in.(confirmed,declined,expired)`,
+        },
+        (payload: any) => {
+          setRequests(prev => prev.filter(r => r.id !== payload.new.id));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase]);
 
   const loadRequests = async () => {
     try {
@@ -51,7 +103,7 @@ export function IncomingRequests() {
   }
 
   if (requests.length === 0) {
-    return null; // Don't show the widget if there are no requests
+    return null;
   }
 
   return (
@@ -68,11 +120,12 @@ export function IncomingRequests() {
             <CardContent className="p-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <AvatarPremium seed={req.student.name} src={req.student.avatar || ""} />
+                  <AvatarPremium seed={req.student?.name || "Student"} src={req.student?.avatar || ""} />
                   <div>
-                    <p className="font-bold">{req.student.name} requested a session</p>
-                    <p className="text-sm text-muted-foreground">
-                      {req.subject} • {new Date(req.date).toLocaleDateString()} at {req.startTime} ({req.durationMinutes} mins)
+                    <p className="font-bold">{req.student?.name || "A student"} requested a session</p>
+                    <p className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {req.subject} • {new Date(req.date).toLocaleDateString()} at {req.startTime} EAT ({req.durationMinutes} mins)
                     </p>
                   </div>
                 </div>

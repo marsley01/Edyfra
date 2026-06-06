@@ -235,6 +235,15 @@ export default function DashboardPageContent() {
     );
   }
 
+  if (!userData) {
+    return (
+      <div className="p-12 text-center">
+        <p className="text-muted-foreground">Unable to load dashboard data. Please try again.</p>
+        <button onClick={handleRetry} className="mt-4 px-4 py-2 bg-primary text-white rounded-lg">Retry</button>
+      </div>
+    );
+  }
+
 
   const firstName = userData?.name?.split(" ")[0] || "there";
   const subjectFocus = userData?.studentProfile?.subjects?.[0] || "your toughest subject";
@@ -475,6 +484,33 @@ export default function DashboardPageContent() {
            <div className="absolute bottom-0 right-0 w-48 sm:w-64 h-48 sm:h-64 bg-primary/20 blur-[120px] rounded-full translate-y-1/2 translate-x-1/2" />
         </div>
       </div>
+
+       {/* Referral Card */}
+       <div className="p-6 sm:p-10 md:p-16 rounded-[2rem] sm:rounded-[3rem] bg-gradient-to-br from-purple-500/5 to-pink-500/5 border border-purple-500/20 shadow-sm flex flex-col md:flex-row items-center gap-6 sm:gap-8 md:gap-12 group hover:shadow-2xl transition-all duration-700">
+          <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-[1.5rem] sm:rounded-[2rem] bg-purple-500/10 flex items-center justify-center text-purple-500 shadow-sm border border-purple-500/20 group-hover:scale-110 group-hover:bg-purple-500 group-hover:text-white transition-all duration-500 flex-shrink-0">
+             <Users className="h-8 w-8 sm:h-10 sm:w-10" />
+          </div>
+          <div className="flex-1 space-y-3 sm:space-y-4 text-center md:text-left">
+             <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.4em] text-purple-500">Refer a Friend</p>
+             <h1 className="text-3xl sm:text-5xl md:text-7xl font-black tracking-tightest leading-none">
+               Share your code: <span className="text-purple-500">{userData?.referralCode || "------"}</span>
+             </h1>
+             <p className="text-muted-foreground font-medium text-base sm:text-lg md:text-xl">
+                When a friend signs up with your code: → They get 50 bonus XP → You get 100 bonus XP when they complete their first session.
+             </p>
+          </div>
+          <button
+            onClick={() => {
+              if (userData?.referralCode) {
+                navigator.clipboard.writeText(userData.referralCode);
+                toast.success("Referral code copied!");
+              }
+            }}
+            className="w-full md:w-auto h-14 sm:h-16 px-8 sm:px-12 rounded-full bg-purple-500 text-white font-black text-xs tracking-widest uppercase shadow-xl hover:bg-purple-600 transition-all active:scale-95"
+          >
+            Copy Code
+          </button>
+       </div>
 
        {/* Expert Network Highlight */}
        <div className="p-6 sm:p-10 md:p-16 rounded-[2rem] sm:rounded-[3rem] bg-background border border-border shadow-sm flex flex-col md:flex-row items-center gap-6 sm:gap-8 md:gap-12 group hover:shadow-2xl transition-all duration-700">
