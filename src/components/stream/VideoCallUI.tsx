@@ -2,7 +2,7 @@
 
 import {
   SpeakerLayout,
-  GridLayout,
+  PaginatedGridLayout,
   CallControls,
   useCallStateHooks,
   CallingState,
@@ -124,7 +124,7 @@ function ConferenceRoom({ onLeave }: { onLeave: () => void }) {
             {layout === "speaker" ? (
               <SpeakerLayout participantsBarPosition="bottom" />
             ) : (
-              <GridLayout />
+              <PaginatedGridLayout />
             )}
           </StreamTheme>
         </div>
