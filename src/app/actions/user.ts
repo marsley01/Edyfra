@@ -48,7 +48,6 @@ export const getUserData = cache(async (): Promise<(User & { studentProfile: Stu
     });
 
     if (!prismaUser) {
-
       const metaGender = user.user_metadata?.gender;
       prismaUser = await prisma.user.create({
         data: {
@@ -79,27 +78,38 @@ export const getUserData = cache(async (): Promise<(User & { studentProfile: Stu
         lastActive.getMonth() !== today.getMonth() || 
         lastActive.getFullYear() !== today.getFullYear();
 
-    if (isNewDay) {
-      await prisma.user.update({
-        where: { id: prismaUser.id },
-        data: {
-          points: { increment: SESSION_CONFIG.DAILY_ACTIVITY_REWARD },
-          lastActiveAt: today,
-        },
-      });
-      // Update local object to avoid re-fetching
-      prismaUser.points += SESSION_CONFIG.DAILY_ACTIVITY_REWARD;
-      prismaUser.lastActiveAt = today;
+      if (isNewDay) {
+        await prisma.user.update({
+          where: { id: prismaUser.id },
+          data: {
+            points: { increment: SESSION_CONFIG.DAILY_ACTIVITY_REWARD },
+            lastActiveAt: today,
+          },
+        });
+        // Update local object to avoid re-fetching
+        prismaUser.points += SESSION_CONFIG.DAILY_ACTIVITY_REWARD;
+        prismaUser.lastActiveAt = today;
+      }
+
+      // Backfill referral code if missing - Rare operation
+      if (!prismaUser.referralCode) {
+        const code = generateReferralCode(prismaUser.name);
+        await prisma.user.update({
+          where: { id: prismaUser.id },
+          data: { referralCode: code },
+        });
+        prismaUser.referralCode = code;
+      }
     }
 
-    // Backfill referral code if missing - Rare operation
-    if (!prismaUser.referralCode) {
-      const code = generateReferralCode(prismaUser.name);
+    // Tier recalibration: only update if changed
+    const correctTier = TIER_CONFIG.getTierFromPoints(prismaUser.points);
+    if (prismaUser.tier !== correctTier) {
       await prisma.user.update({
         where: { id: prismaUser.id },
-        data: { referralCode: code },
+        data: { tier: correctTier as Tier },
       });
-      prismaUser.referralCode = code;
+      prismaUser.tier = correctTier as Tier;
     }
 
     // Keep Supabase metadata aligned - only update if different to avoid API overhead
