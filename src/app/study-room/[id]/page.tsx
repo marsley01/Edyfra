@@ -202,10 +202,11 @@ export default function StudyRoomPage() {
               </div>
               <div className="p-4 rounded-2xl bg-background border border-border/50 space-y-2">
                 <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-500">
-                  <ShieldCheck className="h-3 w-3" /> Private Session
+                  <ShieldCheck className="h-3 w-3 text-emerald-500" /> Secure Study Space
                 </div>
-                <p className="text-xs font-medium text-muted-foreground leading-relaxed">Your conversation stays between you and your study partner. 🔒 End-to-end encrypted session</p>
+                <p className="text-xs font-medium text-muted-foreground leading-relaxed">Your conversation is completely private. Just you and your study buddy. 🔒</p>
               </div>
+
             </div>
           </div>
 
@@ -234,9 +235,9 @@ export default function StudyRoomPage() {
               }}
             />
           )}
-          {/* Subtle encryption indicator */}
+          {/* Private session indicator */}
           <div className="py-2 text-center border-t border-border/30">
-            <span className="text-[9px] font-medium text-muted-foreground/40">🔒 End-to-end encrypted session</span>
+            <span className="text-[9px] font-medium text-muted-foreground/40">🔒 This session is private and secure</span>
           </div>
         </section>
       </main>

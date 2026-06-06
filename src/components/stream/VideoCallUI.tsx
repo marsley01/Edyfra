@@ -44,13 +44,13 @@ export function VideoCallUI({ onLeave }: { onLeave: () => void }) {
       </div>
       <h2 className="text-xl font-black uppercase tracking-widest mb-2">
         {callingState === CallingState.JOINING
-          ? "Joining Room"
+          ? "Coming in..."
           : callingState === CallingState.RECONNECTING
-          ? "Reconnecting"
-          : "Connecting"}
+          ? "Trying to reconnect..."
+          : "Opening your space..."}
       </h2>
       <p className="text-[11px] text-white/40 font-bold uppercase tracking-[0.3em]">
-        Setting up your secure study environment
+        Getting your study space ready for you
       </p>
     </div>
   );
@@ -85,7 +85,7 @@ function ConferenceRoom({ onLeave }: { onLeave: () => void }) {
           <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full">
             <ShieldCheck className="h-3 w-3 text-emerald-500" />
             <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">
-              End-to-End Encrypted
+              Private study space
             </span>
           </div>
           <div className="h-4 w-[1px] bg-white/10" />
@@ -196,9 +196,9 @@ function ConferenceRoom({ onLeave }: { onLeave: () => void }) {
               <Monitor className="h-8 w-8 text-primary" />
             </div>
             <div>
-              <p className="text-sm font-black text-white uppercase tracking-widest">Waiting for partner</p>
+              <p className="text-sm font-black text-white uppercase tracking-widest">Waiting for your partner...</p>
               <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-1">
-                Your secure session is active
+                Your study session is ready
               </p>
             </div>
           </div>
