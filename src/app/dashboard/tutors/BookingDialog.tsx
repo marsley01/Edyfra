@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Calendar, Clock, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -119,12 +119,20 @@ export function BookingDialog({ tutor }: BookingDialogProps) {
 
   const handleBook = async () => {
     if (!canBook) {
-      toast.error("Please fill all fields.");
+      showError({
+        title: "Please fill all fields",
+        cause: "Subject, topic, and time slot are all required.",
+        fix: "Fill in the missing fields, then try again.",
+      });
       return;
     }
     const [date, startTime] = selectedSlot.split("|");
     if (!date || !startTime) {
-      toast.error("Please choose a valid time slot.");
+      showError({
+        title: "Please choose a valid time slot",
+        cause: "We couldn't read the slot you picked.",
+        fix: "Pick a time slot from the list and try again.",
+      });
       return;
     }
 
@@ -139,17 +147,25 @@ export function BookingDialog({ tutor }: BookingDialogProps) {
         SLOT_DURATION_MIN,
       );
       if (res.success) {
-        toast.success("Session Request Sent!", {
+        showSuccess("Session request sent!", {
           description: "The tutor will review and confirm your request.",
         });
         setOpen(false);
         setTopic("");
         setSelectedSlot("");
       } else {
-        toast.error(res.error ?? "Failed to book session.");
+        showError({
+          title: "We couldn't book that session",
+          cause: res.error || "The tutor didn't take the booking.",
+          fix: "Try a different time slot, or refresh the page.",
+        });
       }
     } catch {
-      toast.error("An error occurred.");
+      showError({
+        title: "Something didn't go through",
+        cause: "A hiccup on our side blocked this.",
+        fix: "Give it another try in a few seconds.",
+      });
     } finally {
       setBooking(false);
     }

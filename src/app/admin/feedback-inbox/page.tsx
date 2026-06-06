@@ -24,7 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import {
   getAllFeedback,
   updateFeedbackStatus,
@@ -91,7 +91,11 @@ export default function AdminFeedbackInboxPage() {
       const data = await getAllFeedback({ status: tab, category: cat });
       setItems((data as AnyFeedback[]) || []);
     } catch (err) {
-      toast.error("Failed to load feedback");
+      showError({
+        title: "We couldn't load feedback",
+        cause: "A hiccup on our side blocked the load.",
+        fix: "Try again, or refresh the page.",
+      });
       setItems([]);
     } finally {
       setLoading(false);
@@ -128,9 +132,14 @@ export default function AdminFeedbackInboxPage() {
   const handleStatus = (id: string, status: "new" | "read" | "archived") => {
     startTransition(async () => {
       const res = await updateFeedbackStatus(id, status);
-      if (res.error) toast.error(res.error);
-      else {
-        toast.success(`Marked as ${status}`);
+      if (res.error) {
+        showError({
+          title: "We couldn't update that status",
+          cause: res.error,
+          fix: "Try again, or refresh the page.",
+        });
+      } else {
+        showSuccess(`Marked as ${status}`, { description: "The status is updated in the inbox." });
         await load();
         if (selected?.id === id) {
           setSelected({ ...selected, status });
@@ -143,9 +152,14 @@ export default function AdminFeedbackInboxPage() {
     if (!selected) return;
     startTransition(async () => {
       const res = await setFeedbackAdminNote(selected.id, adminNote);
-      if (res.error) toast.error(res.error);
-      else {
-        toast.success("Note saved");
+      if (res.error) {
+        showError({
+          title: "We couldn't save that note",
+          cause: res.error,
+          fix: "Try again, or refresh the page.",
+        });
+      } else {
+        showSuccess("Note saved", { description: "Your note is now attached to that feedback." });
         await load();
         setSelected({ ...selected, adminNote });
       }
@@ -156,9 +170,14 @@ export default function AdminFeedbackInboxPage() {
     if (!confirm("Delete this feedback permanently?")) return;
     startTransition(async () => {
       const res = await deleteFeedback(id);
-      if (res.error) toast.error(res.error);
-      else {
-        toast.success("Deleted");
+      if (res.error) {
+        showError({
+          title: "We couldn't delete that feedback",
+          cause: res.error,
+          fix: "Try again, or refresh the page.",
+        });
+      } else {
+        showSuccess("Deleted", { description: "That feedback is gone from the inbox." });
         if (selected?.id === id) setSelected(null);
         await load();
       }

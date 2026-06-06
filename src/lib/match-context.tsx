@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useRef, useCallback, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { showSuccess } from "@/lib/toast";
 
 export type MatchStep = "idle" | "tutor" | "peer" | "ai" | "matched";
 
@@ -84,7 +84,7 @@ export function MatchProvider({ children }: { children: ReactNode }) {
         const res = await checkMatchStatus(state.matchRequestId!);
         if (res.success && res.sessionId) {
           setState(prev => ({ ...prev, step: "matched", sessionId: res.sessionId ?? null }));
-          toast.success("Match found! Redirecting...");
+          showSuccess("Match found!", { description: "Taking you there now." });
           setTimeout(() => {
             router.push(`/study-room/${res.sessionId}`);
             clearState();

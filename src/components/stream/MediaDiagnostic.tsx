@@ -19,7 +19,7 @@ import {
   Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { showSuccess } from "@/lib/toast";
 
 interface DeviceInfo {
   kind: "videoinput" | "audioinput" | "audiooutput";
@@ -121,8 +121,8 @@ export function MediaDiagnostic({ trigger = 0, onResolved }: MediaDiagnosticProp
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       stream.getTracks().forEach((t) => t.stop());
       setState((s) => ({ ...s, lastError: null, isRetesting: false, lastTestedAt: Date.now() }));
-      toast.success("Microphone access works!", {
-        description: "You can now click Start Call. If the camera still fails, we'll fall back to audio-only.",
+      showSuccess("Microphone is good to go", {
+        description: "We can hear you loud and clear.",
       });
       onResolved?.();
     } catch (err: any) {

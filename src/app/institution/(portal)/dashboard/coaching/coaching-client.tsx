@@ -6,7 +6,7 @@ import { Calendar, Plus, X, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/institution/data-table";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { createCoachingAssignment, cancelCoachingAssignment } from "@/app/actions/institution-coaching";
 import type { CoachingAssignment, CoachingStatus } from "@/generated/client";
 
@@ -37,10 +37,14 @@ export function CoachingClient({
     startTransition(async () => {
       const res = await cancelCoachingAssignment(id);
       if (!res.ok) {
-        toast.error("Could not cancel assignment");
+        showError({
+          title: "Couldn't cancel that assignment",
+          cause: "We didn't get a confirmation from the server.",
+          fix: "Try again, or refresh the page.",
+        });
         return;
       }
-      toast.success("Assignment cancelled");
+      showSuccess("Assignment cancelled", { description: "The student and teacher have been notified." });
       setRows((cur) => cur.map((r) => (r.id === id ? { ...r, status: "CANCELLED" as CoachingStatus } : r)));
     });
   }
@@ -200,10 +204,14 @@ function CreateDialog({
     });
     setPending(false);
     if (!res.ok) {
-      toast.error(res.error);
+      showError({
+        title: "We couldn't create that assignment",
+        cause: res.error,
+        fix: "Check the details and try again.",
+      });
       return;
     }
-    toast.success("Assignment created");
+    showSuccess("Assignment created", { description: "Holiday coaching is locked in for that student and teacher." });
     onClose();
   }
 

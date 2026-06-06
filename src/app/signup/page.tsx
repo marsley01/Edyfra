@@ -9,14 +9,64 @@ import Link from "next/link";
 import Image from "next/image";
 import { signup } from "@/app/actions/auth";
 
-import { toast } from "sonner";
+import { showSuccess } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { AvatarPicker, type AvatarStyle } from "@/components/ui/avatar-picker";
+
+interface FriendlyError {
+  title: string;
+  cause: string;
+  fix: string;
+}
+
+function describeSignupError(raw: string): FriendlyError {
+  const lower = raw.toLowerCase();
+  if (lower.includes("already registered") || lower.includes("already exists") || lower.includes("duplicate")) {
+    return {
+      title: "You already have an account",
+      cause: "That email is already signed up with Edyfra.",
+      fix: "Head to Login and use that email, or reset your password if you've forgotten it.",
+    };
+  }
+  if (lower.includes("password") && (lower.includes("weak") || lower.includes("short") || lower.includes("characters"))) {
+    return {
+      title: "Your password needs more muscle",
+      cause: "It's too short or too easy to guess.",
+      fix: "Use at least 8 characters with a mix of letters and numbers.",
+    };
+  }
+  if (lower.includes("invalid") && lower.includes("email")) {
+    return {
+      title: "That email doesn't look right",
+      cause: "We can't tell where to send your confirmation link.",
+      fix: "Double-check for typos and try again.",
+    };
+  }
+  if (lower.includes("network") || lower.includes("failed to fetch")) {
+    return {
+      title: "We can't reach our servers",
+      cause: "Your connection dropped or our signup service is busy.",
+      fix: "Check your internet and try again in a moment.",
+    };
+  }
+  if (lower.includes("rate") || lower.includes("too many")) {
+    return {
+      title: "A few too many tries",
+      cause: "You've made several signup attempts in a short window.",
+      fix: "Wait about a minute and try again.",
+    };
+  }
+  return {
+    title: "We couldn't create your account",
+    cause: raw || "Something went wrong on our side.",
+    fix: "Give it another go. If it keeps failing, ping us via the Contact page.",
+  };
+}
 
 export default function SignupPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<FriendlyError | null>(null);
   
   // Step 1 State
   const [name, setName] = useState("");
@@ -34,23 +84,44 @@ export default function SignupPage() {
   const [avatarUrl, setAvatarUrl] = useState<string>("");
 
   const validateStep1 = () => {
-    if (!name.trim()) { setError("Name is required"); return false; }
+    if (!name.trim()) {
+      setError({
+        title: "We need your name",
+        cause: "Tutors will see this on your study room and messages.",
+        fix: "Type your first name (or full name) and continue.",
+      });
+      return false;
+    }
     if (!email.trim()) { 
-      setEmailError("Email address is required."); 
+      setEmailError("Email address is required so we can send your confirmation link.");
       return false; 
     }
     if (!email.includes("@")) {
-      setEmailError("Please include an '@' in your email address to continue.");
+      setEmailError("Please include an '@' in your email so it can actually reach you.");
       return false;
     }
-    if (password.length < 6) { setError("Password must be at least 6 characters."); return false; }
+    if (password.length < 6) {
+      setError({
+        title: "Your password is a little short",
+        cause: "We need at least 6 characters to keep your account safe.",
+        fix: "Add a few more characters — letters and numbers are best.",
+      });
+      return false;
+    }
     setEmailError("");
     setError(null);
     return true;
   };
 
   const validateStep2 = () => {
-    if (!gender) { setError("Please tell us your gender to continue."); return false; }
+    if (!gender) {
+      setError({
+        title: "Pick one to continue",
+        cause: "We use this only to match you with the right peers and tutors.",
+        fix: "Tap Male or Female above, then continue.",
+      });
+      return false;
+    }
     setError(null);
     return true;
   };
@@ -89,13 +160,20 @@ export default function SignupPage() {
       if (avatarUrl) formData.set("avatarUrl", avatarUrl);
     }
 
-    const result = await signup(formData);
+    try {
+      const result = await signup(formData);
 
-    if (result?.error) {
-      setError(result.error);
-      setLoading(false);
-    } else if (result?.success && result.message) {
-      toast.success(result.message);
+      if (result?.error) {
+        setError(describeSignupError(result.error));
+        setLoading(false);
+      } else if (result?.success && result.message) {
+        showSuccess("Account created!", {
+          description: result.message,
+        });
+        setLoading(false);
+      }
+    } catch (err: any) {
+      setError(describeSignupError(err?.message || ""));
       setLoading(false);
     }
   }
@@ -162,10 +240,23 @@ export default function SignupPage() {
                 <motion.div 
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 text-red-500 text-sm font-bold"
+                  className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-start gap-3 text-sm"
+                  role="alert"
                 >
-                  <AlertCircle className="h-5 w-5" />
-                  {error}
+                  <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+                  <div className="space-y-2 flex-1">
+                    <p className="text-red-500 font-black">{error.title}</p>
+                    <div className="space-y-1 text-foreground/85 leading-relaxed">
+                      <p>
+                        <span className="font-bold text-foreground/60 text-xs uppercase tracking-wider mr-1">Why:</span>
+                        {error.cause}
+                      </p>
+                      <p>
+                        <span className="font-bold text-foreground/60 text-xs uppercase tracking-wider mr-1">Try:</span>
+                        {error.fix}
+                      </p>
+                    </div>
+                  </div>
                 </motion.div>
               )}
 

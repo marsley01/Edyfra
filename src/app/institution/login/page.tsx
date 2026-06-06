@@ -1,32 +1,71 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Building2, ArrowRight, Loader2 } from "lucide-react";
+import { Building2, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
 import Link from "next/link";
 import { institutionLogin } from "@/app/actions/institution-auth";
 
+interface FriendlyError {
+  title: string;
+  cause: string;
+  fix: string;
+}
+
+function describe(raw: string): FriendlyError {
+  const lower = raw.toLowerCase();
+  if (lower.includes("invalid login credentials") || lower.includes("invalid_credentials")) {
+    return {
+      title: "That didn't match our records",
+      cause: "The email or password isn't right for this institution.",
+      fix: "Double-check both, or ask your institution admin to resend your invite.",
+    };
+  }
+  if (lower.includes("not a member") || lower.includes("not part") || lower.includes("not registered")) {
+    return {
+      title: "You aren't on this institution yet",
+      cause: "Your account isn't linked to an institution we recognize.",
+      fix: "Ask your admin to send you an invite, then sign in again.",
+    };
+  }
+  if (lower.includes("pending") || lower.includes("review")) {
+    return {
+      title: "Your institution is still pending review",
+      cause: "We haven't finished verifying the school yet.",
+      fix: "Hang tight — we'll email the admin as soon as it's approved.",
+    };
+  }
+  return {
+    title: "We couldn't sign you in",
+    cause: raw || "Something went wrong on our side.",
+    fix: "Give it another try, or reach out to the Edyfra team.",
+  };
+}
+
 export default function InstitutionLogin() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<FriendlyError | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
     const formData = new FormData();
     formData.append("email", email);
     formData.append("password", password);
 
-    const result = await institutionLogin(formData);
-
-    if (result?.error) {
-      toast.error(result.error);
+    try {
+      const result = await institutionLogin(formData);
+      if (result?.error) {
+        setError(describe(result.error));
+        setLoading(false);
+      }
+    } catch (err: any) {
+      setError(describe(err?.message || ""));
       setLoading(false);
     }
   };
@@ -43,7 +82,7 @@ export default function InstitutionLogin() {
           Institution Portal
         </h2>
         <p className="mt-2 text-center text-sm text-muted-foreground">
-          Sign in to manage your school's private network
+          Sign in to manage your school&apos;s private network
         </p>
       </div>
 
@@ -52,7 +91,24 @@ export default function InstitutionLogin() {
           {/* Subtle background glow */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-50" />
           
-          <form className="space-y-6" onSubmit={handleLogin}>
+          <form className="space-y-6" onSubmit={handleLogin} noValidate>
+            {error && (
+              <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-start gap-3 text-sm" role="alert">
+                <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+                <div className="space-y-1.5 flex-1">
+                  <p className="text-red-500 font-black">{error.title}</p>
+                  <p className="text-foreground/85">
+                    <span className="font-bold text-foreground/60 text-xs uppercase tracking-wider mr-1">Why:</span>
+                    {error.cause}
+                  </p>
+                  <p className="text-foreground/85">
+                    <span className="font-bold text-foreground/60 text-xs uppercase tracking-wider mr-1">Try:</span>
+                    {error.fix}
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-muted-foreground">
                 School Email Address
@@ -91,23 +147,11 @@ export default function InstitutionLogin() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-border rounded bg-background"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-muted-foreground">
-                  Remember me
-                </label>
-              </div>
-
+            <div className="flex items-center justify-end">
               <div className="text-sm">
-                <a href="#" className="font-medium text-indigo-400 hover:text-indigo-300">
+                <Link href="/forgot-password" className="font-medium text-indigo-400 hover:text-indigo-300">
                   Forgot password?
-                </a>
+                </Link>
               </div>
             </div>
 

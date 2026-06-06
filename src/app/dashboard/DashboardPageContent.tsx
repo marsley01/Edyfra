@@ -9,7 +9,7 @@ import { useSafeUserData, useSessionCounter } from "@/hooks/useAntigravityFixes"
 import { DashboardLoadingState, DashboardError } from "@/hooks/useAntigravityFixes";
 import { applyToBecomeTutor } from "@/app/actions/admin-tutor";
 import { getOrCreateDailyChallenge, evaluateChallengeAnswer, saveChallengeAttempt, getTodaysChallenge, getChallengeCompletion, generatePersonalizedChallenge } from "@/app/actions/challenge-ai";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
@@ -140,7 +140,7 @@ export default function DashboardPageContent() {
       setResult(evaluation);
       await saveChallengeAttempt(userData.id, challenge.id, evaluation.correct);
       if (evaluation.correct) {
-        toast.success("Correct! Points awarded!");
+        showSuccess("Correct!", { description: "Points awarded — keep that streak going." });
       }
       setCompleted(true);
       const tomorrow = new Date();
@@ -151,7 +151,11 @@ export default function DashboardPageContent() {
       const m = Math.floor((diff % 3600000) / 60000);
       setCountdown(`${h}h ${m}m`);
     } catch (err) {
-      toast.error("Failed to evaluate answer");
+      showError({
+        title: "We couldn't check that answer",
+        cause: "A hiccup on our side blocked the evaluation.",
+        fix: "Try again in a moment.",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -182,17 +186,19 @@ export default function DashboardPageContent() {
       });
       if (result.success) {
         setAppStatus('PENDING');
-        toast.success("Application Submitted!", {
-          description: "We'll review it and get back to you.",
-        });
+        showSuccess("Application submitted", { description: "We'll review it and get back to you." });
       } else {
-        toast.error("Application failed", {
-          description: result.error || "Please try again.",
+        showError({
+          title: "We couldn't submit your application",
+          cause: result.error || "The application didn't go through.",
+          fix: "Please try again.",
         });
       }
     } catch (err: any) {
-      toast.error("Application failed", {
-        description: err.message || "Please try again.",
+      showError({
+        title: "We couldn't submit your application",
+        cause: err.message || "The application didn't go through.",
+        fix: "Please try again.",
       });
     } finally {
       setAppLoading(false);
@@ -210,13 +216,15 @@ export default function DashboardPageContent() {
       const personalizedChallenge = await generatePersonalizedChallenge(userData.id, userData.educationLevel);
       if (personalizedChallenge) {
         setChallenge(personalizedChallenge);
-        toast.success("Personalized challenge generated!", {
-          description: "Based on your recent performance",
+        showSuccess("Personalized challenge generated!", {
+          description: "Based on your recent performance.",
         });
       }
     } catch (error) {
-      toast.error("Failed to generate personalized challenge", {
-        description: "Please try again",
+      showError({
+        title: "We couldn't generate that challenge",
+        cause: "A hiccup on our side stopped it.",
+        fix: "Please try again.",
       });
     } finally {
       setGeneratingPersonalized(false);
@@ -503,7 +511,7 @@ export default function DashboardPageContent() {
             onClick={() => {
               if (userData?.referralCode) {
                 navigator.clipboard.writeText(userData.referralCode);
-                toast.success("Referral code copied!");
+                showSuccess("Referral code copied!", { description: "Share it with a friend to earn XP." });
               }
             }}
             className="w-full md:w-auto h-14 sm:h-16 px-8 sm:px-12 rounded-full bg-purple-500 text-white font-black text-xs tracking-widest uppercase shadow-xl hover:bg-purple-600 transition-all active:scale-95"

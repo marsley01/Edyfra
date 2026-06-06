@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, Upload, FileText, Loader2, ExternalLink, Trash2, BookMarked } from "lucide-react";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
 type ContentTab = "upload" | "library";
@@ -58,7 +58,11 @@ export default function AdminCurriculumPage() {
     if (f && f.size <= 50 * 1024 * 1024) {
       setFile(f);
     } else {
-      toast.error("File must be under 50 MB");
+      showError({
+        title: "That file is too large",
+        cause: "It needs to be 50 MB or smaller.",
+        fix: "Compress the file, or pick a smaller one.",
+      });
     }
   }, []);
 
@@ -76,7 +80,11 @@ export default function AdminCurriculumPage() {
       const data = await getAllCurriculumResources();
       setResources(data as CurriculumResource[]);
     } catch {
-      toast.error("Failed to load resources");
+      showError({
+        title: "We couldn't load resources",
+        cause: "A hiccup on our side blocked the load.",
+        fix: "Try again, or refresh the page.",
+      });
     } finally {
       setLoading(false);
     }
@@ -91,12 +99,20 @@ export default function AdminCurriculumPage() {
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file || !title || !subject || !level || !contentType) {
-      toast.error("Please fill in all required fields");
+      showError({
+        title: "Some required fields are empty",
+        cause: "Title, subject, level, type and file are all required.",
+        fix: "Fill in every required field, then try again.",
+      });
       return;
     }
 
     if (contentType === "Curriculum Book" && !curriculumType) {
-      toast.error("Please select the curriculum system for this book");
+      showError({
+        title: "Pick a curriculum system",
+        cause: "Curriculum books need a curriculum system (8-4-4, CBC, etc.).",
+        fix: "Choose one in the dropdown, then try again.",
+      });
       return;
     }
 
@@ -117,16 +133,24 @@ export default function AdminCurriculumPage() {
       const result = await uploadCurriculumContent(payload);
 
       if (result.success) {
-        toast.success(`${contentType} published successfully`);
+        showSuccess(`${contentType} published`, { description: "It's now live in the library." });
         setTitle(""); setSubject(""); setLevel(""); setContentType("");
         setCurriculumType(""); setTopic(""); setDescription(""); setPrice(0); setFile(null);
         setTab("library");
         await loadResources();
       } else if ("error" in result && result.error) {
-        toast.error(result.error);
+        showError({
+          title: "We couldn't publish that resource",
+          cause: result.error,
+          fix: "Try again, or refresh the page.",
+        });
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Upload failed");
+      showError({
+        title: "We couldn't publish that resource",
+        cause: error instanceof Error ? error.message : "Something didn't go through on our side.",
+        fix: "Try again, or refresh the page.",
+      });
     } finally {
       setIsUploading(false);
     }
@@ -139,12 +163,20 @@ export default function AdminCurriculumPage() {
       const result = await deleteResource(id);
       if (result.success) {
         setResources((prev) => prev.filter((resource) => resource.id !== id));
-        toast.success("Resource deleted");
+        showSuccess("Resource deleted", { description: "It's been removed from the library." });
       } else {
-        toast.error(result.error || "Failed to delete resource");
+        showError({
+          title: "We couldn't delete that resource",
+          cause: result.error || "Something didn't go through on our side.",
+          fix: "Try again, or refresh the page.",
+        });
       }
     } catch {
-      toast.error("Failed to delete resource");
+      showError({
+        title: "We couldn't delete that resource",
+        cause: "Something didn't go through on our side.",
+        fix: "Try again, or refresh the page.",
+      });
     }
   };
 

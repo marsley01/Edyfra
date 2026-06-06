@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Bell, BellOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { urlBase64ToUint8Array } from "@/lib/utils";
 
 export function PushNotificationInit() {
@@ -34,7 +34,11 @@ export function PushNotificationInit() {
       const result = await Notification.requestPermission();
       setPermission(result);
       if (result !== "granted") {
-        toast.error("Notification permission denied");
+        showError({
+          title: "Notifications denied",
+          cause: "You said no to notification permissions.",
+          fix: "Open your browser settings and allow notifications for Edyfra.",
+        });
         return;
       }
 
@@ -42,12 +46,20 @@ export function PushNotificationInit() {
 
       const keyRes = await fetch("/api/push/vapid-public-key");
       if (!keyRes.ok) {
-        toast.error("Push notifications not configured");
+        showError({
+          title: "Push isn't ready yet",
+          cause: "Browser push isn't configured on the server.",
+          fix: "We'll let you know once it's live.",
+        });
         return;
       }
       const { publicKey } = await keyRes.json();
       if (!publicKey) {
-        toast.error("Push notifications not configured");
+        showError({
+          title: "Push isn't ready yet",
+          cause: "Browser push isn't configured on the server.",
+          fix: "We'll let you know once it's live.",
+        });
         return;
       }
 
@@ -72,9 +84,13 @@ export function PushNotificationInit() {
       });
 
       setSubscribed(true);
-      toast.success("Push notifications enabled");
+      showSuccess("Push is on", { description: "We'll ping your browser when something new lands." });
     } catch {
-      toast.error("Failed to enable push notifications");
+      showError({
+        title: "Couldn't turn on push",
+        cause: "The browser didn't accept the request.",
+        fix: "Check your browser settings, then try again.",
+      });
     } finally {
       setLoading(false);
     }
@@ -95,9 +111,13 @@ export function PushNotificationInit() {
         await sub.unsubscribe();
       }
       setSubscribed(false);
-      toast.success("Push notifications disabled");
+      showSuccess("Push is off", { description: "You won't get browser pings anymore." });
     } catch {
-      toast.error("Failed to disable push notifications");
+      showError({
+        title: "Couldn't turn off push",
+        cause: "We couldn't reach the server.",
+        fix: "Try again, or refresh the page.",
+      });
     } finally {
       setLoading(false);
     }

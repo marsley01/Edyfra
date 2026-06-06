@@ -35,7 +35,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
 import {
@@ -107,7 +107,7 @@ export function CommunityForum({
     setView("thread");
     const res = await getForumTopic(topicId);
     if (res.ok) setThread(res);
-    else toast.error(res.error);
+    else showError({ title: "We couldn't open that topic", cause: res.error, fix: "Try again, or refresh the page." });
   }, []);
 
   useEffect(() => { loadList(); }, [loadList]);
@@ -560,7 +560,7 @@ function ForumThread({
       parentId: replyTo?.id ?? null,
     });
     setBusy(false);
-    if (!res.ok) { toast.error(res.error); return; }
+    if (!res.ok) { showError({ title: "We couldn't post your reply", cause: res.error, fix: "Try again, or refresh the page." }); return; }
     setReply("");
     setReplyTo(null);
     await onRefresh();
@@ -569,15 +569,19 @@ function ForumThread({
 
   const react = async (type: string, postId?: string) => {
     const res = await toggleForumReaction({ type, postId, topicId: postId ? undefined : thread.topic.id });
-    if (!res.ok) { toast.error("Couldn't react"); return; }
+    if (!res.ok) { showError({ title: "We couldn't save your reaction", cause: "Something hiccuped on our side.", fix: "Tap the reaction again in a moment." }); return; }
     await onRefresh();
   };
 
   const sub = async () => {
     const res = await toggleForumSubscription(thread.topic.id);
-    if (!res.ok) { toast.error("Couldn't update"); return; }
+    if (!res.ok) { showError({ title: "We couldn't update that", cause: "Something hiccuped on our side.", fix: "Try again, or refresh the page." }); return; }
     setSubscribed(res.subscribed);
-    toast.success(res.subscribed ? "You'll get a ping for new replies" : "No more pings");
+    showSuccess(res.subscribed ? "You're subscribed" : "You're unsubscribed", {
+      description: res.subscribed
+        ? "We'll ping you when someone replies."
+        : "We won't ping you for new replies.",
+    });
   };
 
   return (
@@ -834,8 +838,8 @@ function NewTopicDialog({
     setBusy(true);
     const res = await createForumTopic({ title, body, categoryId });
     setBusy(false);
-    if (!res.ok) { toast.error(res.error); return; }
-    toast.success("Topic posted");
+    if (!res.ok) { showError({ title: "We couldn't post that topic", cause: res.error, fix: "Try again, or refresh the page." }); return; }
+    showSuccess("Topic posted", { description: "Your question is live in the community." });
     onCreated(res.topicId);
   };
 

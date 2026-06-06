@@ -5,7 +5,7 @@ import { Bell, BellOff, BellRing, Loader2, Send, Smartphone, CheckCircle2, Alert
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
+import { showError, showSuccess, showUnknownError } from "@/lib/toast";
 import { urlBase64ToUint8Array } from "@/lib/utils";
 
 type SupportState = "loading" | "unsupported" | "ready";
@@ -52,11 +52,17 @@ export function PushNotificationManager() {
       setPermission(result);
       if (result !== "granted") {
         if (result === "denied") {
-          toast.error("Notifications blocked", {
-            description: "Unlock them in your browser's site settings to receive push.",
+          showError({
+            title: "Notifications blocked",
+            cause: "Your browser is blocking site notifications.",
+            fix: "Click the lock icon in the address bar and allow notifications.",
           });
         } else {
-          toast.error("Permission not granted");
+          showError({
+            title: "Permission not granted",
+            cause: "We can't ping you without notification access.",
+            fix: "Click Allow when your browser asks for permission.",
+          });
         }
         return;
       }
@@ -65,14 +71,20 @@ export function PushNotificationManager() {
 
       const keyRes = await fetch("/api/push/vapid-public-key");
       if (!keyRes.ok) {
-        toast.error("Push isn't configured on the server", {
-          description: "Ask an admin to set NEXT_PUBLIC_VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY.",
+        showError({
+          title: "Push isn't set up yet",
+          cause: "The server hasn't enabled browser push.",
+          fix: "We'll turn it on soon — try again later.",
         });
         return;
       }
       const { publicKey } = await keyRes.json();
       if (!publicKey) {
-        toast.error("No VAPID public key returned");
+        showError({
+          title: "Push isn't set up yet",
+          cause: "The server didn't hand us a key to register with.",
+          fix: "We'll be back online with push soon.",
+        });
         return;
       }
 
@@ -97,16 +109,23 @@ export function PushNotificationManager() {
       });
 
       if (!saveRes.ok) {
-        toast.error("Subscription saved locally, but the server rejected it");
+        showError({
+          title: "Almost there",
+          cause: "We saved your subscription but the server didn't accept it.",
+          fix: "Try again — if it keeps happening, contact support.",
+        });
         return;
       }
 
       setSubscribed(true);
-      toast.success("Browser notifications are on");
+      showSuccess("Notifications are on", { description: "We'll ping you when something needs you." });
     } catch (err: any) {
       console.error("[push subscribe]", err);
-      toast.error("Couldn't enable browser notifications", {
-        description: err?.message || "Try again, or check the browser console for details.",
+      showError({
+        title: "Couldn't turn on notifications",
+        cause: "Your browser didn't accept the request.",
+        fix: "Check your browser settings, then try again.",
+        raw: err?.message,
       });
     } finally {
       setLoading(false);
@@ -128,9 +147,13 @@ export function PushNotificationManager() {
         await sub.unsubscribe();
       }
       setSubscribed(false);
-      toast.success("Browser notifications are off");
+      showSuccess("Notifications are off", { description: "You won't be pinged until you turn them back on." });
     } catch {
-      toast.error("Failed to disable");
+      showError({
+        title: "Couldn't turn off notifications",
+        cause: "We couldn't reach the server.",
+        fix: "Try again, or refresh the page.",
+      });
     } finally {
       setLoading(false);
     }
@@ -144,11 +167,9 @@ export function PushNotificationManager() {
         const data = await res.json().catch(() => ({}));
         throw new Error(data?.error || "Test failed");
       }
-      toast.success("Test sent! Check your notification list and OS tray.", {
-        description: "If nothing appears in your OS tray, your browser may be blocking them.",
-      });
+      showSuccess("Test sent!", { description: "Check your notification list and OS tray." });
     } catch (err: any) {
-      toast.error(err?.message || "Test failed");
+      showUnknownError(err, { title: "Test failed", fix: "Make sure notifications are allowed, then try again." });
     } finally {
       setTesting(false);
     }

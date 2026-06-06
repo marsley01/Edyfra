@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react";
 import { MonitorUp, MonitorX } from "lucide-react";
 import { useCallStateHooks } from "@stream-io/video-react-sdk";
-import { toast } from "sonner";
+import { showError } from "@/lib/toast";
 
 export function ScreenShareButton() {
   const { useScreenShareState } = useCallStateHooks();
@@ -22,7 +22,11 @@ export function ScreenShareButton() {
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Could not start screen share";
-      toast.error(message);
+      showError({
+        title: "Screen share didn't start",
+        raw: message,
+        fix: "Check browser permissions, then try again.",
+      });
     } finally {
       setBusy(false);
     }

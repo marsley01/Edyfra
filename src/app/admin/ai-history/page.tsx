@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { showError } from "@/lib/toast";
 import { getAllAiConversations, getAiConversationThread } from "@/app/actions/feedback";
 
 type ConvoSummary = {
@@ -58,7 +58,11 @@ export default function AdminAiHistoryPage() {
       const data = await getAllAiConversations({ bot: botFilter });
       setItems((data as ConvoSummary[]) || []);
     } catch (err) {
-      toast.error("Failed to load AI history");
+      showError({
+        title: "We couldn't load AI history",
+        cause: "A hiccup on our side blocked the load.",
+        fix: "Try again, or refresh the page.",
+      });
       setItems([]);
     } finally {
       setLoading(false);
@@ -78,7 +82,11 @@ export default function AdminAiHistoryPage() {
         const data = await getAiConversationThread(selected.userId, selected.bot);
         setThread((data as ThreadMessage[]) || []);
       } catch (err) {
-        toast.error("Failed to load conversation");
+        showError({
+          title: "We couldn't load that conversation",
+          cause: "A hiccup on our side blocked the load.",
+          fix: "Try again, or pick a different thread.",
+        });
         setThread([]);
       } finally {
         setThreadLoading(false);

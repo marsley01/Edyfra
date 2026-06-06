@@ -287,7 +287,7 @@ export async function createBooking(tutorId: string, subject: string, topic: str
         type: "NEW_BOOKING",
         title: "New booking request 📅",
         body: `${user.name} wants a ${subject} session on ${dayFormatted} at ${timeFormatted}`,
-        actionUrl: "/tutor-dashboard",
+        actionUrl: "/tutor",
       });
     } catch (e) {
       console.error("Failed to notify tutor of new booking:", e);

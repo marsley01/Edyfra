@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { Loader2, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { KENYA_COUNTIES } from "@/lib/kenya-counties";
 import { INSTITUTION_PLANS } from "@/lib/institution-plans";
 import { updateInstitutionSettings, addDeputyAdmin, upsertAcademicTerm } from "@/app/actions/institution-admin";
@@ -67,9 +67,8 @@ export function SettingsClient({
         email: form.email || null,
         phone: form.phone || null,
       });
-      if (!res.ok) toast.error(res.error);
-      else toast.success("Settings saved");
-    });
+      if (!res.ok) showError({ title: "We couldn't save those settings", cause: res.error, fix: "Try again, or refresh the page." });
+      else showSuccess("Settings saved", { description: "Your school profile is up to date." });
   }
 
   return (
@@ -245,9 +244,8 @@ function TermForm({
         holidayEnd: holidayEnd ? new Date(holidayEnd) : null,
         makeCurrent: true,
       });
-      if (!res.ok) toast.error(res.error);
-      else toast.success("Term saved");
-    });
+      if (!res.ok) showError({ title: "We couldn't save that term", cause: res.error, fix: "Check the dates and try again." });
+      else showSuccess("Term saved", { description: "Your academic calendar is updated." });
   }
 
   return (
@@ -297,9 +295,9 @@ function AddDeputy({ onClose }: { onClose: () => void }) {
     setPending(true);
     const res = await addDeputyAdmin({ name, email, title });
     setPending(false);
-    if (!res.ok) toast.error(res.error);
+    if (!res.ok) showError({ title: "We couldn't invite that deputy", cause: res.error, fix: "Double-check the email and try again." });
     else {
-      toast.success("Deputy admin invited. They've been emailed a setup link.");
+      showSuccess("Deputy admin invited", { description: "They've been emailed a setup link." });
       onClose();
     }
   }

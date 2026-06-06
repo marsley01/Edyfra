@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Sparkles, ShieldCheck, ChevronLeft } from "lucide-react";
-import { toast } from "sonner";
+import { showError, showSuccess, showUnknownError } from "@/lib/toast";
 import dynamic from "next/dynamic";
 import SessionReviewModal from "@/components/sessions/SessionReviewModal";
 import { Z } from "@/lib/layers";
@@ -81,7 +81,11 @@ export default function StudyRoomClient({ initialData }: { initialData: StudyRoo
         });
       }
     } catch {
-      toast.error("Failed to refresh session");
+      showError({
+        title: "Session didn't refresh",
+        cause: "We lost track of the room for a second.",
+        fix: "Try again — your study session is still safe.",
+      });
     }
   }, [sessionId]);
 
@@ -100,13 +104,21 @@ export default function StudyRoomClient({ initialData }: { initialData: StudyRoo
       const { convertBookingToMashAI } = await import("@/app/actions/bookings");
       const result = await convertBookingToMashAI(sessionId);
       if (result.success && result.sessionId) {
-        toast.success("Connected to Mash AI!");
+        showSuccess("Connected to Mash AI", { description: "Your study buddy is ready when you are." });
         router.push(`/study-room/${result.sessionId}`);
       } else {
-        toast.error("Failed to convert session.");
+        showError({
+          title: "Couldn't start the session",
+          cause: "The room conversion didn't complete.",
+          fix: "Try again, or refresh the page.",
+        });
       }
     } catch {
-      toast.error("An error occurred");
+      showError({
+        title: "Something went sideways",
+        cause: "An unexpected hiccup stopped that.",
+        fix: "Try again in a moment.",
+      });
     } finally {
       setConverting(false);
     }
@@ -118,9 +130,9 @@ export default function StudyRoomClient({ initialData }: { initialData: StudyRoo
     const result = await completeSession(sessionId);
 
     if (result?.pointsAwarded) {
-      toast.success(`Session finished! +${result.pointsAwarded} points awarded.`);
+      showSuccess(`+${result.pointsAwarded} points earned!`, { description: "Nice work — that session is logged." });
     } else {
-      toast.success("Session finished! No points awarded (duration too short).");
+      showSuccess("Session finished", { description: "No points this time — sessions under 2 minutes don't count." });
     }
 
     if (session.tier === "TUTOR" && session.studentId === currentUser?.id) {

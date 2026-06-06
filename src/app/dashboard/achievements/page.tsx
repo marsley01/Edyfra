@@ -24,7 +24,7 @@ import {
   getAchievements,
   checkAndAwardAchievements,
 } from "@/app/actions/achievements";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { AchievementUnlockModal } from "@/components/celebrations/AchievementUnlockModal";
 import { Fireworks } from "@/components/celebrations/Fireworks";
 import { LottieAnimation } from "@/components/lottie-animation";
@@ -317,7 +317,7 @@ export default function AchievementsPage() {
             setShowFx(true);
           } else {
             // Already celebrated twice today — silent unlock + tiny toast
-            toast.success(`Unlocked: ${meta.title}`, {
+            showSuccess(`Unlocked: ${meta.title}`, {
               description: "Full celebration paused — come back tomorrow!",
             });
           }
@@ -325,7 +325,11 @@ export default function AchievementsPage() {
       }
     } catch (error) {
       console.error(error);
-      toast.error("Failed to load honors");
+      showError({
+        title: "We couldn't load your honors",
+        cause: "A hiccup on our side blocked the load.",
+        fix: "Refresh the page and try again.",
+      });
     } finally {
       setLoading(false);
     }

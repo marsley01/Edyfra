@@ -9,7 +9,7 @@ import {
   CheckCircle2, AlertTriangle, RefreshCw, Plus,
   Calendar, Clock, Filter, Trash2, Eye
 } from "lucide-react";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
@@ -56,7 +56,11 @@ export default function AdminChallengesPage() {
       const data = await res.json();
       setChallenges(data.challenges || []);
     } catch (error) {
-      toast.error("Failed to load challenges");
+      showError({
+        title: "We couldn't load challenges",
+        cause: "A hiccup on our side blocked the load.",
+        fix: "Try again, or refresh the page.",
+      });
       console.error(error);
     } finally {
       setLoading(false);
@@ -84,14 +88,20 @@ export default function AdminChallengesPage() {
         throw new Error(data.error || "Failed to generate challenges");
       }
 
-      toast.success(`Generated ${data.challenges?.length || 0} challenge(s) successfully!`);
+      showSuccess(`Generated ${data.challenges?.length || 0} challenge${(data.challenges?.length || 0) === 1 ? "" : "s"}`, {
+        description: "They're ready to be sent to students.",
+      });
       fetchChallenges();
       setShowGenerator(false);
       setTopic("");
       setSubject("");
       setScheduledDate("");
     } catch (error: any) {
-      toast.error(error.message || "Failed to generate challenges");
+      showError({
+        title: "We couldn't generate those challenges",
+        cause: error.message || "Something didn't go through on our side.",
+        fix: "Try again, or refresh the page.",
+      });
       console.error("Error generating challenges:", error);
     } finally {
       setGenerating(false);

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CsvUpload } from "@/components/institution/csv-upload";
 import { SubjectBarChart } from "@/components/institution/charts/subject-bar-chart";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import {
   parseResultsCsv,
   suggestMapping,
@@ -244,7 +244,11 @@ function UploadDialog({
   async function handleFile(text: string) {
     const result = await parseResultsCsv(text);
     if (result.error) {
-      toast.error(result.error);
+      showError({
+        title: "We couldn't read that file",
+        cause: result.error,
+        fix: "Check the CSV format and try again.",
+      });
       return;
     }
     setParsed(result);
@@ -259,7 +263,11 @@ function UploadDialog({
     ];
     for (const r of required) {
       if (!mapping[r]) {
-        toast.error(`Map the "${r}" column before continuing`);
+        showError({
+          title: `Map the "${r}" column before continuing`,
+          cause: "That column is required to import the file.",
+          fix: "Pick a column from the dropdown for it.",
+        });
         return;
       }
     }
@@ -279,10 +287,14 @@ function UploadDialog({
     });
     setImporting(false);
     if (!res.ok) {
-      toast.error(res.error);
+      showError({
+        title: "We couldn't import those results",
+        cause: res.error,
+        fix: "Fix the rows highlighted in the preview, then try again.",
+      });
       return;
     }
-    toast.success(`Imported ${res.inserted} result rows.`);
+    showSuccess(`Imported ${res.inserted} result rows`, { description: "Results are now in the system." });
     setStep("done");
     onImported();
   }

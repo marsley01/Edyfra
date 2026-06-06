@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { showError } from "@/lib/toast";
 
 export type PermissionState = "unknown" | "granted" | "denied" | "warmed";
 
@@ -54,8 +54,10 @@ export function useMediaPermissions(): UseMediaPermissionsReturn {
 
   const requestMediaPermissions = useCallback(async (): Promise<boolean> => {
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
-      toast.error("Camera/mic not supported", {
-        description: "Your browser or device doesn't support video calls. Try Chrome or Edge.",
+      showError({
+        title: "Camera/mic not supported",
+        cause: "Your browser doesn't allow camera or mic access here.",
+        fix: "Try a different browser (Chrome, Edge, Safari) and reload.",
       });
       setPermDenied(true);
       return false;
@@ -72,16 +74,23 @@ export function useMediaPermissions(): UseMediaPermissionsReturn {
       const isDenied = err?.name === "NotAllowedError" || err?.name === "PermissionDeniedError";
       const isNoDevice = err?.name === "NotFoundError";
       if (isDenied) {
-        toast.error("Camera or microphone access blocked", {
-          description: "Click the lock icon in your address bar, allow camera + mic, then try again.",
+        showError({
+          title: "Camera/mic access blocked",
+          cause: "Your browser is blocking camera/mic permissions.",
+          fix: "Click the lock icon in the address bar and allow camera and mic.",
         });
       } else if (isNoDevice) {
-        toast.error("No camera or microphone found", {
-          description: "Connect a device, then click Start Call again.",
+        showError({
+          title: "No camera or mic found",
+          cause: "We can't see a camera or mic on this device.",
+          fix: "Plug one in, or join from a device that has one.",
         });
       } else {
-        toast.error("Couldn't access your camera/mic", {
-          description: err?.message || "Check your device settings.",
+        showError({
+          title: "Couldn't reach your camera/mic",
+          cause: "Your browser refused to share them.",
+          fix: "Check your privacy settings, then reload this page.",
+          raw: err,
         });
       }
       return false;

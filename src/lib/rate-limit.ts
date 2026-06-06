@@ -20,6 +20,11 @@ function getConfig(path: string): RateLimitConfig {
   if (path.startsWith("/api/push")) {
     return { interval: 60_000, maxRequests: 20 };
   }
+  // Public contact + newsletter endpoints: 5 per minute per IP is plenty
+  // for humans and pushes back hard against scrapers/spammers.
+  if (path.startsWith("/api/contact") || path.startsWith("/api/newsletter")) {
+    return { interval: 60_000, maxRequests: 5 };
+  }
   return { interval: 60_000, maxRequests: 100 };
 }
 

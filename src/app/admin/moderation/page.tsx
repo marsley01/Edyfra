@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShieldCheck, AlertTriangle, Loader2, Flag, UserX, Ban, Gavel } from "lucide-react";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { getModerationReports } from "@/app/actions/moderation";
 
 export default function ModerationPage() {
@@ -38,7 +38,7 @@ export default function ModerationPage() {
   const handleAction = async (reportId: string, action: "warn" | "suspend" | "ban") => {
     const { actionReport } = await import("@/app/actions/admin-content");
     await actionReport(reportId, action);
-    toast.success(`User ${action}ed`);
+    showSuccess(`User ${action}ed`, { description: "The action is recorded and the user is notified." });
     setReports((prev) => prev.filter((r) => r.id !== reportId));
   };
 
@@ -99,7 +99,7 @@ export default function ModerationPage() {
                       <Button onClick={() => handleAction(report.id, "warn")} variant="outline" size="sm" className="rounded-xl">Warn</Button>
                       <Button onClick={() => handleAction(report.id, "suspend")} variant="outline" size="sm" className="rounded-xl text-amber-500">Suspend</Button>
                       <Button onClick={() => handleAction(report.id, "ban")} size="sm" className="rounded-xl bg-destructive text-destructive-foreground">Ban</Button>
-                      <Button onClick={async () => { const { dismissReport } = await import("@/app/actions/admin-content"); await dismissReport(report.id); setReports((prev) => prev.filter((r) => r.id !== report.id)); toast.success("Dismissed"); }} variant="ghost" size="sm" className="rounded-xl">Dismiss</Button>
+                      <Button onClick={async () => { const { dismissReport } = await import("@/app/actions/admin-content"); await dismissReport(report.id); setReports((prev) => prev.filter((r) => r.id !== report.id)); showSuccess("Dismissed", { description: "That report is no longer in the queue." }); }} variant="ghost" size="sm" className="rounded-xl">Dismiss</Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -145,9 +145,13 @@ export default function ModerationPage() {
                         const { moderateUser } = await import("@/app/actions/admin-content");
                         const res = await moderateUser(u.id, "suspend");
                         if (res?.error) {
-                          toast.error(res.error);
+                          showError({
+                            title: "We couldn't suspend that user",
+                            cause: res.error,
+                            fix: "Try again, or refresh the page.",
+                          });
                         } else {
-                          toast.success(`Suspended ${u.name || "user"}`);
+                          showSuccess(`Suspended ${u.name || "user"}`, { description: "They can't sign in until you unsuspend them." });
                         }
                       }}>
                         Suspend
@@ -158,9 +162,13 @@ export default function ModerationPage() {
                         const { moderateUser } = await import("@/app/actions/admin-content");
                         const res = await moderateUser(u.id, "unsuspend");
                         if (res?.error) {
-                          toast.error(res.error);
+                          showError({
+                            title: "We couldn't unsuspend that user",
+                            cause: res.error,
+                            fix: "Try again, or refresh the page.",
+                          });
                         } else {
-                          toast.success(`Unsuspended ${u.name || "user"}`);
+                          showSuccess(`Unsuspended ${u.name || "user"}`, { description: "They can sign in again." });
                         }
                       }}>
                         Unsuspend
@@ -172,9 +180,13 @@ export default function ModerationPage() {
                         const { moderateUser } = await import("@/app/actions/admin-content");
                         const res = await moderateUser(u.id, "ban");
                         if (res?.error) {
-                          toast.error(res.error);
+                          showError({
+                            title: "We couldn't ban that user",
+                            cause: res.error,
+                            fix: "Try again, or refresh the page.",
+                          });
                         } else {
-                          toast.success(`Banned ${u.name || "user"}`);
+                          showSuccess(`Banned ${u.name || "user"}`, { description: "They can no longer sign in." });
                         }
                       }}>
                         <Ban className="h-3 w-3 mr-1" /> Ban
@@ -185,9 +197,13 @@ export default function ModerationPage() {
                         const { moderateUser } = await import("@/app/actions/admin-content");
                         const res = await moderateUser(u.id, "unban");
                         if (res?.error) {
-                          toast.error(res.error);
+                          showError({
+                            title: "We couldn't unban that user",
+                            cause: res.error,
+                            fix: "Try again, or refresh the page.",
+                          });
                         } else {
-                          toast.success(`Unbanned ${u.name || "user"}`);
+                          showSuccess(`Unbanned ${u.name || "user"}`, { description: "Their account is restored." });
                         }
                       }}>
                         Unban

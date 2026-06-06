@@ -12,7 +12,7 @@ import {
   Sparkles, BrainCircuit, ArrowRight, MessageCircle,
   Users, Bot, Clock, Shield, Heart
 } from "lucide-react";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { createClient } from "@/utils/supabase/client";
 import { useMatch } from "@/lib/match-context";
 import { getSubjectsByLevel } from "@/utils/subjects";
@@ -115,7 +115,7 @@ export default function StudyPage() {
         },
         (payload: any) => {
           if (payload.new?.sessionId) {
-            toast.success("Match found! Redirecting...");
+            showSuccess("Match found!", { description: "Taking you there now." });
             router.push(`/study-room/${payload.new.sessionId}`);
           }
         }
@@ -135,14 +135,22 @@ export default function StudyPage() {
 
   const handleMatchMe = async () => {
     if (!formData.subject) {
-      toast.error("Pick a subject first and we'll do the rest ✨");
+      showError({
+        title: "Pick a subject first",
+        cause: "We need to know which subject you want help with.",
+        fix: "Choose a subject from the list, then tap Match me again.",
+      });
       return;
     }
     setLoading(true);
     try {
       const result = await createMatchRequest(formData);
       if (!result.success) {
-        toast.error(result.error || "Something went wrong on our end. Try again in a sec?");
+        showError({
+          title: "We couldn't start that match",
+          cause: result.error || "Something didn't go through on our end.",
+          fix: "Give it another try in a sec.",
+        });
         setLoading(false);
         return;
       }
@@ -166,12 +174,16 @@ export default function StudyPage() {
       import("@/app/actions/match").then(({ initiateAutoMatch }) => {
         initiateAutoMatch(result.matchRequestId!);
       }).catch(console.error);
-      toast.success("We're on it! Hang tight — feel free to keep browsing.", {
-        description: "We'll ping you the moment we find someone for you.",
+      showSuccess("We're on it!", {
+        description: "Hang tight — feel free to keep browsing. We'll ping you the moment we find someone for you.",
       });
     } catch (error) {
       console.error("Matching error:", error);
-      toast.error("Something hiccuped. Give it another try?");
+      showError({
+        title: "Something hiccuped",
+        cause: "A hiccup on our side blocked that.",
+        fix: "Give it another try in a moment.",
+      });
     } finally {
       setLoading(false);
     }

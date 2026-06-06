@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react";
 import { PhoneOff } from "lucide-react";
 import { useCall } from "@stream-io/video-react-sdk";
-import { toast } from "sonner";
+import { showError } from "@/lib/toast";
 
 interface EndCallButtonProps {
   onLeave: () => void;
@@ -29,7 +29,11 @@ export function EndCallButton({ onLeave }: EndCallButtonProps) {
       }
     } catch (err) {
       console.warn("[EndCallButton] endCall failed:", err);
-      toast.error("Could not end the call cleanly. You have left the room.");
+      showError({
+        title: "Call didn't end cleanly",
+        cause: "Something on our side stuttered on the way out.",
+        fix: "You can rejoin anytime — your room is still here.",
+      });
     } finally {
       setBusy(false);
       onLeave();

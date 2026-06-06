@@ -16,7 +16,7 @@ import {
 } from "react";
 import { getStreamToken } from "@/app/actions/stream";
 import { createClient } from "@/utils/supabase/client";
-import { toast } from "sonner";
+import { showError } from "@/lib/toast";
 import { usePathname, useRouter } from "next/navigation";
 import { Phone, PhoneOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -109,7 +109,12 @@ export function StreamVideoProvider({ children }: { children: ReactNode }) {
         router.push(`/study-room/${incomingCall.id}`);
       }
     } catch (err) {
-      toast.error("Failed to join call");
+      showError({
+        title: "We couldn't put you in the call",
+        cause: "The video service didn't connect.",
+        fix: "Check your camera/mic permissions, then try joining again.",
+        raw: err,
+      });
       setIncomingCall(null);
     }
   };

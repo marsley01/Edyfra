@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { DataTable } from "@/components/institution/data-table";
 import { PerformanceBadge, type OverallStatus } from "@/components/institution/performance-badge";
 import { Initials } from "@/components/institution/initials";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { addStudent, removeStudent } from "@/app/actions/institution-admin";
 import { bulkInviteStudents } from "@/app/actions/institution-invitations";
 import type { StudentRow } from "@/app/actions/institution-admin";
@@ -58,10 +58,14 @@ export function StudentsClient({ initialRows }: { initialRows: StudentRow[] }) {
     startTransition(async () => {
       const res = await removeStudent(id);
       if (!res?.ok) {
-        toast.error("Could not remove student");
+        showError({
+          title: "Couldn't remove that student",
+          cause: "We didn't get a confirmation from the server.",
+          fix: "Try again, or refresh the page.",
+        });
         return;
       }
-      toast.success(`${name} removed from the institution`);
+      showSuccess(`${name} removed`, { description: "They no longer have access to this institution." });
       setRows((cur) => cur.filter((r) => r.id !== id));
       router.refresh();
     });
@@ -245,10 +249,14 @@ function AddStudentDialog({ onClose }: { onClose: () => void }) {
     });
     setPending(false);
     if (!res.ok) {
-      toast.error(res.error);
+      showError({
+        title: "We couldn't add that student",
+        cause: res.error,
+        fix: "Double-check the email and details, then try again.",
+      });
       return;
     }
-    toast.success(`${name} added`);
+    showSuccess(`${name} added`, { description: "They're now on the institution's roster." });
     onClose();
   }
 
@@ -303,14 +311,22 @@ function BulkUploadDialog({ onClose }: { onClose: () => void }) {
       .map((l) => l.trim())
       .filter(Boolean);
     if (lines.length < 2) {
-      toast.error("Add a header row and at least one student.");
+      showError({
+        title: "Add a header row and at least one student",
+        cause: "Your paste is empty or only has one line.",
+        fix: "Copy a row for 'name,email' plus at least one student, then try again.",
+      });
       return;
     }
     const header = lines[0].split(",").map((h) => h.trim().toLowerCase());
     const required = ["name", "email"];
     const missing = required.filter((r) => !header.includes(r));
     if (missing.length) {
-      toast.error(`Missing columns: ${missing.join(", ")}`);
+      showError({
+        title: `Missing columns: ${missing.join(", ")}`,
+        cause: "Your header row needs at least 'name' and 'email'.",
+        fix: "Add the missing column names to the first row, then paste again.",
+      });
       return;
     }
     const rows = lines.slice(1).map((l) => {
@@ -326,10 +342,14 @@ function BulkUploadDialog({ onClose }: { onClose: () => void }) {
     const res = await bulkInviteStudents({ rows: rows.map((r) => ({ ...r, formYear: r.formYear, admissionNumber: r.admissionNumber })) });
     setPending(false);
     if (!res.ok) {
-      toast.error(res.error);
+      showError({
+        title: "We couldn't invite those students",
+        cause: res.error,
+        fix: "Check the rows for invalid emails, then try again.",
+      });
       return;
     }
-    toast.success(`Invited ${res.invited} students`);
+    showSuccess(`Invited ${res.invited} students`, { description: "They'll each get an email with next steps." });
     onClose();
   }
 

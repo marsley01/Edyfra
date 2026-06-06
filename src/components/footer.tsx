@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+import { showError, showSuccess, showUnknownError } from "@/lib/toast";
 
 const WHATSAPP_CHANNEL = "https://whatsapp.com/channel/0029Vb7GgdmHLHQfoNgSjo1P";
 const CONTACT_EMAIL = "edyfraplatform@gmail.com";
@@ -97,15 +97,21 @@ export function Footer() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        toast.error(data.error || "Something went wrong. Please try again.");
+        showError({
+          title: "Couldn't subscribe you",
+          cause: data.error || "The signup didn't go through.",
+          fix: "Double-check your email and try once more.",
+        });
         return;
       }
 
       setSubscribed(true);
       setEmail("");
-      toast.success("You are in. We will keep you posted.");
-    } catch {
-      toast.error("Something went wrong. Please try again.");
+      showSuccess("You're on the list", {
+        description: "We'll keep you posted with what we're building.",
+      });
+    } catch (err) {
+      showUnknownError(err, { title: "Couldn't subscribe you" });
     } finally {
       setLoading(false);
     }

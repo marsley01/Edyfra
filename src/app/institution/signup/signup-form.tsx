@@ -21,7 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { submitInstitutionApplication } from "@/app/actions/institution-signup";
 import { INSTITUTION_PLANS, type PlanDefinition } from "@/lib/institution-plans";
 
@@ -112,7 +112,11 @@ export function SignupForm({ counties }: { counties: County[] }) {
   async function handleNext() {
     const check = canAdvance(step);
     if (!check.ok) {
-      toast.error(check.reason ?? "Please complete the step");
+      showError({
+        title: check.reason ?? "Please complete the step",
+        cause: "Some details on this step still need your attention.",
+        fix: "Fill in the highlighted fields, then hit Continue again.",
+      });
       return;
     }
     if (step < 4) {
@@ -137,12 +141,16 @@ export function SignupForm({ counties }: { counties: County[] }) {
     });
     setSubmitting(false);
     if (!result.ok) {
-      toast.error(result.error);
+      showError({
+        title: "We couldn't submit that",
+        cause: result.error,
+        fix: "Fix anything highlighted above and try again.",
+      });
       if (result.field === "adminEmail") setStep(2);
       return;
     }
     setSubmitted(true);
-    toast.success("Application submitted");
+    showSuccess("Application submitted", { description: "We'll review it and email you within a couple of business days." });
   }
 
   if (submitted) {

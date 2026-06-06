@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Users, Star, Wallet, Clock, ArrowRight, Loader2, BookOpen, Sparkles, ShieldCheck, Calendar as CalendarIcon, Video } from "lucide-react";
 import { getTutorProfile, toggleTutorStatus, getTutorSessions } from "@/app/actions/tutor";
 import { getUserData } from "@/app/actions/user";
-import { toast } from "sonner";
+import { showError, showSuccess, showInfo } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
 import { IncomingRequests } from "@/components/tutor/IncomingRequests";
@@ -70,16 +70,24 @@ export function OverviewTab() {
     try {
       await toggleTutorStatus(checked);
       setIsOnline(checked);
-      toast.success(checked ? "You're now live! Students can see you." : "You've gone offline.");
+      showSuccess(checked ? "You're live!" : "You're offline", {
+        description: checked
+          ? "Students can find and book you now."
+          : "Students won't see you until you toggle back.",
+      });
     } catch {
-      toast.error("Couldn't update status.");
+      showError({
+        title: "Couldn't update your status",
+        cause: "We couldn't save your online/offline toggle.",
+        fix: "Try again — the page will retry automatically.",
+      });
     } finally {
       setToggling(false);
     }
   };
 
   const handleJoinRoom = (roomId: string) => {
-    toast.success("Joining room...");
+    showInfo("Joining the room", { description: "Setting up your camera and mic." });
     router.push(`/study-room/${roomId}`);
   };
 

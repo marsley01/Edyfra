@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Users, Star, Wallet, Clock, ArrowRight, Loader2, BookOpen, Sparkles, ShieldCheck, Calendar as CalendarIcon, Video, Bell, UserPlus, Timer, Activity, Zap } from "lucide-react";
 import { getTutorProfile, toggleTutorStatus, getTutorSessions, acceptMatchRequest } from "@/app/actions/tutor";
 import { getUserData } from "@/app/actions/user";
-import { toast } from "sonner";
+import { showError, showSuccess, showInfo, showUnknownError } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
 import { IncomingRequests } from "@/components/tutor/IncomingRequests";
@@ -154,7 +154,11 @@ export default function TutorDashboard() {
   const handleTimeout = async () => {
     setMatchBanner(null);
     setCountdown(120);
-    toast.error("Match timed out — student reassigned.");
+    showError({
+      title: "That match slipped through",
+      cause: "We waited too long and the student moved on.",
+      fix: "Stay online so we can match the next one to you faster.",
+    });
   };
 
   const handleJoinMatch = (sessionId: string) => {
@@ -234,16 +238,20 @@ export default function TutorDashboard() {
     try {
       const result = await acceptMatchRequest(requestId);
       if (result?.success && result.sessionId) {
-        toast.success("Match accepted! Entering room...");
+        showSuccess("Match accepted!", { description: "Taking you into the room now." });
         // Remove from local list
         setMatchRequests((prev) => prev.filter((r) => r.id !== requestId));
         setSearchingStudents((prev) => Math.max(0, prev - 1));
         router.push(`/study-room/${result.sessionId}`);
       } else {
-        toast.error(result?.error || "Couldn't accept the request.");
+        showError({
+          title: "Couldn't accept that match",
+          cause: result?.error || "Something blocked the request on our side.",
+          fix: "Try again, or pick a different request.",
+        });
       }
     } catch (err: any) {
-      toast.error(err?.message || "Failed to accept the request.");
+      showUnknownError(err, { title: "Couldn't accept that match" });
     } finally {
       setAcceptingId(null);
     }
@@ -279,16 +287,24 @@ export default function TutorDashboard() {
     try {
       await toggleTutorStatus(checked);
       setIsOnline(checked);
-      toast.success(checked ? "You're now live! Students can see you." : "You've gone offline.");
+      showSuccess(checked ? "You're live!" : "You're offline", {
+        description: checked
+          ? "Students can find and book you now."
+          : "Students won't see you until you toggle back.",
+      });
     } catch {
-      toast.error("Couldn't update status.");
+      showError({
+        title: "Couldn't update your status",
+        cause: "We couldn't save your online/offline toggle.",
+        fix: "Try again — the page will retry automatically.",
+      });
     } finally {
       setToggling(false);
     }
   };
 
   const handleJoinRoom = (roomId: string) => {
-    toast.success("Joining room...");
+    showInfo("Joining the room", { description: "Setting up your camera and mic." });
     router.push(`/study-room/${roomId}`);
   };
 

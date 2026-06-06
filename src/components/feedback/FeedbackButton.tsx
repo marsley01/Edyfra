@@ -6,7 +6,7 @@ import { MessageSquare, Star, Send, Loader2, CheckCircle2, X, Bug, Lightbulb, He
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { submitFeedback, type FeedbackCategory } from "@/app/actions/feedback";
 
 const CATEGORIES: { key: FeedbackCategory; label: string; icon: any; color: string }[] = [
@@ -45,7 +45,11 @@ export function FeedbackButton({ context, variant = "floating", label }: Feedbac
 
   const handleSubmit = async () => {
     if (!message.trim()) {
-      toast.error("Please tell us what's on your mind.");
+      showError({
+        title: "We need a few words from you",
+        cause: "Your feedback message is empty.",
+        fix: "Type a quick note about what went wrong, then send it again.",
+      });
       return;
     }
     setSending(true);
@@ -58,17 +62,27 @@ export function FeedbackButton({ context, variant = "floating", label }: Feedbac
         context: context || (typeof window !== "undefined" ? window.location.pathname : undefined),
       });
       if (res.error) {
-        toast.error(res.error);
+        showError({
+          title: "We couldn't send your feedback",
+          cause: res.error,
+          fix: "Try again — your message is still in the box.",
+        });
       } else {
         setSent(true);
-        toast.success("Thanks — your feedback reached the team.");
+        showSuccess("Thanks for the heads-up", {
+          description: "Your message landed in the team's inbox.",
+        });
         setTimeout(() => {
           setOpen(false);
           reset();
         }, 1800);
       }
     } catch {
-      toast.error("Something went wrong. Please try again.");
+      showError({
+        title: "Something didn't go through",
+        cause: "A hiccup on our side blocked this.",
+        fix: "Give it another try in a few seconds.",
+      });
     } finally {
       setSending(false);
     }

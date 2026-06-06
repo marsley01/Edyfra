@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DataTable } from "@/components/institution/data-table";
 import { Initials } from "@/components/institution/initials";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { inviteTeacher, removeTeacher } from "@/app/actions/institution-admin";
 import type { TeacherRow } from "@/app/actions/institution-admin";
 
@@ -47,10 +47,14 @@ export function TeachersClient({ initialRows }: { initialRows: TeacherRow[] }) {
     startTransition(async () => {
       const res = await removeTeacher(id);
       if (!res?.ok) {
-        toast.error("Could not remove teacher");
+        showError({
+          title: "Couldn't remove that teacher",
+          cause: "We didn't get a confirmation from the server.",
+          fix: "Try again, or refresh the page.",
+        });
         return;
       }
-      toast.success(`${name} removed`);
+      showSuccess(`${name} removed`, { description: "They no longer have access to this institution." });
       setRows((cur) => cur.filter((r) => r.id !== id));
       router.refresh();
     });
@@ -207,7 +211,11 @@ function InviteTeacherDialog({ onClose }: { onClose: () => void }) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (subjects.length === 0) {
-      toast.error("Add at least one subject");
+      showError({
+        title: "Add at least one subject",
+        cause: "The teacher needs something they can teach.",
+        fix: "Pick a subject from the list, then save again.",
+      });
       return;
     }
     setPending(true);
@@ -219,10 +227,14 @@ function InviteTeacherDialog({ onClose }: { onClose: () => void }) {
     });
     setPending(false);
     if (!res.ok) {
-      toast.error(res.error);
+      showError({
+        title: "We couldn't send that invite",
+        cause: res.error,
+        fix: "Double-check the email and try again.",
+      });
       return;
     }
-    toast.success(`Invitation sent to ${email}`);
+    showSuccess("Invitation sent", { description: `${email} will get an email with next steps.` });
     onClose();
   }
 

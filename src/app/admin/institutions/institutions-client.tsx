@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { Check, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { decideInstitutionApplication } from "@/app/actions/institution-founder";
 
 type AppRow = {
@@ -48,10 +48,18 @@ export function InstitutionsReviewClient({
       const res = await decideInstitutionApplication({ institutionId: id, decision, approverUserId });
       setPendingId(null);
       if (!res.ok) {
-        toast.error(res.error);
+        showError({
+          title: "We couldn't record that decision",
+          cause: res.error,
+          fix: "Try again, or refresh the page.",
+        });
         return;
       }
-      toast.success(decision === "APPROVE" ? "Institution approved" : "Application rejected");
+      showSuccess(decision === "APPROVE" ? "Institution approved" : "Application rejected", {
+        description: decision === "APPROVE"
+          ? "The school is now live on Edyfra."
+          : "The applicant has been notified.",
+      });
       setRows((cur) =>
         cur.map((r) =>
           r.id === id ? { ...r, status: decision === "APPROVE" ? "ACTIVE" : "REJECTED" } : r,

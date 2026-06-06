@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Mail, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { generateStudentInsight, emailInsightToTeacher } from "@/app/actions/institution-ai";
 
 export function StudentInsightButton({
@@ -26,10 +26,14 @@ export function StudentInsightButton({
     startTransition(async () => {
       const res = await generateStudentInsight({ studentUserId, term, year });
       if (!res.ok) {
-        toast.error(res.error);
+        showError({
+          title: "We couldn't generate that insight",
+          cause: res.error,
+          fix: "Try again in a moment.",
+        });
         return;
       }
-      toast.success("Insight generated");
+      showSuccess("Insight generated", { description: "Fresh takeaways for this student are ready." });
       router.refresh();
     });
   }
@@ -39,10 +43,14 @@ export function StudentInsightButton({
     const res = await emailInsightToTeacher(studentUserId, term, year);
     setEmailing(false);
     if (!res.ok) {
-      toast.error(res.error);
+      showError({
+        title: "We couldn't email that insight",
+        cause: res.error,
+        fix: "Try again, or check the teacher's email address.",
+      });
       return;
     }
-    toast.success(`Emailed ${res.count} teachers`);
+    showSuccess(`Emailed ${res.count} teachers`, { description: "They'll see the insight in their inbox." });
   }
 
   return (

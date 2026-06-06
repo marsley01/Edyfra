@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Call, StreamVideoClient } from "@stream-io/video-react-sdk";
-import { toast } from "sonner";
+import { showError, showInfo } from "@/lib/toast";
 import type { CallState } from "../types";
 import { CALL_SETTINGS, HIGH_QUALITY_OVERRIDE } from "../styles/callSettings";
 import { useMediaPermissions } from "./useMediaPermissions";
@@ -93,7 +93,7 @@ export function useCallSession({
         case "call.rejected": {
           setHasActiveCall(false);
           setCallState("idle");
-          toast.info("Call was declined");
+          showInfo("Call was declined", { description: "The other person didn't accept this time." });
           break;
         }
       }
@@ -107,7 +107,11 @@ export function useCallSession({
   // ─── Start a call (or join an existing one) ──────────────────────────────
   const startOrJoinCall = useCallback(async () => {
     if (!videoClient) {
-      toast.error("Video service not ready", { description: "Try refreshing the page." });
+      showError({
+        title: "Video service not ready",
+        cause: "We haven't finished loading the call tool.",
+        fix: "Refresh the page and try again.",
+      });
       return;
     }
 
@@ -158,7 +162,12 @@ export function useCallSession({
       setCallState("error");
       setCall(null);
       const message = err instanceof Error ? err.message : "Check your connection and try again.";
-      toast.error("Couldn't start the call", { description: message });
+      showError({
+        title: "Couldn't start the call",
+        cause: "The call couldn't connect.",
+        fix: "Check your camera/mic and try again.",
+        raw: message,
+      });
     }
   }, [channelId, userId, memberIds, videoClient, onRequestPermissions, setCall]);
 

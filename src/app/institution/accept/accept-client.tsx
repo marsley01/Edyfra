@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ArrowRight, CheckCircle2, Loader2, MailCheck, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LinkButton } from "@/components/ui/link-button";
-import { toast } from "sonner";
+import { showError } from "@/lib/toast";
 import { acceptInvitation } from "@/app/actions/institution-invitations";
 
 export function AcceptClient({ token }: { token: string | null }) {
@@ -40,7 +40,11 @@ export function AcceptClient({ token }: { token: string | null }) {
         });
       } else {
         setState({ kind: "err", message: res.error });
-        toast.error(res.error);
+        showError({
+          title: "We couldn't open that invitation",
+          cause: res.error,
+          fix: "Ask your institution admin to send a fresh invite link.",
+        });
       }
     })();
     return () => {

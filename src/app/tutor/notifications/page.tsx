@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Bell, BellRing, Megaphone, Zap, Star, Trophy, Loader2, CheckCheck, Wifi, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
+import { showError, showSuccess, showUnknownError } from "@/lib/toast";
 import { formatDistanceToNow } from "date-fns";
 import { getNotifications, markAllRead, markNotificationRead } from "@/app/actions/notifications";
 import { createClient } from "@/utils/supabase/client";
@@ -48,7 +48,11 @@ export default function TutorNotificationsPage() {
       const data = await getNotifications();
       setNotifications(data as Notification[]);
     } catch {
-      toast.error("Failed to load notifications");
+      showError({
+        title: "We couldn't load your notifications",
+        cause: "Something hiccuped on our side.",
+        fix: "Pull down to refresh in a moment, or check your connection.",
+      });
     } finally {
       setLoading(false);
     }
@@ -101,9 +105,13 @@ export default function TutorNotificationsPage() {
     try {
       await markAllRead();
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-      toast.success("All notifications marked as read");
+      showSuccess("All caught up", { description: "Every notification is marked as read." });
     } catch {
-      toast.error("Failed to update notifications");
+      showError({
+        title: "Couldn't update notifications",
+        cause: "Our database didn't take the change.",
+        fix: "Try again — if it keeps happening, refresh the page.",
+      });
     } finally {
       setMarking(false);
     }

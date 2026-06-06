@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
 import { approveReview, deleteReview, Review } from "@/app/actions/reviews";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 
 export function ReviewsModerationClient({
@@ -23,16 +23,32 @@ export function ReviewsModerationClient({
   const handleApprove = async (id: string) => {
     setProcessing(id);
     const res = await approveReview(id);
-    if (res.error) toast.error(res.error);
-    else { toast.success("Review approved and published."); router.refresh(); }
+    if (res.error) {
+      showError({
+        title: "We couldn't approve that review",
+        cause: res.error,
+        fix: "Try again, or refresh the page.",
+      });
+    } else {
+      showSuccess("Review approved", { description: "It's now published on the site." });
+      router.refresh();
+    }
     setProcessing(null);
   };
 
   const handleDelete = async (id: string) => {
     setProcessing(id);
     const res = await deleteReview(id);
-    if (res.error) toast.error(res.error);
-    else { toast.success("Review deleted."); router.refresh(); }
+    if (res.error) {
+      showError({
+        title: "We couldn't delete that review",
+        cause: res.error,
+        fix: "Try again, or refresh the page.",
+      });
+    } else {
+      showSuccess("Review deleted", { description: "It's been removed from the site." });
+      router.refresh();
+    }
     setProcessing(null);
   };
 
