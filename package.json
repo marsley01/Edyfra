@@ -8,7 +8,12 @@
     "build": "next build",
     "vercel-build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "prisma generate",
+    "db:studio": "prisma studio",
+    "db:push": "prisma db push --schema prisma/schema.prisma",
+    "db:migrate:15": "node scripts/run-migration.mjs supabase/migrations/15_institution_v2_system.sql"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
