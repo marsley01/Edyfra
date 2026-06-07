@@ -42,8 +42,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL(safeNext, origin));
   }
 
-  // No code? Could be the legacy hash flow — bounce to the client shim page.
-  const redirectUrl = new URL("/auth/callback/handle", origin);
-  redirectUrl.searchParams.set("next", next);
-  return NextResponse.redirect(redirectUrl);
+  // No code? This is the legacy implicit (hash) flow — the browser does NOT
+  // send URL hash fragments to the server, so supabase-js reads
+  // `#access_token=...` from the client side. A 302 redirect would strip the
+  // hash, so we use a JS redirect that preserves it.
+  const safeNext = next.startsWith("/") ? encodeURIComponent(next) : encodeURIComponent("/dashboard");
+  return new NextResponse(
+    `<!DOCTYPE html><html><head><script>window.location.href="/auth/callback/handle?next=${safeNext}"</script></head><body></body></html>`,
+    { headers: { "Content-Type": "text/html" } }
+  );
 }

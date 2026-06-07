@@ -207,7 +207,7 @@ export async function getForumTopic(topicId: string): Promise<CommunityThread | 
   });
 
   // Atomic +1 to the view counter (cheapest possible write)
-  prisma.communityTopic
+  await prisma.communityTopic
     .update({ where: { id: topicId }, data: { views: { increment: 1 } } })
     .catch(() => {});
 

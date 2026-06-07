@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, Loader2, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -66,7 +66,6 @@ function describeLoginError(raw: string): FriendlyError {
 }
 
 export default function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<FriendlyError | null>(null);
@@ -91,14 +90,9 @@ export default function LoginForm() {
         setLoading(false);
         return;
       }
-      // Login succeeded — server returned a redirect target (or none, in
-      // which case fall back to /dashboard). Use a hard navigation so the
-      // server-rendered layout picks up the fresh auth cookie immediately,
-      // and refresh the router cache so the new layout doesn't reuse the
-      // stale pre-login render.
-      const target = result?.redirectTo || "/dashboard";
-      router.refresh();
-      window.location.href = target;
+      // Login succeeded — hard-navigate so the server picks up the fresh
+      // auth cookie immediately (router.push would keep the stale page).
+      window.location.href = result?.redirectTo || "/dashboard";
     } catch (err: any) {
       setError(describeLoginError(err?.message || ""));
       setLoading(false);

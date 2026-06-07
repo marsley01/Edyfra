@@ -101,7 +101,10 @@ export async function signup(formData: FormData) {
         avatar: avatarUrl,
         referral_code: referralCode || null,
       },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/auth/callback`,
+      // VERCEL_URL is injected automatically by Vercel deployments — use it as
+      // a fallback so signup emails work even when NEXT_PUBLIC_SITE_URL is not
+      // explicitly configured in the production environment.
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) || "http://localhost:3000"}/auth/callback`,
     },
   });
 
