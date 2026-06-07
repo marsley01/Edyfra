@@ -169,7 +169,11 @@ export function PushNotificationManager() {
       }
       showSuccess("Test sent!", { description: "Check your notification list and OS tray." });
     } catch (err: any) {
-      showUnknownError(err, { title: "Test failed", fix: "Make sure notifications are allowed, then try again." });
+      showError({
+        title: "Test failed",
+        cause: err?.message || "We couldn't send a test notification.",
+        fix: "Make sure notifications are allowed, then try again.",
+      });
     } finally {
       setTesting(false);
     }

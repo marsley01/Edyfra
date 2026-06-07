@@ -141,7 +141,7 @@ export default function TutorSettingsPage() {
         showMashSummary: formData.showMashSummary,
       });
       showSuccess("Profile updated", { description: "Your changes are saved." });
-    } catch { showUnknownError(undefined, { title: "Couldn't save your changes", fix: "Try again, or refresh the page." }); }
+    }     catch { showError({ title: "Couldn't save your changes", cause: "We couldn't reach our servers.", fix: "Try again, or refresh the page." }); }
     finally { setSaving(false); }
   };
 
@@ -159,14 +159,14 @@ export default function TutorSettingsPage() {
       const { updateUserPreferences } = await import("@/app/actions/user");
       await updateUserPreferences({ [key]: value });
       if (key === "accentColor") window.dispatchEvent(new CustomEvent("accent-color-changed", { detail: value }));
-    } catch { showUnknownError(undefined, { title: "Couldn't save that", fix: "Try again, or refresh the page." }); }
+    }     catch { showError({ title: "Couldn't save that", cause: "We couldn't reach our servers.", fix: "Try again, or refresh the page." }); }
   };
 
   const handleSaveNotif = async (key: string, value: boolean) => {
     const updated = { ...notifPrefs, [key]: value };
     setNotifPrefs(updated);
     try { await updateNotificationSettings(updated); }
-    catch { showUnknownError(undefined, { title: "Couldn't save notification preferences", fix: "Try again, or refresh the page." }); }
+    catch { showError({ title: "Couldn't save notification preferences", cause: "We couldn't reach our servers.", fix: "Try again, or refresh the page." }); }
   };
 
   const handleChangePassword = async () => {
@@ -183,7 +183,7 @@ export default function TutorSettingsPage() {
       showSuccess("Password changed", { description: "Use your new password next time you sign in." });
       setPasswordData({ current: "", newPass: "", confirm: "" });
     }
-    catch (e: any) { showUnknownError(e, { title: "Couldn't change your password" }); }
+    catch (e: any) { showUnknownError(e, "Couldn't change your password"); }
   };
 
   const handleChangeEmail = async () => {
@@ -199,7 +199,7 @@ export default function TutorSettingsPage() {
       await changeEmail(newEmail);
       showSuccess("Verification sent", { description: "Check your new email's inbox to confirm." });
     }
-    catch (e: any) { showUnknownError(e, { title: "Couldn't update your email" }); }
+    catch (e: any) { showUnknownError(e, "Couldn't update your email"); }
   };
 
   const handleDownloadData = async () => {
@@ -212,7 +212,7 @@ export default function TutorSettingsPage() {
         const a = document.createElement("a"); a.href = url; a.download = "edyfra-tutor-data.json"; a.click();
         showSuccess("Download ready", { description: "Your data file is on its way to your downloads folder." });
       }
-    } catch { showUnknownError(undefined, { title: "Download didn't start", fix: "Try again, or refresh the page." }); }
+    }     catch { showError({ title: "Download didn't start", cause: "We couldn't reach our servers.", fix: "Try again, or refresh the page." }); }
     finally { setDownloading(false); }
   };
 
@@ -230,7 +230,7 @@ export default function TutorSettingsPage() {
       showSuccess("Account deleted", { description: "We're sorry to see you go. Your data is gone." });
       window.location.href = "/login";
     }
-    catch { showUnknownError(undefined, { title: "Couldn't delete your account", fix: "Try again, or contact support if it keeps happening." }); }
+    catch { showError({ title: "Couldn't delete your account", cause: "We couldn't reach our servers.", fix: "Try again, or contact support if it keeps happening." }); }
   };
 
   if (loading) return <div className="flex items-center justify-center min-h-[80vh]"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
@@ -420,7 +420,7 @@ export default function TutorSettingsPage() {
                                 setCurrentAvatar(url);
                                 showSuccess("Avatar updated", { description: "Your new look is live." });
                                 setAvatarDialogOpen(false);
-                              } catch { showUnknownError(undefined, { title: "Couldn't update your avatar", fix: "Try a different image, or try again in a moment." }); }
+                              } catch { showError({ title: "Couldn't update your avatar", cause: "We couldn't reach our servers.", fix: "Try a different image, or try again in a moment." }); }
                               finally { setSavingAvatar(false); }
                             }} className="rounded-xl"
                           >{savingAvatar ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Save Avatar"}</Button>

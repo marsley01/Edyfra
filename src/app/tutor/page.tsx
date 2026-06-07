@@ -251,7 +251,7 @@ export default function TutorDashboard() {
         });
       }
     } catch (err: any) {
-      showUnknownError(err, { title: "Couldn't accept that match" });
+      showUnknownError(err, "Couldn't accept that match");
     } finally {
       setAcceptingId(null);
     }

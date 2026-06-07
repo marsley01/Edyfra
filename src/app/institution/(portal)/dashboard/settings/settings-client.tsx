@@ -67,8 +67,11 @@ export function SettingsClient({
         email: form.email || null,
         phone: form.phone || null,
       });
-      if (!res.ok) showError({ title: "We couldn't save those settings", cause: res.error, fix: "Try again, or refresh the page." });
-      else showSuccess("Settings saved", { description: "Your school profile is up to date." });
+      if (!res.ok) {
+        showError({ title: "We couldn't save those settings", cause: res.error, fix: "Try again, or refresh the page." });
+      } else {
+        showSuccess("Settings saved", { description: "Your school profile is up to date." });
+      }
     });
   }
 
@@ -245,8 +248,11 @@ function TermForm({
         holidayEnd: holidayEnd ? new Date(holidayEnd) : null,
         makeCurrent: true,
       });
-      if (!res.ok) showError({ title: "We couldn't save that term", cause: res.error, fix: "Check the dates and try again." });
-      else showSuccess("Term saved", { description: "Your academic calendar is updated." });
+      if (!res.ok) {
+        showError({ title: "We couldn't save that term", cause: res.error, fix: "Check the dates and try again." });
+      } else {
+        showSuccess("Term saved", { description: "Your academic calendar is updated." });
+      }
     });
   }
 

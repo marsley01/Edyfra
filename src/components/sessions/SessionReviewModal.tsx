@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Star, MessageSquare, X, Send, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { createSessionReview } from "@/app/actions/reviews";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -31,20 +31,20 @@ export default function SessionReviewModal({
 
   const handleSubmit = async () => {
     if (rating === 0) {
-      toast.error("Tap a star to rate your session");
+      showError({ title: "Pick a star rating first", cause: "We need at least one star to save your review.", fix: "Tap a star, then submit." });
       return;
     }
     setSubmitting(true);
     try {
       await createSessionReview(sessionId, rating, comment || undefined);
       setSubmitted(true);
-      toast.success("Review submitted — thank you!");
+      showSuccess("Review submitted", { description: "Thanks — that helps other students find great tutors." });
       setTimeout(() => {
         setSubmitted(false);
         onClose();
       }, 2000);
     } catch (err: any) {
-      toast.error(err.message || "Failed to submit review");
+      showError({ title: "We couldn't save your review", cause: err.message || "Something hiccuped on our side.", fix: "Try again in a moment." });
     } finally {
       setSubmitting(false);
     }

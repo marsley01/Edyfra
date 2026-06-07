@@ -111,7 +111,7 @@ export function Footer() {
         description: "We'll keep you posted with what we're building.",
       });
     } catch (err) {
-      showUnknownError(err, { title: "Couldn't subscribe you" });
+      showUnknownError(err, "Couldn't subscribe you");
     } finally {
       setLoading(false);
     }

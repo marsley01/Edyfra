@@ -122,7 +122,7 @@ export default function FeedPage() {
         });
       }
     } catch {
-      showUnknownError(undefined, { title: "We couldn't share that post", fix: "Check your post and try again." });
+      showError({ title: "We couldn't share that post", cause: "Something hiccuped on our side.", fix: "Check your post and try again." });
     } finally {
       setIsSubmitting(false);
     }

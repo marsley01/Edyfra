@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { EDUCATIONAL_SUBJECTS } from "@/utils/subjects";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { TUTOR_CONFIG } from "@/lib/config";
 
 export default function TutorOnboardingPage() {
@@ -68,21 +68,15 @@ export default function TutorOnboardingPage() {
         verificationPath: "GRADES",
       });
       if (result.success) {
-        toast.success("Application Submitted!", {
-          description: "Your tutor application is pending admin approval.",
-        });
+        showSuccess("Application submitted", { description: "We'll review it and email you within a couple of business days." });
         // Redirect to pending status page instead of /tutor
         window.location.href = "/onboarding/tutor-pending";
       } else {
-        toast.error("Application failed.", {
-          description: result.error || "Please check your inputs.",
-        });
+        showError({ title: "We couldn't submit that", cause: "Something went wrong on our side.", fix: "Try again in a moment." });
         setLoading(false);
       }
     } catch (e: unknown) {
-      toast.error("System error.", {
-        description: (e as Error).message || "Please retry.",
-      });
+      showError({ title: "System error", cause: "Something hiccuped on our side.", fix: "Try again, or refresh the page." });
       setLoading(false);
     }
   };

@@ -118,10 +118,10 @@ export default function AdminChallengesPage() {
       
       if (!res.ok) throw new Error("Failed to delete");
       
-      toast.success("Challenge deleted");
+      showSuccess("Challenge deleted", { description: "It's gone from the schedule." });
       fetchChallenges();
     } catch (error) {
-      toast.error("Failed to delete challenge");
+      showError({ title: "Couldn't delete that challenge", cause: "We didn't get a confirmation from the server.", fix: "Try again, or refresh the page." });
     }
   };
 
