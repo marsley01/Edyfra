@@ -10,6 +10,26 @@ type RateLimitEntry = {
 
 const stores = new Map<string, RateLimitEntry>();
 
+/**
+ * Periodically prune expired entries so a long-running server doesn't grow
+ * the map without bound. We cap the prune at a small number per tick so the
+ * cleanup itself stays O(1) amortized under load.
+ */
+let lastSweep = Date.now();
+const SWEEP_INTERVAL_MS = 60_000;
+const MAX_ENTRIES_BEFORE_FORCED_SWEEP = 5_000;
+
+function sweepIfNeeded(now: number) {
+  if (stores.size === 0) return;
+  const due = now - lastSweep >= SWEEP_INTERVAL_MS;
+  const overflowing = stores.size > MAX_ENTRIES_BEFORE_FORCED_SWEEP;
+  if (!due && !overflowing) return;
+  for (const [key, entry] of stores) {
+    if (now >= entry.resetAt) stores.delete(key);
+  }
+  lastSweep = now;
+}
+
 function getConfig(path: string): RateLimitConfig {
   if (path.startsWith("/api/auth") || path.startsWith("/api/setup-admin")) {
     return { interval: 60_000, maxRequests: 10 };
@@ -31,6 +51,7 @@ function getConfig(path: string): RateLimitConfig {
 export async function rateLimit(key: string, config?: RateLimitConfig): Promise<{ success: boolean; remaining: number; resetAt: number }> {
   const cfg = config ?? { interval: 60_000, maxRequests: 30 };
   const now = Date.now();
+  sweepIfNeeded(now);
 
   let entry = stores.get(key);
 
