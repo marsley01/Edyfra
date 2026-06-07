@@ -42,8 +42,28 @@ export async function updateSession(request: NextRequest) {
   const isStudentRoute = request.nextUrl.pathname.startsWith('/dashboard');
   const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
   const isTutorRoute = request.nextUrl.pathname.startsWith('/tutor');
-  const isInstitutionRoute = request.nextUrl.pathname.startsWith('/institution');
-  const isProtectedRoute = isStudentRoute || isTutorRoute || isAdminRoute || isInstitutionRoute || request.nextUrl.pathname.startsWith('/study-room') || request.nextUrl.pathname.startsWith('/onboarding');
+
+  // /institution is split into a public marketing surface (/institution)
+  // and a private portal (/institution/dashboard, /institution/login,
+  // /institution/signup, /institution/accept, /institution/pending).
+  // The portal sub-routes still require auth; the root marketing page does not.
+  const isInstitutionPortalRoute =
+    request.nextUrl.pathname === '/institution/dashboard' ||
+    request.nextUrl.pathname.startsWith('/institution/dashboard/') ||
+    request.nextUrl.pathname === '/institution/login' ||
+    request.nextUrl.pathname === '/institution/signup' ||
+    request.nextUrl.pathname === '/institution/accept' ||
+    request.nextUrl.pathname === '/institution/pending' ||
+    request.nextUrl.pathname.startsWith('/institution/accept/') ||
+    request.nextUrl.pathname.startsWith('/institution/pending/');
+
+  const isProtectedRoute =
+    isStudentRoute ||
+    isTutorRoute ||
+    isAdminRoute ||
+    isInstitutionPortalRoute ||
+    request.nextUrl.pathname.startsWith('/study-room') ||
+    request.nextUrl.pathname.startsWith('/onboarding');
 
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();

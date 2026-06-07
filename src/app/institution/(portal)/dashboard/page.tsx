@@ -22,6 +22,7 @@ import {
   getCurrentTerm,
 } from "@/app/actions/institution-admin";
 import { formatDistanceToNow } from "date-fns";
+import { getTimeGreeting } from "@/lib/greeting";
 
 export default async function InstitutionOverviewPage() {
   const membership = await requireInstitutionAdmin();
@@ -42,7 +43,9 @@ export default async function InstitutionOverviewPage() {
     <div className="space-y-6">
       <header>
         <p className="text-[11px] font-black uppercase tracking-widest text-gray-500">Overview</p>
-        <h1 className="text-2xl font-black text-gray-900">Welcome back, {inst.adminName?.split(" ")[0] ?? "Admin"}</h1>
+        <h1 className="text-2xl font-black text-gray-900">
+          {(() => { const g = getTimeGreeting(inst.adminName?.split(" ")[0] ?? "Admin"); return `${g.text}${g.key === "late" ? "?" : "."} ${g.emoji}`; })()}
+        </h1>
         <p className="text-sm text-gray-500">
           Here's what's happening at {inst.name} this term.
         </p>

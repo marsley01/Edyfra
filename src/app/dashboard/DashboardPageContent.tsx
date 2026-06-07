@@ -14,6 +14,7 @@ import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import LevelXPBar from "@/components/dashboard/LevelXPBar";
+import { getTimeGreeting } from "@/lib/greeting";
 
 interface RecentSession {
   id: string;
@@ -254,6 +255,7 @@ export default function DashboardPageContent() {
 
 
   const firstName = userData?.name?.split(" ")[0] || "there";
+  const greeting = getTimeGreeting(firstName);
   const subjectFocus = userData?.studentProfile?.subjects?.[0] || "your toughest subject";
   const weakTopic = userData?.studentProfile?.weakTopics?.[0] || "one topic that needs attention";
   const nextMove = sessionCount > 0
@@ -266,7 +268,7 @@ export default function DashboardPageContent() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-8 pb-8 md:pb-12 border-b border-border">
          <div className="space-y-3 md:space-y-4">
             <h1 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tightest leading-none">
-              Hey, <span className="text-primary">{firstName}.</span>
+              <span className="text-primary">{greeting.text}{greeting.key === "late" ? "?" : "."}</span> {greeting.emoji}
             </h1>
             <p className="text-muted-foreground text-base sm:text-lg md:text-xl font-medium max-w-xl">
               Ready to learn? {nextMove}

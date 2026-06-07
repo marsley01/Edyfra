@@ -10,6 +10,7 @@ import { Users, Star, Wallet, Clock, ArrowRight, Loader2, BookOpen, Sparkles, Sh
 import { getTutorProfile, toggleTutorStatus, getTutorSessions, acceptMatchRequest } from "@/app/actions/tutor";
 import { getUserData } from "@/app/actions/user";
 import { showError, showSuccess, showInfo, showUnknownError } from "@/lib/toast";
+import { getTimeGreeting } from "@/lib/greeting";
 import { useRouter } from "next/navigation";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
 import { IncomingRequests } from "@/components/tutor/IncomingRequests";
@@ -357,7 +358,7 @@ export default function TutorDashboard() {
       {/* Premium Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
         <div className="space-y-2">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tightest">Welcome back, {tutorName}.</h1>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tightest">{(() => { const g = getTimeGreeting(tutorName); return `${g.text}${g.key === "late" ? "?" : "."} ${g.emoji}`; })()}</h1>
           <p className="text-muted-foreground text-lg font-medium">Here is your upcoming teaching schedule.</p>
         </div>
 

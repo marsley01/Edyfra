@@ -706,3 +706,232 @@ html {
     display: none;
   }
 }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   iOS / mobile-first polish
+   - viewport-fit: cover (set in app/layout.tsx viewport export)
+   - safe-area-inset-* variables
+   - 100dvh fallback (--app-height)
+   - 16px input baseline (kills iOS Safari's tap-zoom)
+   - 44x44 tap targets (HIG)
+   - per-iPhone breakpoints (SE → Pro Max)
+   - momentum scrolling + click-delay removal
+   - replaces maximumScale=1 / userScalable=no removed from layout.tsx
+   ════════════════════════════════════════════════════════════════════════════ */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --app-height: 100vh;
+}
+
+@supports (height: 100dvh) {
+  :root {
+    --app-height: 100dvh;
+  }
+}
+
+html {
+  height: -webkit-fill-available;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #04081A;
+  overscroll-behavior: none;
+}
+
+body {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
+
+/* Universal tap-target baseline (HIG / WCAG 2.5.5) */
+button,
+a,
+[role="button"],
+input[type="checkbox"],
+input[type="radio"],
+select {
+  min-height: 44px;
+}
+
+a {
+  /* Let inline links opt back in visually if they want */
+}
+
+/* Submits and primary CTAs feel chunky on iPhone */
+button[type="submit"],
+.cta-btn,
+.primary-btn {
+  min-height: 52px;
+  padding: 14px 24px;
+  font-size: 16px;
+}
+
+/* 16px prevents iOS Safari from auto-zooming on focus. */
+input,
+textarea,
+select,
+[contenteditable] {
+  font-size: 16px;
+  -webkit-appearance: none;
+  border-radius: 0;
+}
+
+@media screen and (max-width: 768px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+}
+
+/* Sticky/fixed iOS friendliness */
+* {
+  -webkit-overflow-scrolling: touch;
+  -webkit-tap-highlight-color: transparent;
+}
+
+* {
+  touch-action: manipulation;
+}
+
+.drawer,
+.modal,
+.overlay-panel,
+.fixed-element {
+  overscroll-behavior: contain;
+}
+
+.fixed-element {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+.sticky-header {
+  position: sticky;
+  top: 0;
+  -webkit-position: sticky;
+}
+
+/* Cyan focus ring replaces iOS's default blue */
+*:focus {
+  outline: 2px solid #06B6D4;
+  outline-offset: 2px;
+}
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+img {
+  -webkit-backface-visibility: hidden;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+/* Main nav / bottom safe-area glue */
+.main-nav {
+  padding-top: max(12px, env(safe-area-inset-top));
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+}
+
+.bottom-nav,
+.bottom-bar,
+.floating-action-btn {
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  margin-bottom: env(safe-area-inset-bottom);
+}
+
+.fixed-bottom {
+  bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+/* ── iPhone SE 1st gen — 320px wide ─────────────────────────────────────── */
+@media only screen and (max-width: 320px) {
+  .hero-title { font-size: 26px; }
+  .section-padding { padding: 32px 16px; }
+  .card-grid { grid-template-columns: 1fr; }
+  .nav-logo span { font-size: 18px; }
+}
+
+/* iPhone 6/7/8/SE 2nd gen — 375px wide */
+@media only screen and (min-width: 321px) and (max-width: 390px) {
+  .hero-title { font-size: 30px; }
+  .section-padding { padding: 40px 20px; }
+  .card-grid { grid-template-columns: 1fr; }
+  .feature-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+}
+
+/* iPhone 12/13/14/15 — 390-393px wide */
+@media only screen and (min-width: 391px) and (max-width: 414px) {
+  .hero-title { font-size: 32px; }
+  .section-padding { padding: 48px 22px; }
+  .feature-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+}
+
+/* iPhone Plus/Max — 414-430px wide */
+@media only screen and (min-width: 415px) and (max-width: 430px) {
+  .hero-title { font-size: 34px; }
+  .section-padding { padding: 52px 24px; }
+  .feature-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+}
+
+/* Universal mobile (≤ 430px) */
+@media only screen and (max-width: 430px) {
+  body { overflow-x: hidden; }
+  .card { padding: 16px; }
+  .split-layout { flex-direction: column; gap: 20px; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .modal {
+    width: calc(100vw - 32px);
+    max-height: 85dvh;
+    border-radius: 20px 20px 0 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+  .modal-overlay { align-items: flex-end; }
+  .toast {
+    width: calc(100vw - 32px);
+    left: 16px;
+    right: 16px;
+    bottom: max(80px, env(safe-area-inset-bottom));
+  }
+  .body-text { font-size: 15px; line-height: 1.7; }
+  .hero-section {
+    padding-top: max(80px, env(safe-area-inset-top) + 60px);
+    text-align: center;
+  }
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+  .scroll-row {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 8px;
+  }
+  .scroll-item { scroll-snap-align: start; flex-shrink: 0; }
+}
+
+/* Notched iPhones — tall screens need more hero breathing room */
+@media only screen and (max-width: 430px) and (min-height: 750px) {
+  .hero-section { min-height: 85dvh; padding-bottom: 60px; }
+  .sticky-cta {
+    position: fixed;
+    bottom: max(24px, env(safe-area-inset-bottom));
+    left: 20px;
+    right: 20px;
+    z-index: 100;
+  }
+}
+
+/* Subtle motion preference respect */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
