@@ -145,10 +145,14 @@ export async function submitInstitutionApplication(
       },
     });
   } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err);
     console.error("[submitInstitutionApplication] failed to upsert Prisma user:", err);
     return {
       ok: false,
-      error: "We couldn't create your account on our side. Please try again in a moment.",
+      error:
+        process.env.NODE_ENV === "production"
+          ? "We couldn't create your account on our side. Please try again in a moment."
+          : `We couldn't create your account on our side. (${detail})`,
       field: "adminEmail",
     };
   }
