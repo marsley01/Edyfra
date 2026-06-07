@@ -1,7 +1,6 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 
@@ -31,5 +30,8 @@ export async function institutionLogin(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
-  redirect("/institution/dashboard");
+  // Return the target so the client form can navigate. Using `redirect()` here
+  // would throw NEXT_REDIRECT inside the client's try/catch and get swallowed
+  // as an error.
+  return { redirectTo: "/institution/dashboard" };
 }

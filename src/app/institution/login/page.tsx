@@ -63,7 +63,13 @@ export default function InstitutionLogin() {
       if (result?.error) {
         setError(describe(result.error));
         setLoading(false);
+        return;
       }
+      // Server action completed without an error — navigate to the
+      // institution portal. Hard navigation so the new auth cookie is picked
+      // up by the middleware on the very first request.
+      const target = result?.redirectTo || "/institution/dashboard";
+      window.location.href = target;
     } catch (err: any) {
       setError(describe(err?.message || ""));
       setLoading(false);

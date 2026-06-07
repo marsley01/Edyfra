@@ -171,6 +171,12 @@ export default function SignupPage() {
           description: result.message,
         });
         setLoading(false);
+      } else if (result?.redirectTo) {
+        // Auto-confirm path: Supabase returned a session, navigate now.
+        window.location.href = result.redirectTo;
+      } else {
+        // Fallback: account created, send them through onboarding.
+        window.location.href = "/onboarding";
       }
     } catch (err: any) {
       setError(describeSignupError(err?.message || ""));
