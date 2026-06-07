@@ -95,8 +95,8 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <StreamVideoProvider>
-            <OverlayManagerProvider>
+          <OverlayManagerProvider>
+            <StreamVideoProvider>
               <ThemeColorManager />
               <ConditionalShell>{children}</ConditionalShell>
               <ServiceWorkerRegister />
@@ -105,8 +105,8 @@ export default function RootLayout({
               <Toaster richColors position="top-right" />
               <Analytics />
               <SpeedInsights />
-            </OverlayManagerProvider>
-          </StreamVideoProvider>
+            </StreamVideoProvider>
+          </OverlayManagerProvider>
         </ThemeProvider>
       </body>
     </html>
