@@ -116,6 +116,43 @@ export async function submitInstitutionApplication(
 
   if (!userId) return { ok: false, error: "Could not create or find the admin account." };
 
+  // ─── 1b. Prisma User row ─────────────────────────────────────────────────
+  // The InstitutionAdmin / InstitutionMember inserts have a foreign key to
+  // the User table, so we MUST ensure a Prisma User row exists for this
+  // user id before we try to create the institution. Supabase signUp only
+  // creates the auth account, not the Prisma mirror row.
+  //
+  // We use upsert so this is idempotent: if the user already has a Prisma
+  // row (because they signed up to Edyfra before), we just refresh the
+  // name/county without overwriting their existing role.
+  try {
+    await prisma.user.upsert({
+      where: { id: userId },
+      update: {
+        name: data.adminName,
+        email: data.adminEmail,
+      },
+      create: {
+        id: userId,
+        email: data.adminEmail,
+        name: data.adminName,
+        // Prisma's Role enum doesn't include INSTITUTION_ADMIN, so we keep
+        // the default (STUDENT). Institution access is gated by the
+        // InstitutionAdmin / InstitutionMember tables, not by User.role.
+        role: "STUDENT",
+        county: data.county,
+        lastActiveAt: new Date(),
+      },
+    });
+  } catch (err) {
+    console.error("[submitInstitutionApplication] failed to upsert Prisma user:", err);
+    return {
+      ok: false,
+      error: "We couldn't create your account on our side. Please try again in a moment.",
+      field: "adminEmail",
+    };
+  }
+
   // ─── 2. Prisma: institution + memberships ───────────────────────────────
   try {
     const institution = await prisma.$transaction(async (tx) => {
@@ -191,8 +228,19 @@ export async function submitInstitutionApplication(
       if (err.code === "P2002") {
         return { ok: false, error: "An institution with similar details already exists." };
       }
+      // Foreign-key violation = a row we tried to link to is missing.
+      // The most common cause is a missing Prisma User row, but the
+      // upsert above should now prevent that. If we still get one,
+      // surface the specific missing field so the user can tell us.
+      if (err.code === "P2003") {
+        return {
+          ok: false,
+          error: `Your application is missing a related record (${err.meta?.field_name ?? "unknown"}). Please refresh and try again.`,
+        };
+      }
     }
-    return { ok: false, error: "Something went wrong. Please try again." };
+    const detail = err instanceof Error ? err.message : "Unknown error";
+    return { ok: false, error: `Something went wrong on our side. (${detail})` };
   }
 }
 

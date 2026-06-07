@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/client";
 import {
-  ChevronLeft, Menu, Activity, Globe, Users, LayoutDashboard, GraduationCap, ShieldCheck, FileText, BookMarked, Bell, Newspaper, Star, MessageSquare, Award, TrendingUp, Settings, Search, Terminal, LogOut, Cpu, Inbox, Bot
+  ChevronLeft, Menu, Activity, Globe, Users, LayoutDashboard, GraduationCap, ShieldCheck, FileText, BookMarked, Bell, Newspaper, Star, MessageSquare, Award, TrendingUp, Settings, Search, Terminal, LogOut, Cpu, Inbox, Bot, Building2
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import Link from "next/link";
@@ -84,6 +84,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navItems: NavItem[] = [
     { href: "/admin", label: "Overview", icon: LayoutDashboard },
+    { href: "/admin/institutions", label: "Institution Approvals", icon: Building2 },
     { href: "/admin/users", label: "User Management", icon: Users },
     { href: "/admin/tutors", label: "Tutor Management", icon: GraduationCap },
     { href: "/admin/moderation", label: "Content Moderation", icon: ShieldCheck },
