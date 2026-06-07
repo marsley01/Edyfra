@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { 
   Search, 
   Filter, 
@@ -8,16 +8,15 @@ import {
   Star, 
   FileText, 
   ShoppingBag, 
-  Smartphone,
   Shield,
   Loader2,
   BookOpen
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
+import { showError, showSuccess, showInfo } from "@/lib/toast";
 
 const SUBJECTS = [
   "All", "Mathematics", "English", "Kiswahili", "Physics", "Chemistry",
@@ -42,6 +41,7 @@ export default function MarketplacePage() {
   const [selectedResource, setSelectedResource] = useState<any>(null);
   const [isPaying, setIsPaying] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (tab === "browse") {
@@ -49,6 +49,7 @@ export default function MarketplacePage() {
     } else {
       fetchPurchases();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
   const fetchPurchases = async () => {
@@ -56,23 +57,36 @@ export default function MarketplacePage() {
     try {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        showError({
+          title: "We can't show your purchases until you sign in",
+          cause: "Your session expired or you're signed out.",
+          fix: "Sign back in and refresh this page.",
+        });
+        return;
+      }
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("resource_purchases")
         .select("*, resource:resources(*)")
         .eq("user_id", user.id)
         .order("paid_at", { ascending: false });
 
+      if (error) throw error;
       if (data) setPurchases(data);
-    } catch {
-      toast.error("Failed to load purchases");
+    } catch (err) {
+      showError({
+        title: "Couldn't load your purchases",
+        cause: "We hit an issue talking to the marketplace database.",
+        fix: "Refresh the page in a moment. If it keeps failing, contact support.",
+        raw: err,
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchResources = async () => {
+  const fetchResources = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -83,23 +97,75 @@ export default function MarketplacePage() {
       if (search) params.set("search", search);
 
       const res = await fetch(`/api/resources?${params.toString()}`);
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
       const data = await res.json();
       if (data.resources) {
         setResources(data.resources);
       }
-    } catch (error) {
-      toast.error("Failed to load resources");
+    } catch (err) {
+      showError({
+        title: "Couldn't load the marketplace",
+        cause: "Our resources service didn't respond.",
+        fix: "Tap the filter again or refresh the page in a sec.",
+        raw: err,
+      });
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedSubject, selectedLevel, selectedPrice, selectedType, search]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     fetchResources();
   };
 
+  const downloadResource = useCallback(async (resourceId: string, title?: string) => {
+    setDownloadingId(resourceId);
+    try {
+      const { getResourceDownloadUrl } = await import("@/app/actions/resources");
+      const res = await getResourceDownloadUrl(resourceId);
+      if (res.error) {
+        showError({
+          title: "Couldn't get your download",
+          cause: res.error,
+          fix: "Refresh the page and try again. If you paid, the receipt is on your email.",
+        });
+        return;
+      }
+      if (res.url) {
+        window.open(res.url, "_blank", "noopener,noreferrer");
+        showSuccess(`“${title || "Resource"}” is downloading`, {
+          description: "Check your downloads folder. Links expire in 5 minutes — re-tap to refresh.",
+        });
+      }
+    } catch (err) {
+      showError({
+        title: "Download didn't go through",
+        cause: "Your connection dropped or the link service hiccupped.",
+        fix: "Try once more. If it keeps failing, ping support.",
+        raw: err,
+      });
+    } finally {
+      setDownloadingId(null);
+    }
+  }, []);
+
   const handlePurchase = async () => {
+    if (!selectedResource) return;
+
+    // Free resources should never round-trip through the payment provider.
+    // We download them straight from the storage signer.
+    if (Number(selectedResource.price) === 0) {
+      showInfo("This one is free — fetching it for you now");
+      await downloadResource(selectedResource.id, selectedResource.title);
+      setSelectedResource(null);
+      // Reload purchases tab so it shows up next time the user looks.
+      if (tab === "my-purchases") fetchPurchases();
+      return;
+    }
+
     setIsPaying(true);
     try {
       const res = await fetch("/api/paystack/initialize", {
@@ -114,13 +180,24 @@ export default function MarketplacePage() {
 
       const data = await res.json();
       if (data.success && data.authorization_url) {
-        toast.success("Redirecting to secure checkout...");
+        showSuccess("Redirecting to secure checkout…", {
+          description: "You'll be back here automatically once payment is confirmed.",
+        });
         window.location.href = data.authorization_url;
       } else {
-        toast.error(data.error || "Failed to initiate payment");
+        showError({
+          title: "We couldn't start your payment",
+          cause: data.error || "Paystack didn't return a checkout link.",
+          fix: "Try again in a moment, or use a different payment method.",
+        });
       }
-    } catch {
-      toast.error("Something went wrong");
+    } catch (err) {
+      showError({
+        title: "Payment service didn't respond",
+        cause: "Your connection blinked or the gateway is busy.",
+        fix: "Wait a few seconds and try again.",
+        raw: err,
+      });
     } finally {
       setIsPaying(false);
     }
@@ -303,7 +380,7 @@ export default function MarketplacePage() {
         ) : purchases.length === 0 ? (
           <div className="text-center py-20 space-y-4">
             <ShoppingBag className="h-12 w-12 mx-auto text-muted-foreground/40" />
-            <p className="text-lg font-medium text-muted-foreground">You haven't purchased any resources yet.</p>
+            <p className="text-lg font-medium text-muted-foreground">You haven&apos;t picked up any resources yet — pop into Browse to find your next study aid.</p>
             <Button onClick={() => setTab("browse")} className="h-12 px-6 rounded-2xl bg-primary text-white font-black text-xs uppercase tracking-widest">
               Browse Resources
             </Button>
@@ -319,11 +396,27 @@ export default function MarketplacePage() {
                   <h3 className="text-lg font-black tracking-tightest">{purchase.resource?.title || "Resource"}</h3>
                   <p className="text-sm text-muted-foreground font-medium">Purchased on {new Date(purchase.paid_at).toLocaleDateString()}</p>
                 </div>
-                <Button 
-                  onClick={() => window.open(purchase.resource?.file_path, "_blank")}
+                <Button
+                  disabled={downloadingId === purchase.resource?.id || !purchase.resource?.id}
+                  onClick={() => {
+                    if (!purchase.resource?.id) {
+                      showError({
+                        title: "We can't find that resource anymore",
+                        cause: "The seller may have removed it, or it's still being reviewed.",
+                        fix: "Reach out to support — we keep purchase receipts and can sort this out.",
+                      });
+                      return;
+                    }
+                    downloadResource(purchase.resource.id, purchase.resource.title);
+                  }}
                   className="w-full h-12 rounded-xl bg-primary text-white hover:bg-primary/90 font-black text-xs uppercase tracking-widest"
                 >
-                  <Download className="h-4 w-4 mr-2" /> Download
+                  {downloadingId === purchase.resource?.id ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4 mr-2" />
+                  )}
+                  Download
                 </Button>
               </div>
             ))}
@@ -359,23 +452,38 @@ export default function MarketplacePage() {
                 </div>
 
                 <div className="p-6 rounded-2xl bg-secondary/50 border border-border space-y-4 text-center">
-                   <p className="text-sm font-medium text-muted-foreground">Secure payment to unlock access</p>
-                   <div className="text-3xl font-black tracking-tightest">KES {selectedResource.price}</div>
-                   
+                   {Number(selectedResource.price) === 0 ? (
+                     <>
+                       <p className="text-sm font-medium text-muted-foreground">No charge — just grab it</p>
+                       <div className="text-3xl font-black tracking-tightest text-emerald-500">Free</div>
+                     </>
+                   ) : (
+                     <>
+                       <p className="text-sm font-medium text-muted-foreground">Secure payment to unlock access</p>
+                       <div className="text-3xl font-black tracking-tightest">KES {selectedResource.price}</div>
+                     </>
+                   )}
+
                    <div className="space-y-4 pt-2">
-                      <Button 
+                      <Button
                         onClick={handlePurchase}
-                        disabled={isPaying}
+                        disabled={isPaying || downloadingId === selectedResource.id}
                         className="w-full h-14 rounded-2xl bg-primary text-white hover:bg-primary/90 font-black text-xs uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2"
                       >
-                        {isPaying ? <Loader2 className="h-4 w-4 animate-spin" /> : "Unlock Resource"}
+                        {isPaying || downloadingId === selectedResource.id
+                          ? <Loader2 className="h-4 w-4 animate-spin" />
+                          : Number(selectedResource.price) === 0
+                            ? "Download Now"
+                            : "Unlock Resource"}
                       </Button>
                    </div>
                 </div>
 
                 <div className="flex items-center justify-center gap-2 text-muted-foreground/60">
                   <Shield className="h-4 w-4" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Secure Checkout • Instant Access</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest">
+                    {Number(selectedResource.price) === 0 ? "Safe Direct Download" : "Secure Checkout • Instant Access"}
+                  </span>
                 </div>
               </div>
             </motion.div>

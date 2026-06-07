@@ -10,7 +10,7 @@ import { Users, Plus, Search, MessageCircle, Loader2, GraduationCap } from "luci
 import { getGroups, createGroup } from "@/app/actions/groups";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 
 interface Group {
   id: string;
@@ -49,7 +49,7 @@ export default function GroupsPage() {
       setDiscoverGroups(data.discoverGroups as any);
     } catch (error) {
       console.error("Failed to load groups:", error);
-      toast.error("Failed to load groups");
+      showError({ title: "We couldn't load the groups", cause: "Our server didn't respond.", fix: "Refresh the page in a moment." });
     } finally {
       setLoading(false);
     }
@@ -62,10 +62,10 @@ export default function GroupsPage() {
     try {
       const { joinGroup } = await import("@/app/actions/groups");
       await joinGroup(groupId);
-      toast.success("Joined group successfully!");
+      showSuccess("You're in", { description: "Welcome to the group." });
       loadGroups(); // Refresh to move group to 'myGroups'
     } catch {
-      toast.error("Failed to join group.");
+      showError({ title: "We couldn't add you to the group", cause: "Something hiccuped on our side.", fix: "Try again, or refresh the page." });
     } finally {
       setJoiningGroupId(null);
     }
@@ -82,14 +82,14 @@ export default function GroupsPage() {
         topic: newGroupTopic,
         level: newGroupLevel
       });
-      toast.success("Group created!");
+      showSuccess("Group created", { description: "Your new group is live." });
       setShowCreateModal(false);
       setNewGroupName("");
       setNewGroupSubject("");
       setNewGroupTopic("");
       loadGroups();
     } catch (error) {
-      toast.error("Failed to create group");
+      showError({ title: "We couldn't create that group", cause: "Something hiccuped on our side.", fix: "Try again in a moment." });
     } finally {
       setIsCreating(false);
     }

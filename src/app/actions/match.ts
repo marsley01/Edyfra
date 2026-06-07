@@ -6,27 +6,18 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { SESSION_CONFIG } from "@/lib/config";
 import { recalibrateTier } from "./user";
-import { MatchTier, Role, EduLevel, Tier } from "@prisma/client";
-import { randomBytes } from "crypto";
-import { executeSmartMatching, sweepAndAIFallback } from "./match-algorithm";
-import { StreamChat } from "stream-chat";
+import { MatchTier, Role, EduLevel, Tier } from "@generated/client";
+import {
+  executeSmartMatching,
+  sweepAndAIFallback,
+  decrementTutorActiveSessions,
+  commitHumanMatch,
+  commitAISession,
+} from "./match-algorithm";
+import { syncUsersToStream } from "@/lib/user-sync";
 import { notifyUser } from "@/app/actions/notifications";
 import { getUserData } from "@/app/actions/user";
 import { withRateLimit } from "@/lib/rate-limit";
-
-const STREAM_KEY = process.env.NEXT_PUBLIC_STREAM_KEY!;
-const STREAM_SECRET = process.env.STREAM_SECRET!;
-
-async function upsertStreamUsers(users: { id: string; name: string; image?: string | null }[]) {
-  try {
-    const client = StreamChat.getInstance(STREAM_KEY, STREAM_SECRET);
-    for (const u of users) {
-      await client.upsertUser({ id: u.id, name: u.name, image: u.image || undefined });
-    }
-  } catch (err) {
-    console.error("Failed to upsert Stream users:", err);
-  }
-}
 
 export async function createMatchRequest(data: { subject: string; topic: string }) {
   try {
@@ -122,40 +113,26 @@ export async function acceptMatchRequest(requestId: string) {
   
   const tier = userData?.role === Role.TUTOR ? "TUTOR" : "PEER";
 
-  // Upsert both users to Stream Chat
+  // Ensure both users exist in Stream Chat via the centralized sync pipeline.
+  // Prisma is the source of truth for names + avatars, so we don't pass them in.
   try {
-    const studentData = await prisma.user.findUnique({ where: { id: matchRequest.studentId }, select: { name: true, avatar: true } });
-    await upsertStreamUsers([
-      { id: matchRequest.studentId, name: studentData?.name || "Student", image: studentData?.avatar },
-      { id: user.id, name: userData?.name || "Tutor", image: userData?.avatar },
-    ]);
+    await syncUsersToStream([matchRequest.studentId, user.id]);
   } catch {}
 
-  const roomId = `room-${randomBytes(8).toString('hex')}`;
-  
+  // Atomic commit: Session create + MatchRequest resolve (+ tutor load increment
+  // for TUTOR tier) all in one transaction. A crash anywhere here rolls back the
+  // whole thing, so the request never ends up "half-matched".
   let session;
   try {
-    session = await prisma.session.create({
-      data: {
-        studentId: matchRequest.studentId,
-        partnerId: user.id,
-        tier: tier as MatchTier,
-        subject: matchRequest.subject,
-        topic: matchRequest.topic,
-        status: "ACTIVE",
-        roomId: roomId,
-        startedAt: new Date(),
-      },
+    const committed = await commitHumanMatch({
+      matchRequestId: requestId,
+      studentId: matchRequest.studentId,
+      partnerId: user.id,
+      subject: matchRequest.subject,
+      topic: matchRequest.topic,
+      tier: tier === "TUTOR" ? "TUTOR" : "PEER",
     });
-
-    await prisma.matchRequest.update({
-      where: { id: requestId },
-      data: {
-        sessionId: session.id,
-        resolvedAs: tier as MatchTier,
-        resolvedAt: new Date(),
-      }
-    });
+    session = { id: committed.sessionId };
   } catch (error: any) {
     // If the student user record was deleted (P2003 Foreign Key constraint failed)
     if (error.code === 'P2003') {
@@ -253,30 +230,15 @@ export async function forceAIFallback(requestId: string) {
     return { success: false, message: "Already matched or not found" };
   }
 
-  const roomId = `mash-${randomBytes(8).toString('hex')}`;
-  const session = await prisma.session.create({
-    data: {
-      studentId: matchRequest.studentId,
-      partnerId: null,
-      tier: "MASH",
-      subject: matchRequest.subject,
-      topic: matchRequest.topic,
-      status: "ACTIVE",
-      roomId,
-      startedAt: new Date(),
-    },
+  // Atomic: AI Session create + MatchRequest resolve in one transaction.
+  const { sessionId } = await commitAISession({
+    matchRequestId: requestId,
+    studentId: matchRequest.studentId,
+    subject: matchRequest.subject,
+    topic: matchRequest.topic,
   });
 
-  await prisma.matchRequest.update({
-    where: { id: requestId },
-    data: {
-      sessionId: session.id,
-      resolvedAs: "MASH",
-      resolvedAt: new Date(),
-    }
-  });
-
-  return { success: true, sessionId: session.id };
+  return { success: true, sessionId };
 }
 
 export async function sweepUnmatchedRequests() {
@@ -362,6 +324,35 @@ export async function completeSession(sessionId: string) {
     });
 
     let pointsAwarded = 0;
+
+    // Track analytics event for session completion
+    try {
+      const { trackAnalyticsEvent, awardReferralBonus } = await import("./analytics");
+      await trackAnalyticsEvent(session.studentId, "session_complete", {
+        sessionId: session.id,
+        subject: session.subject,
+        tier: session.tier,
+        durationMin,
+      });
+
+      // Check if this is the student's first session — award referral bonus
+      const studentSessionCount = await prisma.session.count({
+        where: { studentId: session.studentId, status: "COMPLETED" },
+      });
+      if (studentSessionCount === 1) {
+        await awardReferralBonus(session.studentId);
+        await trackAnalyticsEvent(session.studentId, "first_session", {
+          sessionId: session.id,
+        });
+      }
+    } catch (e) {
+      console.error("Failed to track analytics/referral:", e);
+    }
+
+    // Decrement tutor's active sessions
+    if (session.partnerId && session.tier === "TUTOR") {
+      await decrementTutorActiveSessions(session.partnerId);
+    }
 
     if (shouldAwardPoints) {
       pointsAwarded = SESSION_CONFIG.POINTS_STUDENT;

@@ -13,7 +13,11 @@ import { SubjectCoverage } from "@/components/home/subject-coverage";
 import { HomeNewsletter } from "@/components/home/newsletter";
 import { AbstractAnimation } from "@/components/home/abstract-animation";
 
-// Server Component — fetches real data on every request
+// Cache the home page data for 60s — global counters and approved reviews
+// only need to refresh every so often. This drops 4 Prisma count() calls
+// and 1 Supabase query on every visit.
+export const revalidate = 60;
+
 export default async function HomePage() {
   // Run all data fetches in parallel
   const [reviews, stats] = await Promise.all([

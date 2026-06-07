@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Cpu, Eye, EyeOff, RefreshCw, Save, Sparkles } from "lucide-react";
-import { toast } from "sonner";
+import { showError, showSuccess, showUnknownError } from "@/lib/toast";
 import { saveAdminGlobalSettings, getAdminGlobalSettings } from "@/app/actions/admin";
 import type { AdminGlobalSettings } from "@/app/actions/admin";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,7 +31,11 @@ export default function AdminAISettingsPage() {
         setAiMatchmaking(typeof settings.aiMatchmaking === "boolean" ? settings.aiMatchmaking : true);
       } catch (error) {
         console.error("Failed to load AI settings:", error);
-        toast.error("Failed to load AI settings");
+        showError({
+          title: "We couldn't load AI settings",
+          cause: "A hiccup on our side blocked the load.",
+          fix: "Try again, or refresh the page.",
+        });
       } finally {
         setLoading(false);
       }
@@ -58,9 +62,13 @@ export default function AdminAISettingsPage() {
       }
 
       setBaseSettings(nextSettings);
-      toast.success("AI engine settings saved");
+      showSuccess("AI engine settings saved", { description: "The new model is live across the platform." });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to save AI settings");
+      showError({
+        title: "We couldn't save AI settings",
+        cause: error instanceof Error ? error.message : "Something didn't go through on our side.",
+        fix: "Try again, or refresh the page.",
+      });
     } finally {
       setSaving(false);
     }
@@ -99,7 +107,7 @@ export default function AdminAISettingsPage() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
-        <Card className="overflow-hidden rounded-[2.5rem] border-white/5 bg-white/[0.02] backdrop-blur-xl">
+        <Card className="overflow-hidden rounded-[2.5rem] border-border/5 bg-background/[0.02] backdrop-blur-xl">
           <CardHeader className="border-b border-white/5 p-10">
             <div className="mb-2 flex items-center gap-4">
               <Cpu className="h-6 w-6 text-primary" />
@@ -128,7 +136,7 @@ export default function AdminAISettingsPage() {
                 value={googleAiKey}
                 onChange={(event) => setGoogleAiKey(event.target.value)}
                 placeholder="AIzaSy..."
-                className="h-12 rounded-xl border-white/10 bg-black/40 font-mono text-xs tracking-widest"
+                className="h-12 rounded-xl border-border/10 bg-background/40 font-mono text-xs tracking-widest"
               />
               <p className="text-xs text-muted-foreground">
                 This key is used for Edyfra AI experiences that rely on the configured Gemini pipeline.
@@ -138,7 +146,7 @@ export default function AdminAISettingsPage() {
             <div className="space-y-4">
               <Label className="text-sm font-black uppercase tracking-widest">Primary AI Provider</Label>
               <Select value={aiProvider} onValueChange={(value) => setAiProvider(value || "auto")}>
-                <SelectTrigger className="h-14 rounded-2xl border-white/10 bg-white/5 font-bold">
+                <SelectTrigger className="h-14 rounded-2xl border-border/10 bg-background/5 font-bold">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -161,7 +169,7 @@ export default function AdminAISettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[2.5rem] border-white/5 bg-slate-950 text-white">
+        <Card className="rounded-[2.5rem] border-border/5 bg-background text-foreground">
           <CardHeader className="p-10">
             <CardTitle className="text-2xl font-black tracking-tight">What this page controls</CardTitle>
             <CardDescription className="text-white/50">
@@ -174,7 +182,7 @@ export default function AdminAISettingsPage() {
               "Secure storage and rotation of the Gemini API key",
               "Matchmaking behavior for tutor-student recommendations",
             ].map((item) => (
-              <div key={item} className="rounded-2xl border border-white/10 bg-white/5 p-5 text-sm font-medium text-white/80">
+              <div key={item} className="rounded-2xl border border-border/10 bg-background/5 p-5 text-sm font-medium text-foreground/80">
                 {item}
               </div>
             ))}

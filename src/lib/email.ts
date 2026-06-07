@@ -1,10 +1,12 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY || "re_placeholder_123");
+export function getResend(): Resend {
+  return new Resend(process.env.RESEND_API_KEY || "re_placeholder_123");
+}
 
 export async function sendWelcomeEmail(email: string, name: string) {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: "Edyfra <welcome@edyfra.com>",
       to: email,
       subject: "Welcome to the Edyfra Scholar Community!",
@@ -37,7 +39,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
 
 export async function sendTutorWelcomeEmail(email: string, name: string) {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: "Edyfra Experts <experts@edyfra.com>",
       to: email,
       subject: "Your Edyfra Expert Application Received",

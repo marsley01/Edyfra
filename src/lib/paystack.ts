@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+function getPaystackSecret(): string {
+  return process.env.PAYSTACK_SECRET_KEY || "";
+}
 const PAYSTACK_API_URL = "https://api.paystack.co";
 
 export interface PaystackInitializeResponse {
@@ -33,7 +35,7 @@ export const paystack = {
       },
       {
         headers: {
-          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+          Authorization: `Bearer ${getPaystackSecret()}`,
           "Content-Type": "application/json",
         },
       }
@@ -49,7 +51,7 @@ export const paystack = {
       `${PAYSTACK_API_URL}/transaction/verify/${reference}`,
       {
         headers: {
-          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+          Authorization: `Bearer ${getPaystackSecret()}`,
         },
       }
     );
@@ -71,7 +73,7 @@ export const paystack = {
       data,
       {
         headers: {
-          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+          Authorization: `Bearer ${getPaystackSecret()}`,
           "Content-Type": "application/json",
         },
       }
@@ -97,7 +99,7 @@ export const paystack = {
       },
       {
         headers: {
-          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+          Authorization: `Bearer ${getPaystackSecret()}`,
           "Content-Type": "application/json",
         },
       }

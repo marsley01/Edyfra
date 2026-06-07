@@ -11,7 +11,7 @@ import {
   SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { createClient } from "@/utils/supabase/client";
 import { uploadAndCreateResource, getMyResources } from "@/app/actions/resources";
 import { motion, AnimatePresence } from "framer-motion";
@@ -71,7 +71,7 @@ export default function TutorResourcesPage() {
       const data = await getMyResources();
       setMyResources(data);
     } catch {
-      toast.error("Failed to load resources");
+      showError({ title: "We couldn't load the resources", cause: "Our server didn't respond.", fix: "Refresh the page in a moment." });
     } finally {
       setLoadingList(false);
     }
@@ -82,7 +82,7 @@ export default function TutorResourcesPage() {
     if (f && f.size <= 50 * 1024 * 1024) {
       setFile(f);
     } else {
-      toast.error("File must be under 50 MB");
+      showError({ title: "File is too big", cause: "We've got a 50 MB limit on uploads.", fix: "Compress the file or pick a smaller one, then try again." });
     }
   }, []);
 
@@ -105,14 +105,14 @@ export default function TutorResourcesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file || !title || !subject || !level || !type) {
-      toast.error("Please fill in all required fields and attach a file");
+      showError({ title: "Almost there", cause: "A required field is empty, or you didn't attach a file.", fix: "Fill in every starred field, then submit." });
       return;
     }
     setIsUploading(true);
     try {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { toast.error("Please sign in"); return; }
+      if (!user) { showError({ title: "You need to sign in for that", cause: "We don't have a session for you right now.", fix: "Sign in and try again." }); return; }
 
       const formData = new FormData();
       formData.append("file", file);
@@ -127,16 +127,16 @@ export default function TutorResourcesPage() {
       const result = await uploadAndCreateResource(formData);
 
       if (result.error) {
-        toast.error(result.error);
+        showError({ title: "We couldn't submit that", cause: result.error, fix: "Try again, or refresh the page." });
         return;
       }
 
-      toast.success("Resource submitted for review! We'll notify you once it's approved.");
+      showSuccess("Resource submitted for review", { description: "We'll notify you once it's approved." });
       resetForm();
       setView("list");
       loadResources();
     } catch (err: any) {
-      toast.error(err.message || "Something went wrong");
+      showError({ title: "Something didn't go through", cause: err.message || "A hiccup on our side.", fix: "Try again in a moment." });
     } finally {
       setIsUploading(false);
     }
