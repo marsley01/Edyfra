@@ -229,12 +229,12 @@ function ForumList(props: {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
       {/* Warm welcome banner */}
-      <div className="rounded-3xl bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50 dark:from-amber-950/40 dark:via-orange-950/30 dark:to-amber-950/40 border border-amber-200/60 dark:border-amber-800/30 p-6 sm:p-8 mb-8 relative overflow-hidden">
+      <div className="rounded-xl bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50 dark:from-amber-950/40 dark:via-orange-950/30 dark:to-amber-950/40 border border-amber-200/60 dark:border-amber-800/30 p-6 sm:p-8 mb-8 relative overflow-hidden">
         <div className="absolute -right-8 -top-8 w-48 h-48 rounded-full bg-amber-300/20 dark:bg-amber-700/10 blur-3xl" />
         <div className="absolute -right-16 -bottom-12 w-56 h-56 rounded-full bg-orange-300/20 dark:bg-orange-700/10 blur-3xl" />
         <div className="relative flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200 text-[10px] font-black uppercase tracking-widest">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200 text-[10px] font-black uppercase tracking-widest">
               <Sparkles className="h-3 w-3" /> Edyfra Community
             </div>
             <h1 className="mt-3 text-2xl sm:text-3xl font-black text-foreground tracking-tight">
@@ -246,19 +246,19 @@ function ForumList(props: {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card border border-border text-foreground text-xs font-semibold">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-border text-foreground text-xs font-semibold">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-60 animate-ping" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
               </span>
               {data?.stats.onlineCount ?? 0} online now
             </div>
-            <div className="px-3 py-1.5 rounded-full bg-card border border-border text-foreground text-xs font-semibold">
+            <div className="px-3 py-1.5 rounded-lg bg-card border border-border text-foreground text-xs font-semibold">
               {data?.stats.totalTopics ?? 0} topics · {data?.stats.totalPosts ?? 0} replies
             </div>
             <Button
               onClick={onNewTopic}
-              className="h-10 px-4 rounded-full bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-400 text-white dark:text-amber-950 font-black text-xs uppercase tracking-widest shadow-lg shadow-amber-900/10"
+              className="h-10 px-4 rounded-lg bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-400 text-white dark:text-amber-950 font-black text-xs uppercase tracking-widest shadow-lg shadow-amber-900/10"
             >
               <Plus className="h-4 w-4 mr-1.5" /> New topic
             </Button>
@@ -376,7 +376,7 @@ function Chip({
     <button
       onClick={onClick}
       className={cn(
-        "inline-flex items-center h-8 px-3.5 rounded-full text-xs font-bold transition border",
+        "inline-flex items-center h-8 px-3.5 rounded-lg text-xs font-bold transition border",
         active
           ? "bg-amber-600 text-white border-amber-600 shadow"
           : "bg-card text-foreground border-border hover:bg-accent hover:text-accent-foreground"
@@ -406,7 +406,7 @@ function TopicRow({
               {topic.category.emoji} {topic.category.name}
             </span>
             {topic.hasUnread && (
-              <span className="ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-600 text-white text-[9px] font-black uppercase tracking-widest">
+              <span className="ml-auto inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-600 text-white text-[9px] font-black uppercase tracking-widest">
                 New
               </span>
             )}
@@ -445,7 +445,7 @@ function Avatar({ src, name, role }: { src?: string | null; name: string; role: 
         <img src={src} alt={name} className="w-full h-full object-cover" />
       ) : initial}
       {role === "TUTOR" && (
-        <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-amber-600 text-white flex items-center justify-center text-[8px] font-black border-2 border-card">
+        <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-md bg-amber-600 text-white flex items-center justify-center text-[8px] font-black border-2 border-card">
           T
         </span>
       )}
@@ -503,7 +503,7 @@ function SkeletonList() {
 
 function EmptyState({ onNewTopic }: { onNewTopic: () => void }) {
   return (
-    <div className="rounded-3xl border-2 border-dashed border-amber-300/70 dark:border-amber-700/40 bg-amber-50/40 dark:bg-amber-950/10 p-10 text-center">
+    <div className="rounded-xl border-2 border-dashed border-amber-300/70 dark:border-amber-700/40 bg-amber-50/40 dark:bg-amber-950/10 p-10 text-center">
       <div className="mx-auto w-14 h-14 rounded-2xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-2xl">
         🌱
       </div>
@@ -515,7 +515,7 @@ function EmptyState({ onNewTopic }: { onNewTopic: () => void }) {
       </p>
       <Button
         onClick={onNewTopic}
-        className="mt-5 h-10 px-4 rounded-full bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-400 text-white dark:text-amber-950 font-black text-xs uppercase tracking-widest"
+        className="mt-5 h-10 px-4 rounded-lg bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-400 text-white dark:text-amber-950 font-black text-xs uppercase tracking-widest"
       >
         <Plus className="h-4 w-4 mr-1.5" /> Start the first topic
       </Button>
@@ -593,7 +593,7 @@ function ForumThread({
         <ArrowLeft className="h-3.5 w-3.5" /> Back to community
       </button>
 
-      <div className="rounded-3xl bg-card border border-border p-6 sm:p-8 mb-6 shadow-sm">
+      <div className="rounded-xl bg-card border border-border p-6 sm:p-8 mb-6 shadow-sm">
         <div className="flex items-center gap-2 flex-wrap mb-3">
           {thread.topic.pinned && <Pill icon={Pin} className="bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200">Pinned</Pill>}
           {thread.topic.locked && <Pill icon={Lock} className="bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200">Locked</Pill>}
@@ -617,7 +617,7 @@ function ForumThread({
               onClick={sub}
               variant="outline"
               className={cn(
-                "h-9 px-3.5 rounded-full font-bold text-xs",
+                "h-9 px-3.5 rounded-lg font-bold text-xs",
                 subscribed
                   ? "bg-amber-600 text-white border-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-400 dark:text-amber-950"
                   : "border-border"
@@ -686,9 +686,9 @@ function ForumThread({
         )}
       </div>
 
-      <div className="mt-6 rounded-3xl bg-card border border-border p-4 sm:p-5 shadow-sm">
+      <div className="mt-6 rounded-xl bg-card border border-border p-4 sm:p-5 shadow-sm">
         {replyTo && (
-          <div className="mb-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 text-[11px] font-bold">
+          <div className="mb-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 text-[11px] font-bold">
             <Reply className="h-3 w-3" /> Replying to {replyTo.name}
             <button onClick={() => setReplyTo(null)} className="ml-1 hover:text-amber-700">×</button>
           </div>
@@ -770,7 +770,7 @@ function PostCard({
             })}
             <button
               onClick={() => onReply(post.id, post.author.name)}
-              className="ml-1 inline-flex items-center gap-1 px-2 h-7 rounded-full text-[11px] font-bold text-muted-foreground hover:bg-accent hover:text-accent-foreground transition"
+              className="ml-1 inline-flex items-center gap-1 px-2 h-7 rounded-lg text-[11px] font-bold text-muted-foreground hover:bg-accent hover:text-accent-foreground transition"
             >
               <Reply className="h-3 w-3" /> Reply
             </button>
@@ -808,7 +808,7 @@ function ReactionButton({
     <button
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-0.5 rounded-full border transition font-bold",
+        "inline-flex items-center gap-0.5 rounded-lg border transition font-bold",
         size === "sm" ? "h-7 px-2 text-xs" : "h-8 px-3 text-xs",
         active
           ? "bg-amber-600 border-amber-600 text-white shadow"
@@ -849,14 +849,14 @@ function NewTopicDialog({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
+        className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-end sm:items-center justify-center p-4"
         onClick={onClose}
       >
         <motion.div
           initial={{ y: 30, opacity: 0, scale: 0.97 }}
           animate={{ y: 0, opacity: 1, scale: 1 }}
           exit={{ y: 20, opacity: 0, scale: 0.97 }}
-          className="w-full max-w-lg rounded-3xl bg-card border border-border shadow-2xl p-6"
+          className="w-full max-w-lg rounded-xl bg-card border border-border shadow-2xl p-6"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center gap-2 mb-3">
@@ -902,14 +902,14 @@ function NewTopicDialog({
             <Button
               variant="ghost"
               onClick={onClose}
-              className="rounded-full text-foreground"
+              className="rounded-lg text-foreground"
             >
               Cancel
             </Button>
             <Button
               onClick={submit}
               disabled={busy}
-              className="rounded-full bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-400 text-white dark:text-amber-950 font-black text-xs uppercase tracking-widest px-5 h-10"
+              className="rounded-lg bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-400 text-white dark:text-amber-950 font-black text-xs uppercase tracking-widest px-5 h-10"
             >
               {busy ? "Posting…" : "Post topic"}
             </Button>

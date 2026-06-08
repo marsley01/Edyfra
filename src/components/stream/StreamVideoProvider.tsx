@@ -180,10 +180,10 @@ function RingingOverlay({ incomingCall, ringingUser, onAccept, onReject }: Ringi
           className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-md"
           style={{ zIndex: Z.RINGING }}
         >
-          <div className="bg-zinc-900/90 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-6 shadow-2xl flex flex-col items-center text-center">
+          <div className="bg-background/80 backdrop-blur-lg border border-border rounded-xl p-6 shadow-2xl flex flex-col items-center text-center">
             <div className="relative mb-4">
-              <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full animate-pulse" />
-              <div className="w-20 h-20 rounded-full border-2 border-primary/50 overflow-hidden relative z-10 bg-zinc-800 flex items-center justify-center">
+              <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-xl animate-pulse" />
+              <div className="w-20 h-20 rounded-full border-2 border-primary/50 overflow-hidden relative z-10 bg-card flex items-center justify-center">
                 {ringingUser?.avatar ? (
                   <img src={ringingUser.avatar} alt="" className="w-full h-full object-cover" />
                 ) : (
@@ -192,10 +192,10 @@ function RingingOverlay({ incomingCall, ringingUser, onAccept, onReject }: Ringi
               </div>
             </div>
 
-            <h3 className="text-lg font-black text-white uppercase tracking-tightest">
+            <h3 className="text-lg font-black text-foreground uppercase tracking-tightest">
               Incoming Call
             </h3>
-            <p className="text-sm text-white/60 font-medium mb-8">
+            <p className="text-sm text-foreground/60 font-medium mb-8">
               {ringingUser?.name} is ready to study
             </p>
 
@@ -203,7 +203,7 @@ function RingingOverlay({ incomingCall, ringingUser, onAccept, onReject }: Ringi
               <Button
                 onClick={onReject}
                 variant="ghost"
-                className="flex-1 h-14 rounded-2xl bg-white/5 hover:bg-red-500/10 hover:text-red-500 text-white/40 transition-all border border-white/5"
+                className="flex-1 h-14 rounded-2xl bg-background/80 hover:bg-red-500/10 hover:text-red-500 text-foreground/40 transition-all border border-border"
               >
                 <PhoneOff className="h-5 w-5 mr-2" /> Decline
               </Button>

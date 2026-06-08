@@ -75,31 +75,31 @@ export function IslandExpandedPanel({
       exit={{ opacity: 0, scale: 0.92 }}
       transition={{ type: "spring", stiffness: 280, damping: 28 }}
       className={cn(
-        "relative w-[min(96vw,1200px)] h-[min(88vh,800px)] rounded-[32px] overflow-hidden",
-        "bg-[#0a0a0a] border border-white/10 shadow-[0_24px_80px_rgba(0,0,0,0.65)]",
+        "relative w-[min(96vw,1200px)] h-[min(88vh,800px)] rounded-xl overflow-hidden",
+        "bg-card border border-border shadow-[0_24px_80px_rgba(0,0,0,0.65)]",
         "flex flex-col group/expanded",
         className,
       )}
       style={{ zIndex: Z.FAB }}
     >
-      <div className="flex justify-between items-center p-4 sm:p-6 bg-gradient-to-b from-black/90 via-black/40 to-transparent z-20">
+      <div className="flex justify-between items-center p-4 sm:p-6 bg-gradient-to-b from-background/90 via-background/40 to-transparent z-20">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full">
+          <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg">
             <ShieldCheck className="h-3 w-3 text-emerald-500" />
             <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">
               Private session
             </span>
           </div>
-          <div className="h-4 w-[1px] bg-white/10" />
+          <div className="h-4 w-[1px] bg-border" />
           <div className="flex items-center gap-2">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-md bg-red-500 opacity-75" />
+              <span className="relative inline-flex rounded-md h-2 w-2 bg-red-500" />
             </span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-white">
+            <span className="text-[10px] font-black uppercase tracking-widest text-foreground">
               Live
             </span>
-            <span className="text-[10px] text-white/60 font-bold tabular-nums">
+            <span className="text-[10px] text-foreground/60 font-bold tabular-nums">
               {formatElapsed(elapsed)}
             </span>
             <IslandQualityChip quality={quality} />
@@ -110,7 +110,7 @@ export function IslandExpandedPanel({
           <button
             type="button"
             onClick={onMinimize}
-            className="inline-flex items-center gap-1.5 h-10 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-white text-[10px] font-black uppercase tracking-widest transition-colors border border-white/5"
+            className="inline-flex items-center gap-1.5 h-10 px-4 rounded-xl bg-background/80 hover:bg-background/90 text-foreground text-[10px] font-black uppercase tracking-widest transition-colors border border-border"
           >
             <Minimize2 className="h-4 w-4" /> Minimize
           </button>
@@ -122,7 +122,7 @@ export function IslandExpandedPanel({
       </div>
 
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-2xl px-6">
-        <div className="bg-zinc-900/80 backdrop-blur-3xl border border-white/10 p-4 rounded-[2rem] shadow-2xl flex items-center justify-between">
+        <div className="bg-background/80 backdrop-blur-lg border border-border p-4 rounded-xl shadow-2xl flex items-center justify-between">
           <div className="flex items-center gap-2">
             <IslandIconButton
               onClick={onToggleMic}
@@ -150,7 +150,7 @@ export function IslandExpandedPanel({
             <button
               type="button"
               onClick={onOpenParticipants}
-              className="h-9 w-9 inline-flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all"
+              className="h-9 w-9 inline-flex items-center justify-center rounded-lg bg-background/80 hover:bg-background/90 text-foreground transition-all"
               title="Participants"
               aria-label="Participants"
             >
@@ -159,7 +159,7 @@ export function IslandExpandedPanel({
             <button
               type="button"
               onClick={onOpenSettings}
-              className="h-9 w-9 inline-flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all"
+              className="h-9 w-9 inline-flex items-center justify-center rounded-lg bg-background/80 hover:bg-background/90 text-foreground transition-all"
               title="Settings"
               aria-label="Settings"
             >

@@ -35,10 +35,10 @@ export function VideoCallUI({ onLeave }: { onLeave: () => void }) {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full bg-black text-white p-8">
+    <div className="flex flex-col items-center justify-center h-full w-full bg-background text-foreground p-8">
       <div className="relative mb-8">
-        <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse" />
-        <div className="w-24 h-24 rounded-3xl bg-zinc-900 border border-white/10 flex items-center justify-center relative z-10">
+        <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-xl animate-pulse" />
+        <div className="w-24 h-24 rounded-3xl bg-card border border-border flex items-center justify-center relative z-10">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
         </div>
       </div>
@@ -78,11 +78,11 @@ function ConferenceRoom({ onLeave }: { onLeave: () => void }) {
   };
 
   return (
-    <div className="relative h-full w-full bg-[#0a0a0a] overflow-hidden flex flex-col group/room">
+    <div className="relative h-full w-full bg-background overflow-hidden flex flex-col group/room">
       {/* Top Header Bar */}
-      <div className="absolute top-0 left-0 right-0 h-16 px-6 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent z-50 transition-opacity duration-300 group-hover/room:opacity-100 opacity-0 md:opacity-100">
+      <div className="absolute top-0 left-0 right-0 h-16 px-6 flex items-center justify-between bg-gradient-to-b from-background/80 to-transparent z-50 transition-opacity duration-300 group-hover/room:opacity-100 opacity-0 md:opacity-100">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full">
+          <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg">
             <ShieldCheck className="h-3 w-3 text-emerald-500" />
             <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">
               Private study space
@@ -100,7 +100,7 @@ function ConferenceRoom({ onLeave }: { onLeave: () => void }) {
             variant="ghost"
             size="icon"
             onClick={() => setLayout(layout === "speaker" ? "grid" : "speaker")}
-            className="text-white/60 hover:text-white hover:bg-white/10 rounded-xl"
+            className="text-foreground/60 hover:text-foreground hover:bg-background/80 rounded-xl"
           >
             <LayoutGrid className="h-5 w-5" />
           </Button>
@@ -108,7 +108,7 @@ function ConferenceRoom({ onLeave }: { onLeave: () => void }) {
             variant="ghost"
             size="icon"
             onClick={toggleFullscreen}
-            className="text-white/60 hover:text-white hover:bg-white/10 rounded-xl"
+            className="text-foreground/60 hover:text-foreground hover:bg-background/80 rounded-xl"
           >
             {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
           </Button>
@@ -132,14 +132,14 @@ function ConferenceRoom({ onLeave }: { onLeave: () => void }) {
 
         {/* Sidebar for Participants */}
         {showParticipants && (
-          <div className="w-full lg:w-80 bg-zinc-900 border-l border-white/5 flex flex-col z-40">
-            <div className="p-6 border-b border-white/5 flex items-center justify-between">
-              <h3 className="text-sm font-black uppercase tracking-widest text-white">Participants</h3>
+          <div className="w-full lg:w-80 bg-card border-l border-border flex flex-col z-40">
+            <div className="p-6 border-b border-border flex items-center justify-between">
+              <h3 className="text-sm font-black uppercase tracking-widest text-foreground">Participants</h3>
               <Button 
                 variant="ghost" 
                 size="icon" 
                 onClick={() => setShowParticipants(false)}
-                className="text-white/40 hover:text-white"
+                className="text-foreground/40 hover:text-foreground"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -154,7 +154,7 @@ function ConferenceRoom({ onLeave }: { onLeave: () => void }) {
       {/* Bottom Controls Bar */}
       <div className="absolute bottom-0 left-0 right-0 p-6 z-50 pointer-events-none transition-transform duration-500 group-hover/room:translate-y-0 translate-y-2">
         <div className="max-w-4xl mx-auto pointer-events-auto">
-          <div className="bg-zinc-900/80 backdrop-blur-3xl border border-white/10 p-4 rounded-3xl shadow-2xl flex items-center justify-between">
+          <div className="bg-background/80 backdrop-blur-lg border border-border p-4 rounded-xl shadow-2xl flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
@@ -162,7 +162,7 @@ function ConferenceRoom({ onLeave }: { onLeave: () => void }) {
                 onClick={() => setShowParticipants(!showParticipants)}
                 className={cn(
                   "h-12 w-12 rounded-2xl transition-all",
-                  showParticipants ? "bg-primary text-white" : "text-white/60 hover:bg-white/5 hover:text-white"
+                  showParticipants ? "bg-primary text-primary-foreground" : "text-foreground/60 hover:bg-background/80 hover:text-foreground"
                 )}
               >
                 <Users className="h-5 w-5" />
@@ -179,7 +179,7 @@ function ConferenceRoom({ onLeave }: { onLeave: () => void }) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-12 w-12 rounded-2xl text-white/60 hover:bg-white/5 hover:text-white transition-all"
+                className="h-12 w-12 rounded-2xl text-foreground/60 hover:bg-background/80 hover:text-foreground transition-all"
               >
                 <Settings className="h-5 w-5" />
               </Button>
@@ -192,12 +192,12 @@ function ConferenceRoom({ onLeave }: { onLeave: () => void }) {
       {remoteParticipants.length === 0 && (
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
           <div className="text-center space-y-4">
-            <div className="w-20 h-20 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto animate-pulse">
+            <div className="w-20 h-20 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto animate-pulse">
               <Monitor className="h-8 w-8 text-primary" />
             </div>
             <div>
-              <p className="text-sm font-black text-white uppercase tracking-widest">Waiting for your partner...</p>
-              <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-1">
+              <p className="text-sm font-black text-foreground uppercase tracking-widest">Waiting for your partner...</p>
+              <p className="text-[10px] text-foreground/40 font-bold uppercase tracking-widest mt-1">
                 Your study session is ready
               </p>
             </div>

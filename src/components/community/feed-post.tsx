@@ -42,12 +42,12 @@ export function FeedPost({ author, content, timestamp, likes: initialLikes, sync
             <h4 className="font-semibold text-sm text-foreground">{author.name}</h4>
             <div className="flex items-center gap-2 mt-0.5">
                <span className="text-[10px] font-bold uppercase tracking-wider text-brand-accent">{author.role}</span>
-               <div className="w-1 h-1 rounded-full bg-border" />
+               <div className="w-1 h-1 rounded-sm bg-border" />
                <span className="text-[10px] font-medium text-muted-foreground">{timestamp}</span>
             </div>
           </div>
         </div>
-        <button className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-card transition-colors cursor-pointer">
+        <button className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-card transition-colors cursor-pointer">
           <MoreHorizontal className="h-4 w-4" />
         </button>
       </div>
@@ -60,7 +60,7 @@ export function FeedPost({ author, content, timestamp, likes: initialLikes, sync
         <div className="flex items-center gap-1">
            <button
              onClick={handleLike}
-             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer ${
+             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer ${
                isLiked
                  ? "bg-brand-accent/10 text-brand-accent"
                  : "text-muted-foreground hover:bg-brand-accent/5 hover:text-brand-accent"
@@ -69,16 +69,16 @@ export function FeedPost({ author, content, timestamp, likes: initialLikes, sync
              <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
              <span>{likes}</span>
            </button>
-           <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-muted-foreground hover:bg-primary/5 hover:text-primary transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer">
-             <MessageSquare className="h-4 w-4" />
-             <span>{comments}</span>
-           </button>
-           <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-muted-foreground hover:bg-primary/5 hover:text-primary transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer">
+<button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-muted-foreground hover:bg-primary/5 hover:text-primary transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer">
+              <MessageSquare className="h-4 w-4" />
+              <span>{comments}</span>
+            </button>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-muted-foreground hover:bg-primary/5 hover:text-primary transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer">
              <Repeat2 className="h-4 w-4" />
              <span>{syncs}</span>
            </button>
         </div>
-        <button className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-primary/5 hover:text-primary transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer">
+        <button className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-primary/5 hover:text-primary transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer">
           <Share2 className="h-4 w-4" />
         </button>
       </div>

@@ -19,7 +19,7 @@ export function IslandEndCallButton({
       <button
         type="button"
         onClick={onClick}
-        className="ml-0.5 inline-flex items-center justify-center h-7 w-7 rounded-full bg-red-500 hover:bg-red-600 text-white transition-colors shadow-[0_0_10px_rgba(239,68,68,0.5)]"
+        className="ml-0.5 inline-flex items-center justify-center h-7 w-7 rounded-lg bg-red-500 hover:bg-red-600 text-white transition-colors shadow-[0_0_10px_rgba(239,68,68,0.5)]"
         aria-label={label}
       >
         <PhoneOff className="h-3.5 w-3.5" />

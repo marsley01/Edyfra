@@ -374,7 +374,7 @@ export function MediaDiagnostic({ trigger = 0, onResolved }: MediaDiagnosticProp
                   size="sm"
                   onClick={runLiveTest}
                   disabled={state.isRetesting}
-                  className="h-8 rounded-full text-[10px] gap-1.5 bg-red-500 hover:bg-red-600 text-white"
+                  className="h-8 rounded-lg text-[10px] gap-1.5 bg-red-500 hover:bg-red-600 text-white"
                 >
                   {state.isRetesting ? (
                     <Loader2 className="h-3 w-3 animate-spin" />

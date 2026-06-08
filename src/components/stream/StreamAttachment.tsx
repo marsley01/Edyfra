@@ -148,7 +148,7 @@ function AudioAttachment({ att }: { att: StreamAttachmentLike }) {
           disabled={errored}
           aria-label={playing ? "Pause" : "Play"}
           className={cn(
-            "h-11 w-11 rounded-full flex items-center justify-center shrink-0 transition-all",
+            "h-11 w-11 rounded-lg flex items-center justify-center shrink-0 transition-all",
             errored
               ? "bg-red-500/15 text-red-500 cursor-not-allowed"
               : "bg-gradient-to-br from-cyan-500 to-violet-500 text-white shadow-lg shadow-cyan-500/30 hover:scale-105 active:scale-95"
@@ -166,7 +166,7 @@ function AudioAttachment({ att }: { att: StreamAttachmentLike }) {
           </div>
           <div
             onClick={onSeek}
-            className="mt-1.5 h-1.5 rounded-full bg-secondary cursor-pointer overflow-hidden"
+            className="mt-1.5 h-1.5 rounded-lg bg-secondary cursor-pointer overflow-hidden"
           >
             <div
               className="h-full bg-gradient-to-r from-cyan-500 to-violet-500 transition-[width] duration-100"
@@ -185,7 +185,7 @@ function AudioAttachment({ att }: { att: StreamAttachmentLike }) {
             download={att.title || att.name}
             target="_blank"
             rel="noreferrer"
-            className="h-9 w-9 rounded-full bg-secondary hover:bg-secondary/70 flex items-center justify-center shrink-0"
+            className="h-9 w-9 rounded-lg bg-secondary hover:bg-secondary/70 flex items-center justify-center shrink-0"
             aria-label="Download"
             title="Download"
           >
@@ -207,7 +207,7 @@ function AudioAttachment({ att }: { att: StreamAttachmentLike }) {
               download={att.title || `${baseName}.mp3`}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500 text-white text-[10px] font-black uppercase tracking-widest shrink-0"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-500 text-white text-[10px] font-black uppercase tracking-widest shrink-0"
             >
               <Download className="h-3 w-3" /> Download
             </a>
@@ -281,7 +281,7 @@ function VideoAttachment({ att }: { att: StreamAttachmentLike }) {
         )}
 
         <div className="absolute top-2 right-2 flex items-center gap-1.5">
-          <span className="px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-widest">
+          <span className="px-2 py-0.5 rounded-lg bg-background/80 backdrop-blur-md text-foreground text-[9px] font-black uppercase tracking-widest">
             {att.title?.split(".").pop() || mime.split("/")[1] || "video"}
           </span>
         </div>
@@ -303,7 +303,7 @@ function VideoAttachment({ att }: { att: StreamAttachmentLike }) {
             download={att.title || att.name}
             target="_blank"
             rel="noreferrer"
-            className="h-9 px-3 rounded-full bg-secondary hover:bg-secondary/70 inline-flex items-center gap-1.5 text-xs font-bold shrink-0"
+            className="h-9 px-3 rounded-lg bg-secondary hover:bg-secondary/70 inline-flex items-center gap-1.5 text-xs font-bold shrink-0"
           >
             <Download className="h-3.5 w-3.5" /> Save
           </a>
@@ -353,7 +353,7 @@ function FileAttachment({ att }: { att: StreamAttachmentLike }) {
           {formatBytes(att.file_size)}{att.mime_type ? ` · ${att.mime_type}` : ""}
         </p>
       </div>
-      <div className="h-9 w-9 rounded-full bg-secondary hover:bg-secondary/70 flex items-center justify-center shrink-0">
+      <div className="h-9 w-9 rounded-lg bg-secondary hover:bg-secondary/70 flex items-center justify-center shrink-0">
         <Download className="h-4 w-4" />
       </div>
     </a>

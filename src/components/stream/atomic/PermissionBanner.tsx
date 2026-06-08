@@ -18,7 +18,7 @@ export function PermissionBanner({
         size="sm"
         variant="outline"
         onClick={onAllow}
-        className="h-7 rounded-full text-[10px] font-black uppercase tracking-widest border-amber-500/40 text-amber-700 dark:text-amber-200 hover:bg-amber-500/15 px-3"
+        className="h-7 rounded-lg text-[10px] font-black uppercase tracking-widest border-amber-500/40 text-amber-700 dark:text-amber-200 hover:bg-amber-500/15 px-3"
       >
         Allow
       </Button>

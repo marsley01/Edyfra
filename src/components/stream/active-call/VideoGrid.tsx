@@ -23,7 +23,7 @@ export function VideoGrid() {
   if (participants.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center text-center text-white/70 max-w-sm mx-auto space-y-3">
-        <div className="w-16 h-16 rounded-full border-2 border-cyan-500/40 bg-cyan-500/10 animate-pulse" />
+        <div className="w-16 h-16 rounded-lg border-2 border-cyan-500/40 bg-cyan-500/10 animate-pulse" />
         <p className="text-sm font-bold">Connecting you to the room…</p>
         <p className="text-[11px] text-white/40 uppercase tracking-widest font-bold">
           Hang tight

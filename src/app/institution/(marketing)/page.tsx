@@ -147,7 +147,7 @@ function HeroVideo() {
       <motion.div
         animate={{ y: [0, -14, 0] }}
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-[10%] right-[6%] z-20 hidden lg:flex items-center gap-3 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-2xl px-4 py-3 shadow-2xl"
+        className="absolute top-[10%] right-[6%] z-20 hidden lg:flex items-center gap-3 bg-white/[0.03] backdrop-blur-lg border border-white/10 rounded-xl px-4 py-3 shadow-2xl"
       >
         <div className="w-9 h-9 rounded-xl bg-[#3730A3]/30 flex items-center justify-center">
           <Activity className="h-4 w-4 text-[#818cf8]" />
@@ -161,7 +161,7 @@ function HeroVideo() {
       <motion.div
         animate={{ y: [0, 12, 0] }}
         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.7 }}
-        className="absolute bottom-[20%] left-[5%] z-20 hidden lg:flex items-center gap-3 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-2xl px-4 py-3 shadow-2xl"
+        className="absolute bottom-[20%] left-[5%] z-20 hidden lg:flex items-center gap-3 bg-white/[0.03] backdrop-blur-lg border border-white/10 rounded-xl px-4 py-3 shadow-2xl"
       >
         <div className="w-9 h-9 rounded-xl bg-emerald-500/20 flex items-center justify-center">
           <Database className="h-4 w-4 text-emerald-400" />
@@ -182,7 +182,7 @@ function HeroVideo() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-          className="backdrop-blur-2xl bg-white/[0.05] border border-white/[0.10] rounded-[2.5rem] p-8 sm:p-12 md:p-16 shadow-[0_0_80px_-20px_rgba(55,48,163,0.15)]"
+          className="backdrop-blur-lg bg-white/[0.02] border border-white/10 rounded-2xl p-8 sm:p-12 md:p-16 shadow-[0_0_80px_-20px_rgba(55,48,163,0.15)]"
         >
           <div className="space-y-8 text-center">
             {/* Eyebrow badge */}
@@ -191,7 +191,7 @@ function HeroVideo() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="inline-flex items-center gap-2 bg-white/[0.07] border border-white/[0.10] rounded-full px-4 py-1.5"
+              className="inline-flex items-center gap-2 bg-white/[0.03] border border-white/10 rounded-lg px-4 py-2"
             >
               <Cpu className="h-3.5 w-3.5 text-[#818cf8]" />
               <span className="text-[10px] font-bold uppercase tracking-widest text-white/70">
@@ -234,7 +234,7 @@ function HeroVideo() {
               className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
             >
               <Link href="/institution/signup">
-                <Button className="group h-14 px-10 rounded-full bg-white text-slate-900 hover:bg-white/90 font-bold text-sm transition-all active:scale-95 shadow-2xl flex items-center gap-2">
+                <Button className="group h-14 px-10 rounded-xl bg-white text-slate-900 hover:bg-white/90 font-bold text-sm transition-all active:scale-95 shadow-2xl flex items-center gap-2">
                   Apply for Your School
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
@@ -242,7 +242,7 @@ function HeroVideo() {
               <Link href="/contact">
                 <Button
                   variant="outline"
-                  className="h-14 px-10 rounded-full border-white/20 text-white hover:bg-white/10 font-bold text-sm transition-all flex items-center gap-2"
+                  className="h-14 px-10 rounded-xl border-white/20 text-white hover:bg-white/10 font-bold text-sm transition-all flex items-center gap-2"
                 >
                   Book a Demo
                 </Button>

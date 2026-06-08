@@ -8,7 +8,7 @@ export function IslandQualityChip({ quality }: { quality: QualityTier }) {
   return (
     <span
       className={cn(
-        "hidden md:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest",
+        "hidden md:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest",
         quality === "good" && "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30",
         quality === "ok" && "bg-yellow-500/15 text-yellow-300 border border-yellow-500/30",
         quality === "bad" && "bg-red-500/15 text-red-300 border border-red-500/30",

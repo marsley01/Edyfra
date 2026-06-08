@@ -59,7 +59,7 @@ export function CallTopBar({
           <button
             type="button"
             onClick={onClose}
-            className="h-8 w-8 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white flex items-center justify-center transition-colors"
+            className="h-8 w-8 rounded-lg bg-background/80 hover:bg-background/90 text-foreground/70 hover:text-foreground flex items-center justify-center transition-colors"
             title="Minimise call"
             aria-label="Minimise call"
           >

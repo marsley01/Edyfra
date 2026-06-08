@@ -26,7 +26,7 @@ export function ChatErrorState({
       <Button
         onClick={onRetry}
         disabled={isRetrying}
-        className="h-12 px-8 rounded-full bg-primary hover:bg-primary/90 text-white font-black text-xs tracking-widest uppercase"
+        className="h-12 px-8 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-black text-xs tracking-widest uppercase"
       >
         {isRetrying ? <Loader2 className="h-4 w-4 animate-spin" /> : "Retry Connection"}
       </Button>

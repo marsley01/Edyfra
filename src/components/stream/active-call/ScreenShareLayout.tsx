@@ -47,7 +47,7 @@ export function ScreenShareLayout() {
         <button
           type="button"
           onClick={toggleExpanded}
-          className="absolute top-3 right-3 h-9 w-9 rounded-lg bg-black/60 hover:bg-black/80 text-white/80 hover:text-white flex items-center justify-center transition-colors z-10"
+          className="absolute top-3 right-3 h-9 w-9 rounded-lg bg-background/80 hover:bg-background/90 text-foreground/80 hover:text-foreground flex items-center justify-center transition-colors z-10"
           aria-label={expanded ? "Restore screen share layout" : "Expand screen share"}
         >
           {expanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}

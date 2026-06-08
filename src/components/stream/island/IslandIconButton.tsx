@@ -26,9 +26,9 @@ export function IslandIconButton({
       aria-label={label}
       className={cn(
         dim,
-        "inline-flex items-center justify-center rounded-full transition-all",
+        "inline-flex items-center justify-center rounded-lg transition-all",
         active
-          ? "bg-white/10 hover:bg-white/20 text-white"
+          ? "bg-background/80 hover:bg-background/90 text-foreground"
           : "bg-red-500/15 hover:bg-red-500/25 text-red-300 border border-red-500/30",
       )}
     >

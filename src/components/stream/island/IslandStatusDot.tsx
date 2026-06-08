@@ -14,8 +14,8 @@ export function IslandStatusDot({ isJoined, isJoining }: IslandStatusDotProps) {
   if (isJoined) {
     return (
       <>
-        <span className="animate-ping absolute inline-flex h-2.5 w-2.5 rounded-full bg-red-500 opacity-75" />
-        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.7)]" />
+        <span className="animate-ping absolute inline-flex h-2.5 w-2.5 rounded-md bg-red-500 opacity-75" />
+        <span className="relative inline-flex rounded-md h-2.5 w-2.5 bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.7)]" />
       </>
     );
   }

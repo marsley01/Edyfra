@@ -68,7 +68,7 @@ export function HomeCTA() {
       <motion.div
         animate={{ y: [0, -14, 0] }}
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-[12%] right-[8%] z-20 hidden lg:flex items-center gap-2.5 bg-white/10 backdrop-blur-2xl border border-white/15 rounded-2xl px-4 py-2.5 shadow-2xl"
+        className="absolute top-[12%] right-[8%] z-20 hidden lg:flex items-center gap-2.5 bg-white/[0.03] backdrop-blur-lg border border-white/10 rounded-xl px-4 py-2.5 shadow-2xl"
       >
         <div className="w-8 h-8 rounded-xl bg-emerald-500/20 flex items-center justify-center">
           <Play className="h-4 w-4 text-emerald-400" />
@@ -82,7 +82,7 @@ export function HomeCTA() {
       <motion.div
         animate={{ y: [0, 12, 0] }}
         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.7 }}
-        className="absolute bottom-[18%] left-[6%] z-20 hidden lg:flex items-center gap-2.5 bg-white/10 backdrop-blur-2xl border border-white/15 rounded-2xl px-4 py-2.5 shadow-2xl"
+        className="absolute bottom-[18%] left-[6%] z-20 hidden lg:flex items-center gap-2.5 bg-white/[0.03] backdrop-blur-lg border border-white/10 rounded-xl px-4 py-2.5 shadow-2xl"
       >
         <div className="flex -space-x-2">
           {["#00F0FF", "#9D4EDD", "#E07A5F", "#39FF14"].map((c, i) => (
@@ -111,7 +111,7 @@ export function HomeCTA() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-          className="backdrop-blur-2xl bg-white/[0.06] border border-white/[0.12] rounded-[2.5rem] p-8 sm:p-12 md:p-16 shadow-[0_0_80px_-20px_rgba(0,0,0,0.3)]"
+          className="backdrop-blur-lg bg-white/[0.02] border border-white/10 rounded-2xl p-8 sm:p-12 md:p-16 shadow-[0_0_80px_-20px_rgba(0,0,0,0.3)]"
         >
           <div className="space-y-8 text-center">
             {/* Eyebrow badge */}
@@ -120,7 +120,7 @@ export function HomeCTA() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="inline-flex items-center gap-2 bg-white/[0.08] border border-white/[0.12] rounded-full px-4 py-1.5"
+              className="inline-flex items-center gap-2 bg-white/[0.03] border border-white/10 rounded-lg px-4 py-2"
             >
               <Sparkles className="h-3.5 w-3.5 text-brand-accent" />
               <span className="text-[10px] font-bold uppercase tracking-widest text-white/80">
@@ -164,7 +164,7 @@ export function HomeCTA() {
               className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
             >
               <Link href="/signup">
-                <Button className="group h-14 px-10 rounded-full bg-white text-foreground hover:bg-white/90 font-bold text-sm transition-all active:scale-95 shadow-2xl flex items-center gap-2">
+                <Button className="group h-14 px-10 rounded-xl bg-white text-foreground hover:bg-white/90 font-bold text-sm transition-all active:scale-95 shadow-2xl flex items-center gap-2">
                   Create My Study Space
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
@@ -172,7 +172,7 @@ export function HomeCTA() {
               <Link href="/about">
                 <Button
                   variant="outline"
-                  className="h-14 px-10 rounded-full border-white/20 text-white hover:bg-white/10 font-bold text-sm transition-all flex items-center gap-2"
+                  className="h-14 px-10 rounded-xl border-white/20 text-white hover:bg-white/10 font-bold text-sm transition-all flex items-center gap-2"
                 >
                   <Play className="h-4 w-4" />
                   See The Mission

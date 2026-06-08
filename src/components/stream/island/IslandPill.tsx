@@ -77,9 +77,9 @@ export function IslandPill({
       whileTap={isJoined ? { scale: 0.97 } : undefined}
       className={cn(
         "group relative flex items-center gap-2 sm:gap-3 h-11 px-3 sm:px-4",
-        "rounded-[22px] bg-black/95 backdrop-blur-2xl",
-        "border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.06)]",
-        "text-white select-none touch-none",
+        "rounded-[22px] bg-card/95 backdrop-blur-lg",
+        "border border-border shadow-[0_8px_32px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.06)]",
+        "text-foreground select-none touch-none",
         isJoined ? "cursor-pointer" : "cursor-default opacity-95",
         className,
       )}
@@ -90,15 +90,15 @@ export function IslandPill({
         <IslandStatusDot isJoined={isJoined} isJoining={isJoining} />
       </span>
 
-      <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white">
+      <span className="text-[10px] font-black uppercase tracking-[0.18em] text-foreground">
         {isJoined ? "Live" : isJoining ? "Connecting" : "Idle"}
       </span>
 
-      <span className="h-3.5 w-px bg-white/15" />
+      <span className="h-3.5 w-px bg-border" />
       <IslandTimer isJoined={isJoined} elapsed={elapsed} />
-      <span className="h-3.5 w-px bg-white/15" />
+      <span className="h-3.5 w-px bg-border" />
 
-      <div className="flex items-center gap-1 text-[10px] font-bold text-white/70">
+      <div className="flex items-center gap-1 text-[10px] font-bold text-foreground/70">
         <span className="tabular-nums">{participants}</span>
         <span className="hidden sm:inline">in call</span>
       </div>
@@ -106,7 +106,7 @@ export function IslandPill({
       {isJoined && <IslandQualityChip quality={quality} />}
       {isRecording && <IslandRecordingChip />}
 
-      <span className="h-3.5 w-px bg-white/15" />
+      <span className="h-3.5 w-px bg-border" />
 
       <IslandQuickControls
         isMuted={isMuted}

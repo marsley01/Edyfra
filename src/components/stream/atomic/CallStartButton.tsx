@@ -47,14 +47,14 @@ export function CallStartButton({
       variant={variant}
       size="sm"
       className={cn(
-        "rounded-full transition-all h-10 px-5 gap-2 font-black text-[10px] uppercase tracking-widest",
+        "rounded-xl transition-all h-10 px-5 gap-2 font-black text-[10px] uppercase tracking-widest",
         inCall
           ? "bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_20px_rgba(16,185,129,0.45)]"
           : hasActiveCall
             ? "bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30 animate-pulse"
             : permDenied
               ? "bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500/20"
-              : "bg-secondary hover:bg-primary hover:text-white border-white/5",
+              : "bg-secondary hover:bg-primary hover:text-primary-foreground border-border",
       )}
     >
       {starting ? (

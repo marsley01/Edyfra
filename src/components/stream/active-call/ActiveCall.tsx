@@ -120,9 +120,9 @@ function JoiningPlaceholder() {
   return (
     <div className="flex flex-col items-center justify-center text-center text-white/80 max-w-sm mx-auto space-y-4">
       <div className="relative">
-        <div className="absolute inset-0 bg-cyan-500/30 blur-3xl rounded-full animate-pulse" />
-        <div className="w-20 h-20 rounded-full border-2 border-cyan-400/40 bg-cyan-500/10 flex items-center justify-center relative">
-          <div className="w-3 h-3 rounded-full bg-cyan-400 animate-ping" />
+        <div className="absolute inset-0 bg-cyan-500/30 blur-3xl rounded-xl animate-pulse" />
+        <div className="w-20 h-20 rounded-xl border-2 border-cyan-400/40 bg-cyan-500/10 flex items-center justify-center relative">
+          <div className="w-3 h-3 rounded-md bg-cyan-400 animate-ping" />
         </div>
       </div>
       <p className="text-base font-black uppercase tracking-widest">Joining…</p>

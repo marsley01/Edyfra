@@ -33,12 +33,12 @@ function WaitingForOthers({
   local: any;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center text-center text-white/80 max-w-md mx-auto">
-      <div className="relative w-32 h-32 rounded-full overflow-hidden border-2 border-primary/50 shadow-[0_0_30px_rgba(6,182,212,0.4)] mb-4 bg-zinc-900">
+    <div className="flex flex-col items-center justify-center text-center text-foreground/80 max-w-md mx-auto">
+      <div className="relative w-32 h-32 rounded-full overflow-hidden border-2 border-primary/50 shadow-[0_0_30px_rgba(6,182,212,0.4)] mb-4 bg-card">
         {local && <ParticipantView participant={local} />}
       </div>
-      <p className="text-sm font-bold">You&apos;re live</p>
-      <p className="text-[11px] text-white/50 mt-1 flex items-center justify-center gap-1">
+      <p className="text-sm font-bold text-foreground">You&apos;re live</p>
+      <p className="text-[11px] text-foreground/50 mt-1 flex items-center justify-center gap-1">
         Waiting for your partner to join the conversation…
       </p>
     </div>
