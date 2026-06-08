@@ -54,6 +54,7 @@ export function useStreamChatInit({
 
   const clientRef = useRef<StreamChat | null>(null);
   const initOnceRef = useRef<string | null>(null);
+  const connectingRef = useRef(false);
 
   // Stable serialization for memberIds in the dep array
   const memberIdsKey = JSON.stringify(memberIds);
@@ -78,13 +79,18 @@ export function useStreamChatInit({
         }
       };
 
-      if (client.userID !== userId) {
-        const token = await getToken();
-        await client.connectUser(
-          { id: userId, name: userName, image: userImage || undefined },
-          token,
-        );
-        console.log(`[useStreamChatInit] Chat connected: ${userId}`);
+      if (client.userID !== userId && !connectingRef.current) {
+        connectingRef.current = true;
+        try {
+          const token = await getToken();
+          await client.connectUser(
+            { id: userId, name: userName, image: userImage || undefined },
+            token,
+          );
+          console.log(`[useStreamChatInit] Chat connected: ${userId}`);
+        } finally {
+          connectingRef.current = false;
+        }
       }
 
       try {

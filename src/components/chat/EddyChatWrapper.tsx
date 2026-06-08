@@ -1,10 +1,6 @@
 "use client";
 
-import dynamic from "next/dynamic";
-
-const EddyChat = dynamic(() => import("@/components/chat/EddyChat"), {
-  ssr: false,
-});
+import EddyChat from "@/components/chat/EddyChat";
 
 export default function EddyChatWrapper() {
   return <EddyChat />;

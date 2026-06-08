@@ -29,20 +29,23 @@ async function refresh(): Promise<void> {
       getLatestNotification(),
     ]);
 
-    if (cached && latest && cached.latestId && cached.latestId !== latest.id) {
-      const createdAge = Date.now() - new Date(latest.createdAt as any).getTime();
-      if (createdAge < 5 * 60 * 1000 && "Notification" in window) {
-        if (Notification.permission === "granted") {
-          try {
-            new Notification(latest.title || "New notification", {
-              body: latest.body || "",
-              icon: "/icons/icon-192.png",
-              tag: `edyfra-${latest.id}`,
-            });
-          } catch {}
+    if (cached && latest) {
+      const isNew = !cached.latestId || cached.latestId !== latest.id;
+      if (isNew) {
+        const createdAge = Date.now() - new Date(latest.createdAt as any).getTime();
+        if (createdAge < 5 * 60 * 1000 && "Notification" in window) {
+          if (Notification.permission === "granted") {
+            try {
+              new Notification(latest.title || "New notification", {
+                body: latest.body || "",
+                icon: "/icons/icon-192.png",
+                tag: `edyfra-${latest.id}`,
+              });
+            } catch {}
+          }
+          const audio = new Audio("/sounds/popcorn.mp3");
+          audio.play().catch(() => {});
         }
-        const audio = new Audio("/sounds/popcorn.mp3");
-        audio.play().catch(() => {});
       }
     }
 

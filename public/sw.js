@@ -63,35 +63,35 @@ self.addEventListener("fetch", (event) => {
 });
 
 self.addEventListener("push", (event) => {
-  if (!event.data) return;
+  event.waitUntil((async () => {
+    let data = {};
+    let title = "Edyfra";
 
-  let data = {};
-  try {
-    data = event.data.json();
-  } catch {
-    data = { title: "Edyfra", body: event.data.text() };
-  }
+    if (event.data) {
+      try {
+        data = event.data.json();
+        title = data.title || "Edyfra";
+      } catch {
+        data = { body: event.data.text() };
+      }
+    }
 
-  const options = {
-    body: data.body || "New notification from Edyfra",
-    icon: "/icons/icon-192.png",
-    badge: "/icons/icon-192.png",
-    vibrate: [200, 100, 200],
-    tag: data.tag || "edyfra-notification",
-    renotify: true,
-    requireInteraction: false,
-    data: {
-      url: data.url || "/",
-      id: data.id,
-    },
-  };
+    const id = data.id || Date.now().toString();
 
-  event.waitUntil(
-    self.registration.showNotification(
-      data.title || "Edyfra",
-      options
-    )
-  );
+    await self.registration.showNotification(title, {
+      body: data.body || "You have a new update!",
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      vibrate: [200, 100, 200],
+      tag: "edyfra-" + id,
+      renotify: true,
+      requireInteraction: false,
+      data: {
+        url: data.url || "/",
+        id: id,
+      },
+    });
+  })());
 });
 
 self.addEventListener("notificationclick", (event) => {

@@ -14,6 +14,8 @@ interface UseCallSessionParams {
   videoClient: StreamVideoClient | null;
   setActiveCall: (call: Call | null) => void;
   onRequestPermissions: () => Promise<boolean>;
+  /** Active call from the provider context — sync state if already joined. */
+  providerActiveCall?: Call | null;
 }
 
 interface UseCallSessionReturn {
@@ -42,10 +44,6 @@ interface UseCallSessionReturn {
  *     call.ended / call.rejected events scoped to channelId.
  *   • startOrJoinCall: getOrCreate with 1080p settings, then join.
  *   • leaveCall: graceful leave + local state reset.
- *
- * Why a hook: the call logic is referenced by both the chat room AND the
- * StreamVideoProvider's global ringing UI. Once we lift this into a hook,
- * the global ringing path can call the same `startOrJoinCall` and stay in sync.
  */
 export function useCallSession({
   channelId,
@@ -54,6 +52,7 @@ export function useCallSession({
   videoClient,
   setActiveCall,
   onRequestPermissions,
+  providerActiveCall,
 }: UseCallSessionParams): UseCallSessionReturn {
   const [callState, setCallState] = useState<CallState>("idle");
   const [hasActiveCall, setHasActiveCall] = useState(false);
@@ -61,15 +60,28 @@ export function useCallSession({
   const activeCallRef = useRef<Call | null>(null);
   const [activeCall, setActiveCallState] = useState<Call | null>(null);
 
-  // Keep the ref in sync so cleanup / global event handlers never see a stale value
-  const setCall = useCallback(
-    (call: Call | null) => {
-      activeCallRef.current = call;
-      setActiveCallState(call);
-      setActiveCall(call);
-    },
-    [setActiveCall],
-  );
+  // Stabilize setActiveCall via ref so the effect below never re-subscribes.
+  const setActiveCallRef = useRef(setActiveCall);
+  setActiveCallRef.current = setActiveCall;
+
+  const setCall = useCallback((call: Call | null) => {
+    activeCallRef.current = call;
+    setActiveCallState(call);
+    setActiveCallRef.current(call);
+  }, []);
+
+  // Sync state if provider already has an active call for this channel
+  // (e.g. user accepted an incoming ring and navigated to this room).
+  useEffect(() => {
+    if (activeCallRef.current) return;
+    if (!providerActiveCall || !channelId) return;
+    if (String(providerActiveCall.cid ?? providerActiveCall.id).includes(channelId)) {
+      activeCallRef.current = providerActiveCall;
+      setActiveCallState(providerActiveCall);
+      setCallState("joined");
+      setHasActiveCall(true);
+    }
+  }, [providerActiveCall, channelId]);
 
   // ─── Listen for global call events on the video client ───────────────────
   useEffect(() => {
@@ -128,15 +140,24 @@ export function useCallSession({
       return;
     }
 
-    try {
-      const call = videoClient.call("default", channelId);
+    const call = videoClient.call("default", channelId);
+    const otherMembers = (memberIds || [])
+      .filter((m) => m && m !== userId)
+      .map((id) => ({ user_id: id }));
 
-      const otherMembers = (memberIds || [])
-        .filter((m) => m && m !== userId)
-        .map((id) => ({ user_id: id }));
+    try {
+      // Check if call already exists before deciding to ring.
+      // Prevents both users from ringing each other when they join simultaneously.
+      let callExists = false;
+      try {
+        const existing = await call.get();
+        callExists = !!existing;
+      } catch {
+        /* call doesn't exist yet — first joiner */
+      }
 
       await call.getOrCreate({
-        ring: true,
+        ring: !callExists,
         data: {
           members: [{ user_id: userId, role: "admin" }, ...otherMembers],
           custom: { startedBy: userId },
@@ -159,6 +180,8 @@ export function useCallSession({
       console.log(`[useCallSession] Joined call: ${channelId}`);
     } catch (err) {
       console.error("[useCallSession] startOrJoinCall failed:", err);
+      // Clean up server-side call if getOrCreate succeeded but join failed
+      try { await call.leave(); } catch { /* best-effort cleanup */ }
       setCallState("error");
       setCall(null);
       const message = err instanceof Error ? err.message : "Check your connection and try again.";

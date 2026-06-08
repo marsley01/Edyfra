@@ -33,48 +33,52 @@ export function FeedPost({ author, content, timestamp, likes: initialLikes, sync
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-6 md:p-8 rounded-[2.5rem] bg-secondary border border-border/50 space-y-6 hover:bg-background hover:shadow-2xl hover:translate-y-[-2px] transition-all duration-500"
+      className="p-6 md:p-8 rounded-2xl bg-card border border-border/60 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">
           <AvatarPremium seed={author.id} src={author.avatar} size="md" name={author.name} />
           <div>
-            <h4 className="font-black text-sm tracking-tight">{author.name}</h4>
-            <div className="flex items-center gap-2">
-               <span className="text-[9px] font-black uppercase tracking-widest text-primary">{author.role}</span>
+            <h4 className="font-semibold text-sm text-foreground">{author.name}</h4>
+            <div className="flex items-center gap-2 mt-0.5">
+               <span className="text-[10px] font-bold uppercase tracking-wider text-brand-accent">{author.role}</span>
                <div className="w-1 h-1 rounded-full bg-border" />
-               <span className="text-[9px] font-bold text-muted-foreground uppercase">{timestamp}</span>
+               <span className="text-[10px] font-medium text-muted-foreground">{timestamp}</span>
             </div>
           </div>
         </div>
-        <Button variant="ghost" size="icon" className="rounded-full text-muted-foreground">
+        <button className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-card transition-colors cursor-pointer">
           <MoreHorizontal className="h-4 w-4" />
-        </Button>
+        </button>
       </div>
 
-      <p className="text-lg font-medium leading-relaxed text-foreground/90">
+      <p className="text-base font-normal leading-relaxed text-foreground/85 mt-5">
         {content}
       </p>
 
-      <div className="pt-6 border-t border-border/50 flex items-center justify-between">
-        <div className="flex items-center gap-1 md:gap-4">
-           <button 
+      <div className="mt-5 pt-4 border-t border-border/40 flex items-center justify-between">
+        <div className="flex items-center gap-1">
+           <button
              onClick={handleLike}
-             className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${isLiked ? "bg-red-500/10 text-red-500" : "hover:bg-background text-muted-foreground"}`}
+             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer ${
+               isLiked
+                 ? "bg-brand-accent/10 text-brand-accent"
+                 : "text-muted-foreground hover:bg-brand-accent/5 hover:text-brand-accent"
+             }`}
            >
              <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
-             <span className="text-[10px] font-black uppercase tracking-widest">{likes}</span>
+             <span>{likes}</span>
            </button>
-           <button className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-background text-muted-foreground transition-all">
+           <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-muted-foreground hover:bg-primary/5 hover:text-primary transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer">
              <MessageSquare className="h-4 w-4" />
-             <span className="text-[10px] font-black uppercase tracking-widest">{comments}</span>
+             <span>{comments}</span>
            </button>
-           <button className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-background text-muted-foreground transition-all">
+           <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-muted-foreground hover:bg-primary/5 hover:text-primary transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer">
              <Repeat2 className="h-4 w-4" />
-             <span className="text-[10px] font-black uppercase tracking-widest">{syncs}</span>
+             <span>{syncs}</span>
            </button>
         </div>
-        <button className="p-2 rounded-full hover:bg-background text-muted-foreground transition-all">
+        <button className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-primary/5 hover:text-primary transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer">
           <Share2 className="h-4 w-4" />
         </button>
       </div>

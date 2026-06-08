@@ -35,11 +35,18 @@ export const metadata: Metadata = {
   siteName: "Edyfra",
   title: "Edyfra — Kenya's Institutional Study Platform",
   description: "AI-powered tutor matching, live study rooms, and institutional analytics for Kenyan scholars.",
+  images: [{
+    url: "/og-image.png",
+    width: 1200,
+    height: 630,
+    alt: "Edyfra — Kenya's Institutional Study Platform",
+  }],
 },
   twitter: {
     card: "summary_large_image",
     title: "Edyfra — Kenya's Institutional Study Platform",
     description: "Connect with verified tutors across Kenya. Study smarter.",
+    images: ["/og-image.png"],
   },
   robots: {
     index: true,

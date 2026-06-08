@@ -19,14 +19,10 @@ import {
   Inbox,
   Wallet,
   ChevronsUpDown,
-  Search,
   X,
-  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { getUserData } from "@/app/actions/user";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -71,15 +67,15 @@ export function TutorSidebar({ user, onClose }: { user: User; onClose?: () => vo
   return (
     <aside
       className={cn(
-        "flex flex-col bg-background border-r border-border transition-all duration-200",
+        "flex flex-col bg-card border-r border-border/60 transition-all duration-200",
         onClose ? "h-full w-full" : "w-64 h-[calc(100vh-5rem)] sticky top-20 hidden lg:flex",
       )}
     >
       {onClose && (
-        <div className="flex justify-end p-4 lg:hidden">
+        <div className="flex justify-end p-4">
           <button
             onClick={onClose}
-            className="p-2 rounded-xl hover:bg-secondary/80 transition-colors"
+            className="p-2 rounded-xl hover:bg-secondary/80 transition-colors cursor-pointer"
             aria-label="Close menu"
           >
             <X className="h-6 w-6" />
@@ -87,48 +83,28 @@ export function TutorSidebar({ user, onClose }: { user: User; onClose?: () => vo
         </div>
       )}
 
-      {/* Brand row */}
-      <div className="px-4 py-3 border-b border-border/50">
-        <Link
-          href="/tutor"
-          onClick={onClose}
-          className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-secondary/80 transition-all cursor-pointer group active:scale-[0.98]"
-        >
-          <span className="relative h-9 w-9 inline-flex items-center justify-center rounded-xl overflow-hidden ring-1 ring-border shadow-lg">
+      {/* Brand header */}
+      <div className="p-5 pb-3">
+        <div className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-secondary/60 transition-all cursor-pointer group">
+          <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center shadow-sm">
             <Image
               src="/image.png"
-              alt="Edyfra Logo"
-              width={36}
-              height={36}
-              className="h-9 w-9 object-cover"
+              alt="Edyfra"
+              width={28}
+              height={28}
+              className="rounded-lg object-cover"
               priority
             />
-            <span className="absolute inset-0 bg-gradient-to-tr from-cyan-400/0 via-cyan-400/0 to-violet-500/30 group-hover:opacity-100 opacity-0 transition-opacity" />
-          </span>
-          <div className="flex-1 min-w-0">
-            <span className="text-xl font-black truncate tracking-tighter">Edyfra</span>
           </div>
-          <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors" />
-        </Link>
-      </div>
-
-      {/* Search */}
-      <div className="px-4 py-3">
-        <div className="relative group">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-focus-within:text-foreground transition-colors" />
-          <input
-            type="text"
-            placeholder="Find..."
-            className="w-full bg-secondary/30 hover:bg-secondary/50 border border-border/50 rounded-lg py-1.5 pl-9 pr-8 text-[13px] focus:outline-none focus:ring-1 focus:ring-primary/20 focus:bg-secondary/50 transition-all placeholder:text-muted-foreground/60"
-          />
-          <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4.5 px-1.5 rounded bg-background border border-border/50 text-[9px] font-bold text-muted-foreground/60 shadow-sm">
-            F
-          </kbd>
+          <div className="flex-1 min-w-0">
+            <span className="text-base font-bold tracking-tight text-foreground">Edyfra</span>
+          </div>
+          <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground/40" />
         </div>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto scrollbar-none">
+      {/* Nav — rounded card grouping */}
+      <nav className="flex-1 px-3 pb-2 overflow-y-auto scrollbar-none space-y-1">
         {navItems.map(({ href, label, icon: Icon, showCount }) => {
           const isActive = pathname === href;
           return (
@@ -137,81 +113,72 @@ export function TutorSidebar({ user, onClose }: { user: User; onClose?: () => vo
               href={href}
               onClick={onClose}
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 group relative",
+                "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group",
                 isActive
-                  ? "bg-secondary text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/40",
+                  ? "bg-primary/10 text-primary shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60",
               )}
             >
               <Icon
                 className={cn(
-                  "h-4 w-4 transition-colors",
+                  "h-4.5 w-4.5 shrink-0 transition-colors",
                   isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
                 )}
               />
               <span className="truncate">{label}</span>
               {showCount && <NotificationCountBadge />}
-              {isActive && (
-                <motion.div
-                  layoutId="active-tutor-nav"
-                  className="absolute left-0 w-1 h-4 bg-primary rounded-r-full"
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                />
-              )}
             </Link>
           );
         })}
       </nav>
 
-      {/* User section */}
-      <div className="p-4 border-t border-border/50 space-y-4">
-        <div className="flex items-center justify-between px-2">
+      {/* User section — rounded card */}
+      <div className="p-4 pt-2 space-y-3">
+        <div className="flex items-center justify-between px-1">
           <ThemeToggle />
           <NotificationBell />
           <Link
             href="/tutor/settings"
-            className="p-2 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"
+            className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"
             aria-label="Settings"
           >
-            <Settings className="h-5 w-5" />
+            <Settings className="h-4.5 w-4.5" />
           </Link>
         </div>
 
-        <div className="px-2 space-y-2">
-          <Badge
-            variant="outline"
-            className="w-full justify-center py-1 bg-primary/10 border-primary/30 text-primary text-[10px] font-black uppercase tracking-widest"
-          >
-            <GraduationCap className="h-3 w-3 mr-1" />
-            {user.user_metadata?.role || "TUTOR"}
-          </Badge>
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-2 justify-center w-full py-2 rounded-xl bg-secondary text-foreground text-[10px] font-black uppercase tracking-widest border border-border hover:bg-secondary/70 transition-all"
-          >
-            <Sparkles className="h-3 w-3" /> Student Dashboard
-          </Link>
-          <div className="flex items-center gap-2 justify-center w-full py-2.5 rounded-xl bg-yellow-500/10 text-yellow-600 text-[10px] font-black uppercase tracking-widest border border-yellow-500/20 shadow-sm">
-            <Trophy className="h-3 w-3 fill-current" /> {points?.toLocaleString() || "0"} Points
+        <div className="rounded-xl bg-secondary/40 border border-border/40 p-3 space-y-2.5">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-9 w-9 rounded-xl shadow-sm">
+              <AvatarImage src={avatar || undefined} alt={displayName} className="rounded-xl object-cover" />
+              <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-bold text-xs">
+                {displayName?.[0]?.toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold truncate text-foreground">{displayName}</p>
+              <span className="text-[11px] font-medium text-muted-foreground">{user.user_metadata?.role || "TUTOR"}</span>
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-secondary/50 border border-border/50">
-          <Avatar className="w-8 h-8 rounded-lg shadow-sm">
-            <AvatarImage src={avatar || undefined} alt={displayName} className="rounded-lg object-cover" />
-            <AvatarFallback className="rounded-lg bg-primary text-white font-bold text-[10px]">
-              {displayName?.[0]?.toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <p className="text-[12px] font-semibold truncate text-foreground tracking-tight">{displayName}</p>
-            <button
-              onClick={handleLogout}
-              className="text-[10px] font-medium text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors"
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg">
+              <Trophy className="h-3.5 w-3.5" />
+              {points?.toLocaleString() || "0"} pts
+            </div>
+            <Link
+              href="/dashboard"
+              className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
             >
-              <LogOut className="h-3 w-3" /> Sign Out
-            </button>
+              Student Hub &rarr;
+            </Link>
           </div>
+
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-1.5 w-full justify-center py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors cursor-pointer"
+          >
+            <LogOut className="h-3.5 w-3.5" /> Sign Out
+          </button>
         </div>
       </div>
     </aside>

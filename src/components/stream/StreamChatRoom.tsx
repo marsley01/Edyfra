@@ -59,6 +59,7 @@ export default function StreamChatRoom({
     videoClient,
     setActiveCall,
     onRequestPermissions: requestMediaPermissions,
+    providerActiveCall: activeCall,
   });
 
   const inCall = callState === "joined" || callState === "joining";

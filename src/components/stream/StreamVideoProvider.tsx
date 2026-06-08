@@ -52,6 +52,7 @@ export function StreamVideoProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (initRef.current) return;
     initRef.current = true;
+    let dispose: (() => void) | undefined;
 
     const initClient = async () => {
       const supabase = createClient();
@@ -86,7 +87,7 @@ export function StreamVideoProvider({ children }: { children: ReactNode }) {
           }
         });
 
-        return () => {
+        dispose = () => {
           unsubscribe();
           vClient.disconnectUser();
         };
@@ -96,6 +97,11 @@ export function StreamVideoProvider({ children }: { children: ReactNode }) {
     };
 
     initClient();
+
+    return () => {
+      dispose?.();
+      initRef.current = false;
+    };
   }, []);
 
   const handleAccept = async () => {

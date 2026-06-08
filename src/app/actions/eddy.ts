@@ -6,6 +6,24 @@ import { buildEddySystemPrompt } from "@/utils/eddy-context";
 import prisma from "@/lib/prisma";
 import { saveAiChatMessage } from "@/app/actions/feedback";
 
+async function persistMessage(
+  input: Parameters<typeof saveAiChatMessage>[0],
+): Promise<void> {
+  try {
+    await saveAiChatMessage(input);
+  } catch {
+    // Best-effort persistence — failures are non-critical
+  }
+}
+
+function isRateLimitError(error: unknown): boolean {
+  if (error instanceof Error) {
+    const msg = error.message.toLowerCase();
+    return msg.includes("rate limit") || msg.includes("too many requests") || msg.includes("429");
+  }
+  return false;
+}
+
 export async function handleEddyQuery(
   message: string,
   currentPath?: string
@@ -27,9 +45,9 @@ export async function handleEddyQuery(
 
     const systemPrompt = await buildEddySystemPrompt(userContext, currentPath);
 
-    // Persist the user's message first (best-effort, non-blocking)
+    // Persist the user's message (best-effort, non-blocking via caught promise)
     if (user) {
-      void saveAiChatMessage({
+      persistMessage({
         bot: "eddy",
         role: "user",
         content: message,
@@ -45,14 +63,14 @@ export async function handleEddyQuery(
     if (!response || response.includes("having a bit of trouble thinking")) {
       const fallback = "Hey! I'm having a little trouble connecting to my brain right now. Please try again in a moment! 💭";
       if (user) {
-        void saveAiChatMessage({ bot: "eddy", role: "assistant", content: fallback });
+        persistMessage({ bot: "eddy", role: "assistant", content: fallback });
       }
       return fallback;
     }
 
     // Persist Eddy's reply (best-effort)
     if (user) {
-      void saveAiChatMessage({
+      persistMessage({
         bot: "eddy",
         role: "assistant",
         content: response,
@@ -66,7 +84,7 @@ export async function handleEddyQuery(
             subject: currentPath || null,
           },
         });
-      } catch (err) {
+      } catch {
         // Silent — non-critical counter
       }
     }
@@ -74,6 +92,9 @@ export async function handleEddyQuery(
     return response;
   } catch (error) {
     console.error("[Eddy] Error:", error);
+    if (isRateLimitError(error)) {
+      return "I'm a bit overwhelmed right now! Give me a moment and try asking again. 🙏";
+    }
     return "Sorry, something went wrong on my end. Please try again!";
   }
 }

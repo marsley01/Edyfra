@@ -154,7 +154,11 @@ export async function notifyUser(
   });
 
   try {
-    if (await shouldSendPush(userId, data.type)) {
+    const settings = await prisma.notificationSettings.findUnique({
+      where: { userId },
+    });
+    const prefs = (settings?.preferences as Record<string, boolean>) || {};
+    if (await shouldSendPush(userId, data.type, prefs)) {
       const { sendNotificationPush } = await import("./push");
       await sendNotificationPush(userId, {
         title: data.title,

@@ -69,12 +69,13 @@ export default function NotificationsPage() {
   useEffect(() => {
     const supabase = createClient();
     let cancelled = false;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
 
     supabase.auth.getUser().then(({ data }: { data: { user: any } }) => {
       if (cancelled || !data.user) return;
       const userId = data.user.id;
 
-      const channel = supabase
+      channel = supabase
         .channel(`notifications-${userId}`)
         .on(
           "postgres_changes",
@@ -89,18 +90,15 @@ export default function NotificationsPage() {
           }
         )
         .subscribe((status: string) => {
-          setConnected(status === "SUBSCRIBED");
+          if (!cancelled) setConnected(status === "SUBSCRIBED");
         });
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
     }).catch((err: unknown) => {
-      console.error("[Notifications] realtime setup failed", err);
+      if (!cancelled) console.error("[Notifications] realtime setup failed", err);
     });
 
     return () => {
       cancelled = true;
+      if (channel) supabase.removeChannel(channel);
     };
   }, [load]);
 

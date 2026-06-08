@@ -33,11 +33,14 @@ const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 const TIME_SLOTS = ["Morning", "Afternoon", "Evening"];
 
 const ACCENT_COLORS = [
+  { name: "Campus Navy", value: "#0F4C5C" },
+  { name: "Royal Blue", value: "#1A5276" },
   { name: "Edyfra Blue", value: "#1e3a8a" },
   { name: "Knowledge Teal", value: "#0d9488" },
-  { name: "Success Green", value: "#15803d" },
-  { name: "Royal Purple", value: "#6d28d9" },
+  { name: "Coral CTA", value: "#E07A5F" },
+  { name: "Berry Punch", value: "#D81B60" },
   { name: "Warm Amber", value: "#b45309" },
+  { name: "Royal Purple", value: "#6d28d9" },
 ];
 
 const SIDEBAR_ITEMS = [

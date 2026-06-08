@@ -18,29 +18,88 @@ export interface NewsArticle {
 
 import { RSSService, RSSItem } from "@/utils/rss-service";
 
+const CATEGORY_IMAGES: Record<string, string> = {
+  Tech: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop",
+  Education: "https://images.unsplash.com/photo-1523050854058-8df90110c7f1?q=80&w=2071&auto=format&fit=crop",
+  "Student Life": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070&auto=format&fit=crop",
+  Announcements: "https://images.unsplash.com/photo-1504711434969-e33886168d6c?q=80&w=2070&auto=format&fit=crop",
+};
+
+const GENERIC_FALLBACK = "https://images.unsplash.com/photo-1546410531-bb4caa1b4247?q=80&w=2070&auto=format&fit=crop";
+
+// Sources and title keywords that indicate Kenyan content
+const KE_SOURCES = new Set([
+  "nation africa",
+  "kenya education news",
+  "kenyan schools",
+  "knec exams",
+  "kuccps universities",
+]);
+
+const KE_KEYWORDS = [
+  "kenya", "kenyan", "nairobi", "kcse", "kcpe", "knec", "kuccps",
+  "ministry of education", "tsc", "cbc", "competency based",
+  "nairobi", "mombasa", "kisumu", "eldoret", "nakuru",
+];
+
+function getFallbackImage(category: string): string {
+  return CATEGORY_IMAGES[category] || GENERIC_FALLBACK;
+}
+
+function isKenyanArticle(source: string, title: string): boolean {
+  if (KE_SOURCES.has(source.toLowerCase())) return true;
+  const lower = title.toLowerCase();
+  return KE_KEYWORDS.some(kw => lower.includes(kw));
+}
+
+function kenyanBoost(item: { source: string; title: string }): number {
+  return isKenyanArticle(item.source, item.title) ? 1 : 0;
+}
+
 export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
   const supabase = await createClient();
-  
+
+  // Fetch extra articles to allow room for Kenyan prioritization
+  const fetchLimit = Math.max(limit, 50);
+
   const { data, error } = await supabase
     .from("news_articles")
     .select("*")
     .eq("status", "published")
     .order("published_at", { ascending: false })
-    .limit(limit);
+    .limit(fetchLimit);
 
-  // If we have local database news, return it
+  // If we have local database news, apply fallback images and return it
   if (data && data.length > 0) {
-    return data;
+    return data.map((a: Record<string, any>): NewsArticle => ({
+      id: a.id,
+      title: a.title,
+      slug: a.slug,
+      excerpt: a.summary || "",
+      content: a.body || a.content || "",
+      cover_image: a.coverImage || a.cover_image || getFallbackImage(a.category),
+      category: a.category,
+      author: a.authorId ? "Author" : "Edyfra Desk",
+      published_at: a.publishedAt || a.createdAt,
+      reading_time: a.reading_time || undefined,
+    })).slice(0, limit);
   }
 
   // Fallback: Fetch from RSS feeds if DB is empty (Zero-Maintenance Mode)
   try {
     const rss = new RSSService();
     const feedResults = await rss.fetchAllFeeds();
-    const items = feedResults.flatMap(r => r.items);
-    
-    const newsArticles = items.slice(0, limit).map((item, index) => {
-      // Safe Fallback: clean string manually for extremely fast processing
+    const allItems = feedResults.flatMap(r => r.items);
+
+    // Kenyan boost: sort so that Kenyan articles appear first, then by date
+    const sorted = [...allItems].sort((a, b) => {
+      const aBoost = kenyanBoost(a);
+      const bBoost = kenyanBoost(b);
+      if (aBoost !== bBoost) return bBoost - aBoost;
+      return new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime();
+    });
+
+    const newsArticles = sorted.slice(0, limit).map((item, index) => {
       const excerpt = item.description.replace(/<[^>]*>?/gm, '').replace(/&lt;.*?&gt;/g, '').slice(0, 180) + "...";
 
       return {
@@ -48,8 +107,8 @@ export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
         title: item.title,
         slug: `rss-${index}`,
         excerpt: excerpt,
-        content: item.link, // Store original link in content
-        cover_image: item.imageUrl || "https://images.unsplash.com/photo-1546410531-bb4caa1b4247?q=80&w=2070&auto=format&fit=crop",
+        content: item.link,
+        cover_image: item.imageUrl || getFallbackImage(item.category),
         category: item.category || "Global Updates",
         author: item.source,
         published_at: item.pubDate,
@@ -151,7 +210,7 @@ Keep it under 3 paragraphs (max 200 words). Focus on why it matters to students,
     slug: data.slug,
     excerpt: data.summary || "",
     content: data.body,
-    cover_image: data.coverImage || "https://images.unsplash.com/photo-1546410531-bb4caa1b4247?q=80&w=2070&auto=format&fit=crop",
+    cover_image: data.coverImage || data.cover_image || getFallbackImage(data.category),
     category: data.category,
     author: data.authorId ? "Author" : "Edyfra Desk",
     published_at: data.publishedAt || data.createdAt

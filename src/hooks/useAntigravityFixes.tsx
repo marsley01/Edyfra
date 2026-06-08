@@ -1,15 +1,33 @@
 import React, { useEffect, useState, useRef } from 'react';
 
-// 1. Antigravity-Safe Data Loading Hook
+const USER_DATA_CACHE_KEY = "edyfra_user_data_cache";
+
+function readUserDataCache(): any {
+  try {
+    const raw = localStorage.getItem(USER_DATA_CACHE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch { /* noop */ }
+  return null;
+}
+
+function writeUserDataCache(data: any) {
+  try {
+    localStorage.setItem(USER_DATA_CACHE_KEY, JSON.stringify(data));
+  } catch { /* noop */ }
+}
+
+// 1. Antigravity-Safe Data Loading Hook with localStorage cache
 export function useSafeUserData() {
-  const [userData, setUserData] = useState<any>(null);
+  const [userData, setUserData] = useState<any>(() => {
+    if (typeof window !== 'undefined') return readUserDataCache();
+    return null;
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);  
   const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    // Cancel any ongoing requests when component unmounts
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
@@ -19,19 +37,14 @@ export function useSafeUserData() {
 
   const loadUserData = async () => {
     try {
-      // Cancel previous request
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
       
       abortControllerRef.current = new AbortController();
       
-      // Only run in browser environment
-      if (typeof window === 'undefined') {
-        return;
-      }
+      if (typeof window === 'undefined') return;
 
-      // Set timeout to abort request after 10 seconds
       const timeoutId = setTimeout(() => {
         if (abortControllerRef.current) {
           abortControllerRef.current.abort();
@@ -40,9 +53,7 @@ export function useSafeUserData() {
 
       const response = await fetch('/api/user-data', {
         signal: abortControllerRef.current.signal,
-        headers: {
-          'Cache-Control': 'no-cache',
-        },
+        headers: { 'Cache-Control': 'no-cache' },
       });
 
       clearTimeout(timeoutId);
@@ -56,8 +67,9 @@ export function useSafeUserData() {
         throw new Error(errorData.error || 'Failed to load user data');
       }
 
-      const data = await response.json();
-      setUserData(data.data);
+      const { data } = await response.json();
+      setUserData(data);
+      writeUserDataCache(data);
       setError(null);
     } catch (err) {
       if (err instanceof Error && err.name !== 'AbortError') {
@@ -69,7 +81,6 @@ export function useSafeUserData() {
     }
   };
 
-  // Auto-reload on mount and retry
   useEffect(() => {
     loadUserData();
   }, [retryCount]);
