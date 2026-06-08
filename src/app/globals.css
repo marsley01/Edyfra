@@ -43,12 +43,18 @@ html {
   --destructive-foreground: #ffffff;
   --border: #E2DFD8;
   --input: #E2DFD8;
-  --ring: #0071e3;
+  --ring: #1A5276;
   --radius: 0.75rem;
 
-  /* Brand accent (coral/berry — high-energy CTA, badges, notifications) */
+  /* Brand accent (coral — high-energy CTA, badges, notifications) */
   --brand-accent: #E07A5F;
   --brand-accent-foreground: #ffffff;
+
+  /* Surface (secondary card/panel background) */
+  --surface: #F5F3EF;
+
+  /* Tech border (ultra-thin, low-opacity edge lines) */
+  --tech-border: #E2DFD8;
 
   /* ── Edyfra layer system ───────────────────────────────────────────────
      See src/lib/layers.ts. Components MUST use these vars instead of
@@ -76,29 +82,33 @@ html {
 }
 
 .dark {
-  --background: #121620;
-  --foreground: #EDECF0;
-  --card: #1A1D28;
-  --card-foreground: #EDECF0;
-  --popover: #121620;
-  --popover-foreground: #EDECF0;
-  --primary: #1A5276;
-  --primary-foreground: #ffffff;
-  --secondary: #1A1D28;
-  --secondary-foreground: #EDECF0;
-  --muted: #1E2130;
-  --muted-foreground: #8E8D94;
-  --accent: #1E2130;
-  --accent-foreground: #EDECF0;
-  --destructive: #FF453A;
-  --destructive-foreground: #ffffff;
-  --border: #2E3040;
-  --input: #2E3040;
-  --ring: #1A5276;
-  --radius: 0.75rem;
+  --background: #000000;
+  --foreground: #FFFFFF;
+  --card: #0C0D0E;
+  --card-foreground: #FFFFFF;
+  --popover: #000000;
+  --popover-foreground: #FFFFFF;
+  --primary: #00F0FF;
+  --primary-foreground: #000000;
+  --secondary: #070708;
+  --secondary-foreground: #E4E4E7;
+  --muted: #070708;
+  --muted-foreground: #71717A;
+  --accent: #0C0D0E;
+  --accent-foreground: #E4E4E7;
+  --destructive: #FF0040;
+  --destructive-foreground: #000000;
+  --border: #1E1E20;
+  --input: #1E1E20;
+  --ring: #00F0FF;
+  --radius: 0.5rem;
 
-  --brand-accent: #E07A5F;
-  --brand-accent-foreground: #ffffff;
+  --brand-accent: #9D4EDD;
+  --brand-accent-foreground: #000000;
+
+  --surface: #0C0D0E;
+
+  --tech-border: rgba(255, 255, 255, 0.08);
 }
 
 /* ── User has no accent-color setting — CSS defaults are used above ──*/
@@ -124,6 +134,8 @@ html {
   --color-ring: var(--ring);
   --color-brand-accent: var(--brand-accent);
   --color-brand-accent-foreground: var(--brand-accent-foreground);
+  --color-surface: var(--surface);
+  --color-tech-border: var(--tech-border);
   --radius-sm: calc(var(--radius) - 2px);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 4px);

@@ -41,12 +41,15 @@
 
 export const OG_BRAND = {
   primary: "#1A5276",
+  primaryDark: "#00F0FF",
   accent: "#E07A5F",
+  accentDark: "#9D4EDD",
   accentAlt: "#D81B60",
   neutralLight: "#FDFBF7",
-  neutralDark: "#121620",
+  neutralDark: "#000000",
+  surfaceDark: "#0C0D0E",
   textLight: "#1C1B1F",
-  textDark: "#EDECF0",
+  textDark: "#FFFFFF",
 } as const;
 
 export type OGTemplateVariant = "default" | "announcement" | "community" | "achievement" | "event";
@@ -71,7 +74,14 @@ export interface OGTemplateConfig {
   avatarUrls?: string[];
   /** Platform logo placement */
   showLogo?: boolean;
+  /** Theme variant — "light" (Campus) or "dark" (Tech Terminal) */
+  theme?: "light" | "dark";
 }
+
+const THEME_MAP: Record<"light" | "dark", { bg: string; bar: string; accent: string }> = {
+  light: { bg: OG_BRAND.neutralLight, bar: OG_BRAND.primary, accent: OG_BRAND.accent },
+  dark:  { bg: OG_BRAND.neutralDark,  bar: OG_BRAND.primaryDark, accent: OG_BRAND.accentDark },
+};
 
 /**
  * Returns recommended OG template configuration for a given variant.
@@ -84,14 +94,17 @@ export function getOGTemplate(
   variant: OGTemplateVariant,
   overrides?: Partial<OGTemplateConfig>,
 ): OGTemplateConfig {
+  const theme = overrides?.theme || "light";
+  const scheme = THEME_MAP[theme];
   const base: OGTemplateConfig = {
     width: 1200,
     height: 630,
-    bgColor: OG_BRAND.neutralLight,
-    barColor: OG_BRAND.primary,
-    accentColor: OG_BRAND.accent,
+    bgColor: scheme.bg,
+    barColor: scheme.bar,
+    accentColor: scheme.accent,
     headline: "Edyfra — Kenya's Study Platform",
     showLogo: true,
+    theme,
   };
 
   const variants: Record<OGTemplateVariant, Partial<OGTemplateConfig>> = {
@@ -103,11 +116,11 @@ export function getOGTemplate(
     community: {
       subtitle: "Real students. Real connections. Real growth.",
       cta: "Join the Community",
-      barColor: OG_BRAND.accent,
-      accentColor: OG_BRAND.primary,
+      barColor: scheme.accent,
+      accentColor: scheme.bar,
     },
     achievement: {
-      accentColor: OG_BRAND.accent,
+      accentColor: scheme.accent,
       subtitle: "Level up your study game",
       cta: "View Leaderboard",
     },
