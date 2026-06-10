@@ -1,8 +1,25 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { GraduationCap } from "lucide-react";
 
+const STEPS = [
+  "Authenticating...",
+  "Connecting to chat...",
+  "Loading messages...",
+  "Preparing study space..."
+];
+
 export function ChatLoadingState() {
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStep((s) => Math.min(s + 1, STEPS.length - 1));
+    }, 1200);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="flex flex-col items-center justify-center h-full gap-8 bg-background absolute inset-0 z-50">
       <div className="relative w-24 h-24">
@@ -13,8 +30,8 @@ export function ChatLoadingState() {
         </div>
       </div>
       <div className="space-y-3 text-center z-10">
-        <p className="text-sm font-black uppercase tracking-[0.2em] text-foreground animate-pulse">
-          Opening your study space...
+        <p className="text-sm font-black uppercase tracking-[0.15em] text-foreground transition-all">
+          {STEPS[step]}
         </p>
         <div className="flex items-center justify-center gap-2">
           <div className="w-1.5 h-1.5 rounded-md bg-emerald-500 animate-pulse" />

@@ -5,6 +5,7 @@ import { StreamChat } from "stream-chat";
 import { getStreamToken, upsertStreamUser } from "@/app/actions/stream";
 import { STREAM_KEY, MENTION_REGEX, MASH_AI_USER_ID } from "../styles/constants";
 import type { MashAIMentionMeta } from "../types";
+import { useStream } from "../StreamChatProvider";
 
 interface UseStreamChatInitParams {
   channelId: string;
@@ -47,6 +48,8 @@ export function useStreamChatInit({
   channelName,
   mashAI,
 }: UseStreamChatInitParams): UseStreamChatInitReturn {
+  const { isConnected: providerConnected, userId: providerUserId } = useStream();
+
   const [chatClient, setChatClient] = useState<StreamChat | null>(null);
   const [channel, setChannel] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -83,11 +86,13 @@ export function useStreamChatInit({
         connectingRef.current = true;
         try {
           const token = await getToken();
-          await client.connectUser(
-            { id: userId, name: userName, image: userImage || undefined },
-            token,
-          );
-          console.log(`[useStreamChatInit] Chat connected: ${userId}`);
+          if (client.userID !== userId) {
+            await client.connectUser(
+              { id: userId, name: userName, image: userImage || undefined },
+              token,
+            );
+            console.log(`[useStreamChatInit] Chat connected: ${userId}`);
+          }
         } finally {
           connectingRef.current = false;
         }
@@ -151,13 +156,15 @@ export function useStreamChatInit({
     }
   }, [channelId, userId, userName, userImage, channelName, memberIdsKey, mashAI?.subject, mashAI?.topic, mashAI?.tier]);
 
-  // Run init exactly once per (userId, channelId).
+  // Run init exactly once per (userId, channelId) when provider is ready.
   useEffect(() => {
+    if (providerUserId && !providerConnected) return;
+
     const key = `${userId}::${channelId}`;
     if (initOnceRef.current === key) return;
     initOnceRef.current = key;
     init();
-  }, [userId, channelId, init]);
+  }, [userId, channelId, init, providerUserId, providerConnected]);
 
   // Cleanup: reset the once-key and disconnect on unmount.
   useEffect(() => {

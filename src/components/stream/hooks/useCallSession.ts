@@ -100,6 +100,7 @@ export function useCallSession({
           setHasActiveCall(false);
           setCallState("ended");
           setCall(null);
+          setTimeout(() => setCallState("idle"), 2000);
           break;
         }
         case "call.rejected": {
@@ -146,30 +147,14 @@ export function useCallSession({
       .map((id) => ({ user_id: id }));
 
     try {
-      // Check if call already exists before deciding to ring.
-      // Prevents both users from ringing each other when they join simultaneously.
-      let callExists = false;
-      try {
-        const existing = await call.get();
-        callExists = !!existing;
-      } catch {
-        /* call doesn't exist yet — first joiner */
-      }
-
       await call.getOrCreate({
-        ring: !callExists,
+        ring: true,
         data: {
           members: [{ user_id: userId, role: "admin" }, ...otherMembers],
           custom: { startedBy: userId },
+          settings_override: HIGH_QUALITY_OVERRIDE.settings_override,
         },
       });
-
-      // High-quality preferences: 1080p, adaptive bitrate, noise suppression.
-      try {
-        await call.update(HIGH_QUALITY_OVERRIDE);
-      } catch (err) {
-        console.warn("[useCallSession] settings_override failed (non-fatal):", err);
-      }
 
       setCall(call);
       setHasActiveCall(true);

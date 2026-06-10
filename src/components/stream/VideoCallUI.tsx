@@ -49,7 +49,7 @@ export function VideoCallUI({ onLeave }: { onLeave: () => void }) {
           ? "Trying to reconnect..."
           : "Opening your space..."}
       </h2>
-      <p className="text-[11px] text-white/40 font-bold uppercase tracking-[0.3em]">
+      <p className="text-[11px] text-muted-foreground font-bold uppercase tracking-[0.3em]">
         Getting your study space ready for you
       </p>
     </div>

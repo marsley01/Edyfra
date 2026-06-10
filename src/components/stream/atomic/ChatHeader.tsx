@@ -36,7 +36,7 @@ export function ChatHeader({
             {channelName || "Study Room"}
           </h3>
           <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">
-            {memberCount + 2} Members
+            {memberCount === 0 ? "Just you" : `${memberCount + 2} Members`}
             <span className="ml-2 text-emerald-500">
               · <Sparkles className="inline h-3 w-3 -mt-0.5" /> Mash AI
             </span>

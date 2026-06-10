@@ -98,6 +98,15 @@ export default function StudyRoomClient({ initialData }: { initialData: StudyRoo
     }
   }, [session, currentUser]);
 
+  useEffect(() => {
+    if (!session?.partnerId) {
+      const interval = setInterval(() => {
+        fetchSession();
+      }, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [session?.partnerId, fetchSession]);
+
   const handleConvertToMashAI = async () => {
     setConverting(true);
     try {

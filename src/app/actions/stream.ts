@@ -24,17 +24,23 @@ export async function getStreamToken(userId: string) {
 
   if (!user || user.id !== userId) throw new Error("Unauthorized");
 
-  await syncSessionParticipants(userId);
-
   const client = getServerStreamClient();
   console.log(`[Stream] Token generated for user: ${userId}`);
-  return client.createToken(userId);
+  
+  const [token] = await Promise.all([
+    Promise.resolve(client.createToken(userId)),
+    syncSessionParticipants(userId)
+  ]);
+
+  return token;
 }
 
 // Helper kept local to this file to avoid pulling it across the action boundary
 async function syncSessionParticipants(userId: string) {
-  await syncUserToStream(userId);
-  await syncAIUserToStream();
+  await Promise.all([
+    syncUserToStream(userId),
+    syncAIUserToStream()
+  ]);
 }
 
 // ─── Upsert User ──────────────────────────────────────────────────────────────
