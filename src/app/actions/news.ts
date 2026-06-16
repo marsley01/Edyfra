@@ -107,7 +107,11 @@ export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
         let finalImageUrl = item.imageUrl;
         if (!finalImageUrl) {
           const og = await fetchOgImage(item.link);
-          if (og) finalImageUrl = og;
+          if (og) {
+            finalImageUrl = og;
+          } else if (isKenyanArticle(item.source, item.title)) {
+            finalImageUrl = "/kenya-news-magazine.png";
+          }
         }
 
         return {

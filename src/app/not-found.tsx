@@ -1,73 +1,64 @@
 import Link from "next/link";
-import { Compass, ArrowLeft, MessageCircle, Search } from "lucide-react";
+import { Compass, ArrowLeft, MessageCircle, Search, Sparkles } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-6 py-16">
-      <div className="w-full max-w-lg space-y-8 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20">
-          <Compass className="h-8 w-8" />
+    <div className="min-h-[90vh] flex flex-col items-center justify-center px-6 py-16 relative overflow-hidden bg-background">
+      {/* Decorative Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 blur-[120px] rounded-full mix-blend-screen" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/10 blur-[100px] rounded-full mix-blend-screen" />
+      </div>
+
+      <div className="relative z-10 w-full max-w-2xl space-y-10 text-center">
+        {/* Floating Icon */}
+        <div className="mx-auto relative flex h-24 w-24 items-center justify-center">
+          <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full animate-pulse" />
+          <div className="relative flex h-20 w-20 items-center justify-center rounded-[2rem] bg-gradient-to-br from-primary/80 to-primary text-white shadow-2xl border border-white/10 rotate-3 hover:rotate-0 transition-transform duration-500">
+            <Compass className="h-10 w-10" />
+            <Sparkles className="absolute -top-3 -right-3 h-6 w-6 text-primary animate-bounce" />
+          </div>
         </div>
 
-        <div className="space-y-3">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">
-            404 · Lost in the stacks
+        <div className="space-y-4">
+          <p className="text-xs font-black uppercase tracking-[0.4em] text-primary drop-shadow-sm">
+            Error 404
           </p>
-          <h1 className="text-3xl md:text-4xl font-black tracking-tightest text-foreground">
-            We couldn&apos;t find that page.
+          <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-foreground leading-[1.1]">
+            Lost in the <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400">Stacks.</span>
           </h1>
+          <p className="text-muted-foreground text-lg md:text-xl font-medium max-w-lg mx-auto">
+            The page you're looking for has been moved, deleted, or possibly never existed. Let's get you back on track.
+          </p>
         </div>
 
-        <div className="space-y-4 text-left rounded-2xl border border-border bg-secondary/40 p-5 text-sm">
-          <Row
-            label="What happened"
-            value="The page you were looking for isn't here."
-          />
-          <Row
-            label="Why"
-            value="The link might be old, the page may have moved, or you typed the address slightly off."
-          />
-          <Row
-            label="What to try"
-            value="Head back home, search for what you needed, or tell us where you got the link from so we can fix it."
-          />
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 h-12 rounded-full bg-foreground text-background hover:bg-foreground/90 px-6 font-black text-xs tracking-widest uppercase shadow-xl transition-all active:scale-95"
+            className="group flex items-center justify-center gap-3 h-14 rounded-full bg-primary text-white hover:bg-primary/90 px-8 font-black text-sm tracking-widest uppercase shadow-xl hover:shadow-primary/25 transition-all hover:-translate-y-1 active:scale-95"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Back home
+            <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+            Return Home
           </Link>
           <Link
             href="/dashboard/search"
-            className="inline-flex items-center gap-2 h-12 rounded-full border-2 border-border hover:border-foreground/30 px-6 font-black text-xs tracking-widest uppercase text-foreground transition-all"
+            className="group flex items-center justify-center gap-3 h-14 rounded-full border-2 border-border bg-background/50 backdrop-blur-md hover:border-primary/30 hover:bg-secondary/50 px-8 font-black text-sm tracking-widest uppercase text-foreground transition-all hover:-translate-y-1 active:scale-95"
           >
-            <Search className="h-4 w-4" />
-            Try a search
+            <Search className="h-5 w-5 group-hover:scale-110 transition-transform" />
+            Search Library
           </Link>
+        </div>
+
+        <div className="pt-10">
           <Link
             href="/contact"
-            className="inline-flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-primary transition-colors"
           >
             <MessageCircle className="h-4 w-4" />
-            Tell us about it
+            Report a broken link
           </Link>
         </div>
       </div>
-    </div>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex gap-3">
-      <span className="shrink-0 w-[110px] text-[10px] font-black uppercase tracking-widest text-muted-foreground pt-0.5">
-        {label}
-      </span>
-      <span className="text-foreground/90 leading-relaxed">{value}</span>
     </div>
   );
 }
