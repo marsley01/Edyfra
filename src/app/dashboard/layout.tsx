@@ -1,5 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
+import prisma from "@/lib/prisma";
 import DashboardSidebar from "@/components/dashboard/Sidebar";
 import MatchNotification from "@/components/dashboard/MatchNotification";
 import MobileNav from "@/components/dashboard/MobileNav";
@@ -15,6 +16,21 @@ export default async function DashboardLayout({
 
   if (!user) {
     redirect("/login");
+  }
+
+  const dbUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    include: { institutionMembers: true },
+  });
+
+  const isInstitutionStaff = dbUser?.institutionMembers?.some(
+    (m) =>
+      ["INSTITUTION_ADMIN", "INSTITUTION_DEPUTY", "INSTITUTION_TEACHER"].includes(m.role) &&
+      m.status === "ACTIVE"
+  );
+
+  if (isInstitutionStaff && dbUser?.role === "STUDENT") {
+    redirect("/institution/dashboard");
   }
 
   return (

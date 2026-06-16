@@ -17,6 +17,7 @@ export interface NewsArticle {
 }
 
 import { RSSService, RSSItem } from "@/utils/rss-service";
+import { fetchOgImage } from "@/utils/og-scraper";
 
 const CATEGORY_IMAGES: Record<string, string> = {
   Tech: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop",
@@ -99,22 +100,30 @@ export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
       return new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime();
     });
 
-    const newsArticles = sorted.slice(0, limit).map((item, index) => {
-      const excerpt = item.description.replace(/<[^>]*>?/gm, '').replace(/&lt;.*?&gt;/g, '').slice(0, 180) + "...";
+    const newsArticles = await Promise.all(
+      sorted.slice(0, limit).map(async (item, index) => {
+        const excerpt = item.description.replace(/<[^>]*>?/gm, '').replace(/&lt;.*?&gt;/g, '').slice(0, 180) + "...";
 
-      return {
-        id: `rss-${index}`,
-        title: item.title,
-        slug: `rss-${index}`,
-        excerpt: excerpt,
-        content: item.link,
-        cover_image: item.imageUrl || getFallbackImage(item.category),
-        category: item.category || "Global Updates",
-        author: item.source,
-        published_at: item.pubDate,
-        reading_time: "3m"
-      };
-    });
+        let finalImageUrl = item.imageUrl;
+        if (!finalImageUrl) {
+          const og = await fetchOgImage(item.link);
+          if (og) finalImageUrl = og;
+        }
+
+        return {
+          id: `rss-${index}`,
+          title: item.title,
+          slug: `rss-${index}`,
+          excerpt: excerpt,
+          content: item.link,
+          cover_image: finalImageUrl || getFallbackImage(item.category),
+          category: item.category || "Global Updates",
+          author: item.source,
+          published_at: item.pubDate,
+          reading_time: "3m"
+        };
+      })
+    );
 
     return newsArticles;
   } catch (err) {

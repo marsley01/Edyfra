@@ -45,20 +45,22 @@ export async function login(formData: FormData) {
 
   let redirectTo = "/dashboard";
 
-  // Institution login: if code is provided and user is an institution member, redirect to institution portal
-  if (code && prismaUser) {
+  // Institution logic: If user has an active institution membership, redirect to institution portal.
+  if (prismaUser) {
     try {
       const membership = await prisma.institutionMember.findFirst({
         where: {
           userId: prismaUser.id,
-          institution: { code },
+          status: "ACTIVE",
         },
         include: { institution: true },
       });
-      if (membership) {
+      // If they are institution staff, default to routing them to the institution portal
+      if (membership && ["INSTITUTION_ADMIN", "INSTITUTION_DEPUTY", "INSTITUTION_TEACHER"].includes(membership.role)) {
         return { redirectTo: "/institution/dashboard" };
       }
-    } catch {
+    } catch (e) {
+      console.error("Institution membership check failed:", e);
       // Fall through to normal redirect if institution check fails
     }
   }

@@ -25,25 +25,25 @@ html {
 }
 
 :root {
-  --background: #FDFBF7;
-  --foreground: #1C1B1F;
-  --card: #F5F3EF;
-  --card-foreground: #1C1B1F;
+  --background: #F4F7FA;
+  --foreground: #0F172A;
+  --card: #FFFFFF;
+  --card-foreground: #0F172A;
   --popover: #FFFFFF;
-  --popover-foreground: #1C1B1F;
-  --primary: #1A5276; /* Deep Trust Hub — overridden by user accent color when set */
-  --primary-foreground: #ffffff;
-  --secondary: #EBE9E2;
-  --secondary-foreground: #1C1B1F;
-  --muted: #F0EEE7;
-  --muted-foreground: #7C7A80;
-  --accent: #F0EEE7;
-  --accent-foreground: #1C1B1F;
-  --destructive: #D83B30;
-  --destructive-foreground: #ffffff;
-  --border: #E2DFD8;
-  --input: #E2DFD8;
-  --ring: #1A5276;
+  --popover-foreground: #0F172A;
+  --primary: #2563EB;
+  --primary-foreground: #FFFFFF;
+  --secondary: #E2E8F0;
+  --secondary-foreground: #0F172A;
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+  --accent: #E0F2FE;
+  --accent-foreground: #0EA5E9;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: #CBD5E1;
+  --input: #CBD5E1;
+  --ring: #3B82F6;
   --radius: 0.75rem;
 
   /* Brand accent (coral — high-energy CTA, badges, notifications) */
@@ -51,10 +51,10 @@ html {
   --brand-accent-foreground: #ffffff;
 
   /* Surface (secondary card/panel background) */
-  --surface: #F5F3EF;
+  --surface: #FFFFFF;
 
   /* Tech border (ultra-thin, low-opacity edge lines) */
-  --tech-border: #E2DFD8;
+  --tech-border: #E2E8F0;
 
   /* ── Edyfra layer system ───────────────────────────────────────────────
      See src/lib/layers.ts. Components MUST use these vars instead of
@@ -82,31 +82,31 @@ html {
 }
 
 .dark {
-  --background: #000000;
-  --foreground: #FFFFFF;
-  --card: #0C0D0E;
-  --card-foreground: #FFFFFF;
-  --popover: #000000;
-  --popover-foreground: #FFFFFF;
-  --primary: #00F0FF;
-  --primary-foreground: #000000;
-  --secondary: #070708;
-  --secondary-foreground: #E4E4E7;
-  --muted: #070708;
-  --muted-foreground: #71717A;
-  --accent: #0C0D0E;
-  --accent-foreground: #E4E4E7;
-  --destructive: #FF0040;
-  --destructive-foreground: #000000;
-  --border: #1E1E20;
-  --input: #1E1E20;
-  --ring: #00F0FF;
+  --background: #0B1120;
+  --foreground: #F8FAFC;
+  --card: #1E293B;
+  --card-foreground: #F8FAFC;
+  --popover: #0B1120;
+  --popover-foreground: #F8FAFC;
+  --primary: #3B82F6;
+  --primary-foreground: #FFFFFF;
+  --secondary: #1E293B;
+  --secondary-foreground: #F1F5F9;
+  --muted: #0F172A;
+  --muted-foreground: #94A3B8;
+  --accent: #1E293B;
+  --accent-foreground: #F8FAFC;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: #334155;
+  --input: #334155;
+  --ring: #3B82F6;
   --radius: 0.5rem;
 
-  --brand-accent: #9D4EDD;
-  --brand-accent-foreground: #000000;
+  --brand-accent: #8B5CF6;
+  --brand-accent-foreground: #FFFFFF;
 
-  --surface: #0C0D0E;
+  --surface: #1E293B;
 
   --tech-border: rgba(255, 255, 255, 0.08);
 }
