@@ -49,9 +49,17 @@ export async function submitReview(data: {
   return { success: true };
 }
 
+import { createClient as createSupabaseJsClient } from "@supabase/supabase-js";
+
 export async function getApprovedReviews(): Promise<Review[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
+  // Use a plain public client to avoid accessing cookies() during Next.js build caching
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  const publicClient = createSupabaseJsClient(url, key, {
+    auth: { persistSession: false }
+  });
+
+  const { data, error } = await publicClient
     .from("reviews")
     .select("*")
     .eq("approved", true)
