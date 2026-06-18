@@ -679,3 +679,21 @@ export async function createTestTutorAction() {
     throw error;
   }
 }
+
+export async function hasCompletedChallengeToday(userId: string): Promise<boolean> {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const attempt = await prisma.dailyChallengeAttempt.findFirst({
+      where: {
+        userId,
+        createdAt: { gte: today }
+      }
+    });
+    return !!attempt;
+  } catch (e) {
+    console.error("Error checking daily challenge completion:", e);
+    return false;
+  }
+}
+

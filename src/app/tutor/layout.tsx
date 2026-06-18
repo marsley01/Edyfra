@@ -30,7 +30,7 @@ export default async function TutorLayout({
         {/* Desktop sidebar */}
         <TutorSidebar user={user} />
 
-        <main className="flex-1 overflow-y-auto pb-32">
+        <main className="flex-1 overflow-y-auto pb-20 lg:pb-32">
           {/* Desktop top bar */}
           <header className="hidden lg:flex h-16 bg-background/80 backdrop-blur-xl border-b border-border px-8 items-center sticky top-0 z-30">
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mr-auto">

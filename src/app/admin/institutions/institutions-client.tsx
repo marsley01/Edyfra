@@ -17,11 +17,22 @@ import {
   Sparkles,
   ExternalLink,
   RefreshCw,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog";
 import { showError, showSuccess } from "@/lib/toast";
-import { decideInstitutionApplication } from "@/app/actions/institution-founder";
+import { decideInstitutionApplication, deleteInstitution } from "@/app/actions/institution-founder";
 
 type Status = "PENDING" | "ACTIVE" | "SUSPENDED" | "REJECTED";
 type PlanTier = "STARTER" | "GROWTH" | "ENTERPRISE" | null;
@@ -92,6 +103,7 @@ export function InstitutionsReviewClient({
   const [filter, setFilter] = useState<"PENDING" | "ACTIVE" | "REJECTED" | "ALL">("PENDING");
   const [search, setSearch] = useState("");
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [refreshing, startRefresh] = useTransition();
 
   const livePending = rows.filter((r) => r.status === "PENDING").length;
@@ -143,6 +155,27 @@ export function InstitutionsReviewClient({
         },
       );
       setPendingId(null);
+    });
+  }
+
+  function remove(id: string) {
+    setDeletingId(id);
+    startRefresh(async () => {
+      const res = await deleteInstitution(id);
+      if (!res.ok) {
+        showError({
+          title: "Failed to delete school",
+          cause: res.error,
+          fix: "Try again, or check server logs.",
+        });
+        setDeletingId(null);
+        return;
+      }
+      setRows((cur) => cur.filter((r) => r.id !== id));
+      showSuccess("Institution deleted", {
+        description: "The school and its primary admin have been completely removed.",
+      });
+      setDeletingId(null);
     });
   }
 
@@ -238,8 +271,10 @@ export function InstitutionsReviewClient({
               key={app.id}
               app={app}
               pending={pendingId === app.id}
+              deleting={deletingId === app.id}
               onApprove={() => decide(app.id, "APPROVE")}
               onReject={() => decide(app.id, "REJECT")}
+              onDelete={() => remove(app.id)}
             />
           ))}
         </div>
@@ -251,13 +286,17 @@ export function InstitutionsReviewClient({
 function ApplicationCard({
   app,
   pending,
+  deleting,
   onApprove,
   onReject,
+  onDelete,
 }: {
   app: AppRow;
   pending: boolean;
+  deleting: boolean;
   onApprove: () => void;
   onReject: () => void;
+  onDelete: () => void;
 }) {
   const status = STATUS_STYLES[app.status];
   const plan = app.planTier ? PLAN_STYLES[app.planTier] : null;
@@ -427,9 +466,44 @@ function ApplicationCard({
                   </Button>
                 </div>
               ) : (
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  Decision recorded
-                </span>
+                <div className="flex items-center gap-4">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    Decision recorded
+                  </span>
+                  <Dialog>
+                    <DialogTrigger render={
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={deleting}
+                        className="font-bold text-red-500 hover:bg-red-500/10 hover:text-red-600 border-red-500/20"
+                      />
+                    }>
+                      {deleting ? (
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                      )}
+                      Delete School
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle className="text-red-500">Delete Institution</DialogTitle>
+                        <DialogDescription>
+                          This is a permanent action. It will delete the school <strong>{app.name}</strong> from the database and completely remove its primary admin from Supabase Auth. This cannot be undone.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter className="sm:justify-end">
+                        <DialogClose render={<Button variant="outline" />}>
+                          Cancel
+                        </DialogClose>
+                        <DialogClose render={<Button variant="destructive" onClick={onDelete} className="bg-red-600 hover:bg-red-700 text-white font-bold" />}>
+                          Yes, Delete
+                        </DialogClose>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               )}
               <a
                 href={`mailto:${app.adminEmail ?? app.email ?? ""}?subject=${encodeURIComponent(

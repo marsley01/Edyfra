@@ -162,7 +162,9 @@ exports.Prisma.StudentProfileScalarFieldEnum = {
   weakTopics: 'weakTopics',
   studyStyle: 'studyStyle',
   preferredTimes: 'preferredTimes',
-  goals: 'goals'
+  goals: 'goals',
+  studyPreference: 'studyPreference',
+  formLevel: 'formLevel'
 };
 
 exports.Prisma.TutorProfileScalarFieldEnum = {
@@ -942,6 +944,18 @@ exports.Prisma.InstitutionInvitationScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.GroupMatchRequestScalarFieldEnum = {
+  id: 'id',
+  subject: 'subject',
+  educationLevel: 'educationLevel',
+  studentIds: 'studentIds',
+  status: 'status',
+  tutorId: 'tutorId',
+  roomId: 'roomId',
+  createdAt: 'createdAt',
+  expiresAt: 'expiresAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -994,6 +1008,12 @@ exports.Tier = exports.$Enums.Tier = {
   GOLD: 'GOLD',
   PLATINUM: 'PLATINUM',
   LEGEND: 'LEGEND'
+};
+
+exports.StudyPreference = exports.$Enums.StudyPreference = {
+  tutor: 'tutor',
+  peer: 'peer',
+  either: 'either'
 };
 
 exports.VerifPath = exports.$Enums.VerifPath = {
@@ -1117,6 +1137,12 @@ exports.InvitationStatus = exports.$Enums.InvitationStatus = {
   REVOKED: 'REVOKED'
 };
 
+exports.GroupMatchStatus = exports.$Enums.GroupMatchStatus = {
+  forming: 'forming',
+  matched: 'matched',
+  expired: 'expired'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   StudentProfile: 'StudentProfile',
@@ -1185,7 +1211,8 @@ exports.Prisma.ModelName = {
   CoachingAssignment: 'CoachingAssignment',
   InstitutionActivity: 'InstitutionActivity',
   TeacherSubjectAssignment: 'TeacherSubjectAssignment',
-  InstitutionInvitation: 'InstitutionInvitation'
+  InstitutionInvitation: 'InstitutionInvitation',
+  GroupMatchRequest: 'GroupMatchRequest'
 };
 
 /**

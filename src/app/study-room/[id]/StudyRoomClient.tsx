@@ -5,11 +5,12 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Sparkles, ShieldCheck, ChevronLeft } from "lucide-react";
-import { showError, showSuccess, showUnknownError } from "@/lib/toast";
+import { Loader2, Sparkles, ShieldCheck, ChevronLeft, Users, LogOut, BookOpen, Clock } from "lucide-react";
+import { showError, showSuccess } from "@/lib/toast";
 import dynamic from "next/dynamic";
 import SessionReviewModal from "@/components/sessions/SessionReviewModal";
 import { Z } from "@/lib/layers";
+import { motion, AnimatePresence } from "framer-motion";
 
 const StreamChatRoom = dynamic(
   () => import("@/components/stream/StreamChatRoom"),
@@ -48,8 +49,25 @@ export default function StudyRoomClient({ initialData }: { initialData: StudyRoo
   const [showReview, setShowReview] = useState(false);
   const [showNoShowPrompt, setShowNoShowPrompt] = useState(false);
   const [converting, setConverting] = useState(false);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [sessionDuration, setSessionDuration] = useState(0);
   const currentUser = initialData.currentUser;
   const sessionId = initialData.sessionId;
+
+  // Track session duration
+  useEffect(() => {
+    const start = Date.now();
+    const interval = setInterval(() => {
+      setSessionDuration(Math.floor((Date.now() - start) / 1000));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatDuration = (secs: number) => {
+    const m = Math.floor(secs / 60).toString().padStart(2, "0");
+    const s = (secs % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  };
 
   const fetchSession = useCallback(async () => {
     try {
@@ -156,40 +174,44 @@ export default function StudyRoomClient({ initialData }: { initialData: StudyRoo
     router.push("/dashboard");
   };
 
+  const participants = [
+    { ...session.student, isCurrentUser: session.studentId === currentUser.id, role: session.tier === "TUTOR" ? "Student" : "You" },
+    ...(session.partner ? [{ ...session.partner, isCurrentUser: session.partnerId === currentUser.id, role: session.tier === "TUTOR" ? "Tutor" : "Study Buddy" }] : []),
+  ];
+
   return (
     <div className="h-[100dvh] bg-background text-foreground flex flex-col overflow-hidden font-sans">
       <header
-        className="h-20 border-b border-border/50 px-8 flex items-center justify-between bg-background/80 backdrop-blur-2xl pt-[env(safe-area-inset-top,0px)]"
+        className="h-16 md:h-20 border-b border-border/50 px-4 md:px-8 flex items-center justify-between bg-background/80 backdrop-blur-2xl pt-[env(safe-area-inset-top,0px)] shrink-0"
         style={{ zIndex: Z.STICKY }}
       >
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 md:gap-6 min-w-0">
           <button
-            onClick={() => router.back()}
-            className="lg:hidden p-2 -ml-2 text-foreground hover:bg-primary/5 rounded-xl transition-colors"
-            aria-label="Go back"
+            onClick={() => setShowLeaveConfirm(true)}
+            className="p-2 -ml-1 text-foreground hover:bg-primary/5 rounded-xl transition-colors shrink-0"
+            aria-label="Leave room"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
-              <Sparkles className="h-5 w-5" />
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 shrink-0">
+              <Sparkles className="h-4 w-4 md:h-5 md:w-5" />
             </div>
-            <div>
-              <h1 className="text-sm font-black uppercase tracking-widest">{session.subject}</h1>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+            <div className="min-w-0">
+              <h1 className="text-sm font-black uppercase tracking-widest truncate">{session.subject}</h1>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest truncate">
                 {session.topic || "Study Session"}
               </p>
             </div>
           </div>
-          <div className="h-8 w-[1px] bg-border" />
-          <div className="flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-2">
             <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-[9px] font-black tracking-widest uppercase">
               {session.status === "ACTIVE" ? "Live" : session.status}
             </Badge>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4 shrink-0">
           {showNoShowPrompt && (
             <Button
               onClick={handleConvertToMashAI}
@@ -200,14 +222,10 @@ export default function StudyRoomClient({ initialData }: { initialData: StudyRoo
               {converting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Tutor Unavailable? Use AI"}
             </Button>
           )}
-          <span className="text-[9px] font-bold text-muted-foreground hidden md:block">
-            {new Date().toLocaleTimeString("en-KE", {
-              timeZone: "Africa/Nairobi",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}{" "}
-            EAT
-          </span>
+          <div className="hidden md:flex items-center gap-1.5 text-[10px] font-black text-muted-foreground bg-secondary/60 px-3 py-1.5 rounded-full">
+            <Clock className="h-3 w-3" />
+            {formatDuration(sessionDuration)}
+          </div>
           <div className="hidden md:flex -space-x-3">
             <AvatarPremium seed={session.student?.name} size="sm" className="border-2 border-background" />
             {session.partner && (
@@ -215,53 +233,104 @@ export default function StudyRoomClient({ initialData }: { initialData: StudyRoo
             )}
           </div>
           <Button
-            onClick={handleEndSession}
+            onClick={() => setShowLeaveConfirm(true)}
             variant="ghost"
-            className="h-10 px-6 rounded-xl border border-border/50 font-black text-[10px] tracking-widest uppercase hover:bg-red-500/10 hover:text-red-500 transition-all"
+            className="h-9 md:h-10 px-4 md:px-6 rounded-xl border border-border/50 font-black text-[10px] tracking-widest uppercase hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/30 transition-all"
           >
-            End Session
+            <LogOut className="h-3.5 w-3.5 mr-2" />
+            <span className="hidden sm:inline">Leave</span>
           </Button>
         </div>
       </header>
 
-      <main className="flex-1 flex overflow-hidden">
-        <aside className="w-80 border-r border-border/50 bg-secondary/30 hidden xl:flex flex-col p-8 space-y-8">
-          <div className="space-y-4">
-            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-              Session Info
-            </p>
-            <div className="space-y-3">
-              <div className="p-4 rounded-2xl bg-background border border-border/50 space-y-2">
-                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary">
-                  <Sparkles className="h-3 w-3" />{" "}
-                  {session.partner ? "Studying Together" : "Waiting for a partner"}
+      <main className="flex-1 flex overflow-hidden min-h-0">
+        <aside className="w-72 xl:w-80 border-r border-border/50 bg-secondary/20 hidden lg:flex flex-col gap-6 p-6 overflow-y-auto">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Users className="h-3.5 w-3.5 text-muted-foreground" />
+              <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
+                Participants ({participants.length})
+              </p>
+            </div>
+            <div className="space-y-2">
+              {participants.map((p, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${
+                    p.isCurrentUser
+                      ? "bg-primary/5 border-primary/20"
+                      : "bg-background border-border/50"
+                  }`}
+                >
+                  <div className="relative shrink-0">
+                    <AvatarPremium seed={p.name} size="sm" />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-background" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-black truncate">
+                      {p.name}{p.isCurrentUser ? " (you)" : ""}
+                    </p>
+                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{p.role}</p>
+                  </div>
+                </motion.div>
+              ))}
+              {!session.partner && (
+                <div className="flex items-center gap-3 p-3 rounded-2xl border border-dashed border-border/50 bg-secondary/30">
+                  <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-black text-muted-foreground">Finding someone…</p>
+                    <p className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-widest">Usually under 30s</p>
+                  </div>
                 </div>
-                <p className="text-xs font-medium text-muted-foreground leading-relaxed">
-                  {session.partner
-                    ? `You're studying with ${session.partner.name}`
-                    : "Hang tight — we're finding someone to join you."}
-                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Session Details</p>
+            <div className="p-4 rounded-2xl bg-background border border-border/50 space-y-3">
+              <div className="flex items-center gap-2">
+                <BookOpen className="h-3.5 w-3.5 text-primary" />
+                <div>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Subject</p>
+                  <p className="text-xs font-bold">{session.subject}</p>
+                </div>
               </div>
-              <div className="p-4 rounded-2xl bg-background border border-border/50 space-y-2">
-                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-500">
-                  <ShieldCheck className="h-3 w-3 text-emerald-500" /> Secure Study Space
+              {session.topic && (
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-3.5 w-3.5 text-violet-500" />
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Topic</p>
+                    <p className="text-xs font-bold">{session.topic}</p>
+                  </div>
                 </div>
-                <p className="text-xs font-medium text-muted-foreground leading-relaxed">
-                  Your conversation is completely private. Just you and your study buddy. 🔒
-                </p>
+              )}
+              <div className="flex items-center gap-2">
+                <Clock className="h-3.5 w-3.5 text-amber-500" />
+                <div>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Duration</p>
+                  <p className="text-xs font-bold font-mono">{formatDuration(sessionDuration)}</p>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="flex-1" />
-
-          <div className="p-6 rounded-[2rem] bg-primary/10 border border-primary/20 space-y-4">
-            <p className="text-[10px] font-black uppercase tracking-widest text-primary">Member Tier</p>
-            <h4 className="text-xl font-black tracking-tightest">{session.tier}</h4>
+          <div className="mt-auto p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 space-y-1.5">
+            <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+              <ShieldCheck className="h-3 w-3" /> End-to-end private
+            </div>
+            <p className="text-[10px] font-medium text-muted-foreground leading-snug">
+              Your session is completely private — only visible to you and your partner.
+            </p>
           </div>
         </aside>
 
-        <section className="flex-1 flex flex-col bg-background relative">
+        <section className="flex-1 flex flex-col bg-background relative min-w-0 min-h-0">
           <StreamChatRoom
             channelId={sessionId}
             userId={currentUser.id}
@@ -275,13 +344,61 @@ export default function StudyRoomClient({ initialData }: { initialData: StudyRoo
               topic: session.topic,
             }}
           />
-          <div className="py-2 text-center border-t border-border/30">
+          <div className="py-1.5 text-center border-t border-border/30 shrink-0">
             <span className="text-[9px] font-medium text-muted-foreground/40">
               🔒 This session is private and secure
             </span>
           </div>
         </section>
       </main>
+
+      <AnimatePresence>
+        {showLeaveConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
+            style={{ zIndex: Z.STICKY + 10 }}
+            onClick={() => setShowLeaveConfirm(false)}
+          >
+            <motion.div
+              initial={{ y: 40, opacity: 0, scale: 0.96 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 40, opacity: 0, scale: 0.96 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm bg-card border border-border rounded-[2.5rem] p-8 space-y-6 shadow-2xl"
+            >
+              <div className="text-center space-y-2">
+                <div className="w-14 h-14 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center mx-auto">
+                  <LogOut className="h-7 w-7" />
+                </div>
+                <h2 className="text-xl font-black tracking-tightest">Leave this room?</h2>
+                <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                  Leaving will end the session and your progress will be saved. You can always start a new one.
+                </p>
+              </div>
+              <div className="flex flex-col gap-3">
+                <Button
+                  onClick={handleEndSession}
+                  className="w-full h-14 rounded-2xl bg-red-500 hover:bg-red-600 text-white font-black text-[10px] tracking-widest uppercase shadow-lg shadow-red-500/20 transition-all"
+                >
+                  Yes, end this session
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowLeaveConfirm(false)}
+                  className="w-full h-12 rounded-2xl font-black text-[10px] tracking-widest uppercase"
+                >
+                  Stay — keep learning
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <SessionReviewModal
         open={showReview}
         onClose={handleReviewClose}

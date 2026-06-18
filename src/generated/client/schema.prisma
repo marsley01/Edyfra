@@ -104,13 +104,15 @@ model User {
 }
 
 model StudentProfile {
-  userId         String   @id
-  subjects       String[]
-  weakTopics     String[]
-  studyStyle     String
-  preferredTimes Json
-  goals          String[]
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String           @id
+  subjects        String[]
+  weakTopics      String[]
+  studyStyle      String
+  preferredTimes  Json
+  goals           String[]
+  studyPreference StudyPreference? @map("study_preference")
+  formLevel       String?          @map("form_level")
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model TutorProfile {
@@ -119,7 +121,7 @@ model TutorProfile {
   levelsTaught          String[]
   verificationPath      VerifPath
   gradesProof           String?
-  hourlyRate            Int
+  hourlyRate            Int       @default(0)
   bio                   String
   isVerified            Boolean   @default(false)
   verifiedAt            DateTime?
@@ -1345,4 +1347,30 @@ model InstitutionInvitation {
   @@unique([institutionId, email, role])
   @@index([token])
   @@index([institutionId, status])
+}
+
+model GroupMatchRequest {
+  id             String           @id @default(cuid())
+  subject        String
+  educationLevel EduLevel         @map("education_level")
+  studentIds     String[]         @map("student_ids")
+  status         GroupMatchStatus @default(forming)
+  tutorId        String?          @map("tutor_id")
+  roomId         String?          @map("room_id")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  expiresAt      DateTime         @map("expires_at")
+
+  @@map("group_match_requests")
+}
+
+enum StudyPreference {
+  tutor
+  peer
+  either
+}
+
+enum GroupMatchStatus {
+  forming
+  matched
+  expired
 }

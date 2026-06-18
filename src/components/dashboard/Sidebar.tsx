@@ -9,32 +9,55 @@ import {
   LayoutDashboard, BookOpen, GraduationCap,
   Settings, LogOut, Zap, Flame, Trophy,
   Sparkles, Share2, UserSearch, Users, MessageSquare, LibraryBig,
-  ChevronsUpDown, Search, X, Bell
+  ChevronsUpDown, X, Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { getUserData } from "@/app/actions/user";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { NotificationBell, NotificationCountBadge } from "@/components/dashboard/NotificationBell";
 
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/notifications", label: "Notifications", icon: Bell, showCount: true },
-  { href: "/dashboard/community", label: "Community", icon: Share2 },
-  { href: "/dashboard/groups", label: "Study Groups", icon: Users },
-  { href: "/dashboard/search", label: "Study Partners", icon: UserSearch },
-  { href: "/dashboard/study", label: "Start a Session", icon: Zap },
-  { href: "/dashboard/sessions", label: "My Sessions", icon: BookOpen },
-  { href: "/dashboard/resources", label: "Resources", icon: LibraryBig },
-  { href: "/dashboard/tutors", label: "Find a Tutor", icon: GraduationCap },
-  { href: "/dashboard/messages", label: "Messages", icon: MessageSquare },
-  { href: "/dashboard/challenges", label: "Daily Quests", icon: Flame },
-  { href: "/dashboard/leaderboard", label: "Leaderboard", icon: Trophy },
-  { href: "/dashboard/achievements", label: "Achievements", icon: Sparkles },
+type NavSection = {
+  label: string;
+  items: { href: string; label: string; icon: React.ComponentType<{ className?: string }>; showCount?: boolean }[];
+};
+
+const NAV_SECTIONS: NavSection[] = [
+  {
+    label: "Study",
+    items: [
+      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/dashboard/study", label: "Start a Session", icon: Zap },
+      { href: "/dashboard/sessions", label: "My Sessions", icon: BookOpen },
+      { href: "/dashboard/tutors", label: "Find a Tutor", icon: GraduationCap },
+      { href: "/dashboard/resources", label: "Resources", icon: LibraryBig },
+    ],
+  },
+  {
+    label: "Community",
+    items: [
+      { href: "/dashboard/community", label: "Community", icon: Share2 },
+      { href: "/dashboard/groups", label: "Study Groups", icon: Users },
+      { href: "/dashboard/search", label: "Study Partners", icon: UserSearch },
+      { href: "/dashboard/messages", label: "Messages", icon: MessageSquare },
+    ],
+  },
+  {
+    label: "Compete",
+    items: [
+      { href: "/dashboard/challenges", label: "Daily Quests", icon: Flame },
+      { href: "/dashboard/leaderboard", label: "Leaderboard", icon: Trophy },
+      { href: "/dashboard/achievements", label: "Achievements", icon: Sparkles },
+    ],
+  },
+  {
+    label: "Account",
+    items: [
+      { href: "/dashboard/notifications", label: "Notifications", icon: Bell, showCount: true },
+    ],
+  },
 ];
 
 export default function DashboardSidebar({ user, onClose }: { user: User; onClose?: () => void }) {
@@ -63,18 +86,18 @@ export default function DashboardSidebar({ user, onClose }: { user: User; onClos
   return (
     <aside className={cn(
       "flex flex-col bg-card border-r border-border/60 transition-all duration-200",
-      onClose ? "h-full w-full" : "w-64 h-[calc(100vh-5rem)] sticky top-20 hidden lg:flex"
+      onClose ? "h-full w-full" : "w-64 h-[calc(100vh-3.5rem)] sticky top-14 hidden lg:flex"
     )}>
-      {/* Mobile Close Button (only if onClose provided) */}
+      {/* Mobile Close Button */}
       {onClose && (
         <div className="flex justify-end p-4">
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-secondary/80 transition-colors cursor-pointer">
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-secondary/80 transition-colors cursor-pointer" aria-label="Close menu">
             <X className="h-6 w-6" />
           </button>
         </div>
       )}
 
-      {/* Workspace header */}
+      {/* Brand header */}
       <div className="p-5 pb-3">
         <div className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-secondary/60 transition-all cursor-pointer group">
           <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center shadow-sm">
@@ -87,44 +110,53 @@ export default function DashboardSidebar({ user, onClose }: { user: User; onClos
         </div>
       </div>
 
-      {/* Navigation — grouped in a rounded card */}
-      <nav className="flex-1 px-3 pb-2 overflow-y-auto scrollbar-none space-y-1">
-        {navItems.map(({ href, label, icon: Icon, showCount }: any) => {
-          const isActive = pathname === href;
-          return (
-            <Link
-              key={href}
-              href={href}
-              onClick={onClose}
-              className={cn(
-                "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative",
-                isActive
-                  ? "bg-primary/10 text-primary shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
-              )}
-            >
-              <Icon className={cn(
-                "h-4.5 w-4.5 shrink-0 transition-colors",
-                isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
-              )} />
-              <span className="truncate">{label}</span>
-              {showCount && <NotificationCountBadge />}
-            </Link>
-          );
-        })}
+      {/* Navigation — sectioned */}
+      <nav className="flex-1 px-3 pb-2 overflow-y-auto scrollbar-none space-y-4">
+        {NAV_SECTIONS.map(({ label, items }) => (
+          <div key={label}>
+            <p className="px-3.5 mb-1 text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+              {label}
+            </p>
+            <div className="space-y-0.5">
+              {items.map(({ href, label: itemLabel, icon: Icon, showCount }) => {
+                const isActive = pathname === href;
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={onClose}
+                    className={cn(
+                      "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group relative",
+                      isActive
+                        ? "bg-primary/10 text-primary shadow-sm"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                    )}
+                  >
+                    <Icon className={cn(
+                      "h-4 w-4 shrink-0 transition-colors",
+                      isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                    )} />
+                    <span className="truncate">{itemLabel}</span>
+                    {showCount && <NotificationCountBadge />}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
-      {/* User section — rounded card with soft background */}
+      {/* User section */}
       <div className="p-4 pt-2 space-y-3">
         <div className="flex items-center justify-between px-1">
-           <ThemeToggle />
-           <NotificationBell />
-           <Link
-             href="/dashboard/settings"
-             className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"
-           >
-             <Settings className="h-4.5 w-4.5" />
-           </Link>
+          <ThemeToggle />
+          <NotificationBell />
+          <Link
+            href="/dashboard/settings"
+            className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"
+          >
+            <Settings className="h-4 w-4" />
+          </Link>
         </div>
 
         <div className="rounded-xl bg-secondary/40 border border-border/40 p-3 space-y-2.5">

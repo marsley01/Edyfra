@@ -5,6 +5,7 @@ import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { checkAdminStatus } from "./admin";
 import { logActivity as _logActivity } from "./institution-admin";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 /**
  * Founder-only: list all institution applications (typically PENDING).
@@ -103,4 +104,40 @@ export async function decideInstitutionApplication(input: z.infer<typeof Decisio
 
   revalidatePath("/admin/institutions");
   return { ok: true as const };
+}
+
+export async function deleteInstitution(institutionId: string) {
+  const isAdmin = await checkAdminStatus();
+  if (!isAdmin) return { ok: false as const, error: "Forbidden" };
+
+  try {
+    const inst = await prisma.institution.findUnique({
+      where: { id: institutionId },
+      select: { id: true, primaryAdminUserId: true }
+    });
+
+    if (!inst) return { ok: false as const, error: "Institution not found" };
+
+    if (inst.primaryAdminUserId) {
+      const supabaseAdmin = createAdminClient();
+      const { error: supaErr } = await supabaseAdmin.auth.admin.deleteUser(inst.primaryAdminUserId);
+      if (supaErr) {
+        console.warn("[deleteInstitution] failed to delete from Supabase:", supaErr);
+      }
+
+      await prisma.user.delete({
+        where: { id: inst.primaryAdminUserId }
+      }).catch(e => console.warn("[deleteInstitution] failed to delete admin user in Prisma:", e));
+    }
+
+    await prisma.institution.delete({
+      where: { id: institutionId },
+    });
+
+    revalidatePath("/admin/institutions");
+    return { ok: true as const };
+  } catch (error: any) {
+    console.error("[deleteInstitution] error:", error);
+    return { ok: false as const, error: error?.message || "Failed to delete institution" };
+  }
 }

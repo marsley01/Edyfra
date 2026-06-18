@@ -38,7 +38,7 @@ export default async function DashboardLayout({
       <div className="flex flex-col lg:flex-row min-h-screen bg-background">
         <MobileNav user={user} />
         <DashboardSidebar user={user} />
-        <main className="flex-1 overflow-y-auto pb-20">
+        <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">
           {children}
         </main>
         <MatchNotification />
