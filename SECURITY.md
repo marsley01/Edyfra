@@ -13,7 +13,7 @@ We actively monitor and patch vulnerabilities for the following versions of our 
 
 We take the security of our application seriously. If you discover any security vulnerabilities, please do **not** open a public GitHub issue. Instead, report them responsibly by following these steps:
 
-1. **Email us directly:** Send a detailed report to [your-security-email@example.com] (e.g., security@edyfra.com).
+1. **Email us directly:** Send a detailed report to mashmarsley@gmail.com  or edyfraplatform@gmail.com 
 2. **Include details:** Please provide a clear description of the vulnerability, steps to reproduce it, and any potential impact or proof of concept (PoC).
 
 ### Our Process
