@@ -11,6 +11,11 @@ import dynamic from "next/dynamic";
 import SessionReviewModal from "@/components/sessions/SessionReviewModal";
 import { Z } from "@/lib/layers";
 import { motion, AnimatePresence } from "framer-motion";
+import { VideoProvider } from "@/components/video/VideoProvider";
+import { StartCallButton } from "@/components/video/StartCallButton";
+import { IncomingCall } from "@/components/video/IncomingCall";
+import { ActiveCall } from "@/components/video/ActiveCall";
+import type { Call } from "@stream-io/video-react-sdk";
 
 const StreamChatRoom = dynamic(
   () => import("@/components/stream/StreamChatRoom"),
@@ -42,7 +47,7 @@ export interface StudyRoomInitialData {
   currentUser: { id: string; name?: string; avatar?: string };
 }
 
-export default function StudyRoomClient({ initialData }: { initialData: StudyRoomInitialData }) {
+function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) {
   const router = useRouter();
 
   const [session, setSession] = useState<StudyRoomSession>(initialData.session);
@@ -51,6 +56,7 @@ export default function StudyRoomClient({ initialData }: { initialData: StudyRoo
   const [converting, setConverting] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [sessionDuration, setSessionDuration] = useState(0);
+  const [activeCall, setActiveCall] = useState<Call | null>(null);
   const currentUser = initialData.currentUser;
   const sessionId = initialData.sessionId;
 
@@ -178,6 +184,17 @@ export default function StudyRoomClient({ initialData }: { initialData: StudyRoo
     { ...session.student, isCurrentUser: session.studentId === currentUser.id, role: session.tier === "TUTOR" ? "Student" : "You" },
     ...(session.partner ? [{ ...session.partner, isCurrentUser: session.partnerId === currentUser.id, role: session.tier === "TUTOR" ? "Tutor" : "Study Buddy" }] : []),
   ];
+
+  // If a video call is active, show it full-screen
+  if (activeCall) {
+    return (
+      <ActiveCall
+        call={activeCall}
+        onEnd={() => setActiveCall(null)}
+        subject={`${session.subject}${session.topic ? ` — ${session.topic}` : ""}`}
+      />
+    );
+  }
 
   return (
     <div className="h-[100dvh] bg-background text-foreground flex flex-col overflow-hidden font-sans">
@@ -331,6 +348,24 @@ export default function StudyRoomClient({ initialData }: { initialData: StudyRoo
         </aside>
 
         <section className="flex-1 flex flex-col bg-background relative min-w-0 min-h-0">
+          {/* Incoming call listener — visible inside the study room */}
+          <IncomingCall onAccepted={(call) => setActiveCall(call)} />
+
+          {/* Video call button in the top toolbar area */}
+          {session.partnerId && (
+            <div className="px-4 pt-3 pb-1 flex justify-end shrink-0">
+              <StartCallButton
+                roomId={sessionId}
+                otherUserId={
+                  session.studentId === currentUser.id
+                    ? session.partnerId
+                    : session.studentId
+                }
+                otherUserName={session.partner?.name || "Partner"}
+              />
+            </div>
+          )}
+
           <StreamChatRoom
             channelId={sessionId}
             userId={currentUser.id}
@@ -407,5 +442,14 @@ export default function StudyRoomClient({ initialData }: { initialData: StudyRoo
         subject={session.subject}
       />
     </div>
+  );
+}
+
+// Wrap with VideoProvider so the call SDK is available inside the study room
+export default function StudyRoomClient({ initialData }: { initialData: StudyRoomInitialData }) {
+  return (
+    <VideoProvider>
+      <StudyRoomInner initialData={initialData} />
+    </VideoProvider>
   );
 }

@@ -1,8 +1,8 @@
 "use client";
 
 import { type ReactNode } from "react";
-import { StreamVideoProvider } from "@/components/stream/StreamVideoProvider";
+import { VideoProvider } from "@/components/video/VideoProvider";
 
 export function TutorVideoShell({ children }: { children: ReactNode }) {
-  return <StreamVideoProvider>{children}</StreamVideoProvider>;
+  return <VideoProvider>{children}</VideoProvider>;
 }
