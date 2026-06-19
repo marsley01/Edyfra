@@ -11,6 +11,7 @@ import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { PushSubscriptionManager } from "@/components/push-subscription-manager";
 import EddyChatWrapper from "@/components/chat/EddyChatWrapper";
 import { OverlayManagerProvider } from "@/lib/overlay-manager";
+import { ClickFeedback } from "@/components/click-feedback";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -102,6 +103,7 @@ export default function RootLayout({
         >
           <OverlayManagerProvider>
             <ThemeColorManager />
+            <ClickFeedback />
             <ConditionalShell>{children}</ConditionalShell>
             <ServiceWorkerRegister />
             <PushSubscriptionManager />

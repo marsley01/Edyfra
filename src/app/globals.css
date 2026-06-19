@@ -824,6 +824,16 @@ select,
   touch-action: manipulation;
 }
 
+input,
+textarea,
+select,
+[contenteditable] {
+  touch-action: auto;
+  user-select: text;
+  -webkit-user-select: text;
+  caret-color: currentColor;
+}
+
 .drawer,
 .modal,
 .overlay-panel,
@@ -849,6 +859,47 @@ select,
 }
 *:focus:not(:focus-visible) {
   outline: none;
+}
+
+button,
+a[href],
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  position: relative;
+}
+
+[data-click-feedback="true"]::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  z-index: 1;
+  width: 1em;
+  height: 1em;
+  margin-top: -0.5em;
+  border-radius: 9999px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  opacity: 0.9;
+  pointer-events: none;
+  animation: edyfra-click-spinner 0.72s linear infinite;
+}
+
+[data-click-feedback="true"]:where([data-slot="button"]:not([data-size^="icon"]), .primary-btn, .cta-btn, button[type="submit"]) {
+  padding-right: max(2.5rem, var(--click-feedback-padding, 2.5rem));
+}
+
+[data-click-feedback="true"]:where([data-size^="icon"], button:has(> svg:only-child), a:has(> svg:only-child))::after {
+  right: 50%;
+  margin-right: -0.5em;
+}
+
+@keyframes edyfra-click-spinner {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 img {
@@ -1671,4 +1722,4 @@ img {
   .ctrl.ctrl-end {
     margin-left: 6px;
   }
-}
+}

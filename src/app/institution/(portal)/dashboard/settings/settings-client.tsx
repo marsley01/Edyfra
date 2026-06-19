@@ -312,7 +312,7 @@ function AddDeputy({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
         <div className="mb-4 flex items-start justify-between">
           <h2 className="text-lg font-black text-gray-900">Add deputy admin</h2>
           <button onClick={onClose} className="rounded-md p-1 text-gray-400 hover:bg-gray-100">
@@ -375,7 +375,7 @@ function Input({ className = "", ...props }: { onChange?: (v: string) => void; c
     <input
       {...rest}
       onChange={onChange ? (e) => onChange(e.target.value) : undefined}
-      className={`h-10 w-full rounded-md border border-gray-200 bg-white px-3 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 ${className}`}
+      className={`min-h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-base text-gray-900 placeholder:text-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:text-sm ${className}`}
     />
   );
 }
@@ -393,7 +393,7 @@ function Select({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="h-10 w-full rounded-md border border-gray-200 bg-white px-3 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+      className="min-h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-base text-gray-900 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:text-sm"
     >
       {options.map((o) => (
         <option key={o.value} value={o.value}>

@@ -13,10 +13,10 @@ import { addStudent, removeStudent } from "@/app/actions/institution-admin";
 import { bulkInviteStudents } from "@/app/actions/institution-invitations";
 import type { StudentRow } from "@/app/actions/institution-admin";
 
-const COLORS: (keyof typeof PALETTE)[] = ["indigo", "cyan", "emerald", "amber", "rose", "violet"];
-const PALETTE = { indigo: 1, cyan: 1, emerald: 1, amber: 1, rose: 1, violet: 1 } as const;
+const COLORS = ["indigo", "cyan", "emerald", "amber", "rose", "violet"] as const;
+type InitialsColor = typeof COLORS[number];
 
-function hashColor(name: string) {
+function hashColor(name: string): InitialsColor {
   let h = 0;
   for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % COLORS.length;
   return COLORS[h];
@@ -99,7 +99,7 @@ export function StudentsClient({ initialRows }: { initialRows: StudentRow[] }) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name, email or subject…"
-              className="h-10 w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+              className="min-h-11 w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3 text-base text-gray-900 placeholder:text-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:text-sm"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -107,7 +107,7 @@ export function StudentsClient({ initialRows }: { initialRows: StudentRow[] }) {
             <select
               value={formFilter}
               onChange={(e) => setFormFilter(e.target.value)}
-              className="h-10 rounded-xl border border-gray-200 bg-white px-3 text-sm font-medium focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+              className="min-h-11 rounded-xl border border-gray-200 bg-white px-3 text-base font-medium text-gray-900 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:text-sm"
             >
               <option value="">All forms</option>
               {forms.map((f) => (
@@ -119,7 +119,7 @@ export function StudentsClient({ initialRows }: { initialRows: StudentRow[] }) {
             <select
               value={perfFilter}
               onChange={(e) => setPerfFilter(e.target.value as "" | OverallStatus)}
-              className="h-10 rounded-xl border border-gray-200 bg-white px-3 text-sm font-medium focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+              className="min-h-11 rounded-xl border border-gray-200 bg-white px-3 text-base font-medium text-gray-900 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:text-sm"
             >
               <option value="">All performance</option>
               <option value="GREEN">On track</option>
@@ -274,7 +274,7 @@ function AddStudentDialog({ onClose }: { onClose: () => void }) {
             <select
               value={formYear}
               onChange={(e) => setFormYear(e.target.value)}
-              className="h-10 w-full rounded-md border border-gray-200 bg-white px-3 text-sm"
+              className="min-h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-base text-gray-900 sm:text-sm"
             >
               {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
                 <option key={n} value={n}>
@@ -364,7 +364,7 @@ function BulkUploadDialog({ onClose }: { onClose: () => void }) {
             placeholder={`name,email,form,admissionNumber
 Brian Otieno,brian@school.ac.ke,2,ADM/2025/001
 Aisha Wambui,aisha@school.ac.ke,2,ADM/2025/002`}
-            className="w-full rounded-md border border-gray-200 bg-white p-3 font-mono text-xs focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+            className="w-full rounded-md border border-gray-200 bg-white p-3 font-mono text-base text-gray-900 placeholder:text-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:text-xs"
           />
         </Field>
         <div className="rounded-xl bg-indigo-50/60 p-3 text-xs text-indigo-900">
@@ -411,7 +411,7 @@ function Modal({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
         <div className="mb-4 flex items-start justify-between">
           <div>
             <h2 className="text-lg font-black text-gray-900">{title}</h2>
@@ -435,7 +435,7 @@ function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...rest}
-      className={`h-10 w-full rounded-md border border-gray-200 bg-white px-3 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 ${className}`}
+      className={`min-h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-base text-gray-900 placeholder:text-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:text-sm ${className}`}
     />
   );
 }
