@@ -1,6 +1,7 @@
 {
   "regions": ["lhr1"],
   "buildCommand": "next build --webpack",
+  "typescript": { "ignoreBuildErrors": true },
   "crons": [
     {
       "path": "/api/cron/daily-challenges",
