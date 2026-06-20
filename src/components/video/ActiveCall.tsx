@@ -74,6 +74,27 @@ function VideoGrid() {
   );
 }
 
+// ── Ringtone Player ────────────────────────────────────────────────────────────
+function RingtonePlayer() {
+  const { useParticipants } = useCallStateHooks();
+  const participants = useParticipants();
+
+  useEffect(() => {
+    if (participants.length === 1) {
+      const audio = new Audio('/sounds/ringtone.mp3');
+      audio.loop = true;
+      audio.play().catch((err) => console.log('[RingtonePlayer] Audio play blocked:', err));
+      
+      return () => {
+        audio.pause();
+        audio.currentTime = 0;
+      };
+    }
+  }, [participants.length]);
+
+  return null;
+}
+
 // ── Call Controls ────────────────────────────────────────────────────────────
 function CallControls({ onEnd }: { onEnd: () => void }) {
   const call = useCall();
@@ -113,6 +134,8 @@ function CallControls({ onEnd }: { onEnd: () => void }) {
   };
 
   const endCall = async () => {
+    call?.camera?.disable().catch(() => {});
+    call?.microphone?.disable().catch(() => {});
     try {
       await call?.endCall();
     } catch {
@@ -176,9 +199,22 @@ export function ActiveCall({
   onEnd: () => void;
   subject?: string;
 }) {
+  useEffect(() => {
+    // Auto-enable devices when joining
+    call.camera?.enable().catch((err) => console.error('[ActiveCall] Camera enable failed:', err));
+    call.microphone?.enable().catch((err) => console.error('[ActiveCall] Mic enable failed:', err));
+
+    return () => {
+      call.camera?.disable().catch(() => {});
+      call.microphone?.disable().catch(() => {});
+      call.leave().catch(() => {});
+    };
+  }, [call]);
+
   return (
     <StreamCall call={call}>
       <StreamTheme>
+        <RingtonePlayer />
         <div className="active-call-new">
           <div className="call-header-new">
             <div className="call-info-new">

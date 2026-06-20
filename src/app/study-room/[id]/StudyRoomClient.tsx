@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Sparkles, ShieldCheck, ChevronLeft, Users, LogOut, BookOpen, Clock } from "lucide-react";
+import { Loader2, Sparkles, ShieldCheck, ChevronLeft, Users, LogOut, BookOpen, Clock, GraduationCap } from "lucide-react";
 import { showError, showSuccess } from "@/lib/toast";
 import dynamic from "next/dynamic";
 import SessionReviewModal from "@/components/sessions/SessionReviewModal";
@@ -16,6 +16,7 @@ import { StartCallButton } from "@/components/video/StartCallButton";
 import { IncomingCall } from "@/components/video/IncomingCall";
 import { ActiveCall } from "@/components/video/ActiveCall";
 import type { Call } from "@stream-io/video-react-sdk";
+import { StudyRoomSidePanel } from "@/components/stream/StudyRoomSidePanel";
 
 const StreamChatRoom = dynamic(
   () => import("@/components/stream/StreamChatRoom"),
@@ -199,10 +200,10 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
   return (
     <div className="h-[100dvh] bg-background text-foreground flex flex-col overflow-hidden font-sans">
       <header
-        className="h-16 md:h-20 border-b border-border/50 px-4 md:px-8 flex items-center justify-between bg-background/80 backdrop-blur-2xl pt-[env(safe-area-inset-top,0px)] shrink-0"
+        className="h-16 md:h-20 border-b border-border/30 px-4 md:px-8 flex items-center justify-between bg-gradient-to-r from-background/90 via-background/80 to-background/90 backdrop-blur-2xl pt-[env(safe-area-inset-top,0px)] shrink-0"
         style={{ zIndex: Z.STICKY }}
       >
-        <div className="flex items-center gap-3 md:gap-6 min-w-0">
+        <div className="flex items-center gap-3 md:gap-5 min-w-0">
           <button
             onClick={() => setShowLeaveConfirm(true)}
             className="p-2 -ml-1 text-foreground hover:bg-primary/5 rounded-xl transition-colors shrink-0"
@@ -211,11 +212,16 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
             <ChevronLeft className="h-5 w-5" />
           </button>
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 shrink-0">
-              <Sparkles className="h-4 w-4 md:h-5 md:w-5" />
+            <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center text-white shadow-lg shadow-primary/20 shrink-0">
+              <GraduationCap className="h-4 w-4 md:h-5 md:w-5" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-sm font-black uppercase tracking-widest truncate">{session.subject}</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-sm font-black uppercase tracking-widest truncate">{session.subject}</h1>
+                <Badge className="hidden sm:inline-flex bg-primary/10 text-primary border-primary/20 text-[8px] font-black tracking-widest uppercase px-2 py-0">
+                  Classroom
+                </Badge>
+              </div>
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest truncate">
                 {session.topic || "Study Session"}
               </p>
@@ -261,7 +267,19 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
       </header>
 
       <main className="flex-1 flex overflow-hidden min-h-0">
-        <aside className="w-72 xl:w-80 border-r border-border/50 bg-secondary/20 hidden lg:flex flex-col gap-6 p-6 overflow-y-auto">
+        <aside className="w-72 xl:w-80 border-r border-border/30 bg-gradient-to-b from-secondary/15 to-secondary/5 hidden lg:flex flex-col gap-6 p-6 overflow-y-auto">
+          {/* Classroom notice board header */}
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/5 to-violet-500/5 border border-primary/10 p-4">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-primary/10 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none" />
+            <div className="relative z-10 flex items-center gap-3">
+              <GraduationCap className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Classroom</p>
+                <p className="text-xs font-bold text-foreground">{session.subject}</p>
+              </div>
+            </div>
+          </div>
+
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Users className="h-3.5 w-3.5 text-muted-foreground" />
@@ -279,7 +297,7 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
                   className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${
                     p.isCurrentUser
                       ? "bg-primary/5 border-primary/20"
-                      : "bg-background border-border/50"
+                      : "bg-background border-border/40"
                   }`}
                 >
                   <div className="relative shrink-0">
@@ -295,7 +313,7 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
                 </motion.div>
               ))}
               {!session.partner && (
-                <div className="flex items-center gap-3 p-3 rounded-2xl border border-dashed border-border/50 bg-secondary/30">
+                <div className="flex items-center gap-3 p-3 rounded-2xl border border-dashed border-border/40 bg-secondary/30">
                   <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
                     <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
                   </div>
@@ -310,7 +328,7 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
 
           <div className="space-y-3">
             <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Session Details</p>
-            <div className="p-4 rounded-2xl bg-background border border-border/50 space-y-3">
+            <div className="p-4 rounded-2xl bg-background border border-border/40 space-y-3">
               <div className="flex items-center gap-2">
                 <BookOpen className="h-3.5 w-3.5 text-primary" />
                 <div>
@@ -337,7 +355,7 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
             </div>
           </div>
 
-          <div className="mt-auto p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 space-y-1.5">
+          <div className="mt-auto p-4 rounded-2xl bg-gradient-to-br from-emerald-500/[0.06] to-emerald-500/[0.02] border border-emerald-500/15 space-y-1.5">
             <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
               <ShieldCheck className="h-3 w-3" /> End-to-end private
             </div>
@@ -366,23 +384,29 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
             </div>
           )}
 
-          <StreamChatRoom
-            channelId={sessionId}
-            userId={currentUser.id}
-            userName={currentUser.name || "User"}
-            userImage={currentUser.avatar}
-            memberIds={session.partnerId ? [session.partnerId] : []}
-            channelName={`${session.subject} - ${session.topic || "Study Session"}`}
-            mashAI={{
-              tier: session.tier,
-              subject: session.subject,
-              topic: session.topic,
-            }}
-          />
-          <div className="py-1.5 text-center border-t border-border/30 shrink-0">
-            <span className="text-[9px] font-medium text-muted-foreground/40">
-              🔒 This session is private and secure
-            </span>
+          <div className="flex flex-1 overflow-hidden min-h-0">
+            <div className="flex-1 flex flex-col min-w-0 border-r border-border/50">
+              <StreamChatRoom
+                channelId={sessionId}
+                userId={currentUser.id}
+                userName={currentUser.name || "User"}
+                userImage={currentUser.avatar}
+                memberIds={session.partnerId ? [session.partnerId] : []}
+                channelName={`${session.subject} - ${session.topic || "Study Session"}`}
+                mashAI={{
+                  tier: session.tier,
+                  subject: session.subject,
+                  topic: session.topic,
+                }}
+              />
+              <div className="py-1.5 text-center border-t border-border/30 shrink-0 bg-background/50 backdrop-blur">
+                <span className="text-[9px] font-medium text-muted-foreground/40">
+                  🔒 This session is private and secure
+                </span>
+              </div>
+            </div>
+            
+            <StudyRoomSidePanel subject={session.subject} topic={session.topic} />
           </div>
         </section>
       </main>

@@ -25,6 +25,8 @@ export async function getStreamToken(userId: string) {
   if (!user || user.id !== userId) throw new Error("Unauthorized");
 
   const client = getServerStreamClient();
+  if (!client) throw new Error("Stream not configured");
+
   console.log(`[Stream] Token generated for user: ${userId}`);
   
   const [token] = await Promise.all([
@@ -85,6 +87,7 @@ export async function createStreamChannel(
   await syncUsersToStream(members);
 
   const client = getServerStreamClient();
+  if (!client) throw new Error("Stream not configured");
 
   try {
     const channel = client.channel("messaging", channelId, {
@@ -117,6 +120,7 @@ export async function addMembersToChannel(
   await syncUsersToStream(members);
 
   const client = getServerStreamClient();
+  if (!client) throw new Error("Stream not configured");
   const channel = client.channel("messaging", channelId);
   await channel.addMembers(members);
   console.log(`[Stream] Added members ${members.join(", ")} to ${channelId}`);
@@ -134,6 +138,7 @@ export async function removeMembersFromChannel(
   if (!user) throw new Error("Unauthorized");
 
   const client = getServerStreamClient();
+  if (!client) throw new Error("Stream not configured");
   const channel = client.channel("messaging", channelId);
   await channel.removeMembers(members);
   console.log(
@@ -167,6 +172,7 @@ export async function createDMChannel(userAId: string, userBId: string) {
   await syncUsersToStream([userAId, userBId]);
 
   const client = getServerStreamClient();
+  if (!client) throw new Error("Stream not configured");
   const channel = client.channel("messaging", channelId, {
     members: [userAId, userBId],
     created_by_id: userAId,
@@ -197,6 +203,7 @@ export async function createGroupChannel(
   await syncUsersToStream([...memberIds, user.id, MASH_AI_USER_ID]);
 
   const client = getServerStreamClient();
+  if (!client) throw new Error("Stream not configured");
   const channelId = `group_${sessionId}`;
 
   const channel = client.channel("messaging", channelId, {
@@ -222,6 +229,7 @@ export async function deleteStreamChannel(channelId: string) {
   if (!user) throw new Error("Unauthorized");
 
   const client = getServerStreamClient();
+  if (!client) throw new Error("Stream not configured");
 
   try {
     const channel = client.channel("messaging", channelId);
@@ -243,6 +251,7 @@ export async function getRecentDMPartners(userId: string) {
   if (!user || user.id !== userId) throw new Error("Unauthorized");
 
   const client = getServerStreamClient();
+  if (!client) throw new Error("Stream not configured");
   const filter = { type: "messaging", members: { $in: [userId] } };
   const channels = await client.queryChannels(
     filter,
@@ -307,7 +316,12 @@ export async function handleMashMention(
   const { AIService } = await import("@/utils/ai-service");
   const { buildMashSystemPrompt } = await import("@/utils/mash-context");
 
-  const studentContextPrompt = await buildMashSystemPrompt(user.id, sessionSubject);
+  let studentContextPrompt = "";
+  try {
+    studentContextPrompt = await buildMashSystemPrompt(user.id, sessionSubject);
+  } catch {
+    studentContextPrompt = `The student is studying ${sessionSubject}. Be encouraging and helpful.`;
+  }
 
   const systemPrompt = `
     ${studentContextPrompt}
@@ -345,13 +359,16 @@ export async function handleMashMention(
   try {
     aiResponse = await AIService.generateCompletion(actualPrompt, systemPrompt);
 
-    // If AI returned the error message, send a friendly fallback instead
-    if (aiResponse.includes("having a bit of trouble thinking") || aiResponse.includes("offline")) {
+    if (!aiResponse || typeof aiResponse !== "string" || aiResponse.trim().length === 0) {
+      aiResponse = `Hey! 👋 I'm here to help with ${sessionSubject}. Could you tell me what specific topic or question you're working on?`;
+    }
+
+    if (aiResponse.includes("having a bit of trouble thinking") || aiResponse.includes("offline") || aiResponse.includes("API Key is missing")) {
       aiResponse = `Hey! 👋 I'm here to help with ${sessionSubject}. Could you tell me what specific topic or question you're working on? I can explain concepts, give practice questions, or help you work through problems step by step.`;
     }
   } catch (err) {
     console.error("[handleMashMention] AI generation failed:", err);
-    aiResponse = `Hey! 👋 I'm here to help with ${sessionSubject}. What would you like to work on today?`;
+    aiResponse = `Hey! 👋 I'm here to help with ${sessionSubject}. What would you like to work on today? You can ask me about any topic or question.`;
   }
 
   // Send response as mash-ai on the channel
@@ -359,6 +376,7 @@ export async function handleMashMention(
     await syncSessionParticipants(user.id);
 
     const client = getServerStreamClient();
+    if (!client) throw new Error("Stream not configured");
     const channel = client.channel("messaging", channelId, {
       members: [user.id, MASH_AI_USER_ID],
     } as any);

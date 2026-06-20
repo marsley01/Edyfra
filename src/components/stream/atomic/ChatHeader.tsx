@@ -1,8 +1,9 @@
 "use client";
 
-import { GraduationCap, Sparkles } from "lucide-react";
+import { GraduationCap, Sparkles, MessageCircle } from "lucide-react";
 import { CallStartButton } from "./CallStartButton";
 import { MicReadyChip } from "./MicReadyChip";
+import { Button } from "@/components/ui/button";
 
 interface ChatHeaderProps {
   channelName: string;
@@ -13,6 +14,7 @@ interface ChatHeaderProps {
   permDenied: boolean;
   permWarmed: boolean;
   onStartCall: () => void;
+  onAskMash?: () => void;
 }
 
 export function ChatHeader({
@@ -24,6 +26,7 @@ export function ChatHeader({
   permDenied,
   permWarmed,
   onStartCall,
+  onAskMash,
 }: ChatHeaderProps) {
   return (
     <div className="flex items-center justify-between px-6 py-4 bg-background/50 backdrop-blur-xl border-b border-white/5 z-20">
@@ -45,6 +48,17 @@ export function ChatHeader({
       </div>
 
       <div className="flex items-center gap-2">
+        {onAskMash && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={onAskMash}
+            className="flex h-9 rounded-xl border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10 font-black text-[10px] tracking-widest uppercase transition-all"
+          >
+            <MessageCircle className="h-3.5 w-3.5 mr-1.5" />
+            <span className="hidden sm:inline">Ask Mash</span>
+          </Button>
+        )}
         {permWarmed && !permDenied && !inCall && <MicReadyChip />}
         <CallStartButton
           inCall={inCall}

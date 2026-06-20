@@ -304,38 +304,82 @@ export async function getOrCreateDailyChallenge(level: string, subject?: string)
   }
 }
 
+function shuffleArray<T>(arr: T[]): T[] {
+  const shuffled = [...arr];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 export async function getChallengesForUser(userId: string, level: string) {
   try {
     const eduLevel = level as EduLevel;
-    let challenges = await prisma.dailyChallenge.findMany({
+
+    // Always fetch or generate today's challenge first to ensure it exists
+    await getOrCreateDailyChallenge(level);
+
+    // Prioritize fetching challenges the user HAS NOT attempted
+    const unattemptedChallenges = await prisma.dailyChallenge.findMany({
       where: {
         level: eduLevel,
         date: { lte: new Date() },
+        attempts: { none: { userId } },
       },
       orderBy: { date: "desc" },
       take: 10,
       include: {
-        attempts: {
-          where: { userId },
-          select: { id: true, correct: true },
-        },
+        attempts: { where: { userId }, select: { id: true, correct: true } },
       },
     });
 
-    if (challenges.length === 0) {
-      await getOrCreateDailyChallenge(level);
-      challenges = await prisma.dailyChallenge.findMany({
-        where: { level: eduLevel, date: { lte: new Date() } },
-        orderBy: { date: "desc" },
-        take: 10,
-        include: {
-          attempts: {
-            where: { userId },
-            select: { id: true, correct: true },
-          },
-        },
+    // If the user has nearly exhausted all challenges, fire off a fresh generation
+    if (unattemptedChallenges.length < 3) {
+      generateFreshChallengesForUser(userId, level).catch(() => {});
+    }
+
+    // Shuffle unattempted so the mix feels fresh every day
+    const shuffledUnattempted = shuffleArray(unattemptedChallenges);
+
+    if (shuffledUnattempted.length >= 10) {
+      return shuffledUnattempted.slice(0, 10).map((c) => {
+        const attempt = c.attempts[0];
+        const options = (c.options as string[]) || [];
+        return {
+          id: c.id,
+          subject: c.subject,
+          level: c.level,
+          question: c.question,
+          options,
+          answer: c.answer,
+          explanation: c.explanation,
+          date: c.date.toISOString(),
+          completed: attempt?.correct === true,
+          hasAttempt: !!attempt,
+        };
       });
     }
+
+    // Backfill with challenged the user HAS attempted to reach a mix of 10
+    const remainingCount = 10 - shuffledUnattempted.length;
+    const attemptedChallenges = await prisma.dailyChallenge.findMany({
+      where: {
+        level: eduLevel,
+        date: { lte: new Date() },
+        attempts: { some: { userId } },
+      },
+      orderBy: { date: "desc" },
+      take: remainingCount,
+      include: {
+        attempts: { where: { userId }, select: { id: true, correct: true } },
+      },
+    });
+
+    // Shuffle attempted too so the order isn't always the same
+    const shuffledAttempted = shuffleArray(attemptedChallenges);
+
+    const challenges = [...shuffledUnattempted, ...shuffledAttempted];
 
     return challenges.map((c) => {
       const attempt = c.attempts[0];
@@ -483,6 +527,45 @@ export async function getChallengeCompletion(userId: string, challengeId: string
   } catch (error) {
     console.error("Error fetching challenge completion:", error);
     return null;
+  }
+}
+
+export async function generateFreshChallengesForUser(userId: string, level: string) {
+  try {
+    const recentAttempts = await prisma.dailyChallengeAttempt.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      include: { challenge: { select: { subject: true } } },
+    });
+
+    const subjectPerformance: Record<string, { correct: number; total: number }> = {};
+    recentAttempts.forEach((a) => {
+      const s = a.challenge.subject;
+      if (!subjectPerformance[s]) subjectPerformance[s] = { correct: 0, total: 0 };
+      subjectPerformance[s].total++;
+      if (a.correct) subjectPerformance[s].correct++;
+    });
+
+    let weakestSubject = "Mathematics";
+    let lowestScore = 100;
+    Object.entries(subjectPerformance).forEach(([subject, perf]) => {
+      if (perf.total >= 2) {
+        const score = (perf.correct / perf.total) * 100;
+        if (score < lowestScore) { lowestScore = score; weakestSubject = subject; }
+      }
+    });
+
+    const challenges = await generateChallenges({
+      level,
+      subject: weakestSubject,
+      count: 5,
+    });
+
+    return challenges.length > 0;
+  } catch (error) {
+    console.error("Error generating fresh challenges:", error);
+    return false;
   }
 }
 

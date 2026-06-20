@@ -2,8 +2,8 @@ import { StreamChat } from "stream-chat";
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 
-const STREAM_KEY = process.env.NEXT_PUBLIC_STREAM_KEY!;
-const STREAM_SECRET = process.env.STREAM_SECRET!;
+const STREAM_KEY = process.env.NEXT_PUBLIC_STREAM_KEY;
+const STREAM_SECRET = process.env.STREAM_SECRET;
 export const MASH_AI_USER_ID = "mash-ai";
 
 export interface CanonicalUserProfile {
@@ -14,13 +14,15 @@ export interface CanonicalUserProfile {
 
 let serverClient: StreamChat | null = null;
 
-export function getServerStreamClient(): StreamChat {
+export function isStreamConfigured(): boolean {
+  return !!STREAM_KEY && !!STREAM_SECRET;
+}
+
+export function getServerStreamClient(): StreamChat | null {
+  if (!STREAM_KEY || !STREAM_SECRET) {
+    return null;
+  }
   if (!serverClient) {
-    if (!STREAM_KEY || !STREAM_SECRET) {
-      throw new Error(
-        "[user-sync] NEXT_PUBLIC_STREAM_KEY or STREAM_SECRET is not set in environment variables",
-      );
-    }
     serverClient = StreamChat.getInstance(STREAM_KEY, STREAM_SECRET);
   }
   return serverClient;
@@ -80,13 +82,15 @@ export async function getCanonicalUserProfile(
 export async function syncUserToStream(
   userId: string,
 ): Promise<CanonicalUserProfile | null> {
+  const client = getServerStreamClient();
+  if (!client) return null;
+
   const profile = await getCanonicalUserProfile(userId);
   if (!profile) {
     console.warn(`[user-sync] No canonical profile for ${userId}; skipping Stream upsert`);
     return null;
   }
 
-  const client = getServerStreamClient();
   await client.upsertUser({
     id: profile.id,
     name: profile.name,
@@ -107,12 +111,14 @@ export async function syncUsersToStream(
   const uniqueIds = Array.from(new Set(userIds.filter(Boolean)));
   if (uniqueIds.length === 0) return [];
 
+  const client = getServerStreamClient();
+  if (!client) return [];
+
   const profiles = await prisma.user.findMany({
     where: { id: { in: uniqueIds } },
     select: { id: true, name: true, avatar: true },
   });
 
-  const client = getServerStreamClient();
   const results: CanonicalUserProfile[] = [];
 
   for (const p of profiles) {
@@ -140,6 +146,7 @@ export async function syncUsersToStream(
  */
 export async function syncAIUserToStream(): Promise<void> {
   const client = getServerStreamClient();
+  if (!client) return;
   try {
     await client.upsertUser({
       id: MASH_AI_USER_ID,

@@ -79,6 +79,9 @@ export function MatchProvider({ children }: { children: ReactNode }) {
     if (!state.matchRequestId || state.step === "matched") return;
 
     pollingRef.current = setInterval(async () => {
+      // STRICT RESOURCE MANAGEMENT: Pause polling if tab is hidden/inactive
+      if (typeof document !== "undefined" && document.hidden) return;
+      
       try {
         const { checkMatchStatus } = await import("@/app/actions/match");
         const res = await checkMatchStatus(state.matchRequestId!);

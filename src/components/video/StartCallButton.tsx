@@ -22,7 +22,11 @@ export function StartCallButton({
   const [errorMsg, setErrorMsg] = useState('');
 
   const handleStartCall = () => {
-    setStep('device-check');
+    if (localStorage.getItem('edyfra_video_perm') === 'granted') {
+      handleDevicesReady();
+    } else {
+      setStep('device-check');
+    }
   };
 
   const handleDevicesReady = async () => {
@@ -92,6 +96,7 @@ export function StartCallButton({
   if (step === 'calling') {
     return (
       <div className="calling-state">
+        <audio src="/sounds/popcorn.mp3" autoPlay loop />
         <div className="calling-pulse">📞</div>
         <p>Calling {otherUserName}...</p>
         <p className="calling-sub">Waiting for them to answer</p>

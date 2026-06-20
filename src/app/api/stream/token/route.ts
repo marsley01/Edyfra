@@ -27,6 +27,9 @@ export async function POST(_request: NextRequest) {
     await syncAIUserToStream();
 
     const client = getServerStreamClient();
+    if (!client) {
+      return NextResponse.json({ error: "Stream not configured" }, { status: 503 });
+    }
     const token = client.createToken(profile.id);
 
     console.log(`[Stream API] Token issued for user: ${profile.id}`);

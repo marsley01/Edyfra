@@ -772,22 +772,10 @@ body {
   min-height: -webkit-fill-available;
 }
 
-/* Universal tap-target baseline (HIG / WCAG 2.5.5) */
-button,
-a,
-[role="button"],
-input[type="checkbox"],
-input[type="radio"],
-select {
-  min-height: 44px;
-}
 
-a {
-  /* Let inline links opt back in visually if they want */
-}
 
 /* Submits and primary CTAs feel chunky on iPhone */
-button[type="submit"],
+button[type="submit"]:not([data-slot="button"]),
 .cta-btn,
 .primary-btn {
   min-height: 52px;
@@ -861,14 +849,6 @@ select,
   outline: none;
 }
 
-button,
-a[href],
-[role="button"],
-input[type="button"],
-input[type="submit"],
-input[type="reset"] {
-  position: relative;
-}
 
 [data-click-feedback="true"]::after {
   content: "";
@@ -1454,8 +1434,19 @@ img {
 .incoming-timer {
   font-size: 12px;
   color: #ef4444;
-  margin: 0 0 20px;
+  margin: 0 0 12px;
   font-variant-numeric: tabular-nums;
+}
+
+.incoming-error {
+  font-size: 12px;
+  color: #fbbf24;
+  margin: 0 0 8px;
+  padding: 8px 12px;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  border-radius: 8px;
+  line-height: 1.4;
 }
 
 .incoming-actions {

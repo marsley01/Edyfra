@@ -24,6 +24,7 @@ export function DeviceCheck({ onReady, onDenied }: DeviceCheckProps) {
 
       // Got access — stop the test stream immediately
       stream.getTracks().forEach((t) => t.stop());
+      localStorage.setItem('edyfra_video_perm', 'granted');
       onReady();
     } catch (err: any) {
       console.error('[DeviceCheck] Device access error:', err);
