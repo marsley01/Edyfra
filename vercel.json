@@ -1,6 +1,5 @@
 {
   "regions": ["lhr1"],
-  "typescript": { "ignoreBuildErrors": true },
   "crons": [
     {
       "path": "/api/cron/daily-challenges",
