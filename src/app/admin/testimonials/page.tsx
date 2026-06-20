@@ -15,9 +15,13 @@ export default function TestimonialsPage() {
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
-    const { getTestimonials } = await import("@/app/actions/admin-content");
-    const data = await getTestimonials();
-    setTestimonials(data);
+    try {
+      const { getTestimonials } = await import("@/app/actions/admin-content");
+      const data = await getTestimonials();
+      setTestimonials(data);
+    } catch {
+      toast.error("Failed to load testimonials");
+    }
     setLoading(false);
   };
 

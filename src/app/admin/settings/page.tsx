@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { 
-  Settings, Shield, Zap, Globe, 
+  Shield, Zap, Globe, 
   Terminal, Database, Save, RefreshCw,
   Cpu, Lock, Rocket
 } from "lucide-react";
@@ -20,8 +20,8 @@ import {
 } from "@/components/ui/select";
 import { showError, showSuccess } from "@/lib/toast";
 import { resetAllSessions, clearGlobalCache, deleteUser, saveAdminGlobalSettings, getAdminGlobalSettings } from "@/app/actions/admin";
-import { updateUserSettings } from "@/app/actions/user";
-import { Palette, Trash2, Skull, Eye, EyeOff } from "lucide-react";
+import { updateUserPreferences } from "@/app/actions/user";
+import { Palette, Eye, EyeOff } from "lucide-react";
 
 export default function AdminSettingsPage() {
   const [accentColor, setAccentColor] = useState("#8b5cf6");
@@ -39,14 +39,22 @@ export default function AdminSettingsPage() {
   const [pointsMultiplier, setPointsMultiplier] = useState("1x");
   const [tutorEarnings, setTutorEarnings] = useState(true);
 
-  useEffect(() => {
-    loadSettings();
-  }, []);
+  type AdminGlobalSettings = {
+    googleAiKey?: string;
+    accentColor?: string;
+    maintenanceMode?: boolean;
+    registrationGate?: boolean;
+    dataCluster?: string;
+    aiProvider?: string;
+    aiMatchmaking?: boolean;
+    pointsMultiplier?: string;
+    tutorEarnings?: boolean;
+  };
 
-  const loadSettings = async () => {
+  const loadSettings = useCallback(async () => {
     try {
       const rawSettings = await getAdminGlobalSettings();
-      const settings = rawSettings as Record<string, any> | undefined;
+      const settings = rawSettings as AdminGlobalSettings | undefined;
       if (settings?.googleAiKey) setGoogleAiKey(settings.googleAiKey);
       if (settings?.accentColor) setAccentColor(settings.accentColor);
       if (settings?.maintenanceMode !== undefined) setMaintenanceMode(settings.maintenanceMode);
@@ -61,7 +69,11 @@ export default function AdminSettingsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
 
   const handleDeleteUser = async () => {
     if (!userToDelete) return;
@@ -87,7 +99,7 @@ export default function AdminSettingsPage() {
     setSaving(true);
     try {
       // 1. Save to User Settings (Local)
-      await updateUserSettings({ accentColor });
+      await updateUserPreferences({ accentColor });
       
       // 2. Save to Global Settings (API Keys, etc)
       await saveAdminGlobalSettings({ 

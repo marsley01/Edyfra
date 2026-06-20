@@ -22,9 +22,13 @@ export default function AnnouncementsPage() {
   const [showForm, setShowForm] = useState(false);
 
   const load = async () => {
-    const { getAnnouncements } = await import("@/app/actions/admin-content");
-    const data = await getAnnouncements();
-    setAnnouncements(data);
+    try {
+      const { getAnnouncements } = await import("@/app/actions/admin-content");
+      const data = await getAnnouncements();
+      setAnnouncements(data);
+    } catch {
+      toast.error("Failed to load announcements");
+    }
     setLoading(false);
   };
 

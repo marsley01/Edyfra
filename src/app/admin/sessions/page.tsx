@@ -33,6 +33,7 @@ export default function AdminSessionsPage() {
       setSessions(data);
     } catch (err) {
       console.error(err);
+      toast.error("Failed to load active sessions");
     } finally {
       setLoading(false);
     }

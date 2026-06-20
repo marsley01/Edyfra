@@ -67,13 +67,13 @@ export default function SettingsPage() {
     if (data) {
       setUserData(data);
       setCurrentAvatar(data.avatar || null);
-      const settings = (data.settings as any) || {};
+      const preferences = data.preferences || {};
       setFormData({
         name: data.name || "",
         bio: data.bio || "",
         educationLevel: data.educationLevel || "HIGH_SCHOOL",
         subjects: data.studentProfile?.subjects?.join(", ") || "",
-        studyHours: settings.studyHoursPerWeek?.toString() || "",
+        studyHours: preferences.studyHoursPerWeek?.toString() || "",
       });
     }
     try {

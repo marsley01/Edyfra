@@ -129,7 +129,9 @@ export default function ChallengesPage() {
       <div className="p-8 text-center py-20 space-y-4">
         <Sparkles className="h-16 w-16 text-muted-foreground mx-auto" />
         <h2 className="text-2xl font-bold">No challenges available</h2>
-        <p className="text-muted-foreground">Check that OPENROUTER_API_KEY or GOOGLE_AI_KEY is set, then try again.</p>
+        <p className="text-muted-foreground">
+          We couldn&apos;t load or generate a challenge right now. This is usually an AI service or data issue, so try again in a moment.
+        </p>
         <Button onClick={fetchChallenges} className="rounded-xl">Retry</Button>
       </div>
     );

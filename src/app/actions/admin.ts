@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { TUTOR_CONFIG } from "@/lib/config";
 import { isFounderEmail } from "@/utils/admin-guard";
 import { notifyUser } from "@/app/actions/notifications";
+import { getCached, TTL } from "@/lib/cache";
 
 export type AdminGlobalSettings = {
   googleAiKey?: string;
@@ -718,6 +719,7 @@ export async function bootstrapSeeds() {
 // --- DASHBOARD METRICS ---
 
 export async function getAdminDashboardMetrics() {
+  return getCached("admin:dashboard:metrics", TTL.PLATFORM_STATS, async () => {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -814,4 +816,5 @@ export async function getAdminDashboardMetrics() {
       systemLoad: 0,
     };
   }
+  });
 }

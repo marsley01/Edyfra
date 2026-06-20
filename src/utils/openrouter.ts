@@ -34,7 +34,7 @@ export async function generateAIResponse(
 Subject context: ${subject || "general"}
 Topic context: ${topic || "general"}
 
-Provide clear, educational responses appropriate for the academic level. 
+Provide clear, educational responses appropriate for the academic level.
 Use simple language and include examples where helpful.`;
 
   try {

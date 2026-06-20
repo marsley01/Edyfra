@@ -7,16 +7,22 @@ import { Badge } from "@/components/ui/badge";
 import { BarChart, Globe, Activity, Search, ExternalLink, TrendingUp, Users, BookOpen, Zap, Loader2, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getAdminDashboardMetrics } from "@/app/actions/admin";
+import { toast } from "sonner";
 
 export default function AdminInsightsPage() {
   const [metrics, setMetrics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getAdminDashboardMetrics().then((m) => {
-      setMetrics(m);
-      setLoading(false);
-    });
+    getAdminDashboardMetrics()
+      .then((m) => {
+        setMetrics(m);
+        setLoading(false);
+      })
+      .catch(() => {
+        toast.error("Failed to load metrics");
+        setLoading(false);
+      });
   }, []);
 
   if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;

@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import { notifyUser } from "@/app/actions/notifications";
 
 export async function createPost(content: string, subject?: string, image?: string) {
   try {
@@ -75,6 +76,23 @@ export async function getPosts(filter?: string, topic?: string | null) {
     console.error("getPosts error:", error);
     return [];
   }
+}
+
+export async function getTrendingSubjects(limit = 6) {
+  const groups = await prisma.feedPost.groupBy({
+    by: ["subject"],
+    where: { subject: { not: null } },
+    _count: { _all: true },
+    orderBy: { _count: { _all: "desc" } },
+    take: limit,
+  });
+
+  return groups
+    .filter((g) => g.subject)
+    .map((g) => ({
+      subject: g.subject as string,
+      posts: g._count._all,
+    }));
 }
 
 export async function likePost(postId: string) {

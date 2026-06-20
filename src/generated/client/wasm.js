@@ -112,7 +112,6 @@ exports.Prisma.UserScalarFieldEnum = {
   strikes: 'strikes',
   createdAt: 'createdAt',
   bio: 'bio',
-  settings: 'settings',
   curriculum: 'curriculum',
   dailyMessageCount: 'dailyMessageCount',
   dailySearchCount: 'dailySearchCount',
@@ -433,6 +432,7 @@ exports.Prisma.UserPreferencesScalarFieldEnum = {
   showOnlineStatus: 'showOnlineStatus',
   allowTutorRequests: 'allowTutorRequests',
   enableMashFallback: 'enableMashFallback',
+  studyHoursPerWeek: 'studyHoursPerWeek',
   updatedAt: 'updatedAt'
 };
 
@@ -646,6 +646,65 @@ exports.Prisma.InstitutionDocumentScalarFieldEnum = {
   fileSize: 'fileSize',
   uploadedBy: 'uploadedBy',
   createdAt: 'createdAt'
+};
+
+exports.Prisma.InstitutionLimitScalarFieldEnum = {
+  id: 'id',
+  institutionId: 'institutionId',
+  maxStudents: 'maxStudents',
+  maxAssignments: 'maxAssignments',
+  maxTermsStored: 'maxTermsStored',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CoachingAssignmentScalarFieldEnum = {
+  id: 'id',
+  institutionId: 'institutionId',
+  studentId: 'studentId',
+  tutorUserId: 'tutorUserId',
+  subject: 'subject',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.StudentResultScalarFieldEnum = {
+  id: 'id',
+  institutionId: 'institutionId',
+  studentId: 'studentId',
+  subject: 'subject',
+  score: 'score',
+  grade: 'grade',
+  term: 'term',
+  year: 'year',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ProcessingJobScalarFieldEnum = {
+  id: 'id',
+  institutionId: 'institutionId',
+  filePath: 'filePath',
+  status: 'status',
+  error: 'error',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.InstitutionApplicationScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  institutionName: 'institutionName',
+  phone: 'phone',
+  message: 'message',
+  status: 'status',
+  adminNotes: 'adminNotes',
+  reviewedById: 'reviewedById',
+  reviewedAt: 'reviewedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.TutorAvailabilityScalarFieldEnum = {
@@ -947,15 +1006,15 @@ exports.Prisma.QueryMode = {
   insensitive: 'insensitive'
 };
 
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
 exports.Prisma.JsonNullValueFilter = {
   DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
-};
-
-exports.Prisma.NullsOrder = {
-  first: 'first',
-  last: 'last'
 };
 exports.Gender = exports.$Enums.Gender = {
   MALE: 'MALE',
@@ -1187,6 +1246,11 @@ exports.Prisma.ModelName = {
   InstitutionTutor: 'InstitutionTutor',
   InstitutionMember: 'InstitutionMember',
   InstitutionDocument: 'InstitutionDocument',
+  InstitutionLimit: 'InstitutionLimit',
+  CoachingAssignment: 'CoachingAssignment',
+  StudentResult: 'StudentResult',
+  ProcessingJob: 'ProcessingJob',
+  InstitutionApplication: 'InstitutionApplication',
   TutorAvailability: 'TutorAvailability',
   Booking: 'Booking',
   BookingReminder: 'BookingReminder',

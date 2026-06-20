@@ -106,8 +106,6 @@ export function OverviewTab() {
     { label: "Earnings", value: `KSH ${(profile?.totalSessions || 0) * (profile?.hourlyRate || 0)}`, icon: Wallet, color: "text-primary", bg: "bg-primary/10" },
     { label: "Rating", value: profile?.rating ? profile.rating.toFixed(1) : "New", icon: Star, color: "text-yellow-500", bg: "bg-yellow-500/10" },
   ];
-  
-  const tutorName = profile?.user?.name?.split(" ")[0] || "Tutor";
 
   return (
     <div className="space-y-12 animate-in fade-in duration-700 font-sans p-2">

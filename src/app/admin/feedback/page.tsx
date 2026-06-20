@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Star, MessageSquare, TrendingUp, Search, Loader2, Trophy, ArrowUp, ArrowDown } from "lucide-react";
+import { toast } from "sonner";
 import { motion } from "framer-motion";
 
 export default function AdminFeedbackPage() {
@@ -20,11 +21,15 @@ export default function AdminFeedbackPage() {
 
   useEffect(() => {
     const init = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user || !(await checkAdminStatus())) { router.push("/dashboard"); return; }
-      const result = await getAllReviewsForAdmin();
-      setData(result);
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || !(await checkAdminStatus())) { router.push("/dashboard"); return; }
+        const result = await getAllReviewsForAdmin();
+        setData(result);
+      } catch {
+        toast.error("Failed to load feedback");
+      }
       setLoading(false);
     };
     init();
