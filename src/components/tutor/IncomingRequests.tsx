@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, XCircle, Clock } from "lucide-react";
-import { toast } from "sonner";
+import { showError, showSuccess, showInfo } from "@/lib/toast";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
 import { getIncomingBookingRequests, updateBookingStatus } from "@/app/actions/bookings";
 import { createClient } from "@/utils/supabase/client";
@@ -41,7 +41,7 @@ export function IncomingRequests() {
                   student: { name: student.name || "Student", avatar: student.avatar },
                 }, ...prev];
               });
-              toast.info("New booking request received!");
+              showInfo("New booking request", { description: "Someone just asked to book a session with you." });
             })
             .catch(() => {
               setRequests(prev => {
@@ -87,10 +87,16 @@ export function IncomingRequests() {
   const handleAction = async (bookingId: string, action: "confirm" | "decline") => {
     try {
       await updateBookingStatus(bookingId, action === "confirm" ? "confirmed" : "declined");
-      toast.success(action === "confirm" ? "Booking accepted!" : "Booking declined.");
+      showSuccess(action === "confirm" ? "Booking accepted" : "Booking declined", {
+        description: action === "confirm" ? "The student will get a confirmation." : "We'll let the student know.",
+      });
       loadRequests();
     } catch (err) {
-      toast.error(`Failed to ${action} booking.`);
+      showError({
+        title: `Couldn't ${action} the booking`,
+        cause: "We didn't get a response from the server.",
+        fix: "Give it another try, or refresh the page.",
+      });
     }
   };
 

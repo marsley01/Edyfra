@@ -20,7 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { Role } from "@/generated/client";
 
 export default function AdminUsersPage() {
@@ -39,7 +39,11 @@ export default function AdminUsersPage() {
       const data = await getAllUsers();
       setUsers(data);
     } catch (err) {
-      toast.error("Failed to fetch users.");
+      showError({
+        title: "We couldn't load users",
+        cause: "A hiccup on our side blocked the list.",
+        fix: "Try again, or refresh the page.",
+      });
     } finally {
       setLoading(false);
     }
@@ -50,14 +54,22 @@ export default function AdminUsersPage() {
     try {
       const result = await deleteUser(id);
       if (result?.error) {
-        toast.error(result.error);
+        showError({
+          title: "We couldn't delete that user",
+          cause: result.error,
+          fix: "Try again, or refresh the page.",
+        });
         return;
       }
-      toast.success("User deleted successfully.");
+      showSuccess("User deleted", { description: "Their record is gone from the directory." });
       setSelectedUsers(prev => prev.filter(uId => uId !== id));
       fetchUsers();
     } catch (err) {
-      toast.error("Failed to delete user.");
+      showError({
+        title: "We couldn't delete that user",
+        cause: "Something on our side blocked the deletion.",
+        fix: "Try again, or refresh the page.",
+      });
     }
   };
 
@@ -66,24 +78,36 @@ export default function AdminUsersPage() {
     try {
       const result = await deleteUsersBatch(selectedUsers);
       if (result?.error) {
-        toast.error(result.error);
+        showError({
+          title: "We couldn't delete those users",
+          cause: result.error,
+          fix: "Try again, or refresh the page.",
+        });
         return;
       }
-      toast.success(`Successfully deleted ${selectedUsers.length} users.`);
+      showSuccess(`Deleted ${selectedUsers.length} users`, { description: "Their records are gone from the directory." });
       setSelectedUsers([]);
       fetchUsers();
     } catch (err) {
-      toast.error("Failed to delete users.");
+      showError({
+        title: "We couldn't delete those users",
+        cause: "Something on our side blocked the deletion.",
+        fix: "Try again, or refresh the page.",
+      });
     }
   };
 
   const handleRoleUpdate = async (id: string, role: Role) => {
     try {
       await updateUserRoleAdmin(id, role);
-      toast.success(`Role updated to ${role}`);
+      showSuccess(`Role updated to ${role}`, { description: "Their permissions are now in effect." });
       fetchUsers();
     } catch (err) {
-      toast.error("Failed to update role.");
+      showError({
+        title: "We couldn't update that role",
+        cause: "Something on our side blocked the change.",
+        fix: "Try again, or refresh the page.",
+      });
     }
   };
 

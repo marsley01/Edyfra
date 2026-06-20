@@ -58,8 +58,8 @@ export function Navigation() {
     async function fetchUser() {
       try {
         const supabase = createClient();
-        const { data: { user: supabaseUser } } = await supabase.auth.getUser();
-        setUser(supabaseUser);
+        const { data: { session } } = await supabase.auth.getSession();
+        setUser(session?.user ?? null);
       } catch (error) {
         console.error("Error fetching user:", error);
         setUser(null);

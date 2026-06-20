@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarIcon, Loader2, Save } from "lucide-react";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
@@ -77,9 +77,13 @@ export function TutorAvailabilityCalendar({ tutorId }: { tutorId: string }) {
       });
 
       await saveTutorAvailability(tutorId, slotsToSave);
-      toast.success("Availability updated successfully");
+      showSuccess("Availability updated", { description: "Your weekly schedule is saved." });
     } catch (err) {
-      toast.error("Failed to save availability");
+      showError({
+        title: "We couldn't save your availability",
+        cause: "Something didn't go through on our side.",
+        fix: "Try again, or refresh the page.",
+      });
       console.error(err);
     } finally {
       setSaving(false);

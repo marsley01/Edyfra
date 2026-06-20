@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/client";
 import {
-  ChevronLeft, Menu, Activity, Globe, Users, LayoutDashboard, GraduationCap, ShieldCheck, FileText, BookMarked, Bell, Newspaper, Star, MessageSquare, Award, TrendingUp, Settings, Search, Terminal, LogOut, Cpu
+  ChevronLeft, Menu, Activity, Globe, Users, LayoutDashboard, GraduationCap, ShieldCheck, FileText, BookMarked, Bell, Newspaper, Star, MessageSquare, Award, TrendingUp, Settings, Search, Terminal, LogOut, Cpu, Inbox, Bot, Building2
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import Link from "next/link";
@@ -84,6 +84,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navItems: NavItem[] = [
     { href: "/admin", label: "Overview", icon: LayoutDashboard },
+    { href: "/admin/institutions", label: "Institution Approvals", icon: Building2 },
     { href: "/admin/users", label: "User Management", icon: Users },
     { href: "/admin/tutors", label: "Tutor Management", icon: GraduationCap },
     { href: "/admin/moderation", label: "Content Moderation", icon: ShieldCheck },
@@ -93,6 +94,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin/news", label: "Knowledge Feed", icon: Newspaper },
     { href: "/admin/testimonials", label: "Testimonials", icon: Star },
     { href: "/admin/feedback", label: "Tutor Feedback", icon: MessageSquare },
+    { href: "/admin/feedback-inbox", label: "User Feedback Inbox", icon: Inbox },
+    { href: "/admin/ai-history", label: "AI History", icon: Bot },
     { href: "/admin/challenges", label: "AI Challenges", icon: Award },
     { href: "/admin/insights", label: "Site Insights", icon: TrendingUp },
     { href: "/admin/settings", label: "Settings", icon: Settings },
@@ -100,9 +103,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#050505] text-white selection:bg-primary/30">
+    <div className="flex flex-col min-h-screen bg-background text-foreground selection:bg-primary/30">
       {/* Global OS Status Bar */}
-      <div className="h-8 bg-black border-b border-white/5 flex items-center justify-between px-4 text-[8px] font-black uppercase tracking-[0.3em] z-[60] relative overflow-hidden">
+      <div className="h-8 bg-background border-b border-border flex items-center justify-between px-4 text-[8px] font-black uppercase tracking-[0.3em] z-[60] relative overflow-hidden">
         <div className="flex items-center gap-4 overflow-hidden">
           <div className="flex items-center gap-2 flex-shrink-0">
             <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
@@ -124,7 +127,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
 
       {/* Mobile Header */}
-      <header className="lg:hidden h-20 bg-black/40 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-6 sticky top-8 z-40">
+      <header className="lg:hidden h-20 bg-background/40 backdrop-blur-md border-b border-border flex items-center justify-between px-6 sticky top-8 z-40">
         <div className="flex items-center gap-3">
           {pathname !== "/admin" && (
             <button
@@ -195,7 +198,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       <div className="flex flex-1">
         {/* Sleek Glass Sidebar (Desktop) */}
-        <aside className="w-72 bg-black/40 backdrop-blur-2xl border-r border-white/5 hidden lg:flex flex-col fixed top-8 bottom-0 z-50">
+        <aside className="w-72 bg-background/40 backdrop-blur-2xl border-r border-border hidden lg:flex flex-col fixed top-8 bottom-0 z-50">
           <AdminSidebarContent
             pathname={pathname}
             navItems={navItems}
@@ -206,7 +209,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </aside>
 
         {/* Futuristic Main Content */}
-        <main className="flex-1 lg:ml-72 bg-gradient-to-br from-[#050505] to-[#0a0a0a]">
+        <main className="flex-1 lg:ml-72 bg-gradient-to-br from-background to-secondary">
           <header className="h-20 bg-black/40 backdrop-blur-md border-b border-white/5 hidden lg:flex items-center justify-between px-6 xl:px-10 sticky top-8 z-40">
             <div className="flex items-center gap-4 xl:gap-8">
               <div className="flex items-center gap-2 text-muted-foreground text-xs font-bold">
@@ -298,7 +301,7 @@ function AdminSidebarContent({ pathname, navItems, adminUser, supabase, router, 
         })}
       </nav>
 
-      <div className="p-6 border-t border-white/5 bg-black/20 space-y-4">
+      <div className="p-6 border-t border-border bg-background/20 space-y-4">
         <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary/20 to-primary/5 text-primary flex items-center justify-center font-black border border-primary/10">

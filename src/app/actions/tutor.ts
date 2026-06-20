@@ -1,12 +1,13 @@
 "use server";
 
+import { cache } from "react";
 import { Role, VerifPath, EduLevel } from "@/generated/client";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getUserData } from "./user";
 import { TUTOR_CONFIG } from "@/lib/config";
 
-export async function getTutorProfile() {
+export const getTutorProfile = cache(async () => {
   try {
     const user = await getUserData();
     if (!user) return null;
@@ -37,7 +38,7 @@ export async function getTutorProfile() {
     console.error("Error in getTutorProfile:", error);
     return null;
   }
-}
+});
 
 export async function toggleTutorStatus(isOnline: boolean) {
   try {
@@ -281,6 +282,49 @@ export async function getTutorSessions(status: "ACTIVE" | "COMPLETED" | "PENDING
     });
   } catch (error) {
     console.error("Error in getTutorSessions:", error);
+    return [];
+  }
+}
+
+/**
+ * Returns the top verified tutors ranked by rating, with totalSessions as a
+ * tiebreaker. Used by `/tutor/leaderboard`. Excludes tutors with zero sessions
+ * so the board reflects real activity.
+ */
+export async function getTutorLeaderboard(limit = 20) {
+  try {
+    const leaders = await prisma.user.findMany({
+      where: {
+        role: Role.TUTOR,
+        tutorProfile: {
+          is: { isVerified: true },
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+        points: true,
+        county: true,
+        tutorProfile: {
+          select: {
+            subjects: true,
+            rating: true,
+            totalSessions: true,
+            responseRate: true,
+          },
+        },
+      },
+      orderBy: [
+        { tutorProfile: { rating: "desc" } },
+        { tutorProfile: { totalSessions: "desc" } },
+        { points: "desc" },
+      ],
+      take: limit,
+    });
+    return leaders;
+  } catch (error) {
+    console.error("Error in getTutorLeaderboard:", error);
     return [];
   }
 }

@@ -1,5 +1,6 @@
 import { getApprovedReviews } from "@/app/actions/reviews";
 import { getGlobalStats } from "@/app/actions/user";
+import { unstable_cache } from "next/cache";
 import { HomeHero } from "@/components/home/hero";
 import { LogoCloud } from "@/components/home/logo-cloud";
 import { HomeFeatures } from "@/components/home/features";
@@ -13,12 +14,28 @@ import { SubjectCoverage } from "@/components/home/subject-coverage";
 import { HomeNewsletter } from "@/components/home/newsletter";
 import { AbstractAnimation } from "@/components/home/abstract-animation";
 
-// Server Component — fetches real data on every request
+// Cache the home page data for 60s — global counters and approved reviews
+// only need to refresh every so often. This drops 4 Prisma count() calls
+// and 1 Supabase query on every visit.
+export const revalidate = 60;
+
+const getCachedReviews = unstable_cache(
+  async () => getApprovedReviews(),
+  ['approved-reviews-home'],
+  { revalidate: 3600 }
+);
+
+const getCachedStats = unstable_cache(
+  async () => getGlobalStats(),
+  ['global-stats-home'],
+  { revalidate: 3600 }
+);
+
 export default async function HomePage() {
-  // Run all data fetches in parallel
+  // Run all data fetches in parallel using aggressively cached queries
   const [reviews, stats] = await Promise.all([
-    getApprovedReviews(),
-    getGlobalStats(),
+    getCachedReviews(),
+    getCachedStats(),
   ]);
 
   return (

@@ -1,7 +1,15 @@
 import { Resend } from "resend";
 
-function getResend(): Resend {
-  return new Resend(process.env.RESEND_API_KEY || "re_placeholder_123");
+function getResendApiKey(): string {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) {
+    throw new Error("RESEND_API_KEY is not defined. Please check your environment variables.");
+  }
+  return key;
+}
+
+export function getResend(): Resend {
+  return new Resend(getResendApiKey());
 }
 
 export async function sendWelcomeEmail(email: string, name: string) {

@@ -1,79 +1,86 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell } from "lucide-react";
-import { getUnreadCount, getLatestNotification } from "@/app/actions/notifications";
+import { useUnreadNotifications } from "@/hooks/useUnreadNotifications";
+import { cn } from "@/lib/utils";
 
-export function NotificationBell() {
-  const [unread, setUnread] = useState(0);
-  const [lastNotifId, setLastNotifId] = useState<string | null>(null);
+interface NotificationBellProps {
+  variant?: "icon" | "topbar";
+  className?: string;
+}
+
+export function NotificationBell({ variant = "icon", className }: NotificationBellProps) {
+  const { count } = useUnreadNotifications();
   const pathname = usePathname();
   const href = pathname.startsWith("/tutor") ? "/tutor/notifications" : "/dashboard/notifications";
 
   useEffect(() => {
-    // Request notification permission if not already granted/denied
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission();
+    if (typeof window === "undefined" || !("Notification" in window)) return;
+    if (Notification.permission === "default") {
+      Notification.requestPermission().catch(() => {});
     }
-
-    const fetchCounts = async () => {
-      try {
-        const [count, latest] = await Promise.all([
-          getUnreadCount(),
-          getLatestNotification(),
-        ]);
-        
-        setUnread(count);
-
-        if (latest) {
-          setLastNotifId((prev) => {
-            // If we have a previous ID and this is a new one
-            if (prev && prev !== latest.id) {
-              // Only notify if it was created recently (e.g., within last 5 minutes)
-              const createdAge = Date.now() - new Date(latest.createdAt).getTime();
-              if (createdAge < 5 * 60 * 1000) {
-                // Play sound
-                const audio = new Audio("/sounds/popcorn.mp3");
-                audio.play().catch(e => console.warn("Audio play blocked", e));
-
-                // Show browser notification
-                if ("Notification" in window && Notification.permission === "granted") {
-                  new Notification(latest.title || "New Notification", {
-                    body: latest.body || "",
-                    icon: "/icons/icon-192.png",
-                  });
-                }
-              }
-            }
-            // Always update to the latest ID
-            return latest.id;
-          });
-        }
-      } catch (err) {
-        console.error("Failed to fetch notifications for bell", err);
-      }
-    };
-
-    fetchCounts();
-    // Poll every 30 seconds for snappier foreground notifications
-    const interval = setInterval(fetchCounts, 30000);
-    return () => clearInterval(interval);
   }, []);
+
+  const badgeText = count > 99 ? "99+" : String(count);
+  const ariaLabel = `Notifications${count > 0 ? `, ${count} unread` : ""}`;
+
+  if (variant === "topbar") {
+    return (
+      <Link
+        href={href}
+        aria-label={ariaLabel}
+        className={cn(
+          "relative inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border/60 bg-card/60 backdrop-blur-md text-foreground/80 transition-all hover:bg-card hover:text-foreground hover:border-primary/40 shadow-sm",
+          className
+        )}
+      >
+        <Bell className="h-5 w-5" />
+        {count > 0 && (
+          <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center px-1 leading-none shadow-lg shadow-primary/40 ring-2 ring-background animate-pulse">
+            {badgeText}
+          </span>
+        )}
+      </Link>
+    );
+  }
 
   return (
     <Link
       href={href}
-      className="relative p-2 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"
-      aria-label={`Notifications${unread > 0 ? `, ${unread} unread` : ""}`}
+      aria-label={ariaLabel}
+      className={cn(
+        "relative p-2 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all",
+        className
+      )}
     >
       <Bell className="h-5 w-5" />
-      {unread > 0 && (
+      {count > 0 && (
         <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full bg-primary text-white text-[9px] font-black flex items-center justify-center px-1 leading-none shadow-lg shadow-primary/30 animate-pulse">
-          {unread > 99 ? "99+" : unread}
+          {badgeText}
         </span>
       )}
     </Link>
+  );
+}
+
+/**
+ * Compact inline badge (just the number) — used next to nav items in sidebars
+ * and on tabs. Hidden when count is 0.
+ */
+export function NotificationCountBadge({ className }: { className?: string }) {
+  const { count } = useUnreadNotifications();
+  if (count === 0) return null;
+  return (
+    <span
+      className={cn(
+        "ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center leading-none shadow-sm shadow-primary/30 animate-pulse",
+        className
+      )}
+    >
+      {count > 99 ? "99+" : count}
+    </span>
   );
 }

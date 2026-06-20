@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { submitReview, Review } from "@/app/actions/reviews";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 
 interface TestimonialsProps {
   initialReviews: Review[];
@@ -26,11 +26,11 @@ export function HomeTestimonials({ initialReviews }: TestimonialsProps) {
     const result = await submitReview(form);
     setLoading(false);
     if (result.error) {
-      toast.error(result.error);
+      showError({ title: "We couldn't submit that review", cause: result.error, fix: "Try again, or refresh the page." });
     } else {
       setSubmitted(true);
       setShowForm(false);
-      toast.success("Review submitted! It will appear after moderation.");
+      showSuccess("Review submitted", { description: "It will appear once it clears moderation." });
     }
   };
 

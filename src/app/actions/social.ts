@@ -14,12 +14,18 @@ export async function toggleFollow(targetUserId: string) {
 
   const admin = createAdminClient();
 
-  const { data: existing } = await admin
+  const { data: existing, error: lookupError } = await admin
     .from("connections")
     .select("id")
     .eq("follower_id", user.id)
     .eq("following_id", targetUserId)
     .single();
+
+  // PGRST116 = no rows found — expected when user hasn't followed yet.
+  // Any other error is real and should propagate.
+  if (lookupError && !lookupError.message.includes("PGRST116")) {
+    throw lookupError;
+  }
 
   if (existing) {
     await admin.from("connections").delete().eq("id", existing.id);

@@ -9,29 +9,62 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { motion } from "framer-motion";
 import { Sparkles, Mail, ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [emailError, setEmailError] = useState("");
   const supabase = createClient();
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    setEmailError("");
+
+    if (!email.trim()) {
+      setEmailError("Drop in your email so we know where to send the reset link.");
+      return;
+    }
+    if (!EMAIL_REGEX.test(email.trim())) {
+      setEmailError("That email doesn't look right — double-check the spelling.");
+      return;
+    }
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
       });
 
       if (error) throw error;
       setSubmitted(true);
-      toast.success("Reset link sent!", { description: "Please check your inbox." });
+      showSuccess("Reset link sent", {
+        description: "Open it from your inbox within the next 60 minutes.",
+      });
     } catch (err: any) {
-      toast.error("Error sending link", { description: err.message });
+      const msg = (err?.message || "").toLowerCase();
+      if (msg.includes("rate") || msg.includes("too many")) {
+        showError({
+          title: "Whoa — too many requests",
+          cause: "You've asked for several reset links in a row.",
+          fix: "Wait about a minute and try again — and check spam if you haven't got the previous email.",
+          raw: err,
+        });
+      } else if (msg.includes("not found") || msg.includes("no user")) {
+        // Supabase intentionally hides "no user" to avoid leaking account existence —
+        // but show the user the same friendly note either way.
+        setSubmitted(true);
+      } else {
+        showError({
+          title: "We couldn't send the reset link",
+          cause: err?.message || "Our auth service didn't respond.",
+          fix: "Try again in a moment. If it keeps failing, contact support.",
+          raw: err,
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -64,8 +97,8 @@ export default function ForgotPasswordPage() {
             </CardTitle>
             <CardDescription className="text-lg font-medium leading-relaxed">
               {submitted 
-                ? "We've sent a recovery link to your inbox. Check your email to reset your password." 
-                : "No worries — just enter your email and we'll send you a reset link."}
+                ? "If that email is registered, we've sent a recovery link. Check your inbox (and spam, just in case)." 
+                : "No worries — just enter your email and we'll send you a fresh reset link."}
             </CardDescription>
           </CardHeader>
           
@@ -80,11 +113,15 @@ export default function ForgotPasswordPage() {
                       type="email"
                       placeholder="you@example.com"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError(""); }}
                       className="h-14 pl-12 rounded-2xl border-border bg-background shadow-sm focus-visible:ring-primary text-base font-medium"
                       required
+                      autoComplete="email"
                     />
                   </div>
+                  {emailError && (
+                    <p className="text-xs font-bold text-red-500/90 ml-2 animate-in fade-in slide-in-from-top-1">{emailError}</p>
+                  )}
                 </div>
                 <Button 
                   type="submit" 
@@ -99,12 +136,17 @@ export default function ForgotPasswordPage() {
                  <div className="w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
                     <CheckCircle2 className="h-10 w-10" />
                  </div>
-                 <div className="space-y-2">
-                     <h3 className="text-xl font-black">Check Your Email</h3>
-                    <p className="text-muted-foreground font-medium">Please check your inbox (and spam folder) for the reset link.</p>
+                 <div className="space-y-3 max-w-xs">
+                    <h3 className="text-xl font-black">Check your inbox</h3>
+                    <p className="text-muted-foreground font-medium text-sm leading-relaxed">
+                      We&apos;ve sent a link to <span className="text-foreground font-bold">{email}</span>. Open it within the next 60 minutes to pick a new password.
+                    </p>
+                    <p className="text-xs text-muted-foreground/70">
+                      Can&apos;t find it? Check spam, or wait 60 seconds and request another.
+                    </p>
                  </div>
                  <Button 
-                  onClick={() => setSubmitted(false)}
+                  onClick={() => { setSubmitted(false); setEmail(""); }}
                   variant="outline"
                   className="h-12 px-8 rounded-full border-border font-black text-[10px] tracking-widest uppercase"
                  >

@@ -1,67 +1,52 @@
 import { NextRequest, NextResponse } from "next/server";
-import { StreamChat } from "stream-chat";
-import { createClient } from "@/utils/supabase/server";
-
-const STREAM_KEY = process.env.NEXT_PUBLIC_STREAM_KEY!;
-const STREAM_SECRET = process.env.STREAM_SECRET!;
-
-let serverClient: StreamChat | null = null;
-
-function getServerClient() {
-  if (!serverClient) {
-    serverClient = StreamChat.getInstance(STREAM_KEY, STREAM_SECRET);
-  }
-  return serverClient;
-}
+import { syncUserToStream, syncAIUserToStream, getServerStreamClient } from "@/lib/user-sync";
 
 /**
  * POST /api/stream/token
  * Returns a valid Stream user token for the authenticated user.
- * Also upserts the user into Stream before returning.
  * Used by clients that need to silently refresh an expired token.
+ *
+ * Profile sync (user + mash-ai) is delegated to the centralized user-sync
+ * pipeline so this endpoint stays a thin wrapper.
  */
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (!STREAM_KEY || !STREAM_SECRET) {
+    if (!process.env.NEXT_PUBLIC_STREAM_KEY || !process.env.STREAM_SECRET) {
       console.error("[Stream API] STREAM_KEY or STREAM_SECRET not configured");
       return NextResponse.json(
         { error: "Stream not configured" },
-        { status: 503 }
+        { status: 503 },
       );
     }
 
-    const client = getServerClient();
+    const profile = await syncUserToStreamForRequest();
+    if (!profile) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    // Upsert user into Stream before generating token
-    await client.upsertUser({
-      id: user.id,
-      name:
-        user.user_metadata?.name ||
-        user.email?.split("@")[0] ||
-        "User",
-      image: user.user_metadata?.avatar || undefined,
-      role: "user",
-    });
+    await syncAIUserToStream();
 
-    const token = client.createToken(user.id);
+    const client = getServerStreamClient();
+    const token = client.createToken(profile.id);
 
-    console.log(`[Stream API] Token issued for user: ${user.id}`);
+    console.log(`[Stream API] Token issued for user: ${profile.id}`);
 
-    return NextResponse.json({ token, userId: user.id });
-  } catch (err: any) {
+    return NextResponse.json({ token, userId: profile.id });
+  } catch (err) {
     console.error("[Stream API] Token generation failed:", err);
     return NextResponse.json(
       { error: "Failed to generate token" },
-      { status: 500 }
+      { status: 500 },
     );
   }
+}
+
+async function syncUserToStreamForRequest() {
+  const { createClient } = await import("@/utils/supabase/server");
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+  return syncUserToStream(user.id);
 }

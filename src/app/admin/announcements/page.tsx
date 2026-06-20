@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Bell, Plus, Trash2, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { showSuccess } from "@/lib/toast";
 
 export default function AnnouncementsPage() {
   const router = useRouter();
@@ -42,7 +42,7 @@ export default function AnnouncementsPage() {
     if (!title || !body) return;
     const { createAnnouncement } = await import("@/app/actions/admin-content");
     await createAnnouncement({ title, body, targetAudience: target });
-    toast.success("Announcement published");
+    showSuccess("Announcement published", { description: "It's reaching the audience you picked." });
     setTitle(""); setBody(""); setShowForm(false);
     await load();
   };
@@ -50,7 +50,7 @@ export default function AnnouncementsPage() {
   const handleDelete = async (id: string) => {
     const { deleteAnnouncement } = await import("@/app/actions/admin-content");
     await deleteAnnouncement(id);
-    toast.success("Deleted");
+    showSuccess("Announcement deleted", { description: "It's been removed from the feed." });
     await load();
   };
 

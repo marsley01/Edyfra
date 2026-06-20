@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AdminSessionsPage() {
@@ -42,11 +42,15 @@ export default function AdminSessionsPage() {
     if (!confirm("Are you sure you want to terminate this live session?")) return;
     try {
       await closeSession(id);
-      toast.success("Session terminated.");
+      showSuccess("Session terminated", { description: "That session has been closed." });
       setSelectedSessions(prev => prev.filter(sId => sId !== id));
       fetchSessions();
     } catch (err) {
-      toast.error("Failed to terminate session.");
+      showError({
+        title: "We couldn't terminate that session",
+        cause: "A hiccup on our side blocked it.",
+        fix: "Try again, or refresh the page.",
+      });
     }
   };
 
@@ -54,11 +58,15 @@ export default function AdminSessionsPage() {
     if (!confirm(`Are you sure you want to terminate ${selectedSessions.length} sessions?`)) return;
     try {
       await closeSessionsBatch(selectedSessions);
-      toast.success(`Successfully terminated ${selectedSessions.length} sessions.`);
+      showSuccess(`Terminated ${selectedSessions.length} sessions`, { description: "Those sessions are now closed." });
       setSelectedSessions([]);
       fetchSessions();
     } catch (err) {
-      toast.error("Failed to terminate sessions.");
+      showError({
+        title: "We couldn't terminate those sessions",
+        cause: "A hiccup on our side blocked the batch close.",
+        fix: "Try again, or refresh the page.",
+      });
     }
   };
 

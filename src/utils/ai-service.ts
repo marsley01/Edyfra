@@ -91,8 +91,8 @@ export class AIService {
 
     const doCall = async (m: string, timeoutMs: number): Promise<string> => {
       // Translate OpenRouter model to Gemini model if using Gemini provider
-      if (currentProvider === "gemini" && m.includes("gpt-4o-mini")) {
-        m = "gemini-1.5-flash";
+      if (currentProvider === "gemini") {
+        m = "gemini-2.5-flash";
       }
       
       console.log(`[AIService] Calling ${currentProvider} with model: ${m}, timeout: ${timeoutMs}ms`);

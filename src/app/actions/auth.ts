@@ -2,7 +2,6 @@
 
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getUserData } from "./user";
 import { isFounderEmail } from "@/utils/admin-guard";
@@ -44,31 +43,35 @@ export async function login(formData: FormData) {
 
   revalidatePath("/", "layout");
 
-  // Institution login: if code is provided and user is an institution member, redirect to institution portal
-  if (code && prismaUser) {
+  let redirectTo = "/dashboard";
+
+  // Institution logic: If user has an active institution membership, redirect to institution portal.
+  if (prismaUser) {
     try {
       const membership = await prisma.institutionMember.findFirst({
         where: {
           userId: prismaUser.id,
-          institution: { code },
+          status: "ACTIVE",
         },
         include: { institution: true },
       });
-      if (membership) {
-        redirect("/institution/dashboard");
+      // If they are institution staff, default to routing them to the institution portal
+      if (membership && ["INSTITUTION_ADMIN", "INSTITUTION_DEPUTY", "INSTITUTION_TEACHER"].includes(membership.role)) {
+        return { redirectTo: "/institution/dashboard" };
       }
-    } catch {
+    } catch (e) {
+      console.error("Institution membership check failed:", e);
       // Fall through to normal redirect if institution check fails
     }
   }
   
   if (role === "TUTOR") {
-    redirect("/tutor");
+    redirectTo = "/tutor";
   } else if (role === "ADMIN") {
-    redirect("/admin");
-  } else {
-    redirect("/dashboard");
+    redirectTo = "/admin";
   }
+
+  return { redirectTo };
 }
 
 // generateReferralCode is now imported from @/utils/referral
@@ -100,7 +103,10 @@ export async function signup(formData: FormData) {
         avatar: avatarUrl,
         referral_code: referralCode || null,
       },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/auth/callback`,
+      // VERCEL_URL is injected automatically by Vercel deployments — use it as
+      // a fallback so signup emails work even when NEXT_PUBLIC_SITE_URL is not
+      // explicitly configured in the production environment.
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) || "http://localhost:3000"}/auth/callback`,
     },
   });
 
@@ -188,11 +194,11 @@ export async function signup(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
-  redirect("/onboarding");
+  return { redirectTo: "/onboarding" };
 }
 
 export async function logout() {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/login");
+  return { redirectTo: "/login" };
 }

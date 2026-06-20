@@ -1,5 +1,6 @@
 "use server";
 
+import { cache } from "react";
 import { Role, EduLevel, Tier, VerifPath, Prisma, User, StudentProfile, TutorProfile, Gender } from "@/generated/client";
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
@@ -26,7 +27,7 @@ async function syncSupabaseRoleFromPrisma(supabase: Awaited<ReturnType<typeof cr
   }
 }
 
-export async function getUserData(): Promise<(User & { studentProfile: StudentProfile | null, tutorProfile: TutorProfile | null }) | null> {
+export const getUserData = cache(async (): Promise<(User & { studentProfile: StudentProfile | null, tutorProfile: TutorProfile | null }) | null> => {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -47,7 +48,6 @@ export async function getUserData(): Promise<(User & { studentProfile: StudentPr
     });
 
     if (!prismaUser) {
-
       const metaGender = user.user_metadata?.gender;
       prismaUser = await prisma.user.create({
         data: {
@@ -79,49 +79,53 @@ export async function getUserData(): Promise<(User & { studentProfile: StudentPr
         lastActive.getFullYear() !== today.getFullYear();
 
       if (isNewDay) {
-        prismaUser = await prisma.user.update({
+        await prisma.user.update({
           where: { id: prismaUser.id },
           data: {
             points: { increment: SESSION_CONFIG.DAILY_ACTIVITY_REWARD },
             lastActiveAt: today,
           },
-          include: {
-            studentProfile: true,
-            tutorProfile: true
-          }
         });
+        // Update local object to avoid re-fetching
+        prismaUser.points += SESSION_CONFIG.DAILY_ACTIVITY_REWARD;
+        prismaUser.lastActiveAt = today;
       }
 
-      // Backfill referral code if missing
+      // Backfill referral code if missing - Rare operation
       if (!prismaUser.referralCode) {
-        prismaUser = await prisma.user.update({
+        const code = generateReferralCode(prismaUser.name);
+        await prisma.user.update({
           where: { id: prismaUser.id },
-          data: { referralCode: generateReferralCode(prismaUser.name) },
-          include: { studentProfile: true, tutorProfile: true }
+          data: { referralCode: code },
         });
+        prismaUser.referralCode = code;
       }
     }
 
-    // Tier recalibration: keep tier in sync with points
+    // Tier recalibration: only update if changed
     const correctTier = TIER_CONFIG.getTierFromPoints(prismaUser.points);
     if (prismaUser.tier !== correctTier) {
-      prismaUser = await prisma.user.update({
+      await prisma.user.update({
         where: { id: prismaUser.id },
         data: { tier: correctTier as Tier },
-        include: { studentProfile: true, tutorProfile: true }
       });
+      prismaUser.tier = correctTier as Tier;
     }
 
-    // Keep Supabase metadata aligned for routing checks (middleware/layouts).
-    // Do NOT overwrite Prisma role based on metadata (metadata can be missing/outdated).
-    await syncSupabaseRoleFromPrisma(supabase, prismaUser.role);
+    // Keep Supabase metadata aligned - only update if different to avoid API overhead
+    const { data } = await supabase.auth.getUser();
+    const currentMetaRole = (data.user?.user_metadata?.role || "").toUpperCase();
+    const actualRole = prismaUser.role.toString().toUpperCase();
+    if (currentMetaRole !== actualRole) {
+      await supabase.auth.updateUser({ data: { role: actualRole } });
+    }
 
     return prismaUser;
   } catch (error) {
     console.error("Error in getUserData:", error);
     return null;
   }
-}
+});
 
 export async function updateProfile(data: { 
   name: string; 
@@ -675,3 +679,21 @@ export async function createTestTutorAction() {
     throw error;
   }
 }
+
+export async function hasCompletedChallengeToday(userId: string): Promise<boolean> {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const attempt = await prisma.dailyChallengeAttempt.findFirst({
+      where: {
+        userId,
+        createdAt: { gte: today }
+      }
+    });
+    return !!attempt;
+  } catch (e) {
+    console.error("Error checking daily challenge completion:", e);
+    return false;
+  }
+}
+

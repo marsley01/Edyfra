@@ -2,14 +2,12 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Navigation } from "@/components/navigation";
-import { Footer } from "@/components/footer";
-import { 
-  Zap, 
-  Cpu, 
-  Globe, 
-  Rocket, 
-  ShieldCheck, 
+import {
+  Zap,
+  Cpu,
+  Globe,
+  Rocket,
+  ShieldCheck,
   Users,
   Award,
   BookOpen,
@@ -87,11 +85,9 @@ const roadmapItems = [
 
 export default function RoadmapPage() {
   return (
-    <div className="bg-background min-h-screen">
-      <Navigation />
-      
-      <main className="pt-32 pb-48">
-        <div className="container-max">
+    <div className="bg-background pb-32">
+      <div className="container-max">
+
           {/* Hero Header */}
          <div className="max-w-4xl space-y-8 mb-32">
               <motion.p 
@@ -235,9 +231,6 @@ export default function RoadmapPage() {
              </div>
           </motion.div>
         </div>
-      </main>
-
-      <Footer />
     </div>
   );
 }

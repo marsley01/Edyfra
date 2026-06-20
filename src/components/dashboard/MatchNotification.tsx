@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { toast } from "sonner";
+import { showError, showSuccess, showInfo } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Zap, X, Check } from "lucide-react";
@@ -24,29 +24,35 @@ export default function MatchNotification() {
   const [requests, setRequests] = useState<MatchRequestPayload[]>([]);
 
   useEffect(() => {
+    let mounted = true;
     const channel = supabase
       .channel('global-matches')
-      .on('broadcast', { event: 'new-request' }, ({ payload }: { payload: any }) => {
-        // Only show requests that aren't from the current user
-        supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
-          if (user && payload.studentId !== user.id) {
+      .on('broadcast', { event: 'new-request' }, async ({ payload }: { payload: any }) => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (mounted && user && payload.studentId !== user.id) {
             setRequests((prev) => [...prev, payload]);
-            toast.info(`New help request: ${payload.studentName} needs ${payload.subject}!`);
+            showInfo(`New ${payload.subject} request`, { description: `${payload.studentName} is waiting for a tutor.` });
             
             // Auto-remove after 45s
             setTimeout(() => {
-              setRequests((prev) => prev.filter(r => r.requestId !== payload.requestId));
+              if (mounted) {
+                setRequests((prev) => prev.filter(r => r.requestId !== payload.requestId));
+              }
             }, 45000);
           }
-        });
+        } catch (err) {
+          console.error("Error handling match broadcast:", err);
+        }
       })
       .subscribe((status: any) => {
         if (status === 'SUBSCRIBED') {
-
+          // Optional: could log subscription
         }
       });
 
     return () => {
+      mounted = false;
       supabase.removeChannel(channel);
     };
   }, [supabase]);
@@ -55,12 +61,12 @@ export default function MatchNotification() {
     try {
       const result = await acceptMatchRequest(requestId);
       if (result.success) {
-        toast.success("Match accepted! Redirecting...");
+        showSuccess("Match accepted", { description: "Taking you into the room." });
         router.push(`/study-room/${result.sessionId}`);
       }
     } catch (err: unknown) {
       const error = err as Error;
-      toast.error(error.message || "Failed to accept match");
+      showError({ title: "We couldn't accept that match", cause: error.message || "Something hiccuped on our side.", fix: "Try again, or pick a different request." });
       setRequests((prev) => prev.filter(r => r.requestId !== requestId));
     }
   };

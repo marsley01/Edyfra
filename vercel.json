@@ -1,4 +1,5 @@
 {
+  "regions": ["lhr1"],
   "crons": [
     {
       "path": "/api/cron/daily-challenges",

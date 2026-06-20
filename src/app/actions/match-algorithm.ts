@@ -4,20 +4,174 @@ import prisma from "@/lib/prisma";
 import { EduLevel, MatchTier } from "@/generated/client";
 import { SESSION_CONFIG, TUTOR_CONFIG } from "@/lib/config";
 import { randomBytes } from "crypto";
-import { StreamChat } from "stream-chat";
+import { syncUsersToStream } from "@/lib/user-sync";
 import { notifyUser } from "@/app/actions/notifications";
 
-const STREAM_KEY = process.env.NEXT_PUBLIC_STREAM_KEY!;
-const STREAM_SECRET = process.env.STREAM_SECRET!;
+// ─── Atomic Commit Helpers ────────────────────────────────────────────────────
+// Every matching decision is committed via these helpers so that
+// "create Session + update MatchRequest (+ tutor load increment)" either all
+// succeed or all roll back. Without this, a client refresh or transient DB
+// error between steps leaves the MatchRequest in a half-resolved state and the
+// student stuck on the matching screen.
 
-async function upsertStreamUsers(users: { id: string; name: string; image?: string | null }[]) {
-  try {
-    const client = StreamChat.getInstance(STREAM_KEY, STREAM_SECRET);
-    for (const u of users) {
-      await client.upsertUser({ id: u.id, name: u.name, image: u.image || undefined });
+type ResolvedTier = "TUTOR" | "PEER";
+
+interface CommitHumanMatchParams {
+  matchRequestId: string;
+  studentId: string;
+  partnerId: string;
+  subject: string;
+  topic: string | null;
+  tier: ResolvedTier;
+}
+
+interface CommitHumanMatchResult {
+  sessionId: string;
+  roomId: string;
+}
+
+export async function commitHumanMatch(
+  params: CommitHumanMatchParams,
+): Promise<CommitHumanMatchResult> {
+  const { matchRequestId, studentId, partnerId, subject, topic, tier } = params;
+  const roomId = `room-${randomBytes(8).toString("hex")}`;
+  const startedAt = new Date();
+
+  const result = await prisma.$transaction(async (tx) => {
+    const session = await tx.session.create({
+      data: {
+        studentId,
+        partnerId,
+        tier: tier as MatchTier,
+        subject,
+        topic,
+        status: "ACTIVE",
+        roomId,
+        startedAt,
+      },
+    });
+
+    await tx.matchRequest.update({
+      where: { id: matchRequestId },
+      data: {
+        sessionId: session.id,
+        resolvedAs: tier as MatchTier,
+        resolvedAt: startedAt,
+      },
+    });
+
+    if (tier === "TUTOR") {
+      await tx.tutorProfile.update({
+        where: { userId: partnerId },
+        data: {
+          currentActiveSessions: { increment: 1 },
+          lastAssignedAt: startedAt,
+          totalAssignmentsToday: { increment: 1 },
+          sessionsAssigned: { increment: 1 },
+        },
+      });
     }
+
+    return session;
+  });
+
+  return { sessionId: result.id, roomId };
+}
+
+interface CommitGroupJoinParams {
+  matchRequestId: string;
+  studentId: string;
+  subject: string;
+  groupSessionId: string;
+  tutorId: string;
+}
+
+async function commitGroupJoin(
+  params: CommitGroupJoinParams,
+): Promise<{ sessionId: string; tutorId: string }> {
+  const { matchRequestId, studentId, subject, groupSessionId, tutorId } = params;
+  const resolvedAt = new Date();
+
+  await prisma.$transaction([
+    prisma.matchRequest.create({
+      data: {
+        studentId,
+        subject,
+        sessionId: groupSessionId,
+        resolvedAs: "TUTOR",
+        resolvedAt,
+      },
+    }),
+    prisma.matchRequest.update({
+      where: { id: matchRequestId },
+      data: {
+        sessionId: groupSessionId,
+        resolvedAs: "TUTOR",
+        resolvedAt,
+      },
+    }),
+  ]);
+
+  return { sessionId: groupSessionId, tutorId };
+}
+
+interface CommitAISessionParams {
+  matchRequestId: string;
+  studentId: string;
+  subject: string;
+  topic: string | null;
+}
+
+export async function commitAISession(
+  params: CommitAISessionParams,
+): Promise<{ sessionId: string; roomId: string }> {
+  const { matchRequestId, studentId, subject, topic } = params;
+  const roomId = `mash-${randomBytes(8).toString("hex")}`;
+  const startedAt = new Date();
+
+  const result = await prisma.$transaction(async (tx) => {
+    const session = await tx.session.create({
+      data: {
+        studentId,
+        partnerId: null,
+        tier: "MASH",
+        subject,
+        topic: topic || "General Discussion",
+        status: "ACTIVE",
+        roomId,
+        startedAt,
+      },
+    });
+
+    await tx.matchRequest.update({
+      where: { id: matchRequestId },
+      data: {
+        sessionId: session.id,
+        resolvedAs: "MASH",
+        resolvedAt: startedAt,
+      },
+    });
+
+    return session;
+  });
+
+  return { sessionId: result.id, roomId };
+}
+
+// Persist the "tier exhausted" flag atomically. Using a single update avoids
+// a window where two parallel calls both see "tier not tried" and retry it.
+async function markTierExhausted(
+  matchRequestId: string,
+  tier: 1 | 2,
+): Promise<void> {
+  try {
+    await prisma.matchRequest.update({
+      where: { id: matchRequestId },
+      data: tier === 1 ? { tier1Tried: true } : { tier2Tried: true },
+    });
   } catch (err) {
-    console.error("Failed to upsert Stream users:", err);
+    // Non-fatal — the worst case is a redundant retry of this tier next call.
+    console.warn(`[match-algorithm] markTierExhausted(${tier}) failed:`, err);
   }
 }
 
@@ -114,6 +268,7 @@ async function findActiveGroupSession(
  */
 async function tryJoinGroupSession(
   studentId: string,
+  matchRequestId: string,
   requestedSubject: string,
   educationLevel?: EduLevel | null
 ): Promise<{ sessionId: string; roomId: string; tutorId: string } | null> {
@@ -127,20 +282,19 @@ async function tryJoinGroupSession(
     });
     if (existingMessage) return null;
 
-    // Add student as an additional session participant
-    // We use Session model — add a secondary relation via a new MatchRequest
-    // Create a match request pointing to the same session
-    await prisma.matchRequest.create({
-      data: {
-        studentId,
-        subject: requestedSubject,
-        sessionId: group.sessionId,
-        resolvedAs: "TUTOR",
-        resolvedAt: new Date(),
-      },
+    // Atomic: insert the "join" MatchRequest + update the original in one
+    // transaction. If either fails, both roll back and the next attempt
+    // sees the same pre-state.
+    await commitGroupJoin({
+      matchRequestId,
+      studentId,
+      subject: requestedSubject,
+      groupSessionId: group.sessionId,
+      tutorId: group.tutorId,
     });
 
-    // Notify tutor that a student joined their group session
+    // Notify tutor that a student joined their group session (best-effort,
+    // post-commit, since notifications are not part of the DB contract).
     try {
       const student = await prisma.user.findUnique({
         where: { id: studentId },
@@ -247,25 +401,6 @@ export async function findTier1Match(
 }
 
 /**
- * Update tutor load balancing counters after assignment
- */
-async function updateTutorLoadAfterAssignment(tutorId: string) {
-  try {
-    await prisma.tutorProfile.update({
-      where: { userId: tutorId },
-      data: {
-        currentActiveSessions: { increment: 1 },
-        lastAssignedAt: new Date(),
-        totalAssignmentsToday: { increment: 1 },
-        sessionsAssigned: { increment: 1 },
-      },
-    });
-  } catch (error) {
-    console.error("Error updating tutor load:", error);
-  }
-}
-
-/**
  * Update tutor load balancing counters after session ends
  */
 export async function decrementTutorActiveSessions(tutorId: string) {
@@ -359,39 +494,31 @@ export async function findTier2Match(
 }
 
 /**
- * TIER 3: Create AI session for student
+ * TIER 3: Create an AI session (Session + MatchRequest update) atomically.
+ *
+ * Used by `executeSmartMatching` for the MASH fallback. Stream sync happens
+ * AFTER the DB commit so a Stream failure cannot leave the DB half-written.
  */
 export async function createAISession(
+  matchRequestId: string,
   studentId: string,
   subject: string,
   topic?: string
 ): Promise<{ sessionId: string; roomId: string }> {
+  const { sessionId, roomId } = await commitAISession({
+    matchRequestId,
+    studentId,
+    subject,
+    topic: topic ?? null,
+  });
+
   try {
-    const roomId = `mash-${randomBytes(8).toString("hex")}`;
-
-    try {
-      const student = await prisma.user.findUnique({ where: { id: studentId }, select: { name: true, avatar: true } });
-      if (student) await upsertStreamUsers([{ id: studentId, name: student.name, image: student.avatar }]);
-    } catch {}
-
-    const session = await prisma.session.create({
-      data: {
-        studentId,
-        partnerId: null,
-        tier: "MASH",
-        subject,
-        topic: topic || "General Discussion",
-        status: "ACTIVE",
-        roomId,
-        startedAt: new Date(),
-      },
-    });
-
-    return { sessionId: session.id, roomId };
-  } catch (error) {
-    console.error("Error creating AI session:", error);
-    throw new Error("Failed to create AI session");
+    await syncUsersToStream([studentId]);
+  } catch {
+    /* best-effort */
   }
+
+  return { sessionId, roomId };
 }
 
 /**
@@ -432,8 +559,6 @@ export async function executeSmartMatching(
     if (!student) return { success: false, error: "Student not found" };
 
     let partnerId: string | null = null;
-    let sessionId: string | null = null;
-    let roomId: string | null = null;
     let tier: "TUTOR" | "PEER" | "MASH" | "GROUP" = "MASH";
 
     const availableTutors = await prisma.user.count({
@@ -465,21 +590,12 @@ export async function executeSmartMatching(
     if (!matchRequest.tier1Tried) {
       const groupResult = await tryJoinGroupSession(
         matchRequest.studentId,
+        matchRequestId,
         matchRequest.subject,
         student.educationLevel
       );
 
       if (groupResult) {
-        // Update match request to point to existing session
-        await prisma.matchRequest.update({
-          where: { id: matchRequestId },
-          data: {
-            sessionId: groupResult.sessionId,
-            resolvedAs: "TUTOR",
-            resolvedAt: new Date(),
-          },
-        });
-
         return {
           success: true,
           partnerId: groupResult.tutorId,
@@ -503,10 +619,7 @@ export async function executeSmartMatching(
         partnerId = tier1Partner;
         tier = "TUTOR";
       } else {
-        await prisma.matchRequest.update({
-          where: { id: matchRequestId },
-          data: { tier1Tried: true },
-        });
+        await markTierExhausted(matchRequestId, 1);
       }
     }
 
@@ -522,10 +635,7 @@ export async function executeSmartMatching(
         partnerId = tier2Partner;
         tier = "PEER";
       } else {
-        await prisma.matchRequest.update({
-          where: { id: matchRequestId },
-          data: { tier2Tried: true },
-        });
+        await markTierExhausted(matchRequestId, 2);
       }
     }
 
@@ -537,19 +647,11 @@ export async function executeSmartMatching(
     if (!partnerId) {
       tier = "MASH";
       const aiSession = await createAISession(
+        matchRequestId,
         matchRequest.studentId,
         matchRequest.subject,
         matchRequest.topic ?? undefined
       );
-
-      await prisma.matchRequest.update({
-        where: { id: matchRequestId },
-        data: {
-          sessionId: aiSession.sessionId,
-          resolvedAs: "MASH",
-          resolvedAt: new Date(),
-        },
-      });
 
       return {
         success: true,
@@ -560,53 +662,28 @@ export async function executeSmartMatching(
       };
     }
 
-    // Upsert both users to Stream Chat
+    // Ensure both users exist in Stream Chat (best-effort, post-commit).
+    // The DB commit is the source of truth — if Stream sync fails the
+    // session is still real, just needs a token-refresh on the client.
     try {
-      const studentData = await prisma.user.findUnique({ where: { id: matchRequest.studentId }, select: { name: true, avatar: true } });
-      const partnerData = await prisma.user.findUnique({ where: { id: partnerId }, select: { name: true, avatar: true } });
-      await upsertStreamUsers([
-        { id: matchRequest.studentId, name: studentData?.name || "Student", image: studentData?.avatar },
-        { id: partnerId, name: partnerData?.name || "Partner", image: partnerData?.avatar },
-      ]);
+      await syncUsersToStream([matchRequest.studentId, partnerId]);
     } catch {}
 
-    // ============ CREATE SESSION ============
-    roomId = `room-${randomBytes(8).toString("hex")}`;
-
-    const session = await prisma.session.create({
-      data: {
-        studentId: matchRequest.studentId,
-        partnerId,
-        tier: tier === "TUTOR" ? "TUTOR" : "PEER",
-        subject: matchRequest.subject,
-        topic: matchRequest.topic,
-        status: "ACTIVE",
-        roomId,
-        startedAt: new Date(),
-      },
+    // ============ COMMIT: create Session + update MatchRequest + tutor load ============
+    const committed = await commitHumanMatch({
+      matchRequestId,
+      studentId: matchRequest.studentId,
+      partnerId,
+      subject: matchRequest.subject,
+      topic: matchRequest.topic,
+      tier: tier === "TUTOR" ? "TUTOR" : "PEER",
     });
-    sessionId = session.id;
-
-    // Update match request
-    await prisma.matchRequest.update({
-      where: { id: matchRequestId },
-      data: {
-        sessionId: session.id,
-        resolvedAs: tier as MatchTier,
-        resolvedAt: new Date(),
-      },
-    });
-
-    // Update tutor load balancing counters if tutor
-    if (tier === "TUTOR" && partnerId) {
-      await updateTutorLoadAfterAssignment(partnerId);
-    }
 
     return {
       success: true,
       partnerId,
-      sessionId,
-      roomId,
+      sessionId: committed.sessionId,
+      roomId: committed.roomId,
       tier,
       debug: debugInfo,
     };

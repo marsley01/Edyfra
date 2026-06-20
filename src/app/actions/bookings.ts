@@ -44,7 +44,10 @@ export async function getTutorAvailability(tutorId?: string) {
 export async function saveTutorAvailability(tutorId: string, slots: any[]) {
   try {
     const user = await getUserData();
-    if (!user || user.id !== tutorId) throw new Error("Unauthorized");
+    if (!user) throw new Error("Unauthorized");
+    
+    const targetId = tutorId || user.id;
+    if (user.id !== targetId && user.role !== "ADMIN") throw new Error("Unauthorized");
 
     await prisma.$transaction([
       prisma.tutorAvailability.deleteMany({
@@ -133,6 +136,49 @@ export async function updateBookingStatus(bookingId: string, status: string, rea
         body: `${booking.tutor.name} has accepted your ${booking.subject} session on ${formatDay(booking.date)} at ${formatEAT(booking.startTime)}.`,
         actionUrl: `/study-room/${bookingId}`,
       });
+
+      // Schedule session reminders: student 5min before, tutor 10min before.
+      // Past reminders are skipped — the cron will silently drop them anyway,
+      // but we don't pollute the booking_reminders table with dead rows.
+      try {
+        const sessionDate = new Date(booking.date);
+        const [hours, minutes] = booking.startTime.split(":").map(Number);
+        sessionDate.setHours(hours, minutes, 0, 0);
+
+        const now = new Date();
+        const reminder10 = new Date(sessionDate.getTime() - 10 * 60 * 1000);
+        const reminder5 = new Date(sessionDate.getTime() - 5 * 60 * 1000);
+
+        const rows: Array<{
+          bookingId: string;
+          userId: string;
+          reminderType: string;
+          scheduledFor: Date;
+        }> = [];
+
+        if (reminder10 > now) {
+          rows.push({
+            bookingId: booking.id,
+            userId: booking.tutorId,
+            reminderType: "10min",
+            scheduledFor: reminder10,
+          });
+        }
+        if (reminder5 > now) {
+          rows.push({
+            bookingId: booking.id,
+            userId: booking.studentId,
+            reminderType: "5min",
+            scheduledFor: reminder5,
+          });
+        }
+
+        if (rows.length > 0) {
+          await prisma.bookingReminder.createMany({ data: rows });
+        }
+      } catch (e) {
+        console.error("Failed to schedule booking reminders:", e);
+      }
     } else if (status === "declined") {
       await prisma.sessionFlag.create({
         data: {
@@ -241,7 +287,7 @@ export async function createBooking(tutorId: string, subject: string, topic: str
         type: "NEW_BOOKING",
         title: "New booking request 📅",
         body: `${user.name} wants a ${subject} session on ${dayFormatted} at ${timeFormatted}`,
-        actionUrl: "/tutor-dashboard",
+        actionUrl: "/tutor",
       });
     } catch (e) {
       console.error("Failed to notify tutor of new booking:", e);

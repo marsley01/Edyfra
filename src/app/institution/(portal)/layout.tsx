@@ -1,204 +1,222 @@
-"use client";
-
+import { redirect } from "next/navigation";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
 import {
-  LayoutDashboard,
   BarChart3,
-  Megaphone,
-  Users,
-  GraduationCap,
   BookOpen,
-  Video,
-  FileText,
-  Settings,
-  CreditCard,
-  ChevronDown,
+  Calendar,
+  GraduationCap,
+  LayoutDashboard,
   LogOut,
-  Building2,
-  Loader2,
+  School,
+  Settings,
+  Users,
+  type LucideIcon,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { getUserInstitution } from "@/app/actions/institution-data";
 import { logout } from "@/app/actions/auth";
+import { requireInstitutionAdmin } from "@/app/actions/institution-guard";
+import { getPlan } from "@/lib/institution-plans";
+import { cn } from "@/lib/utils";
 
-const navSections = [
+const NAV: { section: string; items: { href: string; label: string; icon: LucideIcon; exact?: boolean }[] }[] = [
   {
-    label: "Overview",
+    section: "Overview",
     items: [
-      { href: "/institution/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/institution/analytics", label: "Analytics", icon: BarChart3 },
-      { href: "/institution/announcements", label: "Announcements", icon: Megaphone },
+      { href: "/institution/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
     ],
   },
   {
-    label: "People",
+    section: "People",
     items: [
-      { href: "/institution/students", label: "Students", icon: Users },
-      { href: "/institution/tutors", label: "Tutors", icon: GraduationCap },
+      { href: "/institution/dashboard/students", label: "Students", icon: Users },
+      { href: "/institution/dashboard/teachers", label: "Teachers", icon: GraduationCap },
     ],
   },
   {
-    label: "Content",
+    section: "Insights",
     items: [
-      { href: "/institution/resources", label: "Resources", icon: BookOpen },
-      { href: "/institution/sessions", label: "Sessions", icon: Video },
-      { href: "/institution/reports", label: "Reports", icon: FileText },
+      { href: "/institution/dashboard/results", label: "Results & Analysis", icon: BarChart3 },
+      { href: "/institution/dashboard/coaching", label: "Holiday Coaching", icon: Calendar },
+      { href: "/institution/dashboard/reports", label: "Reports", icon: BookOpen },
     ],
   },
   {
-    label: "Account",
+    section: "Account",
     items: [
-      { href: "/institution/settings", label: "Settings", icon: Settings },
-      { href: "/institution/billing", label: "Billing", icon: CreditCard },
+      { href: "/institution/dashboard/settings", label: "Settings", icon: Settings },
     ],
   },
 ];
 
-export default function PortalLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const router = useRouter();
+export default async function PortalLayout({ children }: { children: React.ReactNode }) {
+  const membership = await requireInstitutionAdmin();
+  const inst = membership.institution;
+  const plan = getPlan(inst.planTier);
 
-  const [instData, setInstData] = useState<{
-    name: string;
-    initials: string;
-    plan: string;
-    role: string;
-  } | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const membership = await getUserInstitution();
-        if (membership) {
-          const name = membership.institution.name;
-          const initials = name
-            .split(" ")
-            .map((n: string) => n[0])
-            .join("")
-            .toUpperCase()
-            .slice(0, 2);
-          setInstData({
-            name,
-            initials,
-            plan: membership.institution.plan,
-            role: membership.role,
-          });
-        }
-      } catch {
-        setInstData(null);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
-
-  async function handleSignOut() {
-    await logout();
-    router.push("/institution/login");
-  }
-
+  // We can't usePathname in a server component — use a `headers` call instead.
+  // For simplicity we just render a flat sidebar; the page provides its own title.
   return (
-    <div className="flex min-h-screen bg-[#f8f9fc]">
-      <aside className="fixed left-0 top-0 z-30 flex h-screen w-64 flex-col border-r border-gray-200 bg-white">
-        <div className="flex items-center gap-3 border-b border-gray-100 px-6 py-5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#3730A3] text-white text-sm font-bold">
-            E
-          </div>
-          <div>
-            <div className="text-base font-semibold text-gray-900">Edyfra</div>
-            <div className="flex items-center gap-1 text-[11px] font-medium text-gray-400">
-              <Building2 className="h-3 w-3" />
-              Institution Portal
-            </div>
+    <div className="min-h-screen bg-[#f8f9fc]">
+      <Sidebar
+        schoolName={inst.name}
+        schoolCode={inst.code ?? "—"}
+        role={membership.role}
+        planName={plan.name}
+        adminName={inst.adminName ?? "Admin"}
+      />
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col lg:ml-64">
+        <TopBar schoolName={inst.name} planName={plan.name} status={inst.status} />
+        <MobileNav />
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">{children}</main>
+      </div>
+    </div>
+  );
+}
+
+function Sidebar({
+  schoolName,
+  schoolCode,
+  role,
+  planName,
+  adminName,
+}: {
+  schoolName: string;
+  schoolCode: string;
+  role: string;
+  planName: string;
+  adminName: string;
+}) {
+  return (
+    <aside className="fixed left-0 top-0 z-30 hidden h-screen w-64 flex-col border-r border-gray-200 bg-white lg:flex">
+      <div className="flex items-center gap-3 border-b border-gray-100 px-6 py-5">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-white text-sm font-bold">
+          E
+        </div>
+        <div>
+          <div className="text-base font-semibold text-gray-900">Edyfra</div>
+          <div className="flex items-center gap-1 text-[11px] font-medium text-gray-400">
+            <School className="h-3 w-3" />
+            Institution Portal
           </div>
         </div>
+      </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-4">
-          {navSections.map((section) => (
-            <div key={section.label} className="mb-5">
-              <div className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
-                {section.label}
-              </div>
-              {section.items.map((item) => {
-                const isActive =
-                  item.href === "/institution/dashboard"
-                    ? pathname === "/institution/dashboard"
-                    : pathname.startsWith(item.href);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                      isActive
-                        ? "bg-[#3730A3]/10 text-[#3730A3]"
-                        : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-                    )}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    {item.label}
-                  </Link>
-                );
-              })}
+      <nav className="flex-1 overflow-y-auto px-3 py-4">
+        {NAV.map((section) => (
+          <div key={section.section} className="mb-5">
+            <div className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              {section.section}
             </div>
-          ))}
-        </nav>
+            {section.items.map((item) => (
+              <SidebarLink
+                key={item.href}
+                href={item.href}
+                label={item.label}
+                icon={item.icon}
+              />
+            ))}
+          </div>
+        ))}
+      </nav>
 
-        <div className="border-t border-gray-100 p-4">
-          {loading ? (
-            <div className="flex items-center justify-center py-3">
-              <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
-            </div>
-          ) : instData ? (
-            <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#3730A3] text-xs font-bold text-white">
-                {instData.initials}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-medium text-gray-900">
-                  {instData.name}
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="inline-flex items-center rounded-full bg-[#3730A3]/10 px-2 py-0.5 text-[10px] font-medium text-[#3730A3] capitalize">
-                    {instData.plan}
-                  </span>
-                  <span className="text-[10px] text-gray-400 capitalize">· {instData.role.replace(/_/g, " ").toLowerCase()}</span>
-                </div>
-              </div>
-              <ChevronDown className="h-4 w-4 shrink-0 text-gray-400" />
-            </div>
-          ) : null}
+      <div className="border-t border-gray-100 p-4">
+        <div className="rounded-lg bg-gray-50 p-3">
+          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500">
+            <span className="rounded bg-indigo-100 px-1.5 py-0.5 text-indigo-700">{schoolCode}</span>
+            <span className="truncate">{planName}</span>
+          </div>
+          <p className="mt-1 truncate text-sm font-medium text-gray-900">{schoolName}</p>
+          <p className="text-[11px] text-gray-500">{adminName} · {role.replace(/_/g, " ").toLowerCase()}</p>
+        </div>
+        <form
+          action={async () => {
+            "use server";
+            await logout();
+            redirect("/institution/login");
+          }}
+        >
           <button
-            onClick={handleSignOut}
+            type="submit"
             className="mt-2 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-gray-400 transition-colors hover:bg-gray-50 hover:text-red-500"
           >
             <LogOut className="h-3.5 w-3.5" />
-            Sign Out
+            Sign out
           </button>
-        </div>
-      </aside>
-
-      <div className="ml-64 flex flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-gray-200 bg-white/95 backdrop-blur-sm px-8">
-          <h1 className="text-lg font-semibold text-gray-900">
-            Institution Portal
-          </h1>
-          <div className="flex items-center gap-3">
-            {instData && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#3730A3]/10 px-3 py-1 text-xs font-medium text-[#3730A3] capitalize">
-                <Building2 className="h-3.5 w-3.5" />
-                {instData.role.replace(/_/g, " ").toLowerCase()}
-              </span>
-            )}
-          </div>
-        </header>
-
-        <main className="flex-1 overflow-y-auto p-8">{children}</main>
+        </form>
       </div>
-    </div>
+    </aside>
+  );
+}
+
+function MobileNav() {
+  return (
+    <nav className="sticky top-16 z-10 border-b border-gray-200 bg-white/95 px-4 py-2 backdrop-blur-sm lg:hidden">
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {NAV.flatMap((section) => section.items).map((item) => {
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm font-bold text-gray-600"
+            >
+              <Icon className="h-4 w-4" />
+              {item.label}
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
+function SidebarLink({
+  href,
+  label,
+  icon: Icon,
+}: {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+}) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-500 transition-colors hover:bg-indigo-50/60 hover:text-indigo-700",
+      )}
+    >
+      <Icon className="h-4 w-4" />
+      {label}
+    </Link>
+  );
+}
+
+function TopBar({
+  schoolName,
+  planName,
+  status,
+}: {
+  schoolName: string;
+  planName: string;
+  status: string;
+}) {
+  return (
+    <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-gray-200 bg-white/95 px-4 backdrop-blur-sm sm:px-6 lg:px-8">
+      <div className="min-w-0">
+        <h1 className="truncate text-base font-black text-gray-900">{schoolName}</h1>
+        <p className="text-[11px] font-bold uppercase tracking-widest text-gray-500">
+          {planName} plan · <span className={status === "ACTIVE" ? "text-emerald-600" : "text-amber-600"}>{status}</span>
+        </p>
+      </div>
+      <div className="flex items-center gap-3">
+        <Link
+          href="/institution/dashboard/settings"
+          className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+          title="Settings"
+        >
+          <Settings className="h-4 w-4" />
+        </Link>
+      </div>
+    </header>
   );
 }

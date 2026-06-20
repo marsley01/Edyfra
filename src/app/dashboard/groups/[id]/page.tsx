@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Users, Loader2, ChevronLeft } from "lucide-react";
 import { getGroupById } from "@/app/actions/groups";
-import { toast } from "sonner";
+import { showError } from "@/lib/toast";
 import dynamic from "next/dynamic";
 
 const StreamChatRoom = dynamic(
@@ -54,7 +54,7 @@ export default function GroupChatPage() {
         const data = await getGroupById(groupId);
         setGroup(data as any);
       } catch {
-        toast.error("Failed to load group");
+        showError({ title: "We couldn't load this group", cause: "Our server didn't respond.", fix: "Refresh the page in a moment." });
       } finally {
         setLoading(false);
       }

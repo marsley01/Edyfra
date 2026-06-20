@@ -18,7 +18,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { resetAllSessions, clearGlobalCache, deleteUser, saveAdminGlobalSettings, getAdminGlobalSettings } from "@/app/actions/admin";
 import { updateUserSettings } from "@/app/actions/user";
 import { Palette, Trash2, Skull, Eye, EyeOff } from "lucide-react";
@@ -70,10 +70,14 @@ export default function AdminSettingsPage() {
     setIsDeleting(true);
     try {
       await deleteUser(userToDelete);
-      toast.success("Target user successfully eradicated from the database.");
+      showSuccess("User deleted", { description: "The account and its data are gone from the database." });
       setUserToDelete("");
     } catch (err) {
-      toast.error("Failed to delete user. Check ID or permissions.");
+      showError({
+        title: "We couldn't delete that user",
+        cause: "The ID may be wrong, or your permissions are limited.",
+        fix: "Double-check the ID, then try again.",
+      });
     } finally {
       setIsDeleting(false);
     }
@@ -104,9 +108,13 @@ export default function AdminSettingsPage() {
         window.dispatchEvent(new CustomEvent("accent-color-changed", { detail: accentColor }));
       }
       
-      toast.success("System configurations deployed successfully");
+      showSuccess("System configurations deployed", { description: "The new settings are live across the platform." });
     } catch (err) {
-      toast.error("Failed to deploy configurations");
+      showError({
+        title: "We couldn't deploy those configurations",
+        cause: "Something didn't go through on our side.",
+        fix: "Try again, or refresh the page.",
+      });
     } finally {
       setSaving(false);
     }
@@ -310,9 +318,13 @@ export default function AdminSettingsPage() {
                     try {
                       const { reindexDatabase } = await import("@/app/actions/admin");
                       await reindexDatabase();
-                      toast.success("Database reindexed successfully");
+                      showSuccess("Database reindexed", { description: "Search and filters should feel snappier now." });
                     } catch (error) {
-                      toast.error("Failed to reindex database");
+                      showError({
+                        title: "We couldn't reindex the database",
+                        cause: "Something didn't go through on our side.",
+                        fix: "Try again, or refresh the page.",
+                      });
                     }
                   }}
                   className="rounded-2xl h-20 border-white/5 bg-white/5 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 font-black text-xs tracking-widest flex flex-col gap-2"
@@ -324,7 +336,7 @@ export default function AdminSettingsPage() {
                   onClick={async () => {
                     if (confirm("Are you sure you want to log out all users?")) {
                       await resetAllSessions();
-                      toast.success("All users logged out successfully");
+                      showSuccess("All users logged out", { description: "Every active session has been cleared." });
                     }
                   }}
                   className="rounded-2xl h-20 border-white/5 bg-white/5 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 font-black text-xs tracking-widest flex flex-col gap-2"
@@ -335,7 +347,7 @@ export default function AdminSettingsPage() {
                   variant="outline" 
                   onClick={async () => {
                     await clearGlobalCache();
-                    toast.success("Global Cache Flushed");
+                    showSuccess("Global cache flushed", { description: "Fresh data will be fetched on the next request." });
                   }}
                   className="rounded-2xl h-20 border-white/5 bg-white/5 hover:bg-primary/10 hover:text-primary hover:border-primary/20 font-black text-xs tracking-widest flex flex-col gap-2"
                 >
@@ -347,9 +359,13 @@ export default function AdminSettingsPage() {
                     try {
                       const { bootstrapSeeds } = await import("@/app/actions/admin");
                       await bootstrapSeeds();
-                      toast.success("Seeds bootstrapped successfully");
+                      showSuccess("Seeds bootstrapped", { description: "Demo data is now in place." });
                     } catch (error) {
-                      toast.error("Failed to bootstrap seeds");
+                      showError({
+                        title: "We couldn't bootstrap the seeds",
+                        cause: "Something didn't go through on our side.",
+                        fix: "Try again, or refresh the page.",
+                      });
                     }
                   }}
                   className="rounded-2xl h-20 border-white/5 bg-white/5 hover:bg-orange-500/10 hover:text-orange-400 hover:border-orange-500/20 font-black text-xs tracking-widest flex flex-col gap-2"
@@ -399,11 +415,11 @@ export default function AdminSettingsPage() {
                  <p className="text-xs text-muted-foreground font-medium">Force all active users to log out immediately.</p>
                </div>
                <div className="flex gap-2">
-                 <Button onClick={() => {
-                   if (confirm("Are you sure you want to force logout all users?")) {
-                     resetAllSessions().then(() => toast.success("All users have been logged out."));
-                   }
-                 }} variant="outline" className="flex-1 rounded-xl border-red-500/30 text-red-500 hover:bg-red-500/10 font-black">
+                  <Button onClick={() => {
+                    if (confirm("Are you sure you want to force logout all users?")) {
+                      resetAllSessions().then(() => showSuccess("All users logged out", { description: "Every active session has been cleared." }));
+                    }
+                  }} variant="outline" className="flex-1 rounded-xl border-red-500/30 text-red-500 hover:bg-red-500/10 font-black">
                    <Lock className="h-4 w-4 mr-2" /> FORCE LOGOUT
                  </Button>
                </div>

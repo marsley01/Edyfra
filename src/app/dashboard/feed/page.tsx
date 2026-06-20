@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { getPosts, createPost, likePost } from "@/app/actions/feed";
 import { createClient } from "@/utils/supabase/client";
-import { toast } from "sonner";
+import { showError, showSuccess, showUnknownError } from "@/lib/toast";
 import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -93,10 +93,14 @@ export default function FeedPage() {
          comments: post.comments
        }));
        setPosts(mappedData);
-     } catch (error: any) {
-       console.error("Failed to load feed:", error);
-       toast.error(error?.message || "Failed to load feed. Please try again.");
-     } finally {
+      } catch (error: any) {
+        console.error("Failed to load feed:", error);
+        showError({
+          title: "We couldn't load the feed",
+          cause: error?.message || "Something didn't reach us on our side.",
+          fix: "Pull to refresh, or check your connection and try again.",
+        });
+      } finally {
        setLoading(false);
      }
    };
@@ -108,13 +112,17 @@ export default function FeedPage() {
       const result = await createPost(newPostContent, topic || undefined);
       if (result.success) {
         setNewPostContent("");
-        toast.success("Shared with the community!");
+        showSuccess("Shared with the community!", { description: "Your post is live for everyone to see." });
         loadPosts();
       } else {
-        toast.error(result.error || "Failed to share post");
+        showError({
+          title: "We couldn't share that post",
+          cause: result.error || "Something didn't go through.",
+          fix: "Check your post and try again.",
+        });
       }
     } catch {
-      toast.error("Failed to share post");
+      showError({ title: "We couldn't share that post", cause: "Something hiccuped on our side.", fix: "Check your post and try again." });
     } finally {
       setIsSubmitting(false);
     }
@@ -141,7 +149,11 @@ export default function FeedPage() {
     try {
       await likePost(postId);
     } catch {
-      toast.error("Failed to like post");
+      showError({
+        title: "We couldn't save that like",
+        cause: "A hiccup on our side blocked the reaction.",
+        fix: "Tap the like button again in a moment.",
+      });
       loadPosts(); // Revert on failure
     }
   };

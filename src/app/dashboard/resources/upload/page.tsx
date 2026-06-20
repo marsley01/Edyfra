@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 
 const HIGH_SCHOOL_SUBJECTS = [
   "Mathematics",
@@ -85,7 +85,7 @@ export default function UploadResourcePage() {
         setPreview(null);
       }
     } else {
-      toast.error("File must be under 50 MB");
+      showError({ title: "File is too big", cause: "We've got a 50 MB limit on uploads.", fix: "Compress the file or pick a smaller one, then try again." });
     }
   }, []);
 
@@ -103,7 +103,7 @@ export default function UploadResourcePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file || !title || !subject || !level || !type) {
-      toast.error("Please fill in all required fields");
+      showError({ title: "Almost there", cause: "A required field is empty.", fix: "Fill in every starred field, then submit." });
       return;
     }
 
@@ -112,7 +112,7 @@ export default function UploadResourcePage() {
       // 1. Upload file to Supabase storage
       const supabase = (await import("@/utils/supabase/client")).createClient();
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { toast.error("Please sign in"); return; }
+      if (!user) { showError({ title: "You need to sign in for that", cause: "We don't have a session for you right now.", fix: "Sign in and try again." }); return; }
 
       const fileExt = file.name.split(".").pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
@@ -122,7 +122,7 @@ export default function UploadResourcePage() {
         .upload(fileName, file, { cacheControl: "3600", upsert: false });
 
       if (uploadError) {
-        toast.error(uploadError.message);
+        showError({ title: "We couldn't upload that file", cause: uploadError.message, fix: "Try again, or pick a different file." });
         return;
       }
 
@@ -148,13 +148,11 @@ export default function UploadResourcePage() {
 
       const data = await res.json();
       if (!res.ok) {
-        toast.error(data.error || "Failed to save resource");
+        showError({ title: "We couldn't save that resource", cause: data.error || "Our server didn't accept it.", fix: "Try again in a moment." });
         return;
       }
 
-      toast.success(
-        "Your resource is under review — we will notify you when approved."
-      );
+      showSuccess("Resource submitted", { description: "We'll review it and let you know once it's live." });
       setTitle("");
       setSubject("");
       setLevel("");
@@ -165,7 +163,7 @@ export default function UploadResourcePage() {
       setFile(null);
       setPreview(null);
     } catch (error: any) {
-      toast.error(error.message || "Something went wrong");
+      showError({ title: "Something didn't go through", cause: error.message || "A hiccup on our side.", fix: "Try again in a moment." });
     } finally {
       setIsUploading(false);
     }

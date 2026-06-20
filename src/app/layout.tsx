@@ -9,6 +9,9 @@ import { ThemeColorManager } from "@/components/theme-color-manager";
 import { ConditionalShell } from "@/components/conditional-shell";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { PushSubscriptionManager } from "@/components/push-subscription-manager";
+import EddyChatWrapper from "@/components/chat/EddyChatWrapper";
+import { OverlayManagerProvider } from "@/lib/overlay-manager";
+import { ClickFeedback } from "@/components/click-feedback";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -33,11 +36,18 @@ export const metadata: Metadata = {
   siteName: "Edyfra",
   title: "Edyfra — Kenya's Institutional Study Platform",
   description: "AI-powered tutor matching, live study rooms, and institutional analytics for Kenyan scholars.",
+  images: [{
+    url: "/og-image.png",
+    width: 1200,
+    height: 630,
+    alt: "Edyfra — Kenya's Institutional Study Platform",
+  }],
 },
   twitter: {
     card: "summary_large_image",
     title: "Edyfra — Kenya's Institutional Study Platform",
     description: "Connect with verified tutors across Kenya. Study smarter.",
+    images: ["/og-image.png"],
   },
   robots: {
     index: true,
@@ -75,8 +85,7 @@ export const viewport: Viewport = {
   themeColor: "#2D1FE8",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  viewportFit: "cover",
 };
 export default function RootLayout({
   children,
@@ -92,13 +101,17 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <ThemeColorManager />
-          <ConditionalShell>{children}</ConditionalShell>
-          <ServiceWorkerRegister />
-          <PushSubscriptionManager />
-          <Toaster richColors position="top-right" />
-          <Analytics />
-          <SpeedInsights />
+          <OverlayManagerProvider>
+            <ThemeColorManager />
+            <ClickFeedback />
+            <ConditionalShell>{children}</ConditionalShell>
+            <ServiceWorkerRegister />
+            <PushSubscriptionManager />
+            <EddyChatWrapper />
+            <Toaster richColors position="top-right" />
+            <Analytics />
+            <SpeedInsights />
+          </OverlayManagerProvider>
         </ThemeProvider>
       </body>
     </html>

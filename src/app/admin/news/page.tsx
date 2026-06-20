@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Newspaper, Plus, Trash2, Loader2, Eye, EyeOff } from "lucide-react";
-import { toast } from "sonner";
+import { showSuccess } from "@/lib/toast";
 
 export default function NewsPage() {
   const router = useRouter();
@@ -46,7 +46,9 @@ export default function NewsPage() {
     if (!title || !slug || !body) return;
     const { createNewsArticle } = await import("@/app/actions/admin-content");
     await createNewsArticle({ title, slug, category, body, coverImage, summary, publish });
-    toast.success(publish ? "Published!" : "Saved as draft");
+    showSuccess(publish ? "Article published" : "Draft saved", {
+      description: publish ? "It's live on the news page." : "You can publish it from the list.",
+    });
     setTitle(""); setSlug(""); setBody(""); setCoverImage(""); setSummary(""); setShowForm(false);
     await load();
   };
@@ -54,7 +56,7 @@ export default function NewsPage() {
   const handleDelete = async (id: string) => {
     const { deleteNewsArticle } = await import("@/app/actions/admin-content");
     await deleteNewsArticle(id);
-    toast.success("Deleted");
+    showSuccess("Article deleted", { description: "It's gone from the news page." });
     await load();
   };
 

@@ -43,7 +43,7 @@ export async function GET(request: Request) {
       if (reminder.booking.status === "confirmed") {
         const isStudent = reminder.userId === reminder.booking.studentId;
         const otherPerson = isStudent ? reminder.booking.tutor.name : reminder.booking.student.name;
-        
+
         let title = "Upcoming Session Reminder";
         let body = `Your session with ${otherPerson} for ${reminder.booking.subject} is coming up.`;
 
@@ -51,8 +51,15 @@ export async function GET(request: Request) {
           body = `Your session with ${otherPerson} is tomorrow at ${reminder.booking.startTime}.`;
         } else if (reminder.reminderType === "30min") {
           body = `Your session with ${otherPerson} starts in 30 minutes. Get ready!`;
+        } else if (reminder.reminderType === "10min") {
+          title = "Heads up — session soon!";
+          // Tutors get 10 min so they can prep; copy is friendlier for them.
+          body = isStudent
+            ? `Your ${reminder.booking.subject} session with ${otherPerson} starts in 10 minutes. Get ready to join!`
+            : `Your ${reminder.booking.subject} session with ${otherPerson} starts in 10 minutes. Open the room and get set up.`;
         } else if (reminder.reminderType === "5min") {
           title = "Session starting soon!";
+          // Students get 5 min — sharper call-to-action.
           body = `Your session with ${otherPerson} starts in 5 minutes. Join the room now.`;
         }
 

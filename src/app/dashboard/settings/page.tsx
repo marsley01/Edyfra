@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { getUserData, updateProfile, updateUserSettings, updateUserPreferences, updateNotificationSettings, updateStudentProfile, changePassword, changeEmail, downloadUserData, deleteUserAccount, updateAvatar } from "@/app/actions/user";
-import { toast } from "sonner";
+import { showError, showSuccess, showUnknownError } from "@/lib/toast";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
@@ -29,11 +29,14 @@ import { UpgradeModal } from "@/components/shared/upgrade-modal";
 import { AvatarPicker, type AvatarStyle } from "@/components/ui/avatar-picker";
 
 const ACCENT_COLORS = [
+  { name: "Campus Navy", value: "#0F4C5C" },
+  { name: "Royal Blue", value: "#1A5276" },
   { name: "Edyfra Blue", value: "#1e3a8a" },
   { name: "Knowledge Teal", value: "#0d9488" },
-  { name: "Success Green", value: "#15803d" },
-  { name: "Royal Purple", value: "#6d28d9" },
+  { name: "Coral CTA", value: "#E07A5F" },
+  { name: "Berry Punch", value: "#D81B60" },
   { name: "Warm Amber", value: "#b45309" },
+  { name: "Royal Purple", value: "#6d28d9" },
 ];
 
 const SUBJECTS = ["Mathematics", "Physics", "Chemistry", "Biology", "English", "Kiswahili", "Geography", "History", "Computer Science", "Business"];
@@ -94,8 +97,14 @@ export default function SettingsPage() {
         subjects: formData.subjects.split(",").map(s => s.trim()).filter(Boolean),
         studyHoursPerWeek: parseInt(formData.studyHours) || 0,
       });
-      toast.success("Profile updated");
-    } catch { toast.error("Failed to update profile"); }
+      showSuccess("Profile updated", { description: "Your changes are live across Edyfra." });
+    } catch {
+      showError({
+        title: "We couldn't update your profile",
+        cause: "Something didn't go through on our side.",
+        fix: "Try again, or refresh the page.",
+      });
+    }
     finally { setSaving(false); }
   };
 
@@ -112,34 +121,80 @@ export default function SettingsPage() {
     try {
       await updateUserPreferences({ [key]: value });
       if (key === "accentColor") {
+        try { localStorage.setItem("edyfra_accent_color", value); } catch { /* noop */ }
         window.dispatchEvent(new CustomEvent("accent-color-changed", { detail: value }));
       }
-    } catch { toast.error("Failed to save"); }
+    } catch {
+      showError({
+        title: "We couldn't save that preference",
+        cause: "Something didn't go through on our side.",
+        fix: "Try again, or refresh the page.",
+      });
+    }
   };
 
   const handleSaveNotif = async (key: string, value: boolean) => {
     const updated = { ...notifPrefs, [key]: value };
     setNotifPrefs(updated);
     try { await updateNotificationSettings(updated); }
-    catch { toast.error("Failed to save"); }
+    catch {
+      showError({
+        title: "We couldn't save that notification setting",
+        cause: "Something didn't go through on our side.",
+        fix: "Try again, or refresh the page.",
+      });
+    }
   };
 
   const handleChangePassword = async () => {
-    if (passwordData.newPass !== passwordData.confirm) { toast.error("Passwords don't match"); return; }
-    if (passwordData.newPass.length < 6) { toast.error("Password must be at least 6 characters"); return; }
+    if (passwordData.newPass !== passwordData.confirm) {
+      showError({
+        title: "Passwords don't match",
+        cause: "The new password and confirmation are different.",
+        fix: "Re-type the same new password in both fields.",
+      });
+      return;
+    }
+    if (passwordData.newPass.length < 6) {
+      showError({
+        title: "Password is too short",
+        cause: "Your new password needs at least 6 characters.",
+        fix: "Pick a longer password, then try again.",
+      });
+      return;
+    }
     try {
       await changePassword(passwordData.current, passwordData.newPass);
-      toast.success("Password changed");
+      showSuccess("Password changed", { description: "Use it next time you sign in." });
       setPasswordData({ current: "", newPass: "", confirm: "" });
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) {
+      showError({
+        title: "We couldn't change your password",
+        cause: e.message,
+        fix: "Double-check your current password, then try again.",
+      });
+    }
   };
 
   const handleChangeEmail = async () => {
-    if (!newEmail.includes("@")) { toast.error("Invalid email"); return; }
+    if (!newEmail.includes("@")) {
+      showError({
+        title: "That email looks off",
+        cause: "We couldn't see a valid @ in the address.",
+        fix: "Type a full email like name@example.com.",
+      });
+      return;
+    }
     try {
       await changeEmail(newEmail);
-      toast.success("Verification email sent to " + newEmail);
-    } catch (e: any) { toast.error(e.message); }
+      showSuccess(`Verification email sent to ${newEmail}`, { description: "Open it to confirm the change." });
+    } catch (e: any) {
+      showError({
+        title: "We couldn't send the verification email",
+        cause: e.message,
+        fix: "Check the address, then try again.",
+      });
+    }
   };
 
   const handleDownloadData = async () => {
@@ -151,19 +206,38 @@ export default function SettingsPage() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url; a.download = "edyfra-data.json"; a.click();
-        toast.success("Data downloaded");
+        showSuccess("Data downloaded", { description: "Your export is saved to your downloads." });
       }
-    } catch { toast.error("Failed to download"); }
+    } catch {
+      showError({
+        title: "We couldn't build your data export",
+        cause: "Something didn't go through on our side.",
+        fix: "Try again, or refresh the page.",
+      });
+    }
     finally { setDownloading(false); }
   };
 
   const handleDeleteAccount = async () => {
-    if (deleteConfirm !== "DELETE") { toast.error("Type DELETE to confirm"); return; }
+    if (deleteConfirm !== "DELETE") {
+      showError({
+        title: "Confirmation needed",
+        cause: "We didn't see the word DELETE in the box.",
+        fix: "Type DELETE in capitals, then try again.",
+      });
+      return;
+    }
     try {
       await deleteUserAccount();
-      toast.success("Account deleted");
+      showSuccess("Account deleted", { description: "Your Edyfra account is now gone." });
       window.location.href = "/login";
-    } catch { toast.error("Failed to delete account"); }
+    } catch {
+      showError({
+        title: "We couldn't delete your account",
+        cause: "Something didn't go through on our side.",
+        fix: "Try again, or refresh the page.",
+      });
+    }
   };
 
   if (loading) return <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
@@ -237,10 +311,14 @@ export default function SettingsPage() {
                                 const url = `https://api.dicebear.com/7.x/${selectedAvatarStyle}/svg?seed=${encodeURIComponent(formData.name || "user")}`;
                                 await updateAvatar(url);
                                 setCurrentAvatar(url);
-                                toast.success("Avatar updated");
+                                showSuccess("Avatar updated", { description: "Your new look is live." });
                                 setAvatarDialogOpen(false);
                               } catch {
-                                toast.error("Failed to update avatar");
+                                showError({
+                                  title: "We couldn't update your avatar",
+                                  cause: "Something didn't go through on our side.",
+                                  fix: "Try again, or pick a different style.",
+                                });
                               } finally {
                                 setSavingAvatar(false);
                               }
