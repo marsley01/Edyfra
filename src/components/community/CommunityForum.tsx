@@ -657,7 +657,14 @@ function ForumThread({
           {thread.posts.length} {thread.posts.length === 1 ? "reply" : "replies"}
         </h2>
         <button
-          onClick={() => markForumTopicRead(thread.topic.id).then(onRefresh)}
+          onClick={async () => {
+            try {
+              await markForumTopicRead(thread.topic.id);
+              onRefresh();
+            } catch (err) {
+              console.error("Failed to mark topic as read:", err);
+            }
+          }}
           className="text-[11px] font-bold text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
         >
           <CheckCheck className="h-3 w-3" /> Mark as read

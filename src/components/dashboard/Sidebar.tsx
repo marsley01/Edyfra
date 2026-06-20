@@ -69,13 +69,22 @@ export default function DashboardSidebar({ user, onClose }: { user: User; onClos
   const [displayName, setDisplayName] = useState(user.user_metadata?.name || "Student");
 
   useEffect(() => {
-    getUserData().then(data => {
-      if (data) {
-        setPoints(data.points);
-        setAvatar(data.avatar);
-        if (data.name) setDisplayName(data.name);
-      }
-    });
+    let mounted = true;
+    getUserData()
+      .then((data) => {
+        if (mounted && data) {
+          setPoints(data.points);
+          setAvatar(data.avatar);
+          if (data.name) setDisplayName(data.name);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch user data in sidebar:", err);
+      });
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const handleLogout = async () => {

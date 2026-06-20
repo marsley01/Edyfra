@@ -12,19 +12,24 @@ export function PushNotificationInit() {
   const [subscribed, setSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
-      return;
-    }
-    setSupported(true);
-    setPermission(Notification.permission);
+   useEffect(() => {
+     if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+       return;
+     }
+     setSupported(true);
+     setPermission(Notification.permission);
 
-    navigator.serviceWorker.ready.then((reg) => {
-      reg.pushManager.getSubscription().then((sub) => {
-        setSubscribed(!!sub);
-      });
-    });
-  }, []);
+     navigator.serviceWorker.ready
+       .then((reg) => {
+         return reg.pushManager.getSubscription();
+       })
+       .then((sub) => {
+         setSubscribed(!!sub);
+       })
+       .catch((err) => {
+         console.error("[PushNotificationInit] Error checking subscription:", err);
+       });
+   }, []);
 
   const subscribe = useCallback(async () => {
     if (!supported) return;

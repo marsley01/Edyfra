@@ -8,15 +8,32 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { Calendar, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import DOMPurify from "dompurify";
 
-export default function NewsArticlePage({ params }: { params: { slug: string } }) {
+export default function NewsArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const [article, setArticle] = useState<NewsArticle | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [sanitizedContent, setSanitizedContent] = useState("");
+  const [slug, setSlug] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+    params.then((p) => {
+      if (!cancelled) {
+        setSlug(p.slug);
+      }
+    }).catch((err) => {
+      console.error("Failed to resolve params:", err);
+    });
+    return () => { cancelled = false; };
+  }, [params]);
+
+  useEffect(() => {
+    if (!slug) return;
+    const currentSlug = slug; // capture to avoid null closure issues
     async function loadArticle() {
       try {
-        const data = await getNewsBySlug(params.slug);
+        const data = await getNewsBySlug(currentSlug);
         if (!data) {
           notFound();
         }
@@ -28,9 +45,14 @@ export default function NewsArticlePage({ params }: { params: { slug: string } }
         setIsLoading(false);
       }
     }
-
     loadArticle();
-  }, [params.slug]);
+  }, [slug]);
+
+  useEffect(() => {
+    if (article?.content) {
+      setSanitizedContent(DOMPurify.sanitize(article.content));
+    }
+  }, [article]);
 
   if (isLoading) {
     return (
@@ -116,9 +138,8 @@ export default function NewsArticlePage({ params }: { params: { slug: string } }
           animate={{ opacity: 1, y: 0 }}
           className="prose prose-lg prose-headings:font-bold prose-headings:scroll-mt-20 prose-leading-relaxed"
         >
-          {/* We'll use dangerouslySetInnerHTML for the content since it's rich text */}
           <div 
-            dangerouslySetInnerHTML={{ __html: article.content }} 
+            dangerouslySetInnerHTML={{ __html: sanitizedContent }} 
             className="w-full"
           />
         </motion.div>

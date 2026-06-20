@@ -24,29 +24,35 @@ export default function MatchNotification() {
   const [requests, setRequests] = useState<MatchRequestPayload[]>([]);
 
   useEffect(() => {
+    let mounted = true;
     const channel = supabase
       .channel('global-matches')
-      .on('broadcast', { event: 'new-request' }, ({ payload }: { payload: any }) => {
-        // Only show requests that aren't from the current user
-        supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
-          if (user && payload.studentId !== user.id) {
+      .on('broadcast', { event: 'new-request' }, async ({ payload }: { payload: any }) => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (mounted && user && payload.studentId !== user.id) {
             setRequests((prev) => [...prev, payload]);
             showInfo(`New ${payload.subject} request`, { description: `${payload.studentName} is waiting for a tutor.` });
             
             // Auto-remove after 45s
             setTimeout(() => {
-              setRequests((prev) => prev.filter(r => r.requestId !== payload.requestId));
+              if (mounted) {
+                setRequests((prev) => prev.filter(r => r.requestId !== payload.requestId));
+              }
             }, 45000);
           }
-        });
+        } catch (err) {
+          console.error("Error handling match broadcast:", err);
+        }
       })
       .subscribe((status: any) => {
         if (status === 'SUBSCRIBED') {
-
+          // Optional: could log subscription
         }
       });
 
     return () => {
+      mounted = false;
       supabase.removeChannel(channel);
     };
   }, [supabase]);

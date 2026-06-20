@@ -1,13 +1,23 @@
 import axios from "axios";
 
 function getMpesaConfig() {
-  return {
-    consumerKey: process.env.MPESA_CONSUMER_KEY || "",
-    consumerSecret: process.env.MPESA_CONSUMER_SECRET || "",
-    shortcode: process.env.MPESA_SHORTCODE || "",
-    passkey: process.env.MPESA_PASSKEY || "",
-    callbackUrl: process.env.MPESA_CALLBACK_URL || "",
+  const config = {
+    consumerKey: process.env.MPESA_CONSUMER_KEY,
+    consumerSecret: process.env.MPESA_CONSUMER_SECRET,
+    shortcode: process.env.MPESA_SHORTCODE,
+    passkey: process.env.MPESA_PASSKEY,
+    callbackUrl: process.env.MPESA_CALLBACK_URL,
   };
+
+  const missing = Object.entries(config)
+    .filter(([_, value]) => !value)
+    .map(([key]) => key);
+
+  if (missing.length > 0) {
+    throw new Error(`Missing M-Pesa environment variables: ${missing.join(", ")}`);
+  }
+
+  return config;
 }
 
 const IS_SANDBOX = true;

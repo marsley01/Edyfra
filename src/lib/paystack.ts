@@ -1,7 +1,11 @@
 import axios from "axios";
 
 function getPaystackSecret(): string {
-  return process.env.PAYSTACK_SECRET_KEY || "";
+  const secret = process.env.PAYSTACK_SECRET_KEY;
+  if (!secret) {
+    throw new Error("PAYSTACK_SECRET_KEY is not defined. Please check your environment variables.");
+  }
+  return secret;
 }
 const PAYSTACK_API_URL = "https://api.paystack.co";
 

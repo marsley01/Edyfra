@@ -1,70 +1,59 @@
-"use client";
-
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-
-interface ErrorBoundaryState {
-  hasError: boolean;
-  error?: Error;
-  errorInfo?: ErrorInfo;
-}
+import { Component, type ReactNode } from "react";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
+  fallback?: ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
 }
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, error: null };
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    this.setState({ error, errorInfo });
-    
-    // Log to console for debugging
-    console.error('Dashboard Error:', error, errorInfo);
-    
-    // Log to Antigravity terminal
-    if (typeof window !== 'undefined') {
-      console.log('=== EDYFRA DASHBOARD ERROR ===');
-      console.log('Error:', error.message);
-      console.log('Stack:', error.stack);
-      console.log('Component Stack:', errorInfo.componentStack);
-      console.log('==============================');
-    }
+  componentDidCatch(error: Error, errorInfo: { componentStack?: string }) {
+    console.error("[ErrorBoundary] Caught error:", error, errorInfo);
   }
 
   render() {
     if (this.state.hasError) {
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
+
       return (
-        <div className="p-4 sm:p-6 md:p-12 max-w-7xl mx-auto space-y-8">
-          <div className="text-center space-y-4">
-            <h2 className="text-2xl sm:text-3xl font-black text-red-500">
-              Dashboard Error
-            </h2>
-            <p className="text-muted-foreground">
-              Something went wrong while loading your dashboard.
-            </p>
-            {this.state.error && (
-              <details className="text-left bg-background p-4 rounded-lg border border-border">
-                <summary className="cursor-pointer text-sm font-medium">Error Details</summary>
-                <pre className="mt-2 text-xs text-red-500 overflow-auto max-h-64">
-                  {this.state.error.message}
-                  {'\n'}
-                  {this.state.error.stack}
-                </pre>
-              </details>
-            )}
+        <div className="min-h-screen flex items-center justify-center bg-background px-6">
+          <div className="max-w-md text-center space-y-6">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-destructive/10 text-destructive ring-1 ring-destructive/20">
+              <span className="text-3xl font-black">500</span>
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-3xl font-black tracking-tightest">Something went wrong</h1>
+              <p className="text-sm text-muted-foreground">
+                We have been notified and are working on it. Please try again.
+              </p>
+            </div>
             <button
-              onClick={() => window.location.reload()}
-              className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+              onClick={() => this.setState({ hasError: false, error: null })}
+              className="h-11 inline-flex items-center px-5 rounded-full bg-foreground text-background text-xs font-black tracking-widest uppercase"
             >
-              Reload Page
+              Try again
             </button>
+            <a
+              href="/dashboard"
+              className="block text-xs font-bold text-muted-foreground hover:text-primary transition-colors"
+            >
+              Go to dashboard
+            </a>
           </div>
         </div>
       );

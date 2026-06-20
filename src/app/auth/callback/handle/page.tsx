@@ -22,25 +22,34 @@ export default function AuthCallbackHandle() {
     let active = true;
     const supabase = createClient();
     (async () => {
-      // Wait a tick so supabase-js can hydrate from the URL hash.
-      await new Promise((r) => setTimeout(r, 50));
+      try {
+        // Wait a tick so supabase-js can hydrate from the URL hash.
+        await new Promise((r) => setTimeout(r, 50));
 
-      const hash = typeof window !== "undefined" ? window.location.hash : "";
-      const isRecovery = hash.includes("type=recovery");
+        const hash = typeof window !== "undefined" ? window.location.hash : "";
+        const isRecovery = hash.includes("type=recovery");
 
-      const { data, error } = await supabase.auth.getSession();
-      if (!active) return;
+        const { data, error } = await supabase.auth.getSession();
+        if (!active) return;
 
-      if (error || !data.session) {
-        setStatus("error");
-        setErrorMsg(error?.message || "We couldn't read your sign-in link.");
-        return;
+        if (error || !data.session) {
+          if (active) {
+            setStatus("error");
+            setErrorMsg(error?.message || "We couldn't read your sign-in link.");
+          }
+          return;
+        }
+
+        // Password recovery should always land on /update-password
+        // so the user can actually set a new one.
+        const dest = isRecovery ? "/update-password" : next.startsWith("/") ? next : "/dashboard";
+        router.replace(dest);
+      } catch (err) {
+        if (active) {
+          setStatus("error");
+          setErrorMsg(err instanceof Error ? err.message : "An unexpected error occurred");
+        }
       }
-
-      // Password recovery should always land on /update-password
-      // so the user can actually set a new one.
-      const dest = isRecovery ? "/update-password" : next.startsWith("/") ? next : "/dashboard";
-      router.replace(dest);
     })();
     return () => {
       active = false;
