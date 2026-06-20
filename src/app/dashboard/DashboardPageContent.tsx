@@ -1,19 +1,31 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Zap, BookOpen, Users, ArrowRight, GraduationCap, Clock, CheckCircle2, XCircle, Loader2, Sparkles, Send } from "lucide-react";
+import { Zap, BookOpen, Users, ArrowRight, GraduationCap, Clock, CheckCircle2, Loader2, Sparkles } from "lucide-react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useSafeUserData, useSessionCounter } from "@/hooks/useAntigravityFixes";
 import { DashboardLoadingState, DashboardError } from "@/hooks/useAntigravityFixes";
 import { applyToBecomeTutor } from "@/app/actions/admin-tutor";
-import { getOrCreateDailyChallenge, evaluateChallengeAnswer, saveChallengeAttempt, getTodaysChallenge, getChallengeCompletion, generatePersonalizedChallenge } from "@/app/actions/challenge-ai";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { createClient } from "@/utils/supabase/client";
-import { motion, AnimatePresence } from "framer-motion";
-import { Badge } from "@/components/ui/badge";
 import LevelXPBar from "@/components/dashboard/LevelXPBar";
+import { getTimeGreeting } from "@/lib/greeting";
+
+const DailyChallengeCard = dynamic(
+  () => import("@/components/dashboard/DailyChallengeCard"),
+  {
+    loading: () => (
+      <div className="p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] bg-foreground text-background space-y-6 sm:space-y-10 relative overflow-hidden shadow-2xl">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </div>
+    ),
+    ssr: false,
+  }
+);
 
 interface RecentSession {
   id: string;
@@ -44,32 +56,33 @@ export default function DashboardPageContent() {
   const [loadingRecent, setLoadingRecent] = useState(true);
   const [appStatus, setAppStatus] = useState<'NONE' | 'PENDING' | 'APPROVED' | 'REJECTED'>('NONE');
   const [appLoading, setAppLoading] = useState(false);
-
-  const [challenge, setChallenge] = useState<any>(null);
-  const [challengeLoading, setChallengeLoading] = useState(true);
-  const [userAnswer, setUserAnswer] = useState("");
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<{ correct: boolean; explanation: string; correctAnswer: string } | null>(null);
-  const [completed, setCompleted] = useState(false);
-  const [countdown, setCountdown] = useState("");
-  const [completedAttempt, setCompletedAttempt] = useState<any>(null);
-  const [generatingPersonalized, setGeneratingPersonalized] = useState(false);
+  const [challengeCompleted, setChallengeCompleted] = useState(false);
 
   useEffect(() => {
-    if (!userData?.id || !userData?.educationLevel) return;
+    if (!userData?.id) return;
     const load = async () => {
       try {
-        const { getUserSessions } = await import("@/app/actions/match");
-        const { getUpcomingStudentBookings } = await import("@/app/actions/bookings");
-        const data = await getUserSessions(userData.id);
-        const bookings = await getUpcomingStudentBookings();
-        setRecentSessions(data.slice(0, 5).map(s => ({
+        const [
+          { getUserSessions },
+          { getUpcomingStudentBookings },
+          { hasCompletedChallengeToday }
+        ] = await Promise.all([
+          import("@/app/actions/match"),
+          import("@/app/actions/bookings"),
+          import("@/app/actions/user"),
+        ]);
+        const [sessions, bookings, challengeDone] = await Promise.all([
+          getUserSessions(userData.id),
+          getUpcomingStudentBookings(),
+          hasCompletedChallengeToday(userData.id),
+        ]);
+        setRecentSessions(sessions.slice(0, 5).map(s => ({
           ...s,
           createdAt: s.startedAt?.toISOString() || new Date().toISOString(),
           topic: s.topic || null
         })));
         setUpcomingBookings(bookings as any[]);
+        setChallengeCompleted(challengeDone);
        } catch (err) {
          console.error("Failed to load recent sessions:", err);
        } finally {
@@ -78,84 +91,6 @@ export default function DashboardPageContent() {
     };
     load();
   }, [userData?.id]);
-
-  useEffect(() => {
-    if (!userData?.educationLevel || !userData?.id) return;
-    loadChallenge();
-  }, [userData?.educationLevel, userData?.id]);
-
-  const loadChallenge = async () => {
-    setChallengeLoading(true);
-    try {
-      const existing = await getTodaysChallenge(userData!.educationLevel as string);
-      if (existing) {
-        setChallenge(existing);
-        const attempt = await getChallengeCompletion(userData!.id, existing.id!);
-        if (attempt) {
-          setCompleted(true);
-          setCompletedAttempt(attempt);
-          const tomorrow = new Date();
-          tomorrow.setDate(tomorrow.getDate() + 1);
-          tomorrow.setHours(0, 0, 0, 0);
-          const diff = tomorrow.getTime() - Date.now();
-          const h = Math.floor(diff / 3600000);
-          const m = Math.floor((diff % 3600000) / 60000);
-          setCountdown(`${h}h ${m}m`);
-        }
-        return;
-      }
-      const newChallenge = await getOrCreateDailyChallenge(userData!.educationLevel as string);
-      if (newChallenge) {
-        setChallenge(newChallenge);
-        const attempt = await getChallengeCompletion(userData!.id, newChallenge.id!);
-        if (attempt) {
-          setCompleted(true);
-          setCompletedAttempt(attempt);
-          const tomorrow = new Date();
-          tomorrow.setDate(tomorrow.getDate() + 1);
-          tomorrow.setHours(0, 0, 0, 0);
-          const diff = tomorrow.getTime() - Date.now();
-          const h = Math.floor(diff / 3600000);
-          const m = Math.floor((diff % 3600000) / 60000);
-          setCountdown(`${h}h ${m}m`);
-        }
-      }
-    } catch (err) {
-      console.error("Failed to load challenge:", err);
-    } finally {
-      setChallengeLoading(false);
-    }
-  };
-
-  const challengeOptions: string[] = Array.isArray(challenge?.options)
-    ? (challenge.options as string[])
-    : [];
-
-  const handleSubmitAnswer = async () => {
-    const answerText = challengeOptions.length >= 2 ? selectedOption : userAnswer.trim();
-    if (!challenge || !answerText || !userData) return;
-    setSubmitting(true);
-    try {
-      const evaluation = await evaluateChallengeAnswer(challenge.id, answerText);
-      setResult(evaluation);
-      await saveChallengeAttempt(userData.id, challenge.id, evaluation.correct);
-      if (evaluation.correct) {
-        toast.success("Correct! Points awarded!");
-      }
-      setCompleted(true);
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(0, 0, 0, 0);
-      const diff = tomorrow.getTime() - Date.now();
-      const h = Math.floor(diff / 3600000);
-      const m = Math.floor((diff % 3600000) / 60000);
-      setCountdown(`${h}h ${m}m`);
-    } catch (err) {
-      toast.error("Failed to evaluate answer");
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   useEffect(() => {
     if (!userData?.id || userData?.role === 'TUTOR' || userData?.role === 'ADMIN') return;
@@ -182,17 +117,19 @@ export default function DashboardPageContent() {
       });
       if (result.success) {
         setAppStatus('PENDING');
-        toast.success("Application Submitted!", {
-          description: "We'll review it and get back to you.",
-        });
+        showSuccess("Application submitted", { description: "We'll review it and get back to you." });
       } else {
-        toast.error("Application failed", {
-          description: result.error || "Please try again.",
+        showError({
+          title: "We couldn't submit your application",
+          cause: result.error || "The application didn't go through.",
+          fix: "Please try again.",
         });
       }
     } catch (err: any) {
-      toast.error("Application failed", {
-        description: err.message || "Please try again.",
+      showError({
+        title: "We couldn't submit your application",
+        cause: err.message || "The application didn't go through.",
+        fix: "Please try again.",
       });
     } finally {
       setAppLoading(false);
@@ -201,26 +138,6 @@ export default function DashboardPageContent() {
 
   const handleRetry = () => {
     setRetryCount(prev => prev + 1);
-  };
-
-  const handleGeneratePersonalized = async () => {
-    if (!userData?.educationLevel || !userData?.id) return;
-    setGeneratingPersonalized(true);
-    try {
-      const personalizedChallenge = await generatePersonalizedChallenge(userData.id, userData.educationLevel);
-      if (personalizedChallenge) {
-        setChallenge(personalizedChallenge);
-        toast.success("Personalized challenge generated!", {
-          description: "Based on your recent performance",
-        });
-      }
-    } catch (error) {
-      toast.error("Failed to generate personalized challenge", {
-        description: "Please try again",
-      });
-    } finally {
-      setGeneratingPersonalized(false);
-    }
   };
 
   if (userDataError) {
@@ -235,30 +152,73 @@ export default function DashboardPageContent() {
     );
   }
 
+  if (!userData) {
+    return (
+      <div className="p-12 text-center">
+        <p className="text-muted-foreground">Unable to load dashboard data. Please try again.</p>
+        <button onClick={handleRetry} className="mt-4 px-4 py-2 bg-primary text-white rounded-lg">Retry</button>
+      </div>
+    );
+  }
 
   const firstName = userData?.name?.split(" ")[0] || "there";
-  const subjectFocus = userData?.studentProfile?.subjects?.[0] || "your toughest subject";
-  const weakTopic = userData?.studentProfile?.weakTopics?.[0] || "one topic that needs attention";
-  const nextMove = sessionCount > 0
-    ? `Pick up from ${recentSessions[0]?.topic || recentSessions[0]?.subject || subjectFocus} and keep the streak alive.`
-    : `Start with ${subjectFocus}. One focused session is enough to get your dashboard moving.`;
+  
+  const hour = new Date().getHours();
+  const greetingText = 
+    hour < 12 ? 'Good morning' :
+    hour < 17 ? 'Good afternoon' :
+    hour < 21 ? 'Good evening' :
+    'Studying late';
+
+  const emoji = 
+    hour < 12 ? '☀️' :
+    hour < 17 ? '👋' :
+    hour < 21 ? '🌙' : '💪';
+
+  const isToday = (dateStr: string) => {
+    const d = new Date(dateStr);
+    const today = new Date();
+    return d.getDate() === today.getDate() &&
+           d.getMonth() === today.getMonth() &&
+           d.getFullYear() === today.getFullYear();
+  };
+
+  const sessionToday = upcomingBookings.find(b => isToday(b.date));
+
+  let subtext = "";
+  if (sessionToday) {
+    subtext = `You have a session with ${sessionToday.tutor.name} at ${sessionToday.startTime}`;
+  } else if (challengeCompleted) {
+    subtext = "Great — challenge done for today";
+  } else {
+    const lastActive = userData?.lastActiveAt ? new Date(userData.lastActiveAt) : null;
+    const isInactive3Days = lastActive && (Date.now() - lastActive.getTime() > 3 * 24 * 60 * 60 * 1000);
+    if (isInactive3Days) {
+      subtext = "Welcome back — your subjects are waiting for you";
+    } else {
+      const topSubject = userData?.studentProfile?.subjects?.[0] || "your subjects";
+      subtext = `Ready to study ${topSubject}?`;
+    }
+  }
+
+  const subjectFocus = userData?.studentProfile?.subjects?.[0] || userData?.tutorProfile?.subjects?.[0] || "your subject";
 
   return (
-    <div className="p-4 sm:p-6 md:p-12 max-w-7xl mx-auto space-y-8 md:space-y-12 animate-in fade-in duration-1000 font-sans">
+    <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-6 md:space-y-10 animate-in fade-in duration-1000 font-sans">
       {/* Personalized Greeting */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-8 pb-8 md:pb-12 border-b border-border">
-         <div className="space-y-3 md:space-y-4">
-            <h1 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tightest leading-none">
-              Hey, <span className="text-primary">{firstName}.</span>
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6 pb-6 md:pb-8 border-b border-border">
+         <div className="space-y-2 sm:space-y-3">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tightest leading-none">
+              <span className="text-primary">{greetingText}, {firstName}</span> {emoji}
             </h1>
-            <p className="text-muted-foreground text-base sm:text-lg md:text-xl font-medium max-w-xl">
-              Ready to learn? {nextMove}
+            <p className="text-muted-foreground text-sm sm:text-base md:text-lg font-medium max-w-xl">
+              {subtext}
             </p>
          </div>
-         <Link href="/dashboard/study">
-           <Button className="bg-foreground text-background hover:bg-foreground/90 font-black text-xs tracking-widest px-8 sm:px-12 h-12 sm:h-16 rounded-full uppercase shadow-2xl transition-all active:scale-95 gap-3">
+         <Link href="/dashboard/study" className="shrink-0">
+           <Button className="w-full sm:w-auto bg-foreground text-background hover:bg-foreground/90 font-black text-xs tracking-widest px-8 h-12 sm:h-14 rounded-full uppercase shadow-xl transition-all active:scale-95 gap-3">
              <Zap className="h-4 w-4 fill-current text-primary" />
-             Start My Next Session
+             Start Session
            </Button>
          </Link>
       </div>
@@ -267,265 +227,181 @@ export default function DashboardPageContent() {
       <LevelXPBar points={userData?.points || 0} streakDays={userData?.streakDays || 0} />
 
       {/* Main Grid Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 md:gap-6">
         {/* Activity Log */}
-        <div className="lg:col-span-2 p-6 sm:p-10 md:p-16 rounded-[2rem] sm:rounded-[3rem] bg-secondary border border-border/50 space-y-6 sm:space-y-8 relative overflow-hidden group">
-           <div className="relative z-10 space-y-2">
-              <h3 className="text-2xl sm:text-3xl font-black tracking-tightest">Your Activity</h3>
-              <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">{recentSessions.length > 0 ? `Showing ${recentSessions.length} recent sessions` : "Your recent activity will show up here"}</p>
+        <div className="lg:col-span-2 p-5 sm:p-7 md:p-10 rounded-2xl sm:rounded-3xl bg-secondary border border-border/50 space-y-4 sm:space-y-6 relative overflow-hidden">
+           <div className="relative z-10 space-y-1">
+              <h3 className="text-xl sm:text-2xl font-black tracking-tight">Your Activity</h3>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{recentSessions.length > 0 ? `${recentSessions.length} recent sessions` : "Your recent activity will show up here"}</p>
            </div>
            {loadingRecent ? (
-             <div className="relative z-10 min-h-[200px] flex items-center justify-center">
-               <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+             <div className="relative z-10 min-h-[140px] flex items-center justify-center">
+               <div className="h-7 w-7 animate-spin rounded-full border-2 border-primary border-t-transparent" />
              </div>
            ) : (recentSessions.length > 0 || upcomingBookings.length > 0) ? (
-             <div className="relative z-10 space-y-3">
+             <div className="relative z-10 space-y-2.5">
                {upcomingBookings.length > 0 && (
-                 <div className="space-y-3 mb-6">
-                   <h4 className="text-sm font-black uppercase tracking-widest text-primary">Upcoming Bookings</h4>
+                 <div className="space-y-2 mb-4">
+                   <h4 className="text-[11px] font-black uppercase tracking-widest text-primary">Upcoming Bookings</h4>
                    {upcomingBookings.map((booking) => (
-                     <div key={booking.id} className="flex items-center gap-4 p-4 rounded-2xl bg-primary/5 border border-primary/20 transition-all">
-                       <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-white font-black text-lg shadow-lg shadow-primary/20">
+                     <div key={booking.id} className="flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-primary/5 border border-primary/20 transition-all">
+                       <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary flex items-center justify-center text-white font-black text-base sm:text-lg shadow-lg shadow-primary/20 shrink-0">
                          {booking.subject[0]}
                        </div>
                        <div className="flex-1 min-w-0">
                          <p className="font-bold text-sm truncate">{booking.topic || booking.subject}</p>
-                         <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">
-                           With {booking.tutor.name} • {new Date(booking.date).toLocaleDateString()} at {booking.startTime} ({booking.durationMinutes}m)
+                         <p className="text-[11px] text-muted-foreground font-medium mt-0.5">
+                           With {booking.tutor.name} · {new Date(booking.date).toLocaleDateString()} {booking.startTime}
                          </p>
                        </div>
-                       <div className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full ${booking.status === 'confirmed' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-yellow-500/10 text-yellow-500'}`}>
-                         {booking.status}
+                       <div className="flex flex-col items-end gap-1.5 shrink-0">
+                         <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-full ${booking.status === 'confirmed' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-yellow-500/10 text-yellow-500'}`}>
+                           {booking.status}
+                         </span>
+                         {booking.status === 'confirmed' && (
+                           <Button onClick={() => window.location.href = `/study-room/${booking.id}`} className="bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-full h-7 px-3">
+                             Join
+                           </Button>
+                         )}
                        </div>
-                       {booking.status === 'confirmed' && (
-                         <Button onClick={() => window.location.href = `/study-room/${booking.id}`} className="bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-full h-8 px-4">
-                           Join Room
-                         </Button>
-                       )}
                      </div>
                    ))}
                  </div>
                )}
                
-               {recentSessions.length > 0 && <h4 className="text-sm font-black uppercase tracking-widest text-muted-foreground">Past Sessions</h4>}
+               {recentSessions.length > 0 && <h4 className="text-[11px] font-black uppercase tracking-widest text-muted-foreground pt-1">Past Sessions</h4>}
                {recentSessions.map((session) => (
                  <Link href={`/study-room/${session.id}`} key={session.id} className="block">
-                   <div className="flex items-center gap-4 p-4 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all group/item">
-                     <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-black text-lg">
+                   <div className="flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-background border border-border/50 hover:border-primary/30 transition-all active:scale-[0.99]">
+                     <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-black text-base shrink-0">
                        {session.subject[0]}
                      </div>
                      <div className="flex-1 min-w-0">
                        <p className="font-bold text-sm truncate">{session.topic || session.subject}</p>
-                       <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">
-                         {session.partner?.name ? (session.tier === "TUTOR" ? "Tutor Session" : "Peer Session") : "Mash AI Session"} • {new Date(session.createdAt).toLocaleDateString()}
+                       <p className="text-[11px] text-muted-foreground font-medium mt-0.5">
+                         {session.partner?.name ? (session.tier === "TUTOR" ? "Tutor" : "Peer") : "Mash AI"} · {new Date(session.createdAt).toLocaleDateString()}
                        </p>
                      </div>
-                     <div className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full bg-secondary">
+                     <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full bg-secondary shrink-0">
                        {session.status}
-                     </div>
+                     </span>
                    </div>
                  </Link>
                ))}
-               <Link href="/dashboard/sessions" className="block text-center pt-4">
-                 <Button variant="ghost" className="text-xs font-black uppercase tracking-widest text-primary">
+               <Link href="/dashboard/sessions" className="block text-center pt-2">
+                 <Button variant="ghost" className="text-xs font-black uppercase tracking-widest text-primary h-10">
                    View All Sessions →
                  </Button>
                </Link>
              </div>
            ) : (
-             <div className="relative z-10 min-h-[200px] sm:min-h-[300px] flex flex-col items-center justify-center text-center p-8 sm:p-12 space-y-4 sm:space-y-6 bg-background rounded-[1.5rem] sm:rounded-[2rem] border border-border/50">
-                <div className="bg-secondary p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm">
-                   <BookOpen className="h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground/20" />
+             <div className="relative z-10 min-h-[160px] flex flex-col items-center justify-center text-center p-6 space-y-3 bg-background rounded-2xl border border-border/50">
+                <div className="bg-secondary p-4 rounded-2xl">
+                   <BookOpen className="h-8 w-8 text-muted-foreground/20" />
                 </div>
-              <p className="text-muted-foreground font-medium text-base sm:text-lg max-w-sm">
+              <p className="text-muted-foreground font-medium text-sm max-w-xs">
                    No sessions yet. Start your first study session and your activity will show up here.
                 </p>
              </div>
            )}
-           <div className="absolute top-0 right-0 w-48 sm:w-64 h-48 sm:h-64 bg-primary/5 blur-[100px] rounded-full" />
+           <div className="absolute top-0 right-0 w-40 h-40 bg-primary/5 blur-[80px] rounded-full" />
         </div>
 
-        {/* Daily Challenge Card */}
-        <div className="p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] bg-foreground text-background space-y-6 sm:space-y-10 relative overflow-hidden group shadow-2xl">
-           <div className="relative z-10 space-y-2">
-              <h3 className="text-2xl sm:text-3xl font-black tracking-tightest flex items-center gap-3">
-                Daily Challenge
-                <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-primary animate-pulse" />
-              </h3>
-              <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-background/40">Test yourself and earn points</p>
-           </div>
-           <div className="relative z-10 space-y-4">
-             {challengeLoading ? (
-               <div className="flex items-center justify-center py-12">
-                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
-               </div>
-             ) : !challenge ? (
-               <div className="p-6 bg-background/5 rounded-[1.5rem] border border-background/10 text-center space-y-2">
-                 <p className="text-background/60 font-medium">No challenge available today.</p>
-                 <p className="text-background/40 text-sm">Come back tomorrow!</p>
-               </div>
-             ) : completed && result ? (
-               <div className="space-y-4">
-                 <div className={`p-6 rounded-[1.5rem] border ${result.correct ? "bg-green-500/10 border-green-500/30" : "bg-red-500/10 border-red-500/30"}`}>
-                   <div className="flex items-center gap-3 mb-3">
-                     <div className={`p-2 rounded-xl ${result.correct ? "bg-green-500" : "bg-red-500"}`}>
-                       {result.correct ? <CheckCircle2 className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
-                     </div>
-                     <span className="font-bold text-lg">{result.correct ? "Correct!" : "Incorrect"}</span>
-                   </div>
-                   <p className="text-background/70 text-sm leading-relaxed">{result.explanation}</p>
-                   {!result.correct && (
-                     <p className="text-primary font-bold mt-2 text-sm">Correct answer: {result.correctAnswer}</p>
-                   )}
-                 </div>
-                 <div className="p-4 bg-background/5 rounded-xl border border-background/10 text-center space-y-2">
-                   <p className="text-background/60 font-medium">Challenge completed!</p>
-                   <p className="text-primary font-black text-sm">Come back tomorrow</p>
-                   <div className="flex items-center justify-center gap-2 text-background/40 text-xs">
-                     <Clock className="h-3 w-3" />
-                     <span>Next challenge in {countdown}</span>
-                   </div>
-                 </div>
-               </div>
-             ) : completed && completedAttempt ? (
-               <div className="space-y-4">
-                 <div className="p-6 bg-background/5 rounded-[1.5rem] border border-background/10 text-center space-y-3">
-                   <CheckCircle2 className="h-10 w-10 text-primary mx-auto" />
-                   <p className="text-background font-bold text-lg">Already Completed</p>
-                   <p className="text-background/60 text-sm">
-                     Score: {completedAttempt.correct ? "+" : ""}{completedAttempt.pointsEarned || 0} pts
-                   </p>
-                   <div className="flex items-center justify-center gap-2 text-background/40 text-xs">
-                     <Clock className="h-3 w-3" />
-                     <span>Next challenge in {countdown}</span>
-                   </div>
-                 </div>
-               </div>
-             ) : (
-               <div className="space-y-4">
-                 <div className="flex items-center gap-2">
-                   <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px] uppercase tracking-widest font-black">
-                     {challenge?.subject || "General"}
-                   </Badge>
-                   <Badge variant="outline" className="border-background/20 text-background/60 text-[10px] uppercase tracking-widest font-black">
-                     {challenge?.level?.replace("_", " ") || "HIGH SCHOOL"}
-                   </Badge>
-                 </div>
-                 <p className="text-lg font-medium leading-relaxed text-background/90">
-                   {challenge?.question || "Loading challenge..."}
-                 </p>
-                 {challengeOptions.length >= 2 ? (
-                   <div className="space-y-2">
-                     {challengeOptions.map((option, i) => (
-                       <button
-                         key={option}
-                         type="button"
-                         disabled={submitting}
-                         onClick={() => setSelectedOption(option)}
-                         className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
-                           selectedOption === option
-                             ? "border-primary bg-primary/20 text-background"
-                             : "border-background/20 bg-background/5 text-background/80 hover:border-background/40"
-                         }`}
-                       >
-                         <span className="font-black mr-3">{String.fromCharCode(65 + i)}.</span>
-                         {option}
-                       </button>
-                     ))}
-                     <Button
-                       onClick={handleSubmitAnswer}
-                       disabled={submitting || !selectedOption}
-                       className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl h-12 font-black uppercase tracking-widest text-xs"
-                     >
-                       {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit Answer"}
-                     </Button>
-                   </div>
-                 ) : (
-                   <div className="flex gap-2">
-                     <Input
-                       value={userAnswer}
-                       onChange={(e) => setUserAnswer(e.target.value)}
-                       placeholder="Type your answer..."
-                       className="flex-1 bg-background/10 border-background/20 text-background placeholder:text-background/40 rounded-xl h-12"
-                       disabled={submitting}
-                     />
-                     <Button
-                       onClick={handleSubmitAnswer}
-                       disabled={submitting || !userAnswer.trim()}
-                       className="bg-primary hover:bg-primary/90 text-white rounded-xl h-12 px-4"
-                     >
-                       {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                     </Button>
-                   </div>
-                 )}
-                 <div className="mt-4 pt-4 border-t border-background/10">
-                   <Button
-                     onClick={handleGeneratePersonalized}
-                     disabled={generatingPersonalized}
-                     variant="outline"
-                     className="w-full bg-background/10 border-background/20 text-background hover:bg-background/20 font-black text-xs tracking-widest uppercase"
-                   >
-                     {generatingPersonalized ? <Loader2 className="h-3 w-3 mr-2 animate-spin" /> : <Sparkles className="h-3 w-3 mr-2" />}
-                     Generate Personalized Challenge
-                   </Button>
-                 </div>
-               </div>
-             )}
-           </div>
-           <div className="absolute bottom-0 right-0 w-48 sm:w-64 h-48 sm:h-64 bg-primary/20 blur-[120px] rounded-full translate-y-1/2 translate-x-1/2" />
-        </div>
+        {/* Daily Challenge Card — lazy loaded */}
+        <DailyChallengeCard
+          userId={userData.id}
+          educationLevel={userData.educationLevel as string}
+        />
       </div>
 
-       {/* Expert Network Highlight */}
-       <div className="p-6 sm:p-10 md:p-16 rounded-[2rem] sm:rounded-[3rem] bg-background border border-border shadow-sm flex flex-col md:flex-row items-center gap-6 sm:gap-8 md:gap-12 group hover:shadow-2xl transition-all duration-700">
-          <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-[1.5rem] sm:rounded-[2rem] bg-secondary flex items-center justify-center text-primary shadow-sm border border-border group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-500 flex-shrink-0">
-             <Users className="h-8 w-8 sm:h-10 sm:w-10" />
+       {/* Referral Card */}
+       <div className="p-5 sm:p-7 md:p-10 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-purple-500/5 to-pink-500/5 border border-purple-500/20 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 group hover:shadow-xl transition-all duration-500">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500 border border-purple-500/20 group-hover:scale-110 group-hover:bg-purple-500 group-hover:text-white transition-all duration-300 flex-shrink-0">
+             <Users className="h-6 w-6" />
           </div>
-          <div className="flex-1 space-y-3 sm:space-y-4 text-center md:text-left">
-             <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.4em] text-primary">Find a Mentor</p>
-             <h1 className="text-3xl sm:text-5xl md:text-7xl font-black tracking-tightest leading-none">
-               Get help when <br /> <span className="text-muted-foreground">you hit a wall.</span>
-             </h1>
-             <p className="text-muted-foreground font-medium text-base sm:text-lg md:text-xl">
-                 Find someone who can explain {subjectFocus} in a way that makes sense to you.
+          <div className="flex-1 space-y-1">
+             <p className="text-[10px] font-black uppercase tracking-widest text-purple-500">Refer a Friend</p>
+             <h2 className="text-lg sm:text-xl font-black tracking-tight">
+               Your code: <span className="text-purple-500">{userData?.referralCode || "------"}</span>
+             </h2>
+             <p className="text-muted-foreground text-sm">
+                Friends get 50 XP · You get 100 XP on their first session.
              </p>
           </div>
-          <Link href="/dashboard/tutors" className="w-full md:w-auto">
-             <Button className="w-full md:w-auto h-14 sm:h-16 px-8 sm:px-12 rounded-full bg-foreground text-background font-black text-xs tracking-widest uppercase shadow-xl hover:bg-foreground/90 transition-all active:scale-95">
-               Find My Tutor
+          <button
+            onClick={async () => {
+              const code = userData?.referralCode;
+              if (!code) return;
+              try {
+                await navigator.clipboard.writeText(code);
+              } catch {
+                const textarea = document.createElement("textarea");
+                textarea.value = code;
+                textarea.style.position = "fixed";
+                textarea.style.opacity = "0";
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand("copy");
+                document.body.removeChild(textarea);
+              }
+              showSuccess("Referral code copied!", { description: "Share it with a friend to earn XP." });
+            }}
+            className="w-full sm:w-auto h-11 px-6 rounded-full bg-purple-500 text-white font-black text-xs tracking-widest uppercase shadow-lg hover:bg-purple-600 transition-all active:scale-95 shrink-0"
+          >
+            Copy Code
+          </button>
+       </div>
+
+       {/* Expert Network Highlight */}
+       <div className="p-5 sm:p-7 md:p-10 rounded-2xl sm:rounded-3xl bg-background border border-border shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 group hover:shadow-xl transition-all duration-500">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-secondary flex items-center justify-center text-primary border border-border group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-300 flex-shrink-0">
+             <Users className="h-6 w-6" />
+          </div>
+          <div className="flex-1 space-y-1">
+             <p className="text-[10px] font-black uppercase tracking-widest text-primary">Find a Mentor</p>
+             <h2 className="text-lg sm:text-xl font-black tracking-tight">
+               Get help when you hit a wall.
+             </h2>
+             <p className="text-muted-foreground text-sm">
+               Find a tutor who can explain {subjectFocus} in a way that clicks.
+             </p>
+          </div>
+          <Link href="/dashboard/tutors" className="w-full sm:w-auto shrink-0">
+             <Button className="w-full sm:w-auto h-11 px-6 rounded-full bg-foreground text-background font-black text-xs tracking-widest uppercase shadow-lg hover:bg-foreground/90 transition-all active:scale-95">
+               Find Tutor
              </Button>
           </Link>
        </div>
 
        {/* Tutor Application Section */}
        {userData?.role === 'STUDENT' && (
-         <div className="p-6 sm:p-10 md:p-16 rounded-[2rem] sm:rounded-[3rem] bg-gradient-to-br from-primary/5 to-emerald-500/5 border border-primary/20 shadow-sm flex flex-col md:flex-row items-center gap-6 sm:gap-8 md:gap-12 group hover:shadow-2xl transition-all duration-700">
-            <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-[1.5rem] sm:rounded-[2rem] bg-primary/10 flex items-center justify-center text-primary shadow-sm border border-primary/20 group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-500 flex-shrink-0">
-               <GraduationCap className="h-8 w-8 sm:h-10 sm:w-10" />
+         <div className="p-5 sm:p-7 md:p-10 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-primary/5 to-emerald-500/5 border border-primary/20 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 group hover:shadow-xl transition-all duration-500">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-300 flex-shrink-0">
+               <GraduationCap className="h-6 w-6" />
             </div>
-            <div className="flex-1 space-y-3 sm:space-y-4 text-center md:text-left">
-               <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.4em] text-primary">Earn while helping</p>
-               <h1 className="text-3xl sm:text-5xl md:text-7xl font-black tracking-tightest leading-none">
+            <div className="flex-1 space-y-1">
+               <p className="text-[10px] font-black uppercase tracking-widest text-primary">Earn while helping</p>
+               <h2 className="text-lg sm:text-xl font-black tracking-tight">
                  Become a <span className="text-primary">Tutor.</span>
-               </h1>
-               <p className="text-muted-foreground font-medium text-base sm:text-lg md:text-xl">
-                   Good at {subjectFocus}? Turn your knowledge into impact (and income) by helping other students.
+               </h2>
+               <p className="text-muted-foreground text-sm">
+                   Good at {subjectFocus}? Turn your knowledge into impact and income.
                </p>
             </div>
-            <div className="w-full md:w-auto">
+            <div className="w-full sm:w-auto shrink-0">
               {appStatus === 'PENDING' ? (
-                <div className="flex items-center gap-3 p-4 sm:p-6 rounded-2xl bg-yellow-500/10 border border-yellow-500/20 w-full md:w-auto">
-                  <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-500 flex-shrink-0" />
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20">
+                  <Clock className="h-5 w-5 text-yellow-500 flex-shrink-0" />
                   <div>
-                    <p className="font-black text-xs sm:text-sm uppercase tracking-widest text-yellow-500">Pending Review</p>
-                     <p className="text-[10px] sm:text-xs text-muted-foreground">You&apos;ll hear from us once it&apos;s approved</p>
+                    <p className="font-black text-xs uppercase tracking-widest text-yellow-500">Pending Review</p>
+                     <p className="text-[10px] text-muted-foreground">You&apos;ll hear from us once it&apos;s approved</p>
                   </div>
                 </div>
               ) : appStatus === 'APPROVED' ? (
-                <div className="flex items-center gap-3 p-4 sm:p-6 rounded-2xl bg-green-500/10 border border-green-500/20 w-full md:w-auto">
-                  <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 text-green-500 flex-shrink-0" />
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-green-500/10 border border-green-500/20">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0" />
                   <div>
-                    <p className="font-black text-xs sm:text-sm uppercase tracking-widest text-green-500">Approved!</p>
+                    <p className="font-black text-xs uppercase tracking-widest text-green-500">Approved!</p>
                     <Link href="/tutor">
                       <Button variant="link" className="text-green-500 p-0 h-auto font-black text-xs uppercase tracking-widest">
                         Go to Tutor Dashboard →
@@ -537,7 +413,7 @@ export default function DashboardPageContent() {
                 <Button 
                   onClick={handleApplyTutor}
                   disabled={appLoading}
-                  className="w-full md:w-auto h-14 sm:h-16 px-8 sm:px-12 rounded-full bg-primary hover:bg-primary/90 text-white font-black text-xs tracking-widest uppercase shadow-xl transition-all active:scale-95 gap-3"
+                  className="w-full sm:w-auto h-11 px-6 rounded-full bg-primary hover:bg-primary/90 text-white font-black text-xs tracking-widest uppercase shadow-lg transition-all active:scale-95 gap-2"
                 >
                   {appLoading ? (
                     <>Loading...</>

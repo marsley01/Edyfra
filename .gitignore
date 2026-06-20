@@ -53,3 +53,5 @@ next-env.d.ts
 
 # codex backup
 .codex-push-previous
+.prompts
+

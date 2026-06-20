@@ -25,6 +25,9 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@generated/*": [
+        "./src/generated/*"
       ]
     }
   },
@@ -38,6 +41,7 @@
   "exclude": [
     "node_modules",
     "scripts",
-    "prisma"
+    "prisma",
+    "supabase"
   ]
 }

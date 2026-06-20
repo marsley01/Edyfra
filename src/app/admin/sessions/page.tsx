@@ -1,25 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { getActiveSessions, closeSession } from "@/app/actions/admin";
+import { useState, useEffect, useMemo } from "react";
+import { getActiveSessions, closeSession, closeSessionsBatch } from "@/app/actions/admin";
 import { 
   Zap, Clock, XCircle, Monitor, 
   User, BookOpen, Loader2, PlayCircle,
-  Activity, Globe
+  Activity, Globe, Search, Trash2
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { showError, showSuccess } from "@/lib/toast";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AdminSessionsPage() {
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [selectedSessions, setSelectedSessions] = useState<string[]>([]);
 
   useEffect(() => {
     fetchSessions();
-    const interval = setInterval(fetchSessions, 10000); // Auto refresh every 10s
+    const interval = setInterval(fetchSessions, 30000); // Auto refresh every 30s
     return () => clearInterval(interval);
   }, []);
 
@@ -39,10 +43,55 @@ export default function AdminSessionsPage() {
     if (!confirm("Are you sure you want to terminate this live session?")) return;
     try {
       await closeSession(id);
-      toast.success("Session terminated.");
+      showSuccess("Session terminated", { description: "That session has been closed." });
+      setSelectedSessions(prev => prev.filter(sId => sId !== id));
       fetchSessions();
     } catch (err) {
-      toast.error("Failed to terminate session.");
+      showError({
+        title: "We couldn't terminate that session",
+        cause: "A hiccup on our side blocked it.",
+        fix: "Try again, or refresh the page.",
+      });
+    }
+  };
+
+  const handleBatchClose = async () => {
+    if (!confirm(`Are you sure you want to terminate ${selectedSessions.length} sessions?`)) return;
+    try {
+      await closeSessionsBatch(selectedSessions);
+      showSuccess(`Terminated ${selectedSessions.length} sessions`, { description: "Those sessions are now closed." });
+      setSelectedSessions([]);
+      fetchSessions();
+    } catch (err) {
+      showError({
+        title: "We couldn't terminate those sessions",
+        cause: "A hiccup on our side blocked the batch close.",
+        fix: "Try again, or refresh the page.",
+      });
+    }
+  };
+
+  const toggleSelectSession = (id: string) => {
+    if (selectedSessions.includes(id)) {
+      setSelectedSessions(selectedSessions.filter(sId => sId !== id));
+    } else {
+      setSelectedSessions([...selectedSessions, id]);
+    }
+  };
+
+  const filteredSessions = useMemo(() => {
+    return sessions.filter(s => 
+      (s.subject && s.subject.toLowerCase().includes(search.toLowerCase())) ||
+      (s.topic && s.topic.toLowerCase().includes(search.toLowerCase())) ||
+      (s.roomId && s.roomId.toLowerCase().includes(search.toLowerCase()))
+    );
+  }, [sessions, search]);
+
+  const toggleSelectAll = () => {
+    if (selectedSessions.length === filteredSessions.length) {
+      setSelectedSessions([]);
+    } else {
+      setSelectedSessions(filteredSessions.map(s => s.id));
     }
   };
 
@@ -56,31 +105,73 @@ export default function AdminSessionsPage() {
             Real-Time Network Monitoring
           </div>
         </div>
-        <div className="flex gap-4">
-           <div className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
+           <div className="relative group w-full sm:w-64">
+             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+             <Input
+               placeholder="Search subject or room..."
+               className="h-12 pl-12 rounded-2xl bg-white/5 border-white/10 focus:border-primary/50 text-white"
+               value={search}
+               onChange={(e) => setSearch(e.target.value)}
+             />
+           </div>
+           <div className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3 whitespace-nowrap">
               <Activity className="h-4 w-4 text-primary" />
-              <span className="text-[10px] font-black uppercase tracking-widest">{sessions.length} Active Rooms</span>
+              <span className="text-[10px] font-black uppercase tracking-widest">{filteredSessions.length} Active Rooms</span>
            </div>
         </div>
       </div>
+
+      {filteredSessions.length > 0 && (
+        <div className="flex items-center justify-between bg-white/5 p-4 rounded-2xl border border-white/10">
+          <div className="flex items-center gap-4">
+            <Checkbox 
+              id="select-all"
+              checked={selectedSessions.length > 0 && selectedSessions.length === filteredSessions.length}
+              onCheckedChange={toggleSelectAll}
+              className="border-white/20 data-[state=checked]:bg-primary"
+            />
+            <label htmlFor="select-all" className="text-[10px] font-black uppercase tracking-widest cursor-pointer">
+              Select All
+            </label>
+          </div>
+          {selectedSessions.length > 0 && (
+            <div className="flex items-center gap-4 animate-in fade-in">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                {selectedSessions.length} Selected
+              </span>
+              <Button 
+                onClick={handleBatchClose}
+                variant="destructive" 
+                size="sm" 
+                className="h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2"
+              >
+                <Trash2 className="h-3.5 w-3.5" /> Terminate Selected
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
 
       {loading && sessions.length === 0 ? (
         <div className="py-32 flex flex-col items-center justify-center gap-4">
            <Loader2 className="h-10 w-10 animate-spin text-primary" />
            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Scanning Network Clusters...</p>
         </div>
-      ) : sessions.length === 0 ? (
+      ) : filteredSessions.length === 0 ? (
         <Card className="border-dashed border-2 border-white/10 bg-transparent rounded-[3rem] py-32 text-center">
            <div className="space-y-4">
               <Globe className="h-12 w-12 text-muted-foreground/20 mx-auto" />
-              <h3 className="text-xl font-black">Zero Activity Detected.</h3>
-              <p className="text-muted-foreground text-sm font-medium">The platform is currently in a state of rest. No active sessions found.</p>
+              <h3 className="text-xl font-black">{sessions.length === 0 ? "Zero Activity Detected." : "No matching sessions."}</h3>
+              <p className="text-muted-foreground text-sm font-medium">
+                {sessions.length === 0 ? "The platform is currently in a state of rest. No active sessions found." : "Try adjusting your search criteria."}
+              </p>
            </div>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <AnimatePresence>
-            {sessions.map((session) => (
+            {filteredSessions.map((session) => (
               <motion.div
                 key={session.id}
                 layout
@@ -88,9 +179,16 @@ export default function AdminSessionsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9 }}
               >
-                <Card className="border-white/10 bg-black/40 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden group hover:border-primary/30 transition-all duration-500 shadow-2xl">
-                  <CardHeader className="p-8 border-b border-white/5 space-y-4">
-                    <div className="flex items-center justify-between">
+                <Card className={`border-white/10 bg-black/40 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden group hover:border-primary/30 transition-all duration-500 shadow-2xl relative ${selectedSessions.includes(session.id) ? 'ring-2 ring-primary border-transparent' : ''}`}>
+                  <div className="absolute top-6 left-6 z-10">
+                    <Checkbox 
+                      checked={selectedSessions.includes(session.id)}
+                      onCheckedChange={() => toggleSelectSession(session.id)}
+                      className="border-white/20 data-[state=checked]:bg-primary h-5 w-5"
+                    />
+                  </div>
+                  <CardHeader className="p-8 pb-4 border-b border-white/5 space-y-4">
+                    <div className="flex items-center justify-between pl-8">
                        <Badge className="bg-emerald-500/10 text-emerald-500 border-none font-black text-[9px] tracking-widest px-3">LIVE NOW</Badge>
                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1">
                           <Clock className="h-3 w-3" /> 

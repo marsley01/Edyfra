@@ -1,751 +1,321 @@
-"use client";
-
-import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
-import { toast } from "sonner";
 import {
-  BarChart3,
-  BookOpen,
   Users,
-  Settings,
-  Building2,
   GraduationCap,
-  BrainCircuit,
-  Trophy,
+  Calendar,
   TrendingUp,
-  Upload,
-  FileText,
-  Trash2,
-  Search,
-  Shield,
-  Loader2,
-  CircleCheck,
-  Clock,
-  X,
-  AlertCircle,
-  ExternalLink,
+  AlertTriangle,
+  Activity as ActivityIcon,
+  ArrowRight,
+  CheckCircle2,
+  ClipboardList,
+  UploadCloud,
+  UserPlus,
 } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatCard } from "@/components/institution/stat-card";
+import { PerformanceTrendChart } from "@/components/institution/charts/performance-trend-chart";
+import { FlagBadge } from "@/components/institution/performance-badge";
+import { requireInstitutionAdmin } from "@/app/actions/institution-guard";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
-import {
-  getInstitutionDashboard,
-  updateMemberRole,
-  removeMember,
-  getInstitutionDocuments,
-  uploadInstitutionDocument,
-  deleteInstitutionDocument,
-  getInstitutionMembers,
-} from "@/app/actions/institution";
-import { createClient } from "@/utils/supabase/client";
-import { getUserInstitution } from "@/app/actions/institution-data";
+  getInstitutionOverview,
+  getInstitutionPerformanceTrend,
+  getFlaggedStudents,
+  getRecentActivity,
+  getCurrentTerm,
+} from "@/app/actions/institution-admin";
+import { formatDistanceToNow } from "date-fns";
+import { getTimeGreeting } from "@/lib/greeting";
 
-type DashboardData = {
-  institution: {
-    id: string;
-    name: string;
-    code: string;
-    description: string | null;
-    logo: string | null;
-    banner: string | null;
-    location: string | null;
-    email: string | null;
-    phone: string | null;
-    website: string | null;
-    verified: boolean;
-    plan: string;
-    allowedDomains: string[];
-  };
-  stats: {
-    totalStudents: number;
-    totalInstructors: number;
-    totalAdmins: number;
-    recentSessions: number;
-    aiConversations: number;
-    aiTokensUsed: number;
-    completionRate: number;
-  };
-};
+export default async function InstitutionOverviewPage() {
+  const membership = await requireInstitutionAdmin();
+  const inst = membership.institution;
 
-type MemberType = {
-  id: string;
-  institutionId: string;
-  userId: string;
-  role: "INSTITUTION_ADMIN" | "DEPARTMENT_HEAD" | "INSTRUCTOR" | "STUDENT";
-  status: string;
-  joinedAt: Date;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    avatar: string | null;
-    role: string;
-    tier: string;
-    createdAt: Date;
-  };
-};
+  const [stats, trend, currentTerm, activity] = await Promise.all([
+    getInstitutionOverview(inst.id),
+    getInstitutionPerformanceTrend(inst.id),
+    getCurrentTerm(inst.id),
+    getRecentActivity(inst.id),
+  ]);
 
-type DocumentType = {
-  id: string;
-  institutionId: string;
-  title: string;
-  description: string | null;
-  filePath: string;
-  fileType: string;
-  fileSize: number;
-  uploadedBy: string;
-  createdAt: Date;
-  uploader: { id: string; name: string; avatar: string | null };
-};
-
-const ROLE_COLORS: Record<string, string> = {
-  INSTITUTION_ADMIN: "bg-purple-100 text-purple-700 border-purple-200",
-  DEPARTMENT_HEAD: "bg-blue-100 text-blue-700 border-blue-200",
-  INSTRUCTOR: "bg-amber-100 text-amber-700 border-amber-200",
-  STUDENT: "bg-emerald-100 text-emerald-700 border-emerald-200",
-};
-
-function formatBytes(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
-
-export default function InstitutionDashboardPage() {
-  const [activeTab, setActiveTab] = useState("insights");
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [institutionId, setInstitutionId] = useState<string | null>(null);
-
-  const [members, setMembers] = useState<MemberType[]>([]);
-  const [membersLoading, setMembersLoading] = useState(false);
-  const [memberSearch, setMemberSearch] = useState("");
-  const [memberRoleFilter, setMemberRoleFilter] = useState<string>("");
-
-  const [documents, setDocuments] = useState<DocumentType[]>([]);
-  const [docsLoading, setDocsLoading] = useState(false);
-
-  const loadDashboard = useCallback(async () => {
-    setLoading(true);
-    try {
-      const membership = await getUserInstitution();
-      if (!membership) {
-        setLoading(false);
-        return;
-      }
-      const instId = membership.institution.id;
-      setInstitutionId(instId);
-
-      const result = await getInstitutionDashboard(instId);
-      if (result) {
-        setData(result as DashboardData);
-      }
-    } catch {
-      toast.error("Failed to load institution dashboard");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const loadMembers = useCallback(async (instId: string) => {
-    setMembersLoading(true);
-    try {
-      const result = await getInstitutionMembers(instId, {
-        search: memberSearch || undefined,
-        role: memberRoleFilter || undefined,
-      });
-      setMembers(result as unknown as MemberType[]);
-    } catch {
-      toast.error("Failed to load members");
-    } finally {
-      setMembersLoading(false);
-    }
-  }, [memberSearch, memberRoleFilter]);
-
-  const loadDocuments = useCallback(async (instId: string) => {
-    setDocsLoading(true);
-    try {
-      const result = await getInstitutionDocuments(instId);
-      setDocuments(result as unknown as DocumentType[]);
-    } catch {
-      toast.error("Failed to load documents");
-    } finally {
-      setDocsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadDashboard();
-    const interval = setInterval(loadDashboard, 30000);
-    return () => clearInterval(interval);
-  }, [loadDashboard]);
-
-  useEffect(() => {
-    if (activeTab === "roster" && institutionId) loadMembers(institutionId);
-  }, [activeTab, loadMembers, institutionId]);
-
-  useEffect(() => {
-    if (activeTab === "knowledge" && institutionId) loadDocuments(institutionId);
-  }, [activeTab, loadDocuments, institutionId]);
-
-  async function handleRoleChange(memberId: string, role: "INSTITUTION_ADMIN" | "DEPARTMENT_HEAD" | "INSTRUCTOR" | "STUDENT") {
-    try {
-      await updateMemberRole(memberId, role);
-      toast.success("Member role updated");
-      if (institutionId) loadMembers(institutionId);
-    } catch {
-      toast.error("Failed to update role");
-    }
-  }
-
-  async function handleRemoveMember(memberId: string) {
-    try {
-      await removeMember(memberId);
-      toast.success("Member removed");
-      if (institutionId) loadMembers(institutionId);
-    } catch {
-      toast.error("Failed to remove member");
-    }
-  }
-
-  async function handleUploadDocument(formData: FormData) {
-    if (!institutionId) return;
-    const title = formData.get("title") as string;
-    const description = formData.get("description") as string;
-    const file = formData.get("file") as File;
-    if (!title || !file || !file.name) {
-      toast.error("Title and file are required");
-      return;
-    }
-    try {
-      const supabase = createClient();
-      const filePath = `institutions/${institutionId}/${Date.now()}_${file.name}`;
-      const { error: uploadError } = await supabase.storage
-        .from("institution-uploads")
-        .upload(filePath, file);
-
-      if (uploadError) {
-        toast.error("Failed to upload file to storage");
-        return;
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("institution-uploads")
-        .getPublicUrl(filePath);
-
-      await uploadInstitutionDocument(institutionId, {
-        title,
-        description: description || undefined,
-        filePath: publicUrl,
-        fileType: file.type,
-        fileSize: file.size,
-        uploadedBy: "system",
-      });
-      toast.success("Document uploaded");
-      loadDocuments(institutionId);
-    } catch {
-      toast.error("Failed to upload document");
-    }
-  }
-
-  async function handleDeleteDocument(docId: string) {
-    try {
-      await deleteInstitutionDocument(docId);
-      toast.success("Document deleted");
-      if (institutionId) loadDocuments(institutionId);
-    } catch {
-      toast.error("Failed to delete document");
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-24 w-full rounded-xl" />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-32 rounded-xl" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (!data) {
-    return (
-      <div className="flex flex-col items-center justify-center py-24 text-center">
-        <Building2 className="mb-4 h-16 w-16 text-gray-200" />
-        <h2 className="text-xl font-semibold text-gray-900">No institution found</h2>
-        <p className="mt-2 text-sm text-gray-500">
-          Create or connect an institution to get started.
-        </p>
-      </div>
-    );
-  }
-
-  const { institution, stats } = data;
+  const flagged = currentTerm
+    ? await getFlaggedStudents(inst.id, currentTerm.term, currentTerm.year)
+    : [];
+  const hasResults = trend.length > 0;
+  const subjectsTracked = new Set(trend.map((point) => point.subject)).size;
+  const termsTracked = new Set(trend.map((point) => `${point.year}-${point.termNum}`)).size;
+  const setupItems = [
+    Boolean(currentTerm),
+    stats.totalStudents > 0,
+    stats.totalTeachers > 0,
+    hasResults,
+  ];
+  const setupComplete = setupItems.filter(Boolean).length;
+  const nextActions = [
+    !currentTerm
+      ? {
+          href: "/institution/dashboard/settings",
+          icon: ClipboardList,
+          title: "Set the current term",
+          body: "Flagged students and term analytics need an active academic term.",
+        }
+      : null,
+    stats.totalStudents === 0
+      ? {
+          href: "/institution/dashboard/students",
+          icon: UserPlus,
+          title: "Add students",
+          body: "Start with the roster so results and coaching connect to real learners.",
+        }
+      : null,
+    stats.totalTeachers === 0
+      ? {
+          href: "/institution/dashboard/teachers",
+          icon: GraduationCap,
+          title: "Invite teachers",
+          body: "Teacher accounts make coaching assignments and staff reporting useful.",
+        }
+      : null,
+    !hasResults
+      ? {
+          href: "/institution/dashboard/results",
+          icon: UploadCloud,
+          title: "Upload results",
+          body: "Results unlock average performance, trends, and risk flags.",
+        }
+      : null,
+    flagged.length > 0
+      ? {
+          href: "/institution/dashboard/students",
+          icon: AlertTriangle,
+          title: "Review flagged students",
+          body: `${flagged.length} learner${flagged.length === 1 ? "" : "s"} need attention this term.`,
+        }
+      : null,
+    currentTerm && hasResults && stats.activeCoachingSessions === 0
+      ? {
+          href: "/institution/dashboard/coaching",
+          icon: Calendar,
+          title: "Plan coaching",
+          body: "Assign support for learners who need extra holiday or term help.",
+        }
+      : null,
+  ].filter(Boolean).slice(0, 3) as {
+    href: string;
+    icon: typeof ClipboardList;
+    title: string;
+    body: string;
+  }[];
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-gray-200 bg-gradient-to-r from-[#3730A3]/5 to-white p-6">
-        <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-[#3730A3] text-xl font-bold text-white shadow-sm">
-            {getInitials(institution.name)}
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-semibold text-gray-900">{institution.name}</h2>
-              {institution.verified && (
-                <CircleCheck className="h-4 w-4 text-blue-500" />
-              )}
-              <Badge variant="outline" className="border-[#3730A3]/20 bg-[#3730A3]/5 text-[#3730A3] text-[10px]">
-                {institution.plan}
-              </Badge>
-            </div>
-            <p className="mt-0.5 text-sm text-gray-500">
-              {institution.location && `${institution.location} · `}
-              Code: <span className="font-mono font-medium text-gray-700">{institution.code}</span>
-              · {stats.totalStudents + stats.totalInstructors + stats.totalAdmins} total members
-            </p>
-          </div>
-        </div>
+      <header>
+        <p className="text-[11px] font-black uppercase tracking-widest text-gray-500">Overview</p>
+        <h1 className="text-2xl font-black text-gray-900">
+          {(() => { const g = getTimeGreeting(inst.adminName?.split(" ")[0] ?? "Admin"); return `${g.text}${g.key === "late" ? "?" : "."} ${g.emoji}`; })()}
+        </h1>
+        <p className="text-sm text-gray-500">
+          {currentTerm
+            ? `Term ${currentTerm.term} ${currentTerm.year} at ${inst.name}.`
+            : `Finish setup for ${inst.name} to make the dashboard actionable.`}
+        </p>
+      </header>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          label="Total students"
+          value={stats.totalStudents}
+          icon={Users}
+          accent="indigo"
+        />
+        <StatCard
+          label="Teachers registered"
+          value={stats.totalTeachers}
+          icon={GraduationCap}
+          accent="cyan"
+        />
+        <StatCard
+          label="Active coaching"
+          value={stats.activeCoachingSessions}
+          icon={Calendar}
+          accent="emerald"
+          hint="This term"
+        />
+        <StatCard
+          label="Avg performance"
+          value={hasResults ? `${stats.averagePerformance}%` : "No data"}
+          icon={TrendingUp}
+          accent="violet"
+          hint={hasResults ? "Latest uploaded results" : "Upload results to calculate this"}
+        />
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList variant="line" className="w-full justify-start gap-0 border-b border-gray-200 bg-transparent pb-0">
-          <TabsTrigger
-            value="insights"
-            className="rounded-none border-b-2 border-transparent px-5 py-3 text-sm font-medium data-active:border-[#3730A3] data-active:text-[#3730A3] data-active:bg-transparent data-active:shadow-none"
-          >
-            <BarChart3 className="mr-2 h-4 w-4" />
-            Insights & Analytics
-          </TabsTrigger>
-          <TabsTrigger
-            value="knowledge"
-            className="rounded-none border-b-2 border-transparent px-5 py-3 text-sm font-medium data-active:border-[#3730A3] data-active:text-[#3730A3] data-active:bg-transparent data-active:shadow-none"
-          >
-            <BookOpen className="mr-2 h-4 w-4" />
-            AI Knowledge Base
-          </TabsTrigger>
-          <TabsTrigger
-              value="roster"
-              className="rounded-none border-b-2 border-transparent px-5 py-3 text-sm font-medium data-active:border-[#3730A3] data-active:text-[#3730A3] data-active:bg-transparent data-active:shadow-none"
-            >
-              <Users className="mr-2 h-4 w-4" />
-              Roster & Roles
-            </TabsTrigger>
-            <Link
-              href="/institution/settings"
-              className="inline-flex items-center gap-2 rounded-none border-b-2 border-transparent px-5 py-3 text-sm font-medium text-gray-500 hover:text-[#3730A3] transition-colors"
-            >
-              <Settings className="h-4 w-4" />
-              Branding & Settings
-              <ExternalLink className="h-3 w-3 text-gray-300" />
-            </Link>
-          </TabsList>
-
-        <TabsContent value="insights" className="mt-6 space-y-6">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <MetricCard
-              icon={Users}
-              label="Enrolled Students"
-              value={stats.totalStudents.toLocaleString()}
-              trend="Active learners"
-              color="bg-blue-50 text-blue-600"
-            />
-            <MetricCard
-              icon={GraduationCap}
-              label="Active Instructors"
-              value={stats.totalInstructors.toLocaleString()}
-              trend={`${stats.totalAdmins} admins`}
-              color="bg-amber-50 text-amber-600"
-            />
-            <MetricCard
-              icon={Trophy}
-              label="Completion Rate"
-              value={`${stats.completionRate}%`}
-              trend="Session completion"
-              color="bg-emerald-50 text-emerald-600"
-            />
-            <MetricCard
-              icon={BrainCircuit}
-              label="AI Tutor Interactions"
-              value={stats.aiConversations.toLocaleString()}
-              trend={`${stats.aiTokensUsed.toLocaleString()} tokens used`}
-              color="bg-purple-50 text-purple-600"
-            />
+      <Card>
+        <CardContent className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.9fr)]">
+          <div>
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                <CheckCircle2 className="h-5 w-5" />
+              </span>
+              <div>
+                <h2 className="text-base font-black text-gray-900">Portal readiness</h2>
+                <p className="text-sm text-gray-500">
+                  {setupComplete}/4 essentials complete
+                  {hasResults ? ` - ${subjectsTracked} subjects across ${termsTracked} term${termsTracked === 1 ? "" : "s"}` : ""}
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              {[
+                ["Current term", Boolean(currentTerm)],
+                ["Student roster", stats.totalStudents > 0],
+                ["Teacher roster", stats.totalTeachers > 0],
+                ["Results uploaded", hasResults],
+              ].map(([label, done]) => (
+                <div
+                  key={String(label)}
+                  className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-bold ${
+                    done
+                      ? "border-emerald-100 bg-emerald-50 text-emerald-800"
+                      : "border-amber-100 bg-amber-50 text-amber-800"
+                  }`}
+                >
+                  <span className={`h-2 w-2 rounded-full ${done ? "bg-emerald-500" : "bg-amber-500"}`} />
+                  {label}
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-gray-400" />
-                  Weekly Activity
-                </CardTitle>
-                <CardDescription>Sessions conducted in the last 7 days</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-end justify-center gap-3 py-6">
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-[#3730A3]">{stats.recentSessions}</div>
-                    <div className="mt-1 text-xs font-medium text-gray-500">sessions</div>
-                  </div>
-                  <div className="mx-4 h-12 w-px bg-gray-200" />
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-emerald-500">{stats.aiConversations}</div>
-                    <div className="mt-1 text-xs font-medium text-gray-500">AI interactions</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-gray-400" />
-                  Institution Overview
-                </CardTitle>
-                <CardDescription>Membership and system status</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Students</span>
-                    <span className="font-semibold text-gray-900">{stats.totalStudents}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Instructors</span>
-                    <span className="font-semibold text-gray-900">{stats.totalInstructors}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Department Heads</span>
-                    <span className="font-semibold text-gray-900">
-                      {members.filter((m) => m.role === "DEPARTMENT_HEAD").length}
-                    </span>
-                  </div>
-                  <Separator />
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Plan</span>
-                    <Badge variant="outline" className="border-[#3730A3]/20 bg-[#3730A3]/5 text-[#3730A3]">
-                      {institution.plan}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Verified</span>
-                    {institution.verified ? (
-                      <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
-                        <CircleCheck className="mr-1 h-3 w-3" />
-                        Verified
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="border-gray-200 text-gray-500">
-                        Unverified
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="knowledge" className="mt-6 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Upload className="h-4 w-4 text-gray-400" />
-                Upload Academic Asset
-              </CardTitle>
-              <CardDescription>
-                Upload syllabi, curriculums, textbooks, or handbooks. These documents become
-                ground-truth context for AI tutoring sessions under this institution.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleUploadDocument(new FormData(e.currentTarget));
-                  (e.target as HTMLFormElement).reset();
-                }}
-                className="space-y-4"
-              >
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium text-gray-500">Document Title</label>
-                    <Input name="title" required placeholder="e.g. Form 4 Biology Syllabus" className="border-gray-200" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium text-gray-500">File</label>
-                    <Input name="file" type="file" required accept=".pdf,.docx,.txt" className="border-gray-200 file:mr-3 file:rounded-md file:border-0 file:bg-[#3730A3]/10 file:px-3 file:py-1 file:text-xs file:font-medium file:text-[#3730A3]" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-gray-500">Description (optional)</label>
-                  <Textarea name="description" placeholder="Briefly describe what this document covers..." className="border-gray-200" rows={2} />
-                </div>
-                <div className="flex items-center justify-between rounded-lg bg-amber-50 p-3 text-xs text-amber-700">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="h-3.5 w-3.5" />
-                    Documents are processed and indexed for AI-powered tutoring sessions.
-                  </div>
-                </div>
-                <Button type="submit" className="bg-[#3730A3] hover:bg-[#3730A3]/90">
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload to Knowledge Base
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4 text-gray-400" />
-                Knowledge Base Assets
-              </CardTitle>
-              <CardDescription>
-                {documents.length} document{documents.length !== 1 ? "s" : ""} indexed for AI context
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {docsLoading ? (
-                <div className="space-y-3">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <Skeleton key={i} className="h-16 w-full rounded-lg" />
-                  ))}
-                </div>
-              ) : documents.length === 0 ? (
-                <div className="flex flex-col items-center py-8 text-center">
-                  <FileText className="mb-2 h-10 w-10 text-gray-200" />
-                  <p className="text-sm font-medium text-gray-500">No documents uploaded yet</p>
-                  <p className="text-xs text-gray-400">Upload academic assets to power AI tutoring context.</p>
-                </div>
+          <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-4">
+            <p className="text-[11px] font-black uppercase tracking-widest text-gray-500">Next best action</p>
+            <div className="mt-3 space-y-2">
+              {nextActions.length === 0 ? (
+                <p className="rounded-lg bg-white p-3 text-sm font-medium text-gray-600">
+                  Everything important is set. Keep reviewing results and activity weekly.
+                </p>
               ) : (
-                <div className="divide-y divide-gray-100">
-                  {documents.map((doc) => (
-                    <div key={doc.id} className="flex items-center gap-4 py-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#3730A3]/10">
-                        <FileText className="h-5 w-5 text-[#3730A3]" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="text-sm font-medium text-gray-900 truncate">{doc.title}</div>
-                        <div className="flex items-center gap-2 text-xs text-gray-400">
-                          <span>{doc.fileType.toUpperCase()}</span>
-                          <span>·</span>
-                          <span>{formatBytes(doc.fileSize)}</span>
-                          {doc.description && (
-                            <>
-                              <span>·</span>
-                              <span className="truncate max-w-[200px]">{doc.description}</span>
-                            </>
-                          )}
-                        </div>
+                nextActions.map((action) => {
+                  const Icon = action.icon;
+                  return (
+                    <Link
+                      key={action.title}
+                      href={action.href}
+                      className="flex items-start gap-3 rounded-lg bg-white p-3 text-left transition-colors hover:bg-indigo-50"
+                    >
+                      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-indigo-600" />
+                      <span>
+                        <span className="block text-sm font-black text-gray-900">{action.title}</span>
+                        <span className="block text-xs text-gray-500">{action.body}</span>
+                      </span>
+                    </Link>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div>
+              <CardTitle className="text-base font-black">Performance trend</CardTitle>
+              <p className="text-xs text-gray-500">Average marks per subject over the last 3 terms.</p>
+            </div>
+            <Link
+              href="/institution/dashboard/results"
+              className="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-bold text-indigo-600 hover:bg-indigo-50"
+            >
+              Open analysis <ArrowRight className="ml-1 h-3 w-3" />
+            </Link>
+          </CardHeader>
+          <CardContent>
+            <PerformanceTrendChart points={trend} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base font-black">
+              <AlertTriangle className="h-4 w-4 text-rose-500" />
+              Flagged students
+            </CardTitle>
+            <p className="text-xs text-gray-500">
+              {currentTerm && hasResults
+                ? `Below 50% in any subject - Term ${currentTerm.term} ${currentTerm.year}`
+                : !currentTerm
+                  ? "Set the current term in Settings to see flagged students."
+                  : "Upload results to identify flagged students."}
+            </p>
+          </CardHeader>
+          <CardContent className="p-0">
+            {flagged.length === 0 ? (
+              <div className="p-6 text-center text-sm text-gray-500">
+                {currentTerm
+                  ? hasResults
+                    ? "No students are below 50% this term. Nice work!"
+                    : "Upload this term's results to see who needs attention."
+                  : "Set the current term in Settings."}
+              </div>
+            ) : (
+              <ul className="divide-y divide-gray-100">
+                {flagged.slice(0, 8).map((f) => (
+                  <li key={`${f.studentUserId}-${f.subject}`}>
+                    <Link
+                      href={`/institution/dashboard/students/${f.studentUserId}`}
+                      className="flex items-center justify-between px-5 py-3 transition-colors hover:bg-indigo-50/40"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-gray-900">{f.studentName}</p>
+                        <p className="text-xs text-gray-500">
+                          {f.subject} · {f.form}
+                        </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700 text-[10px]">
-                          <CircleCheck className="mr-1 h-2.5 w-2.5" />
-                          Indexed
-                        </Badge>
-                        <button
-                          onClick={() => handleDeleteDocument(doc.id)}
-                          className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <span className="text-sm font-black text-gray-900 tabular-nums">{f.marks.toFixed(0)}%</span>
+                        <FlagBadge flag={f.flag as "CRITICAL" | "AT_RISK"} />
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="roster" className="mt-6 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-gray-400" />
-                Member Directory
-              </CardTitle>
-              <CardDescription>Manage institution members and their roles</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                  <Input
-                    placeholder="Search members by name or email..."
-                    value={memberSearch}
-                    onChange={(e) => setMemberSearch(e.target.value)}
-                    className="border-gray-200 pl-9"
-                  />
-                </div>
-                <Select value={memberRoleFilter} onValueChange={(v) => setMemberRoleFilter(v ?? "")}>
-                  <SelectTrigger className="w-[160px] border-gray-200">
-                    <SelectValue placeholder="All Roles" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">All Roles</SelectItem>
-                    <SelectItem value="INSTITUTION_ADMIN">Admin</SelectItem>
-                    <SelectItem value="DEPARTMENT_HEAD">Dept. Head</SelectItem>
-                    <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
-                    <SelectItem value="STUDENT">Student</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {membersLoading ? (
-                <div className="space-y-3">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Skeleton key={i} className="h-16 w-full rounded-lg" />
-                  ))}
-                </div>
-              ) : members.length === 0 ? (
-                <div className="flex flex-col items-center py-8 text-center">
-                  <Users className="mb-2 h-10 w-10 text-gray-200" />
-                  <p className="text-sm font-medium text-gray-500">No members found</p>
-                  <p className="text-xs text-gray-400">
-                    {memberSearch || memberRoleFilter
-                      ? "Try adjusting your search or filters."
-                      : "Invite members to get started."}
-                  </p>
-                </div>
-              ) : (
-                <div className="divide-y divide-gray-100 rounded-lg border border-gray-100">
-                  {members.map((member) => (
-                    <div key={member.id} className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-gray-50">
-                      <Avatar className="h-9 w-9">
-                        <AvatarImage src={member.user.avatar ?? undefined} />
-                        <AvatarFallback className="bg-[#3730A3]/10 text-xs font-medium text-[#3730A3]">
-                          {getInitials(member.user.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-gray-900">{member.user.name}</span>
-                          {member.status === "PENDING" && (
-                            <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700 text-[10px]">
-                              <Clock className="mr-1 h-2.5 w-2.5" />
-                              Pending
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="text-xs text-gray-400">{member.user.email}</div>
-                      </div>
-                      <Select
-                        value={member.role}
-                        onValueChange={(val) => val && handleRoleChange(member.id, val as "INSTITUTION_ADMIN" | "DEPARTMENT_HEAD" | "INSTRUCTOR" | "STUDENT")}
-                      >
-                        <SelectTrigger className={`h-7 border px-2 text-xs font-medium ${ROLE_COLORS[member.role] || ""}`}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="INSTITUTION_ADMIN">Admin</SelectItem>
-                          <SelectItem value="DEPARTMENT_HEAD">Dept. Head</SelectItem>
-                          <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
-                          <SelectItem value="STUDENT">Student</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Dialog>
-                        <DialogTrigger render={<button className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"><X className="h-4 w-4" /></button>} />
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Remove Member</DialogTitle>
-                            <DialogDescription>
-                              Are you sure you want to remove {member.user.name} from {institution.name}? This action cannot be undone.
-                            </DialogDescription>
-                          </DialogHeader>
-                          <DialogFooter>
-                            <DialogClose render={<Button variant="outline">Cancel</Button>} />
-                            <Button
-                              variant="destructive"
-                              onClick={() => handleRemoveMember(member.id)}
-                            >
-                              Remove Member
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="mt-4 flex items-center justify-between text-xs text-gray-400">
-                <span>{members.length} member{members.length !== 1 ? "s" : ""}</span>
-                <span className="flex items-center gap-1">
-                  <Shield className="h-3 w-3" />
-                  Tenant boundary enforced
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
-}
-
-function MetricCard({
-  icon: Icon,
-  label,
-  value,
-  trend,
-  color,
-}: {
-  icon: typeof Users;
-  label: string;
-  value: string;
-  trend: string;
-  color: string;
-}) {
-  return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 transition-shadow hover:shadow-sm">
-      <div className="flex items-center justify-between">
-        <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${color}`}>
-          <Icon className="h-4 w-4" />
-        </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
       </div>
-      <div className="mt-3">
-        <div className="text-sm font-medium text-gray-500">{label}</div>
-        <div className="mt-0.5 text-2xl font-bold text-gray-900">{value}</div>
-      </div>
-      <div className="mt-1 text-xs text-gray-400">{trend}</div>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-base font-black">
+            <ActivityIcon className="h-4 w-4 text-indigo-500" />
+            Recent activity
+          </CardTitle>
+          <p className="text-xs text-gray-500">Last 10 actions in your institution.</p>
+        </CardHeader>
+        <CardContent className="p-0">
+          {activity.length === 0 ? (
+            <div className="p-6 text-center text-sm text-gray-500">No activity yet.</div>
+          ) : (
+            <ul className="divide-y divide-gray-100">
+              {activity.map((a) => (
+                <li key={a.id} className="flex items-start gap-3 px-5 py-3">
+                  <div className="mt-1 h-2 w-2 rounded-full bg-indigo-500" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold text-gray-900">{a.title}</p>
+                    {a.body && <p className="text-xs text-gray-500">{a.body}</p>}
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                      {a.actorName ? `${a.actorName} · ` : ""}
+                      {formatDistanceToNow(a.createdAt, { addSuffix: true })}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

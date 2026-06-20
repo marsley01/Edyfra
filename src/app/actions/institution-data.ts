@@ -77,46 +77,55 @@ async function fetchInstitutionStudents(institutionId: string, search?: string) 
       orderBy: { joinedAt: "desc" },
     });
 
-    const students = await Promise.all(
-      members.map(async (m) => {
-        const sessionCount = await prisma.session.count({
-          where: {
-            OR: [
-              { studentId: m.user.id },
-              { partnerId: m.user.id },
-            ],
-          },
-        });
-
-        const recentSessions = await prisma.session.count({
-          where: {
-            OR: [
-              { studentId: m.user.id },
-              { partnerId: m.user.id },
-            ],
-            startedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
-          },
-        });
-
-        const engagement = sessionCount > 0
-          ? Math.min(Math.round((recentSessions / Math.max(sessionCount, 1)) * 100), 100)
-          : 0;
-
-        return {
-          id: m.user.id,
-          name: m.user.name,
-          email: m.user.email,
-          avatar: m.user.avatar,
-          initials: m.user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2),
-          form: m.user.educationLevel === "UNIVERSITY" ? `Year ${m.user.formYear || 1}` : `Form ${m.user.formYear || 1}`,
-          county: m.user.county,
-          sessions: sessionCount,
-          engagement,
-          status: m.status.toLowerCase() as "active" | "inactive",
-          joinedAt: m.joinedAt,
-        };
+    const userIds = members.map(m => m.user.id);
+    const [allSessionCounts, recentSessionCounts] = await Promise.all([
+      prisma.session.groupBy({
+        by: ['studentId'],
+        where: {
+          OR: [
+            { studentId: { in: userIds } },
+            { partnerId: { in: userIds } },
+          ],
+        },
+        _count: { id: true },
       }),
-    );
+      prisma.session.groupBy({
+        by: ['studentId'],
+        where: {
+          OR: [
+            { studentId: { in: userIds } },
+            { partnerId: { in: userIds } },
+          ],
+          startedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
+        },
+        _count: { id: true },
+      }),
+    ]);
+
+    const allCountMap = new Map(allSessionCounts.map(r => [r.studentId, r._count.id]));
+    const recentCountMap = new Map(recentSessionCounts.map(r => [r.studentId, r._count.id]));
+
+    const students = members.map((m) => {
+      const sessionCount = allCountMap.get(m.user.id) ?? 0;
+      const recentSessions = recentCountMap.get(m.user.id) ?? 0;
+      const engagement = sessionCount > 0
+        ? Math.min(Math.round((recentSessions / Math.max(sessionCount, 1)) * 100), 100)
+        : 0;
+
+      return {
+        id: m.user.id,
+        name: m.user.name,
+        email: m.user.email,
+        avatar: m.user.avatar,
+        initials: m.user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2),
+        form: m.user.educationLevel === "UNIVERSITY" ? `Year ${m.user.formYear || 1}` : `Form ${m.user.formYear || 1}`,
+        county: m.user.county,
+        sessions: sessionCount,
+        engagement,
+        status: m.status.toLowerCase() as "active" | "inactive",
+        joinedAt: m.joinedAt,
+      };
+    });
 
     return students;
   } catch {

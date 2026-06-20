@@ -3,9 +3,14 @@ import prisma from "@/lib/prisma";
 import { cache, TTL } from "@/lib/cache";
 import { captureApiError } from "@/lib/sentry";
 
-const CACHE_KEY = "api:plans";
+interface PlanFeatures {
+  description?: string;
+  list?: string[];
+  popular?: boolean;
+  buttonText?: string;
+}
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     // Serve from cache when available (plans rarely change)
     const cached = cache.get<object>(CACHE_KEY);
@@ -19,16 +24,19 @@ export async function GET(request: Request) {
       orderBy: { monthlyPrice: "asc" },
     });
 
-    const transformed = plans.map((plan) => ({
-      name: plan.name,
-      price: plan.monthlyPrice.toString(),
-      yearlyPrice: (plan.yearlyPrice || plan.monthlyPrice * 10).toString(),
-      description: (plan.features as any)?.description || "",
-      features: (plan.features as any)?.list || [],
-      popular: (plan.features as any)?.popular || false,
-      current: false,
-      buttonText: (plan.features as any)?.buttonText || "Select Plan",
-    }));
+    const transformed = plans.map((plan) => {
+      const features = plan.features as PlanFeatures;
+      return {
+        name: plan.name,
+        price: plan.monthlyPrice.toString(),
+        yearlyPrice: (plan.yearlyPrice || plan.monthlyPrice * 10).toString(),
+        description: features?.description || "",
+        features: features?.list || [],
+        popular: features?.popular || false,
+        current: false,
+        buttonText: features?.buttonText || "Select Plan",
+      };
+    });
 
     const payload = { plans: transformed };
     cache.set(CACHE_KEY, payload, TTL.PLANS);

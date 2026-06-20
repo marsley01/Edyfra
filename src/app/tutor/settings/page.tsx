@@ -17,13 +17,14 @@ import {
 } from "lucide-react";
 import { getUserData, updateProfile, updateTutorProfile, changePassword, changeEmail, downloadUserData, deleteUserAccount, updateAvatar, updateNotificationSettings } from "@/app/actions/user";
 import { getNotificationSettings } from "@/app/actions/notifications";
-import { PushNotificationInit } from "@/components/PushNotificationInit";
+import { PushNotificationManager } from "@/components/PushNotificationManager";
+import { TUTOR_CONFIG } from "@/lib/config";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { AvatarPicker, type AvatarStyle } from "@/components/ui/avatar-picker";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
-import { toast } from "sonner";
+import { showError, showSuccess, showUnknownError } from "@/lib/toast";
 import { Badge } from "@/components/ui/badge";
 import { useTheme } from "next-themes";
 import { TutorAvailabilityCalendar } from "@/components/tutor/TutorAvailabilityCalendar";
@@ -32,11 +33,14 @@ const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 const TIME_SLOTS = ["Morning", "Afternoon", "Evening"];
 
 const ACCENT_COLORS = [
+  { name: "Campus Navy", value: "#0F4C5C" },
+  { name: "Royal Blue", value: "#1A5276" },
   { name: "Edyfra Blue", value: "#1e3a8a" },
   { name: "Knowledge Teal", value: "#0d9488" },
-  { name: "Success Green", value: "#15803d" },
-  { name: "Royal Purple", value: "#6d28d9" },
+  { name: "Coral CTA", value: "#E07A5F" },
+  { name: "Berry Punch", value: "#D81B60" },
   { name: "Warm Amber", value: "#b45309" },
+  { name: "Royal Purple", value: "#6d28d9" },
 ];
 
 const SIDEBAR_ITEMS = [
@@ -93,7 +97,7 @@ export default function TutorSettingsPage() {
         subjects: tp.subjects?.join(", ") || "",
         confidenceLevels: "",
         levelsTaught: tp.levelsTaught?.join(", ") || "",
-        hourlyRate: tp.hourlyRate?.toString() || "500",
+        hourlyRate: tp.hourlyRate?.toString() || TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH.toString(),
         mpesaNumber: tp.mpesaNumber || "",
         sessionPreference: tp.sessionPreference || "both",
         maxGroupStudents: tp.maxGroupStudents?.toString() || "3",
@@ -126,7 +130,7 @@ export default function TutorSettingsPage() {
         bio: formData.bio,
         subjects: formData.subjects.split(",").map((s: string) => s.trim()).filter(Boolean),
         levelsTaught: formData.levelsTaught.split(",").map((s: string) => s.trim()).filter(Boolean),
-        hourlyRate: parseInt(formData.hourlyRate) || 500,
+        hourlyRate: parseInt(formData.hourlyRate) || TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH,
         mpesaNumber: formData.mpesaNumber,
         sessionPreference: formData.sessionPreference,
         maxGroupStudents: parseInt(formData.maxGroupStudents) || 3,
@@ -139,8 +143,8 @@ export default function TutorSettingsPage() {
         allowMashInactive: formData.allowMashInactive,
         showMashSummary: formData.showMashSummary,
       });
-      toast.success("Profile updated");
-    } catch { toast.error("Failed to update"); }
+      showSuccess("Profile updated", { description: "Your changes are saved." });
+    }     catch { showError({ title: "Couldn't save your changes", cause: "We couldn't reach our servers.", fix: "Try again, or refresh the page." }); }
     finally { setSaving(false); }
   };
 
@@ -158,26 +162,47 @@ export default function TutorSettingsPage() {
       const { updateUserPreferences } = await import("@/app/actions/user");
       await updateUserPreferences({ [key]: value });
       if (key === "accentColor") window.dispatchEvent(new CustomEvent("accent-color-changed", { detail: value }));
-    } catch { toast.error("Failed to save"); }
+    }     catch { showError({ title: "Couldn't save that", cause: "We couldn't reach our servers.", fix: "Try again, or refresh the page." }); }
   };
 
   const handleSaveNotif = async (key: string, value: boolean) => {
     const updated = { ...notifPrefs, [key]: value };
     setNotifPrefs(updated);
     try { await updateNotificationSettings(updated); }
-    catch { toast.error("Failed to save notification preferences"); }
+    catch { showError({ title: "Couldn't save notification preferences", cause: "We couldn't reach our servers.", fix: "Try again, or refresh the page." }); }
   };
 
   const handleChangePassword = async () => {
-    if (passwordData.newPass !== passwordData.confirm) { toast.error("Passwords don't match"); return; }
-    try { await changePassword(passwordData.current, passwordData.newPass); toast.success("Password changed"); setPasswordData({ current: "", newPass: "", confirm: "" }); }
-    catch (e: any) { toast.error(e.message); }
+    if (passwordData.newPass !== passwordData.confirm) {
+      showError({
+        title: "Passwords don't match",
+        cause: "The new password and confirmation are different.",
+        fix: "Re-type both — they have to be identical.",
+      });
+      return;
+    }
+    try {
+      await changePassword(passwordData.current, passwordData.newPass);
+      showSuccess("Password changed", { description: "Use your new password next time you sign in." });
+      setPasswordData({ current: "", newPass: "", confirm: "" });
+    }
+    catch (e: any) { showUnknownError(e, "Couldn't change your password"); }
   };
 
   const handleChangeEmail = async () => {
-    if (!newEmail.includes("@")) { toast.error("Invalid email"); return; }
-    try { await changeEmail(newEmail); toast.success("Verification email sent"); }
-    catch (e: any) { toast.error(e.message); }
+    if (!newEmail.includes("@")) {
+      showError({
+        title: "That email doesn't look right",
+        cause: "It's missing an @ or a domain.",
+        fix: "Use a full email like you@gmail.com.",
+      });
+      return;
+    }
+    try {
+      await changeEmail(newEmail);
+      showSuccess("Verification sent", { description: "Check your new email's inbox to confirm." });
+    }
+    catch (e: any) { showUnknownError(e, "Couldn't update your email"); }
   };
 
   const handleDownloadData = async () => {
@@ -188,16 +213,27 @@ export default function TutorSettingsPage() {
         const blob = new Blob([result.data], { type: "application/json" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a"); a.href = url; a.download = "edyfra-tutor-data.json"; a.click();
-        toast.success("Data downloaded");
+        showSuccess("Download ready", { description: "Your data file is on its way to your downloads folder." });
       }
-    } catch { toast.error("Failed to download"); }
+    }     catch { showError({ title: "Download didn't start", cause: "We couldn't reach our servers.", fix: "Try again, or refresh the page." }); }
     finally { setDownloading(false); }
   };
 
   const handleDeleteAccount = async () => {
-    if (deleteConfirm !== "DELETE") { toast.error("Type DELETE to confirm"); return; }
-    try { await deleteUserAccount(); toast.success("Account deleted"); window.location.href = "/login"; }
-    catch { toast.error("Failed to delete"); }
+    if (deleteConfirm !== "DELETE") {
+      showError({
+        title: "Type DELETE to confirm",
+        cause: "We need a deliberate yes before we delete everything.",
+        fix: "Type the word DELETE in capital letters, then press the button.",
+      });
+      return;
+    }
+    try {
+      await deleteUserAccount();
+      showSuccess("Account deleted", { description: "We're sorry to see you go. Your data is gone." });
+      window.location.href = "/login";
+    }
+    catch { showError({ title: "Couldn't delete your account", cause: "We couldn't reach our servers.", fix: "Try again, or contact support if it keeps happening." }); }
   };
 
   if (loading) return <div className="flex items-center justify-center min-h-[80vh]"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
@@ -269,7 +305,6 @@ export default function TutorSettingsPage() {
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1"><Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" /> {userData?.tutorProfile?.rating || "New"}</span>
                   <span className="flex items-center gap-1"><BookOpen className="h-3.5 w-3.5" /> {formData.subjects || "No subjects set"}</span>
-                  {formData.hourlyRate && <span className="flex items-center gap-1"><Wallet className="h-3.5 w-3.5" /> Ksh {formData.hourlyRate}/hr</span>}
                 </div>
               </div>
               <div className="hidden sm:flex flex-col items-end gap-1">
@@ -386,9 +421,9 @@ export default function TutorSettingsPage() {
                                 const url = `https://api.dicebear.com/7.x/${selectedAvatarStyle}/svg?seed=${encodeURIComponent(formData.name || "user")}`;
                                 await updateAvatar(url);
                                 setCurrentAvatar(url);
-                                toast.success("Avatar updated");
+                                showSuccess("Avatar updated", { description: "Your new look is live." });
                                 setAvatarDialogOpen(false);
-                              } catch { toast.error("Failed to update avatar"); }
+                              } catch { showError({ title: "Couldn't update your avatar", cause: "We couldn't reach our servers.", fix: "Try a different image, or try again in a moment." }); }
                               finally { setSavingAvatar(false); }
                             }} className="rounded-xl"
                           >{savingAvatar ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Save Avatar"}</Button>
@@ -517,13 +552,7 @@ export default function TutorSettingsPage() {
                     </div>
                   ))}
                   <Separator className="my-4" />
-                  <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/20 border border-border/30 gap-3">
-                    <div className="min-w-0">
-                      <Label className="text-sm font-medium">Push Notifications</Label>
-                      <p className="text-xs text-muted-foreground">Receive alerts even when the tab is closed</p>
-                    </div>
-                    <PushNotificationInit />
-                  </div>
+                  <PushNotificationManager />
                 </CardContent>
               </Card>
             )}

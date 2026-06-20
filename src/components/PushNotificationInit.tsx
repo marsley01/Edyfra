@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Bell, BellOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { showError, showSuccess } from "@/lib/toast";
 import { urlBase64ToUint8Array } from "@/lib/utils";
 
 export function PushNotificationInit() {
@@ -11,19 +12,24 @@ export function PushNotificationInit() {
   const [subscribed, setSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
-      return;
-    }
-    setSupported(true);
-    setPermission(Notification.permission);
+   useEffect(() => {
+     if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+       return;
+     }
+     setSupported(true);
+     setPermission(Notification.permission);
 
-    navigator.serviceWorker.ready.then((reg) => {
-      reg.pushManager.getSubscription().then((sub) => {
-        setSubscribed(!!sub);
-      });
-    });
-  }, []);
+     navigator.serviceWorker.ready
+       .then((reg) => {
+         return reg.pushManager.getSubscription();
+       })
+       .then((sub) => {
+         setSubscribed(!!sub);
+       })
+       .catch((err) => {
+         console.error("[PushNotificationInit] Error checking subscription:", err);
+       });
+   }, []);
 
   const subscribe = useCallback(async () => {
     if (!supported) return;
@@ -33,14 +39,32 @@ export function PushNotificationInit() {
       const result = await Notification.requestPermission();
       setPermission(result);
       if (result !== "granted") {
+        showError({
+          title: "Notifications denied",
+          cause: "You said no to notification permissions.",
+          fix: "Open your browser settings and allow notifications for Edyfra.",
+        });
         return;
       }
 
       const reg = await navigator.serviceWorker.ready;
 
       const keyRes = await fetch("/api/push/vapid-public-key");
+      if (!keyRes.ok) {
+        showError({
+          title: "Push isn't ready yet",
+          cause: "Browser push isn't configured on the server.",
+          fix: "We'll let you know once it's live.",
+        });
+        return;
+      }
       const { publicKey } = await keyRes.json();
       if (!publicKey) {
+        showError({
+          title: "Push isn't ready yet",
+          cause: "Browser push isn't configured on the server.",
+          fix: "We'll let you know once it's live.",
+        });
         return;
       }
 
@@ -65,7 +89,13 @@ export function PushNotificationInit() {
       });
 
       setSubscribed(true);
+      showSuccess("Push is on", { description: "We'll ping your browser when something new lands." });
     } catch {
+      showError({
+        title: "Couldn't turn on push",
+        cause: "The browser didn't accept the request.",
+        fix: "Check your browser settings, then try again.",
+      });
     } finally {
       setLoading(false);
     }
@@ -86,7 +116,13 @@ export function PushNotificationInit() {
         await sub.unsubscribe();
       }
       setSubscribed(false);
+      showSuccess("Push is off", { description: "You won't get browser pings anymore." });
     } catch {
+      showError({
+        title: "Couldn't turn off push",
+        cause: "We couldn't reach the server.",
+        fix: "Try again, or refresh the page.",
+      });
     } finally {
       setLoading(false);
     }

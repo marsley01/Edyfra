@@ -2,11 +2,12 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { Role, VerifPath, TutorApplication, User, TutorProfile } from "@/generated/client";
+import { Role, VerifPath, TutorApplication, User, TutorProfile } from "@prisma/client";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { getUserData } from "./user";
 import { notifyUser } from "@/app/actions/notifications";
+import { TUTOR_CONFIG } from "@/lib/config";
 
 async function requireAdminUser() {
   const adminUser = await getUserData();
@@ -110,7 +111,7 @@ export async function approveTutorApplicationEnhanced(applicationId: string) {
         subjects: app.subjects || [],
         levelsTaught: [],
         verificationPath: app.path || VerifPath.POINTS,
-        hourlyRate: 500,
+        hourlyRate: TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH,
         bio: app.notes || "Expert tutor ready to help students succeed.",
         isVerified: true,
         verifiedAt: new Date(),

@@ -2,7 +2,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { Role } from "@/generated/client";
+import { Role } from "@prisma/client";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 
@@ -33,36 +33,66 @@ async function isAdmin(userId: string) {
 }
 
 // Setup admin user (call this once to register the admin)
+//
+// SECURITY: This function grants ADMIN role. It must NEVER be exposed
+// to non-admins. The auth check below refuses to run if the caller is
+// not already an admin, OR if no admins exist yet AND the env-var
+// bootstrap secret is not provided. This is the only safe way to
+// bootstrap the very first admin without an auth bypass.
 export async function setupAdminUser(email: string) {
   try {
     const supabase = await createClient();
-    
+    const { data: { user: caller } } = await supabase.auth.getUser();
+
+    // Auth check: caller must already be an admin, OR
+    // this must be the very first admin (no existing admins) AND
+    // the env-bootstrap secret must match.
+    const callerIsAdmin = caller ? await isAdmin(caller.id) : false;
+    const existingAdminCount = await prisma.user.count({ where: { role: Role.ADMIN } });
+    const bootstrapSecret = process.env.ADMIN_BOOTSTRAP_SECRET;
+    const isBootstrap =
+      existingAdminCount === 0 &&
+      bootstrapSecret &&
+      // Optional: also require an explicit env-var match against caller email
+      // to avoid random unauthenticated bootstrap. If `ADMIN_BOOTSTRAP_EMAIL`
+      // is set, it must match the email being promoted.
+      (process.env.ADMIN_BOOTSTRAP_EMAIL
+        ? process.env.ADMIN_BOOTSTRAP_EMAIL === email
+        : true);
+
+    if (!callerIsAdmin && !isBootstrap) {
+      console.warn(
+        `[setupAdminUser] Blocked: caller=${caller?.id || "anonymous"} target=${email} existingAdmins=${existingAdminCount}`,
+      );
+      return { error: "Unauthorized: only an existing admin can promote another user." };
+    }
+
     // Get user by email from Supabase
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!serviceRoleKey) {
       return { error: "Service role key not configured" };
     }
-    
+
     const { createClient: createAdminClient } = await import("@supabase/supabase-js");
     const adminClient = createAdminClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       serviceRoleKey,
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
-    
+
     // List users and find by email
     const { data: { users }, error } = await adminClient.auth.admin.listUsers();
-    
+
     if (error) {
       return { error: error.message };
     }
-    
+
     const supabaseUser = users.find(u => u.email === email);
-    
+
     if (!supabaseUser) {
       return { error: "User not found in Supabase" };
     }
-    
+
     // Create or update in Prisma
     const user = await prisma.user.upsert({
       where: { id: supabaseUser.id },
@@ -76,12 +106,12 @@ export async function setupAdminUser(email: string) {
       },
       update: { role: Role.ADMIN }
     });
-    
+
     // Update Supabase metadata
     await adminClient.auth.admin.updateUserById(supabaseUser.id, {
       user_metadata: { role: "ADMIN" }
     });
-    
+
     return { success: true, userId: user.id };
   } catch (error) {
     console.error("Error setting up admin:", error);

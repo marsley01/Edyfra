@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Bell, Plus, Trash2, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { showSuccess } from "@/lib/toast";
 
 export default function AnnouncementsPage() {
   const router = useRouter();
@@ -44,26 +44,18 @@ export default function AnnouncementsPage() {
 
   const handleCreate = async () => {
     if (!title || !body) return;
-    try {
-      const { createAnnouncement } = await import("@/app/actions/admin-content");
-      await createAnnouncement({ title, body, targetAudience: target });
-      toast.success("Announcement published");
-      setTitle(""); setBody(""); setShowForm(false);
-      await load();
-    } catch {
-      toast.error("Failed to create announcement");
-    }
+    const { createAnnouncement } = await import("@/app/actions/admin-content");
+    await createAnnouncement({ title, body, targetAudience: target });
+    showSuccess("Announcement published", { description: "It's reaching the audience you picked." });
+    setTitle(""); setBody(""); setShowForm(false);
+    await load();
   };
 
   const handleDelete = async (id: string) => {
-    try {
-      const { deleteAnnouncement } = await import("@/app/actions/admin-content");
-      await deleteAnnouncement(id);
-      toast.success("Deleted");
-      await load();
-    } catch {
-      toast.error("Failed to delete announcement");
-    }
+    const { deleteAnnouncement } = await import("@/app/actions/admin-content");
+    await deleteAnnouncement(id);
+    showSuccess("Announcement deleted", { description: "It's been removed from the feed." });
+    await load();
   };
 
   if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;

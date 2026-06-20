@@ -1,109 +1,138 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import OpenAI from "openai";
+import prisma from "@/lib/prisma";
 
-const DEFAULT_OPENROUTER_MODEL = "openai/gpt-4o-mini";
-const DEFAULT_GEMINI_MODEL = "gemini-2.0-flash";
+const DEFAULT_MODEL = "openai/gpt-4o-mini";
 
 let openaiInstance: OpenAI | null = null;
-let geminiInstance: GoogleGenerativeAI | null = null;
+let currentKey: string | null = null;
 
-function getOpenAI() {
-  const apiKey = process.env.OPENROUTER_API_KEY;
+async function getAIKeyFromDB(): Promise<{ key: string | null, provider: string | null }> {
+  try {
+    const entry = await prisma.platformSettings.findUnique({
+      where: { key: "global" },
+      select: { value: true },
+    });
+    const value = entry?.value as Record<string, unknown> | undefined;
+    return {
+      key: (value?.googleAiKey as string) || null,
+      provider: (value?.aiProvider as string) || "openrouter",
+    };
+  } catch (err) {
+    console.error("[AIService] Failed to fetch key from DB:", err);
+    return { key: null, provider: null };
+  }
+}
+
+let currentProvider: string = "openrouter";
+
+async function getOpenAI() {
+  // 1. Try environment variable first
+  let apiKey: string | undefined = process.env.OPENROUTER_API_KEY;
+  let provider = "openrouter";
+
+  // 2. Fallback to database settings (no admin check needed)
+  if (!apiKey) {
+    const dbConfig = await getAIKeyFromDB();
+    apiKey = dbConfig.key ?? undefined;
+    provider = dbConfig.provider || "openrouter";
+  }
+
+  // Auto-detect Gemini keys if env var was accidentally used for Gemini
+  if (apiKey?.startsWith("AIzaSy")) {
+    provider = "gemini";
+  }
+
   if (!apiKey) return null;
 
-  if (!openaiInstance) {
+  // If the key has changed, re-initialize the instance
+  if (!openaiInstance || currentKey !== apiKey) {
+    currentKey = apiKey;
+    currentProvider = provider;
+    
+    const baseURL = provider === "gemini" 
+      ? "https://generativelanguage.googleapis.com/v1beta/openai/" 
+      : "https://openrouter.ai/api/v1";
+
     openaiInstance = new OpenAI({
-      baseURL: "https://openrouter.ai/api/v1",
-      apiKey,
-      defaultHeaders: {
-        "HTTP-Referer": "https://edyfra.space",
+      baseURL,
+      apiKey: apiKey,
+      defaultHeaders: provider === "openrouter" ? {
+        "HTTP-Referer": "https://edyfra-v2.vercel.app",
         "X-Title": "Edyfra",
-      },
+      } : undefined,
     });
   }
   return openaiInstance;
-}
-
-function getGemini() {
-  const apiKey = process.env.GOOGLE_AI_KEY;
-  if (!apiKey) return null;
-
-  if (!geminiInstance) {
-    geminiInstance = new GoogleGenerativeAI(apiKey);
-  }
-  return geminiInstance;
 }
 
 export class AIService {
   static async generateCompletion(
     prompt: string,
     systemPrompt: string = "You are an expert educational assistant.",
-    model: string = DEFAULT_OPENROUTER_MODEL
+    model: string = DEFAULT_MODEL
   ): Promise<string> {
-    const openai = getOpenAI();
-    const gemini = getGemini();
-
-    if (openai) {
-      try {
-        const completion = await openai.chat.completions.create({
-          model,
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: prompt },
-          ],
-          temperature: 0.7,
-          max_tokens: 1024,
-        });
-
-        const content = completion.choices[0]?.message?.content?.trim();
-        if (content) return content;
-
-        console.warn("[AIService] OpenRouter returned empty response");
-      } catch (error) {
-        console.error("[AIService] OpenRouter generation error:", error instanceof Error ? error.message : error);
-      }
-    } else {
-      console.warn("[AIService] OPENROUTER_API_KEY is missing. Trying Gemini fallback.");
+    const openai = await getOpenAI();
+    if (!openai) {
+      console.warn("[AIService] API Key is missing (checked ENV and DB). Returning offline message.");
+      return "AI services are currently offline. Please ensure your API key is configured.";
     }
 
-    if (gemini) {
+    const doCall = async (m: string, timeoutMs: number): Promise<string> => {
+      // Translate OpenRouter model to Gemini model if using Gemini provider
+      if (currentProvider === "gemini") {
+        m = "gemini-2.5-flash";
+      }
+      
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
       try {
-        const modelClient = gemini.getGenerativeModel({
-          model: DEFAULT_GEMINI_MODEL,
-        });
-        const result = await modelClient.generateContent(
-          `${systemPrompt}\n\nUser request:\n${prompt}`
+        const completion = await openai.chat.completions.create(
+          {
+            model: m,
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: prompt },
+            ],
+            temperature: 0.7,
+          },
+          { signal: controller.signal as any }
         );
-        const text = result.response.text().trim();
-        if (text) return text;
+        return completion.choices[0]?.message?.content || "";
+      } finally {
+        clearTimeout(timer);
+      }
+    };
 
-        console.warn("[AIService] Gemini returned empty response");
-      } catch (error) {
-        console.error("[AIService] Gemini generation error:", error instanceof Error ? error.message : error);
+    try {
+      return await doCall(model, 15000);
+    } catch (firstErr: any) {
+      console.warn("[AIService] First attempt failed, retrying with fallback model:", firstErr?.message);
+      try {
+        // Retry once with the same model and a longer timeout
+        return await doCall(model, 20000);
+      } catch (retryErr: any) {
+        console.error("[AIService] Retry also failed:", retryErr?.message);
+        return `I'm having a bit of trouble thinking right now. Let's try again in a moment.`;
       }
     }
-
-    if (!openai && !gemini) {
-      return "AI services are currently offline. Please ensure your AI keys are configured.";
-    }
-
-    return "I'm having a bit of trouble thinking right now. Let's try again in a moment.";
   }
 
-  static async generateJSON<T>(
+  static async generateJSON(
     prompt: string,
-    schema?: T,
-    model: string = DEFAULT_OPENROUTER_MODEL
-  ): Promise<T> {
+    schema?: any,
+    model: string = DEFAULT_MODEL
+  ): Promise<any> {
     const systemPrompt = "You are a specialized assistant that returns ONLY valid JSON. No markdown, no commentary.";
 
     try {
       const text = await this.generateCompletion(prompt, systemPrompt, model);
+      // Clean potential markdown artifacts
       const cleaned = text.replace(/```json/g, "").replace(/```/g, "").trim();
-      return JSON.parse(cleaned) as T;
+      return JSON.parse(cleaned);
     } catch (error) {
       console.error("[AIService] JSON generation error:", error);
-      return (schema || { error: "Failed to generate valid JSON" }) as T;
+      // Fallback for JSON structure to prevent crashes
+      return schema || { error: "Failed to generate valid JSON" };
     }
   }
 }

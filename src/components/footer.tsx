@@ -3,10 +3,21 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { Mail, Globe, MessageCircle, ArrowRight, CheckCircle2, Loader2, Building2, MapPin } from "lucide-react";
+import {
+  Mail,
+  Globe,
+  MessageCircle,
+  ArrowRight,
+  CheckCircle2,
+  Loader2,
+  Building2,
+  MapPin,
+  Heart,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+import { showError, showSuccess, showUnknownError } from "@/lib/toast";
 
 const WHATSAPP_CHANNEL = "https://whatsapp.com/channel/0029Vb7GgdmHLHQfoNgSjo1P";
 const CONTACT_EMAIL = "edyfraplatform@gmail.com";
@@ -86,107 +97,161 @@ export function Footer() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        toast.error(data.error || "Something went wrong. Please try again.");
+        showError({
+          title: "Couldn't subscribe you",
+          cause: data.error || "The signup didn't go through.",
+          fix: "Double-check your email and try once more.",
+        });
         return;
       }
 
       setSubscribed(true);
       setEmail("");
-      toast.success("You are in. We will keep you posted.");
-    } catch {
-      toast.error("Something went wrong. Please try again.");
+      showSuccess("You're on the list", {
+        description: "We'll keep you posted with what we're building.",
+      });
+    } catch (err) {
+      showUnknownError(err, "Couldn't subscribe you");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <footer className="bg-background border-t border-border pt-24 pb-12 relative overflow-hidden">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+    <footer className="relative overflow-hidden bg-card/80 border-t border-border">
+      {/* Subtle background glow */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-40 left-1/4 h-[28rem] w-[28rem] rounded-full bg-primary/10 blur-[120px]" />
+        <div className="absolute -bottom-40 right-1/4 h-[28rem] w-[28rem] rounded-full bg-primary/5 blur-[120px]" />
+      </div>
 
-      <div className="container-max">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 mb-24">
-          <div className="space-y-2">
-            <h3 className="text-3xl font-black tracking-tightest">Keep your learning momentum close.</h3>
-            <p className="text-muted-foreground font-medium text-lg">Get product updates, tutor news, and institution rollout milestones in your inbox.</p>
-          </div>
-          <form onSubmit={handleSubscribe} className="flex flex-col w-full lg:w-auto gap-2">
-            <div className="flex w-full gap-2">
-              <Input
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setFieldError("");
-                }}
-                placeholder="Enter your email address"
-                type="email"
-                disabled={subscribed || loading}
-                className="h-14 rounded-2xl px-6 border-border bg-secondary min-w-[300px] focus-visible:ring-primary shadow-sm"
-              />
-              <Button
-                type="submit"
-                disabled={subscribed || loading}
-                size="icon"
-                className="h-14 w-14 rounded-2xl bg-foreground text-background hover:bg-foreground/90 shrink-0 transition-all active:scale-95"
-              >
-                {subscribed ? <CheckCircle2 className="h-6 w-6 text-emerald-500" /> : loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowRight className="h-6 w-6" />}
-              </Button>
+      <div className="relative container-max pt-20 pb-10">
+        {/* Newsletter card */}
+        <div className="relative mb-20 overflow-hidden rounded-2xl border border-border bg-background p-8 sm:p-12">
+          <div className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-primary/5 blur-3xl" />
+
+          <div className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
+            <div className="space-y-3 max-w-xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-[0.22em] text-primary">
+                <Sparkles className="h-3 w-3" />
+                Stay in the loop
+              </div>
+              <h3 className="text-3xl sm:text-4xl font-black tracking-tightest text-foreground">
+                Keep your learning momentum close.
+              </h3>
+              <p className="text-muted-foreground font-medium text-base sm:text-lg">
+                Product updates, tutor news, and institution rollout milestones in your inbox.
+              </p>
             </div>
-            {fieldError && (
-              <p className="text-xs text-red-500 font-medium px-1">{fieldError}</p>
-            )}
-          </form>
+            <form onSubmit={handleSubscribe} className="flex flex-col w-full lg:w-auto gap-2">
+              <div className="flex w-full gap-2">
+                <Input
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setFieldError("");
+                  }}
+                  placeholder="you@school.ac.ke"
+                  type="email"
+                  disabled={subscribed || loading}
+                  className="h-12 rounded-xl px-5 border-border bg-secondary text-foreground placeholder:text-muted-foreground min-w-[280px] focus-visible:ring-primary/30"
+                />
+                <Button
+                  type="submit"
+                  disabled={subscribed || loading}
+                  size="icon"
+                  className="h-12 w-12 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shrink-0 transition-all active:scale-95 shadow-lg shadow-primary/20"
+                >
+                  {subscribed ? (
+                    <CheckCircle2 className="h-5 w-5" />
+                  ) : loading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <ArrowRight className="h-5 w-5" />
+                  )}
+                </Button>
+              </div>
+              {fieldError && (
+                <p className="text-xs text-destructive font-medium px-1">{fieldError}</p>
+              )}
+            </form>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-12 mb-24">
-          <div className="col-span-2 lg:col-span-2 space-y-6">
+        {/* Link grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-10 mb-16">
+          {/* Brand column */}
+          <div className="col-span-2 lg:col-span-2 space-y-5">
             <Link href="/" className="flex items-center gap-2.5 group" aria-label="Edyfra Home">
-              <Image src="/image.png" alt="Edyfra Logo" width={36} height={36} className="w-9 h-9 rounded-xl shadow-lg object-cover" />
-              <span className="text-xl font-black tracking-tight text-foreground group-hover:text-primary transition-colors">
+              <span className="relative h-9 w-9 inline-flex items-center justify-center rounded-xl overflow-hidden shadow-lg ring-1 ring-border">
+                <Image src="/image.png" alt="Edyfra Logo" width={36} height={36} className="h-9 w-9 object-cover" />
+              </span>
+              <span className="text-lg font-black tracking-tight text-foreground group-hover:text-primary transition-colors">
                 Edyfra
               </span>
             </Link>
-            <p className="text-sm text-muted-foreground font-medium leading-relaxed max-w-[320px]">
+            <p className="text-sm text-muted-foreground font-medium leading-relaxed max-w-xs">
               Built in Nairobi for students, tutors, and institutions that want one calmer place to learn, teach, and track progress.
             </p>
-            <div className="space-y-3 text-xs font-bold uppercase tracking-[0.22em] text-muted-foreground">
+            <div className="space-y-2.5 text-xs font-semibold text-muted-foreground">
               <div className="flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-primary" />
+                <Building2 className="h-3.5 w-3.5 text-primary" />
                 <span>Students, tutors, and schools</span>
               </div>
               <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-primary" />
-                <span>{CONTACT_EMAIL}</span>
+                <Mail className="h-3.5 w-3.5 text-primary" />
+                <span className="break-all">{CONTACT_EMAIL}</span>
               </div>
               <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-primary" />
+                <MapPin className="h-3.5 w-3.5 text-primary" />
                 <span>Nairobi, Kenya</span>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <Link href={`mailto:${CONTACT_EMAIL}`} className="text-muted-foreground hover:text-primary transition-colors p-2 bg-secondary rounded-full" aria-label="Contact Edyfra via Email" title="Email Us">
+            <div className="flex items-center gap-2">
+              <Link
+                href={`mailto:${CONTACT_EMAIL}`}
+                className="text-muted-foreground hover:text-primary transition-colors p-2.5 bg-secondary hover:bg-primary/10 border border-border rounded-full"
+                aria-label="Contact Edyfra via Email"
+                title="Email Us"
+              >
                 <Mail className="h-4 w-4" />
               </Link>
-              <Link href={WHATSAPP_CHANNEL} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-emerald-500 transition-colors p-2 bg-secondary rounded-full" aria-label="Join Edyfra WhatsApp Channel" title="WhatsApp Channel">
+              <Link
+                href={WHATSAPP_CHANNEL}
+                target="_blank"
+                rel="noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors p-2.5 bg-secondary hover:bg-primary/10 border border-border rounded-full"
+                aria-label="Join Edyfra WhatsApp Channel"
+                title="WhatsApp Channel"
+              >
                 <MessageCircle className="h-4 w-4" />
               </Link>
-              <Link href="/institution" className="text-muted-foreground hover:text-primary transition-colors p-2 bg-secondary rounded-full" aria-label="Visit the institutions page" title="For Institutions">
+              <Link
+                href="/institution"
+                className="text-muted-foreground hover:text-primary transition-colors p-2.5 bg-secondary hover:bg-primary/10 border border-border rounded-full"
+                aria-label="Visit the institutions page"
+                title="For Institutions"
+              >
                 <Globe className="h-4 w-4" />
               </Link>
             </div>
           </div>
 
+          {/* Link sections */}
           {footerLinks.map((section) => (
-            <div key={section.title} className="space-y-6">
-              <h4 className="text-xs font-black uppercase tracking-widest text-foreground">{section.title}</h4>
-              <ul className="space-y-4">
+            <div key={section.title} className="space-y-4">
+              <h4 className="text-[10px] font-black uppercase tracking-[0.22em] text-primary">
+                {section.title}
+              </h4>
+              <ul className="space-y-2.5">
                 {section.links.map((link) => (
                   <li key={link.name}>
                     <Link
                       href={link.href}
                       target={link.external ? "_blank" : undefined}
                       rel={link.external ? "noreferrer" : undefined}
-                      className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+                      className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5 group"
                     >
                       {link.name}
                     </Link>
@@ -197,7 +262,21 @@ export function Footer() {
           ))}
         </div>
 
-
+        {/* Bottom bar */}
+        <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-5">
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+            <span>&copy; {new Date().getFullYear()} Edyfra Platforms.</span>
+            <span className="hidden sm:inline">&middot;</span>
+            <span>Built with</span>
+            <Heart className="h-3 w-3 text-destructive fill-destructive" />
+            <span>in Nairobi.</span>
+          </p>
+          <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+            <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+            <Link href="/institution" className="hover:text-foreground transition-colors">Institutions</Link>
+          </div>
+        </div>
       </div>
     </footer>
   );

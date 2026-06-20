@@ -1,5 +1,6 @@
 export function polyfillClipboard() {
   if (typeof navigator === "undefined") return;
+  if (navigator.clipboard) return; // real API exists — don't touch it
   try {
     Object.defineProperty(navigator, "clipboard", {
       value: {

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Star, CheckCircle, XCircle, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { showSuccess } from "@/lib/toast";
 
 export default function TestimonialsPage() {
   const router = useRouter();
@@ -36,25 +36,17 @@ export default function TestimonialsPage() {
   }, [router]);
 
   const handleApprove = async (id: string) => {
-    try {
-      const { approveTestimonial } = await import("@/app/actions/admin-content");
-      await approveTestimonial(id);
-      toast.success("Approved");
-      await load();
-    } catch {
-      toast.error("Failed to approve testimonial");
-    }
+    const { approveTestimonial } = await import("@/app/actions/admin-content");
+    await approveTestimonial(id);
+    showSuccess("Testimonial approved", { description: "It's now live on the homepage." });
+    await load();
   };
 
   const handleReject = async (id: string) => {
-    try {
-      const { rejectTestimonial } = await import("@/app/actions/admin-content");
-      await rejectTestimonial(id);
-      toast.success("Rejected");
-      await load();
-    } catch {
-      toast.error("Failed to reject testimonial");
-    }
+    const { rejectTestimonial } = await import("@/app/actions/admin-content");
+    await rejectTestimonial(id);
+    showSuccess("Testimonial rejected", { description: "It's been removed from the queue." });
+    await load();
   };
 
   if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;

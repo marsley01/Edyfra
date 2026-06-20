@@ -96,6 +96,7 @@ export default function MessagesPage() {
       <section className="flex-1 flex flex-col">
         {activeChannel && currentUser ? (
           <StreamChatRoom
+            key={activeChannel}
             channelId={activeChannel}
             userId={currentUser.id}
             userName={currentUser.name || "User"}

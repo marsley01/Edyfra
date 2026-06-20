@@ -1,4 +1,14 @@
-import { AIService } from "@/utils/ai-service";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+function getGoogleApiKey(): string {
+  const key = process.env.GOOGLE_AI_KEY;
+  if (!key) {
+    throw new Error("GOOGLE_AI_KEY is not defined. Please set it in your environment variables.");
+  }
+  return key;
+}
+
+const genAI = new GoogleGenerativeAI(getGoogleApiKey());
 
 export const AVAILABLE_MODELS = [
   { id: "google/gemini-2.0-flash-lite", label: "Gemini 2.0 Flash Lite", costPer1K: 0 },
@@ -18,12 +28,23 @@ export async function generateAIResponse(
   subject?: string,
   topic?: string
 ): Promise<string> {
-  const systemPrompt = `You are an expert tutor assistant on the Edyfra platform.
+  const { AIService } = await import("@/utils/ai-service");
+  
+  const systemPrompt = `You are an expert tutor assistant on the Edyfra platform. 
 Subject context: ${subject || "general"}
 Topic context: ${topic || "general"}
 
 Provide clear, educational responses appropriate for the academic level.
 Use simple language and include examples where helpful.`;
 
-  return AIService.generateCompletion(prompt, systemPrompt);
+  try {
+    const response = await AIService.generateCompletion(prompt, systemPrompt);
+    if (response && !response.includes("having a bit of trouble thinking")) {
+      return response;
+    }
+    throw new Error(response || "Empty response from AI");
+  } catch (error) {
+    console.error("AI generation failed:", error);
+    throw error instanceof Error ? error : new Error("AI generation failed");
+  }
 }

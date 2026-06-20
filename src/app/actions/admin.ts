@@ -154,6 +154,48 @@ export async function deleteUser(userId: string) {
   }
 }
 
+export async function deleteUsersBatch(userIds: string[]) {
+  try {
+    const supabase = await createClient();
+    const { data: { user: admin } } = await supabase.auth.getUser();
+    if (!admin) return { error: "Unauthorized" };
+
+    const adminCheck = await isAdmin();
+    if (!adminCheck) return { error: "Unauthorized: Admin access required" };
+
+    // Prevent deleting self
+    const idsToDelete = userIds.filter(id => id !== admin.id);
+    if (idsToDelete.length === 0) return { error: "No valid users to delete" };
+
+    // 1. Delete from Prisma
+    await prisma.user.deleteMany({ where: { id: { in: idsToDelete } } });
+
+    // 2. Try to delete from Supabase Auth
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (serviceRoleKey) {
+      try {
+        const { createClient: createAdminClient } = await import("@supabase/supabase-js");
+        const adminClient = createAdminClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          serviceRoleKey,
+          { auth: { autoRefreshToken: false, persistSession: false } }
+        );
+        for (const id of idsToDelete) {
+          await adminClient.auth.admin.deleteUser(id);
+        }
+      } catch (supabaseError) {
+        console.error("Failed to batch delete from Supabase Auth:", supabaseError);
+      }
+    }
+
+    revalidatePath("/admin/users");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error in deleteUsersBatch:", error);
+    return { error: error.message || "Failed to delete users" };
+  }
+}
+
 export async function updateUserRoleAdmin(userId: string, role: Role) {
   try {
     const supabase = await createClient();
@@ -323,6 +365,32 @@ export async function closeSession(sessionId: string) {
   } catch (error: any) {
     console.error("Error in closeSession:", error);
     return { error: error.message || "Failed to close session" };
+  }
+}
+
+export async function closeSessionsBatch(sessionIds: string[]) {
+  try {
+    const supabase = await createClient();
+    const { data: { user: admin } } = await supabase.auth.getUser();
+    
+    if (!admin || !(await isAdmin())) {
+      return { error: "Unauthorized: Admin access required" };
+    }
+
+    if (sessionIds.length === 0) return { error: "No sessions selected" };
+
+    await prisma.session.updateMany({
+      where: { id: { in: sessionIds } },
+      data: { 
+        status: "COMPLETED",
+        endedAt: new Date()
+      }
+    });
+    revalidatePath("/admin/sessions");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error in closeSessionsBatch:", error);
+    return { error: error.message || "Failed to close sessions" };
   }
 }
 

@@ -12,6 +12,8 @@ const APP_ROUTES = [
   "/tutor",
   "/institution/dashboard",
   "/institution/login",
+  "/institutions/login",
+  "/institutions/signup",
   "/study-room",
   "/onboarding",
   "/login",

@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { EduLevel } from "@/generated/client";
+import { EduLevel } from "@prisma/client";
 import { generateAIResponse } from "@/utils/openrouter";
 import { SESSION_CONFIG, CHALLENGE_CONFIG } from "@/lib/config";
 import { recalibrateTier } from "./user";
@@ -25,6 +25,90 @@ interface GeneratedChallenge {
   explanation: string;
   date?: string;
 }
+
+/* ── Static fallback challenges (AI-free backup) ── */
+const STATIC_CHALLENGES: GeneratedChallenge[] = [
+  {
+    subject: "Mathematics",
+    level: "HIGH_SCHOOL",
+    question: "If a student scores 80% on a 20-question exam, how many questions did they answer correctly?",
+    options: ["14", "15", "16", "18"],
+    answer: "16",
+    explanation: "80% of 20 is 0.8 × 20 = 16 questions correct.",
+  },
+  {
+    subject: "Mathematics",
+    level: "HIGH_SCHOOL",
+    question: "What is the next number in the sequence: 2, 6, 18, 54, ___?",
+    options: ["108", "162", "72", "90"],
+    answer: "162",
+    explanation: "Each term is multiplied by 3: 54 × 3 = 162.",
+  },
+  {
+    subject: "Physics",
+    level: "HIGH_SCHOOL",
+    question: "Which of the following is NOT a unit of energy?",
+    options: ["Joule", "Watt", "Calorie", "Kilowatt-hour"],
+    answer: "Watt",
+    explanation: "Watt (W) is a unit of power, not energy. Power is energy per unit time (J/s).",
+  },
+  {
+    subject: "Chemistry",
+    level: "HIGH_SCHOOL",
+    question: "What is the chemical symbol for the element Gold?",
+    options: ["Go", "Gd", "Au", "Ag"],
+    answer: "Au",
+    explanation: "Gold's symbol Au comes from the Latin word 'aurum' meaning 'shining dawn'.",
+  },
+  {
+    subject: "Biology",
+    level: "HIGH_SCHOOL",
+    question: "Which organ in the human body is primarily responsible for filtering blood?",
+    options: ["Liver", "Kidneys", "Heart", "Lungs"],
+    answer: "Kidneys",
+    explanation: "The kidneys filter waste products and excess substances from the blood to produce urine.",
+  },
+  {
+    subject: "English",
+    level: "HIGH_SCHOOL",
+    question: "Identify the figure of speech: 'The classroom was a zoo during the teacher's absence.'",
+    options: ["Simile", "Metaphor", "Alliteration", "Personification"],
+    answer: "Metaphor",
+    explanation: "A metaphor directly compares the classroom to a zoo without using 'like' or 'as'.",
+  },
+  {
+    subject: "Mathematics",
+    level: "UNIVERSITY",
+    question: "∫(3x² + 2x + 1)dx evaluated from x=0 to x=2 equals:",
+    options: ["10", "14", "8", "12"],
+    answer: "14",
+    explanation: "∫(3x²+2x+1)dx = x³ + x² + x |₀² = (8 + 4 + 2) − (0) = 14.",
+  },
+  {
+    subject: "Geography",
+    level: "HIGH_SCHOOL",
+    question: "Which is the highest mountain in Africa?",
+    options: ["Mount Kenya", "Kilimanjaro", "Rwenzori Mountains", "Mount Meru"],
+    answer: "Kilimanjaro",
+    explanation: "Mount Kilimanjaro in Tanzania stands at 5,895 m (19,341 ft), making it Africa's tallest peak.",
+  },
+  {
+    subject: "History",
+    level: "HIGH_SCHOOL",
+    question: "The Berlin Conference of 1884–85 is historically significant because it:",
+    options: ["Ended World War I", "Partitioned Africa among European powers", "Formed the United Nations", "Abolished the slave trade"],
+    answer: "Partitioned Africa among European powers",
+    explanation: "European nations divided Africa into colonies at the Berlin Conference without any African representation.",
+  },
+  {
+    subject: "Kiswahili",
+    level: "HIGH_SCHOOL",
+    question: "Neno 'Kiswahili' linamaanisha nini?",
+    options: ["Lugha ya mwambao", "Lugha ya wavuvi", "Lugha ya wenyeji", "Lugha ya wafugaji"],
+    answer: "Lugha ya mwambao",
+    explanation: "'Kiswahili' linatokana na neno Arab 'Sahil' linalomaanisha 'pwani' — lugha ya watu wa pwani ya Afrika Mashariki.",
+  },
+];
 
 function normalizeOptions(raw: unknown): string[] {
   if (!Array.isArray(raw)) return [];
@@ -169,6 +253,31 @@ Make the questions:
   }
 }
 
+async function seedStaticChallenge(level: string, subject?: string) {
+  const pool = subject
+    ? STATIC_CHALLENGES.filter(c => c.subject === subject && c.level === level)
+    : STATIC_CHALLENGES.filter(c => c.level === level);
+
+  const pick = pool.length > 0
+    ? pool[Math.floor(Math.random() * pool.length)]
+    : STATIC_CHALLENGES[Math.floor(Math.random() * STATIC_CHALLENGES.length)];
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return prisma.dailyChallenge.create({
+    data: {
+      subject: pick.subject,
+      level: level as EduLevel,
+      question: pick.question,
+      options: pick.options,
+      answer: pick.answer,
+      explanation: pick.explanation,
+      date: today,
+    },
+  });
+}
+
 export async function getOrCreateDailyChallenge(level: string, subject?: string) {
   try {
     const today = new Date();
@@ -189,15 +298,23 @@ export async function getOrCreateDailyChallenge(level: string, subject?: string)
     const subjects = subject ? [subject] : CHALLENGE_CONFIG.SEED_SUBJECTS;
     const randomSubject = subjects[Math.floor(Math.random() * subjects.length)];
 
-    const challenges = await generateChallenges({
-      level,
-      subject: randomSubject,
-      count: 1,
-      scheduledDate: today.toISOString(),
-    });
+    try {
+      const challenges = await generateChallenges({
+        level,
+        subject: randomSubject,
+        count: 1,
+        scheduledDate: today.toISOString(),
+      });
 
-    if (challenges.length === 0 || !challenges[0].id) throw new Error("Failed to generate challenge");
-    return prisma.dailyChallenge.findUnique({ where: { id: challenges[0].id } });
+      if (challenges.length > 0 && challenges[0].id) {
+        return prisma.dailyChallenge.findUnique({ where: { id: challenges[0].id } });
+      }
+    } catch (aiErr) {
+      console.warn("[getOrCreateDailyChallenge] AI generation failed, using static fallback:", aiErr);
+    }
+
+    // Fallback: static challenge when AI is unavailable
+    return await seedStaticChallenge(level, subject);
   } catch (error) {
     console.error("Error getting/creating daily challenge:", error);
     return null;

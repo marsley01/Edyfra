@@ -12,7 +12,7 @@ import {
   CheckCircle2, XCircle, AlertTriangle, BookOpen, ChevronDown,
   Flag, ArrowUpRight
 } from "lucide-react";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -51,7 +51,11 @@ export default function AdminBookingsPage() {
       const data = await getAdminBookings(filter);
       setBookings(data as any[]);
     } catch {
-      toast.error("Failed to load bookings");
+      showError({
+        title: "We couldn't load bookings",
+        cause: "A hiccup on our side blocked the load.",
+        fix: "Try again, or refresh the page.",
+      });
     } finally {
       setLoading(false);
     }
@@ -75,32 +79,32 @@ export default function AdminBookingsPage() {
 
   const handleConfirm = async (id: string) => {
     setActionLoading(id + "-confirm");
-    try {
-      const res = await adminConfirmBooking(id);
-      if ((res as any).success) {
-        toast.success("Booking confirmed");
-        fetchBookings(activeFilter);
-      } else {
-        toast.error((res as any).error || "Failed");
-      }
-    } catch {
-      toast.error("Failed to confirm booking");
+    const res = await adminConfirmBooking(id);
+    if ((res as any).success) {
+      showSuccess("Booking confirmed", { description: "Both the tutor and student have been notified." });
+      fetchBookings(activeFilter);
+    } else {
+      showError({
+        title: "We couldn't confirm that booking",
+        cause: (res as any).error || "Something didn't go through on our side.",
+        fix: "Try again, or refresh the page.",
+      });
     }
     setActionLoading(null);
   };
 
   const handleCancel = async (id: string) => {
     setActionLoading(id + "-cancel");
-    try {
-      const res = await adminCancelBooking(id, "Admin override");
-      if ((res as any).success) {
-        toast.success("Booking cancelled");
-        fetchBookings(activeFilter);
-      } else {
-        toast.error((res as any).error || "Failed");
-      }
-    } catch {
-      toast.error("Failed to cancel booking");
+    const res = await adminCancelBooking(id, "Admin override");
+    if ((res as any).success) {
+      showSuccess("Booking cancelled", { description: "Both the tutor and student have been notified." });
+      fetchBookings(activeFilter);
+    } else {
+      showError({
+        title: "We couldn't cancel that booking",
+        cause: (res as any).error || "Something didn't go through on our side.",
+        fix: "Try again, or refresh the page.",
+      });
     }
     setActionLoading(null);
   };

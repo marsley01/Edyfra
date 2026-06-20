@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { ArrowRight, BookOpen, BrainCircuit, HeartHandshake, Sparkles } from "lucide-react";
+import { InitialAvatar } from "@/components/ui/InitialAvatar";
 
 const principles = [
   {
@@ -136,9 +137,7 @@ export default function AboutPage() {
           <div className="rounded-[3rem] bg-foreground text-background p-10 md:p-14 space-y-8 overflow-hidden relative">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.14),transparent_40%)] pointer-events-none" />
             <div className="relative space-y-6">
-              <div className="flex h-20 w-20 items-center justify-center rounded-[2rem] bg-background/10 text-3xl font-black text-primary">
-                M
-              </div>
+              <InitialAvatar name="Mash" size={80} />
               <div className="space-y-3">
                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Founder</p>
                 <h3 className="text-3xl md:text-4xl font-black tracking-tight text-background">Mash</h3>

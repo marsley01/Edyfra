@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Users, Star, Wallet, Clock, ArrowRight, Loader2, BookOpen, Sparkles, ShieldCheck, Calendar as CalendarIcon, Video } from "lucide-react";
 import { getTutorProfile, toggleTutorStatus, getTutorSessions } from "@/app/actions/tutor";
 import { getUserData } from "@/app/actions/user";
-import { toast } from "sonner";
+import { showError, showSuccess, showInfo } from "@/lib/toast";
+import { getTimeGreeting } from "@/lib/greeting";
 import { useRouter } from "next/navigation";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
 import { IncomingRequests } from "@/components/tutor/IncomingRequests";
@@ -70,16 +71,24 @@ export function OverviewTab() {
     try {
       await toggleTutorStatus(checked);
       setIsOnline(checked);
-      toast.success(checked ? "You're now live! Students can see you." : "You've gone offline.");
+      showSuccess(checked ? "You're live!" : "You're offline", {
+        description: checked
+          ? "Students can find and book you now."
+          : "Students won't see you until you toggle back.",
+      });
     } catch {
-      toast.error("Couldn't update status.");
+      showError({
+        title: "Couldn't update your status",
+        cause: "We couldn't save your online/offline toggle.",
+        fix: "Try again — the page will retry automatically.",
+      });
     } finally {
       setToggling(false);
     }
   };
 
   const handleJoinRoom = (roomId: string) => {
-    toast.success("Joining room...");
+    showInfo("Joining the room", { description: "Setting up your camera and mic." });
     router.push(`/study-room/${roomId}`);
   };
 
@@ -102,6 +111,11 @@ export function OverviewTab() {
     <div className="space-y-12 animate-in fade-in duration-700 font-sans p-2">
       {/* Premium Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+        <div className="space-y-2">
+          <h1 className="text-4xl md:text-5xl font-black tracking-tightest">{(() => { const g = getTimeGreeting(tutorName); return `${g.text}${g.key === "late" ? "?" : "."} ${g.emoji}`; })()}</h1>
+          <p className="text-muted-foreground text-lg font-medium">Here is your upcoming teaching schedule.</p>
+        </div>
+
         <div className={`flex items-center gap-6 px-8 py-5 rounded-[2rem] border-2 transition-all duration-500 shadow-xl ${isOnline ? "border-primary bg-primary/5 shadow-primary/5" : "border-border bg-secondary"}`}>
           <div className="flex items-center gap-4">
             <div className={`w-3 h-3 rounded-full ${isOnline ? "bg-emerald-500 animate-pulse shadow-[0_0_12px_rgba(16,185,129,0.5)]" : "bg-muted-foreground"}`} />
@@ -198,7 +212,7 @@ export function OverviewTab() {
                         <span className="text-sm font-black text-foreground">{session.status === "ACTIVE" ? "In Progress" : "Upcoming"}</span>
                       </div>
                       <Button 
-                        onClick={() => handleJoinRoom(session.roomId)}
+                        onClick={() => handleJoinRoom(session.id)}
                         className={`w-full sm:w-auto h-16 px-10 rounded-[1.8rem] font-black text-xs tracking-[0.2em] uppercase shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3 ${
                           session.status === "ACTIVE" 
                             ? "bg-emerald-500 hover:bg-emerald-600 text-white" 

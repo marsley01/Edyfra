@@ -6,7 +6,7 @@ import { Bell, Mail, User, Calendar, Check, Trash2, Send, AlertTriangle } from "
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
-import { toast } from "sonner";
+import { showSuccess } from "@/lib/toast";
 import { useState } from "react";
 
 export function AdminNotificationsClient({
@@ -28,11 +28,11 @@ export function AdminNotificationsClient({
   const readCount = notifications.filter(n => n.read).length;
 
   const handleMarkAllRead = async () => {
-    toast.success("All notifications marked as read");
+    showSuccess("All caught up", { description: "Every notification is marked as read." });
   };
 
   const handleClearAll = async () => {
-    toast.success("All notifications cleared");
+    showSuccess("Notifications cleared", { description: "The list is now empty." });
   };
 
   return (

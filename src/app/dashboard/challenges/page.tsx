@@ -8,7 +8,7 @@ import {
   Trophy, CheckCircle2, XCircle, ChevronRight,
   Loader2, Info, Sparkles, RotateCcw, ArrowRight,
 } from "lucide-react";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { motion } from "framer-motion";
 import { getUserData } from "@/app/actions/user";
 import {
@@ -66,7 +66,7 @@ export default function ChallengesPage() {
       resetChallengeState();
     } catch (err) {
       console.error("Failed to load challenges:", err);
-      toast.error("Failed to load challenges");
+      showError({ title: "We couldn't load the challenges", cause: "Something hiccuped on our side.", fix: "Refresh the page in a moment." });
     } finally {
       setLoading(false);
       setGenerating(false);
@@ -89,7 +89,7 @@ export default function ChallengesPage() {
 
     const user = await getUserData();
     if (!user) {
-      toast.error("Please sign in");
+      showError({ title: "You need to sign in for that", cause: "We don't have a session for you right now.", fix: "Sign in and try again." });
       return;
     }
 
@@ -101,14 +101,14 @@ export default function ChallengesPage() {
       await saveChallengeAttempt(user.id, currentChallenge.id, evaluation.correct);
 
       if (evaluation.correct) {
-        toast.success("Correct! Points awarded.");
+        showSuccess("Correct! Points awarded.", { description: "Nice — that's logged on your profile." });
       } else {
-        toast.error("Not quite — review the explanation below.");
+        showError({ title: "Not quite — but close", cause: "Your answer didn't match the correct one.", fix: "Read the explanation below and try the next one." });
       }
       await fetchChallenges();
     } catch (err) {
       console.error("Failed to submit challenge:", err);
-      toast.error("Failed to evaluate answer");
+      showError({ title: "We couldn't grade that one", cause: "Our checker didn't respond.", fix: "Try again — your progress is saved." });
       setSubmitted(false);
     }
   };
