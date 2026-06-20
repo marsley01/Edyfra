@@ -1,12 +1,26 @@
 import axios from "axios";
 
-const MPESA_CONSUMER_KEY = process.env.MPESA_CONSUMER_KEY;
-const MPESA_CONSUMER_SECRET = process.env.MPESA_CONSUMER_SECRET;
-const MPESA_SHORTCODE = process.env.MPESA_SHORTCODE;
-const MPESA_PASSKEY = process.env.MPESA_PASSKEY;
-const MPESA_CALLBACK_URL = process.env.MPESA_CALLBACK_URL;
+function getMpesaConfig() {
+  const config = {
+    consumerKey: process.env.MPESA_CONSUMER_KEY,
+    consumerSecret: process.env.MPESA_CONSUMER_SECRET,
+    shortcode: process.env.MPESA_SHORTCODE,
+    passkey: process.env.MPESA_PASSKEY,
+    callbackUrl: process.env.MPESA_CALLBACK_URL,
+  };
 
-const IS_SANDBOX = true; // Set to false for production Safaricom API
+  const missing = Object.entries(config)
+    .filter(([_, value]) => !value)
+    .map(([key]) => key);
+
+  if (missing.length > 0) {
+    throw new Error(`Missing M-Pesa environment variables: ${missing.join(", ")}`);
+  }
+
+  return config;
+}
+
+const IS_SANDBOX = true;
 
 const BASE_URL = IS_SANDBOX 
   ? "https://sandbox.safaricom.co.ke" 
@@ -16,7 +30,8 @@ const BASE_URL = IS_SANDBOX
  * Get Safaricom Access Token
  */
 export async function getMpesaToken() {
-  const auth = Buffer.from(`${MPESA_CONSUMER_KEY}:${MPESA_CONSUMER_SECRET}`).toString("base64");
+  const cfg = getMpesaConfig();
+  const auth = Buffer.from(`${cfg.consumerKey}:${cfg.consumerSecret}`).toString("base64");
   
   try {
     const { data } = await axios.get(
@@ -48,10 +63,11 @@ export async function initiateStkPush({
   reference: string;
   description: string;
 }) {
+  const cfg = getMpesaConfig();
   const token = await getMpesaToken();
   const timestamp = new Date().toISOString().replace(/[-:T.Z]/g, "").slice(0, 14);
   const password = Buffer.from(
-    `${MPESA_SHORTCODE}${MPESA_PASSKEY}${timestamp}`
+    `${cfg.shortcode}${cfg.passkey}${timestamp}`
   ).toString("base64");
 
   // Format phone: must be 2547XXXXXXXX
@@ -64,15 +80,15 @@ export async function initiateStkPush({
     const { data } = await axios.post(
       `${BASE_URL}/mpesa/stkpush/v1/processrequest`,
       {
-        BusinessShortCode: MPESA_SHORTCODE,
+        BusinessShortCode: cfg.shortcode,
         Password: password,
         Timestamp: timestamp,
         TransactionType: "CustomerPayBillOnline",
         Amount: Math.round(amount),
         PartyA: formattedPhone,
-        PartyB: MPESA_SHORTCODE,
+        PartyB: cfg.shortcode,
         PhoneNumber: formattedPhone,
-        CallBackURL: MPESA_CALLBACK_URL,
+        CallBackURL: cfg.callbackUrl,
         AccountReference: reference,
         TransactionDesc: description,
       },
@@ -103,6 +119,7 @@ export async function initiateB2CPayout({
   reference: string;
   remarks: string;
 }) {
+  const cfg = getMpesaConfig();
   const token = await getMpesaToken();
   
   // Format phone
@@ -118,11 +135,11 @@ export async function initiateB2CPayout({
         SecurityCredential: "YOUR_ENCRYPTED_PASSWORD", // Needs Safaricom certificate encryption
         CommandID: "BusinessPayment", // or SalaryPayment
         Amount: Math.round(amount),
-        PartyA: MPESA_SHORTCODE,
+        PartyA: cfg.shortcode,
         PartyB: formattedPhone,
         Remarks: remarks,
-        QueueTimeOutURL: `${MPESA_CALLBACK_URL}/timeout`,
-        ResultURL: `${MPESA_CALLBACK_URL}/b2c`,
+        QueueTimeOutURL: `${cfg.callbackUrl}/timeout`,
+        ResultURL: `${cfg.callbackUrl}/b2c`,
         Occasion: reference,
       },
       {

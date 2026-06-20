@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle, Loader2, FileText, ExternalLink, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
 export default function AdminResourcesPage() {
@@ -20,7 +20,11 @@ export default function AdminResourcesPage() {
       const data = pendingOnly ? await getPendingResources() : await getAllResources();
       setResources(data);
     } catch {
-      toast.error("Failed to load resources");
+      showError({
+        title: "We couldn't load resources",
+        cause: "A hiccup on our side blocked the load.",
+        fix: "Try again, or refresh the page.",
+      });
     } finally {
       setLoading(false);
     }
@@ -32,10 +36,14 @@ export default function AdminResourcesPage() {
     const { approveResource } = await import("@/app/actions/admin");
     const result = await approveResource(id);
     if (result.success) {
-      toast.success("Resource approved");
+      showSuccess("Resource approved", { description: "It's now visible in the library." });
       setResources((prev) => prev.filter((r) => r.id !== id));
     } else {
-      toast.error(result.error || "Failed to approve");
+      showError({
+        title: "We couldn't approve that resource",
+        cause: result.error || "Something didn't go through on our side.",
+        fix: "Try again, or refresh the page.",
+      });
     }
   };
 
@@ -43,10 +51,14 @@ export default function AdminResourcesPage() {
     const { rejectResource } = await import("@/app/actions/admin");
     const result = await rejectResource(id);
     if (result.success) {
-      toast.success("Resource rejected");
+      showSuccess("Resource rejected", { description: "It's been removed from the queue." });
       setResources((prev) => prev.filter((r) => r.id !== id));
     } else {
-      toast.error(result.error || "Failed to reject");
+      showError({
+        title: "We couldn't reject that resource",
+        cause: result.error || "Something didn't go through on our side.",
+        fix: "Try again, or refresh the page.",
+      });
     }
   };
 
@@ -55,10 +67,14 @@ export default function AdminResourcesPage() {
     const { deleteResource } = await import("@/app/actions/admin-content");
     const result = await deleteResource(id);
     if (result.success) {
-      toast.success("Resource deleted");
+      showSuccess("Resource deleted", { description: "It's been removed from the library." });
       setResources((prev) => prev.filter((r) => r.id !== id));
     } else {
-      toast.error(result.error || "Failed to delete resource");
+      showError({
+        title: "We couldn't delete that resource",
+        cause: result.error || "Something didn't go through on our side.",
+        fix: "Try again, or refresh the page.",
+      });
     }
   };
 

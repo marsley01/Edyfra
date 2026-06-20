@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { getPosts, createPost, likePost } from "@/app/actions/feed";
 import { createClient } from "@/utils/supabase/client";
-import { toast } from "sonner";
+import { showError, showSuccess, showUnknownError } from "@/lib/toast";
 import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -36,10 +36,16 @@ interface Post {
   comments: any[];
 }
 
+import { useSearchParams } from "next/navigation";
+
 export default function FeedPage() {
+  const searchParams = useSearchParams();
+  const initialTopic = searchParams.get("topic") || null;
+
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
+  const [topic, setTopic] = useState<string | null>(initialTopic);
   const [newPostContent, setNewPostContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -54,7 +60,7 @@ export default function FeedPage() {
     init();
     loadPosts();
     fetchTechNews();
-  }, [filter]);
+  }, [filter, topic]);
 
   const fetchTechNews = async () => {
     try {
@@ -69,7 +75,7 @@ export default function FeedPage() {
    const loadPosts = async () => {
       setLoading(true);
       try {
-        const data = await getPosts(filter);
+        const data = await getPosts(filter, topic);
        // Map Prisma types to client-side Post interface
        const mappedData = data.map(post => ({
          id: post.id,
@@ -87,10 +93,14 @@ export default function FeedPage() {
          comments: post.comments
        }));
        setPosts(mappedData);
-     } catch (error: any) {
-       console.error("Failed to load feed:", error);
-       toast.error(error?.message || "Failed to load feed. Please try again.");
-     } finally {
+      } catch (error: any) {
+        console.error("Failed to load feed:", error);
+        showError({
+          title: "We couldn't load the feed",
+          cause: error?.message || "Something didn't reach us on our side.",
+          fix: "Pull to refresh, or check your connection and try again.",
+        });
+      } finally {
        setLoading(false);
      }
    };
@@ -99,12 +109,20 @@ export default function FeedPage() {
     if (!newPostContent.trim()) return;
     setIsSubmitting(true);
     try {
-      await createPost(newPostContent);
-      setNewPostContent("");
-      toast.success("Shared with the community!");
-      loadPosts();
-    } catch (error) {
-      toast.error("Failed to share post");
+      const result = await createPost(newPostContent, topic || undefined);
+      if (result.success) {
+        setNewPostContent("");
+        showSuccess("Shared with the community!", { description: "Your post is live for everyone to see." });
+        loadPosts();
+      } else {
+        showError({
+          title: "We couldn't share that post",
+          cause: result.error || "Something didn't go through.",
+          fix: "Check your post and try again.",
+        });
+      }
+    } catch {
+      showError({ title: "We couldn't share that post", cause: "Something hiccuped on our side.", fix: "Check your post and try again." });
     } finally {
       setIsSubmitting(false);
     }
@@ -131,7 +149,11 @@ export default function FeedPage() {
     try {
       await likePost(postId);
     } catch {
-      toast.error("Failed to like post");
+      showError({
+        title: "We couldn't save that like",
+        cause: "A hiccup on our side blocked the reaction.",
+        fix: "Tap the like button again in a moment.",
+      });
       loadPosts(); // Revert on failure
     }
   };
@@ -159,7 +181,16 @@ export default function FeedPage() {
          {/* Header & Filters */}
          <div className="space-y-4">
             <div className="flex items-center justify-between">
-               <h1 className="text-2xl lg:text-3xl font-black tracking-tighter">Community <span className="text-primary">Feed</span></h1>
+               <h1 className="text-2xl lg:text-3xl font-black tracking-tighter">
+                 {topic ? (
+                   <span className="flex items-center gap-2">
+                     <span className="text-primary">{topic}</span> Discussion
+                     <Button variant="ghost" size="sm" onClick={() => setTopic(null)} className="h-6 px-2 text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground">Clear</Button>
+                   </span>
+                 ) : (
+                   <>Community <span className="text-primary">Feed</span></>
+                 )}
+               </h1>
                <div className="flex bg-secondary p-1 rounded-xl gap-1">
                   {["all", "following", "school"].map((f) => (
                      <button

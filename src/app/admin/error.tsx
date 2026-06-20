@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+
 export default function AdminError({
   error,
   reset,
@@ -7,6 +9,10 @@ export default function AdminError({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  useEffect(() => {
+    console.error("[Admin Dashboard Error]", error);
+  }, [error]);
+
   return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center p-6">
       <div className="max-w-md w-full space-y-6 text-center">
@@ -21,8 +27,9 @@ export default function AdminError({
             An unexpected error occurred in the Admin Dashboard.
           </p>
           {process.env.NODE_ENV === "development" && (
-            <pre className="mt-4 p-4 bg-white/5 rounded-xl text-left text-xs text-muted-foreground overflow-auto border border-white/5">
+            <pre className="mt-4 p-4 bg-white/5 rounded-xl text-left text-xs text-muted-foreground overflow-auto border border-white/5 max-h-48">
               {error.message}
+              {error.digest && `\n\nDigest: ${error.digest}`}
             </pre>
           )}
         </div>
@@ -32,6 +39,12 @@ export default function AdminError({
         >
           Reinitialize System
         </button>
+        <a
+          href="/dashboard"
+          className="block w-full h-12 rounded-2xl bg-white/5 text-white/60 hover:text-white font-bold tracking-widest uppercase text-xs border border-white/5 hover:border-white/10 transition-all flex items-center justify-center"
+        >
+          Go to Dashboard
+        </a>
         <p className="text-[10px] text-muted-foreground/60 font-black uppercase tracking-widest">
           If the problem persists, check server logs or database connectivity.
         </p>
@@ -39,3 +52,4 @@ export default function AdminError({
     </div>
   );
 }
+

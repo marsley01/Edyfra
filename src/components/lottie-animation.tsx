@@ -4,19 +4,31 @@ import { useEffect, useState } from "react";
 import Lottie from "lottie-react";
 
 interface LottieAnimationProps {
+  /** Inline JSON data (recommended for above-the-fold content). */
   animationData?: unknown;
+  /** URL to a JSON file. Will be fetched on mount. */
   url?: string;
   className?: string;
   loop?: boolean;
+  autoplay?: boolean;
+  /** Render style for accessibility. */
+  ariaLabel?: string;
 }
 
-export function LottieAnimation({ animationData, url, className, loop = true }: LottieAnimationProps) {
+export function LottieAnimation({
+  animationData,
+  url,
+  className,
+  loop = true,
+  autoplay = true,
+  ariaLabel,
+}: LottieAnimationProps) {
   const [data, setData] = useState<unknown>(animationData);
-  const [loading, setLoading] = useState(!!url);
+  const [loading, setLoading] = useState(!!url && !animationData);
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    if (!url) {
+    if (!url || animationData) {
       setLoading(false);
       return;
     }
@@ -26,20 +38,18 @@ export function LottieAnimation({ animationData, url, className, loop = true }: 
     setHasError(false);
 
     fetch(url)
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
-      .then(json => {
+      .then((json) => {
         if (mounted) {
           setData(json);
           setLoading(false);
         }
       })
-      .catch(err => {
-        console.error("Lottie fetch error:", err);
+      .catch((err) => {
+        console.error("[LottieAnimation] fetch failed:", url, err);
         if (mounted) {
           setHasError(true);
           setLoading(false);
@@ -49,29 +59,24 @@ export function LottieAnimation({ animationData, url, className, loop = true }: 
     return () => {
       mounted = false;
     };
-  }, [url]);
+  }, [url, animationData]);
 
-  // If we have static animationData, render it immediately (SSR-friendly)
-  if (animationData && !url) {
-    return (
-      <Lottie 
-        animationData={animationData} 
-        className={className} 
-        loop={loop} 
-      />
-    );
+  if (loading) {
+    return <div className={className} aria-label={ariaLabel} aria-busy="true" />;
   }
 
-  // Show empty div while loading or if there's an error
-  if (loading || hasError || !data) {
-    return <div className={className} />;
+  if (hasError || !data) {
+    // Fail silently — caller can render their own fallback alongside.
+    return <div className={className} aria-label={ariaLabel} aria-hidden="true" />;
   }
 
   return (
-    <Lottie 
-      animationData={data} 
-      className={className} 
-      loop={loop} 
+    <Lottie
+      animationData={data}
+      className={className}
+      loop={loop}
+      autoplay={autoplay}
+      aria-label={ariaLabel}
     />
   );
 }

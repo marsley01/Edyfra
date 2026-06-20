@@ -11,7 +11,7 @@ import {
   Loader2, Zap, Filter
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
-import { toast } from "sonner";
+import { showError, showSuccess, showInfo, showUnknownError } from "@/lib/toast";
 import { acceptMatchRequest, getTutorProfile } from "@/app/actions/tutor";
 
 interface MatchRequest {
@@ -53,7 +53,7 @@ export default function TutorRequestsPage() {
                   if (prev.find(r => r.id === newReq.id)) return prev;
                   return [newReq, ...prev];
                 });
-                toast.info(`New ${newReq?.subject} request detected!`);
+                showInfo(`New ${newReq?.subject} request`, { description: "A student is waiting for a tutor." });
               }
             }
           }
@@ -91,7 +91,7 @@ export default function TutorRequestsPage() {
               if (prev.find(r => r.id === newReq.id)) return prev;
               return [newReq, ...prev];
             });
-            toast.info(`Match Request: ${newReq.subject}`);
+            showInfo(`Match request: ${newReq.subject}`, { description: "Someone is waiting to be matched with a tutor." });
           }
         })
         .subscribe();
@@ -128,12 +128,16 @@ export default function TutorRequestsPage() {
     try {
       const result = await acceptMatchRequest(id);
       if (result.success) {
-        toast.success("Match accepted! Entering room...");
+        showSuccess("Match accepted!", { description: "Taking you into the room." });
         router.push(`/study-room/${result.sessionId}`);
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to accept request.";
-      toast.error(msg);
+      showError({
+        title: "We couldn't accept that match",
+        cause: msg,
+        fix: "Try again, or pick a different request.",
+      });
     } finally {
       setAcceptingId(null);
     }
@@ -184,8 +188,8 @@ export default function TutorRequestsPage() {
 
                 <div className="flex items-center gap-4 w-full md:w-auto">
                    <div className="flex-1 md:flex-none text-right pr-6 border-r border-slate-100 hidden sm:block">
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Expected Reward</p>
-                      <p className="text-lg font-black text-teal-600">Ksh 500</p>
+                       <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Subject</p>
+                       <p className="text-lg font-black text-teal-600">{req.subject}</p>
                    </div>
                    <Button 
                       onClick={() => handleAccept(req.id)}

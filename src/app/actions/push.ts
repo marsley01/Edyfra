@@ -13,6 +13,8 @@ export async function sendNotificationPush(
       where: { userId },
     });
 
+    if (subs.length === 0) return { success: true, sent: 0 };
+
     const results = await Promise.allSettled(
       subs.map((sub) =>
         sendPushNotification(
@@ -23,9 +25,22 @@ export async function sendNotificationPush(
     );
 
     const expiredEndpoints: string[] = [];
+    let sentCount = 0;
+    let errorCount = 0;
+
     results.forEach((result, i) => {
-      if (result.status === "fulfilled" && result.value === "expired") {
+      if (result.status === "rejected") {
+        errorCount++;
+        console.error("[sendNotificationPush] subscription %s rejected:", i, result.reason);
+        return;
+      }
+      const value = result.value;
+      if (value === "expired") {
         expiredEndpoints.push(subs[i].endpoint);
+      } else if (value === "error") {
+        errorCount++;
+      } else if (value === "sent") {
+        sentCount++;
       }
     });
 
@@ -35,7 +50,7 @@ export async function sendNotificationPush(
       });
     }
 
-    return { success: true, sent: subs.length };
+    return { success: errorCount === 0, sent: sentCount, expired: expiredEndpoints.length, errors: errorCount };
   } catch (error) {
     console.error("Error sending push notification:", error);
     return { success: false, error: "Failed to send push notification" };

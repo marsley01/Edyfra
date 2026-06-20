@@ -10,7 +10,7 @@ import {
   CheckCircle2, XCircle, Search, Loader2,
   FileText, Mail, Info, Trash2, AlertTriangle, Clock3
 } from "lucide-react";
-import { toast } from "sonner";
+import { showError, showSuccess } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { getTutorApplicationsWithDetails, getAllTutorsWithDetails, approveTutorApplicationEnhanced, rejectTutorApplication } from "@/app/actions/admin-tutor";
 
@@ -55,9 +55,13 @@ export default function AdminTutorsPage() {
       setApplications(pendingApps || []);
       setAllTutors(allTutorsData || []);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to load tutor data.";
+      const errorMessage = err instanceof Error ? err.message : "A hiccup on our side blocked the load.";
       setError(errorMessage);
-      toast.error(errorMessage);
+      showError({
+        title: "We couldn't load tutor data",
+        cause: errorMessage,
+        fix: "Try again, or refresh the page.",
+      });
       console.error("Error fetching tutor data:", err);
     } finally {
       setLoading(false);
@@ -69,12 +73,16 @@ export default function AdminTutorsPage() {
     try {
       const result = await approveTutorApplicationEnhanced(id);
       if (result.success) {
-        toast.success("Expert dashboard activated successfully!");
+        showSuccess("Expert dashboard activated", { description: "That tutor can now go live on Edyfra." });
         fetchData();
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Approval failed due to an unknown error.";
-      toast.error("Approval failed: " + errorMessage);
+      showError({
+        title: "We couldn't approve that tutor",
+        cause: errorMessage,
+        fix: "Try again, or refresh the page.",
+      });
       console.error("Error approving tutor:", err);
     } finally {
       setProcessingId(null);
@@ -87,12 +95,16 @@ export default function AdminTutorsPage() {
       const reason = prompt("Enter rejection reason (optional):") || undefined;
       const result = await rejectTutorApplication(id, reason);
       if (result.success) {
-        toast.success("Application rejected.");
+        showSuccess("Application rejected", { description: "That tutor has been notified." });
         fetchData();
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Rejection failed due to an unknown error.";
-      toast.error("Rejection failed: " + errorMessage);
+      showError({
+        title: "We couldn't reject that application",
+        cause: errorMessage,
+        fix: "Try again, or refresh the page.",
+      });
       console.error("Error rejecting tutor:", err);
     } finally {
       setProcessingId(null);

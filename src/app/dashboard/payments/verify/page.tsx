@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { toast } from "sonner";
+import { showSuccess } from "@/lib/toast";
 
 export default function PaymentVerifyPage() {
   const searchParams = useSearchParams();
@@ -27,7 +27,7 @@ export default function PaymentVerifyPage() {
         // Wait 2 seconds for webhook to process
         await new Promise(r => setTimeout(r, 2000));
         setStatus("success");
-        toast.success("Transaction processed successfully!");
+        showSuccess("Payment confirmed", { description: "Your transaction went through. Welcome aboard!" });
       } catch (e) {
         setStatus("error");
       }

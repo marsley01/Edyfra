@@ -9,6 +9,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1546410531-bb4caa1b4247?q=80&w=2070&auto=format&fit=crop";
+
 const categories = ["All", "Education", "Tech", "Student Life", "Announcements"];
 
 const categoryColors: Record<string, string> = {
@@ -154,6 +156,10 @@ export default function NewsPage() {
                         src={featured.cover_image}
                         alt={featured.title}
                         fill
+                        onError={(e) => {
+                          e.currentTarget.srcset = "";
+                          e.currentTarget.src = FALLBACK_IMAGE;
+                        }}
                         className="object-cover group-hover:scale-105 transition-transform duration-700"
                       />
                     </div>
@@ -205,6 +211,10 @@ export default function NewsPage() {
                           src={item.cover_image}
                           alt={item.title}
                           fill
+                          onError={(e) => {
+                            e.currentTarget.srcset = "";
+                            e.currentTarget.src = FALLBACK_IMAGE;
+                          }}
                           className="object-cover group-hover:scale-105 transition-transform duration-700"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />

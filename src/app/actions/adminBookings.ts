@@ -1,4 +1,4 @@
-import { Role } from "@/generated/client";
+import { Role, SessionStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
@@ -11,7 +11,7 @@ export async function getAllBookings() {
         student: { select: { id: true, name: true, avatar: true } },
         partner: { select: { id: true, name: true, avatar: true } },
       },
-      orderBy: { id: "desc" },
+      orderBy: { startedAt: "desc" },
     });
     return sessions;
   } catch (error) {
@@ -21,7 +21,7 @@ export async function getAllBookings() {
 }
 
 /** Admin can update booking status (e.g., confirm or cancel) */
-export async function updateBookingStatus(sessionId: string, status: "ACTIVE" | "CANCELLED" | "COMPLETED") {
+export async function updateBookingStatus(sessionId: string, status: SessionStatus) {
   try {
     await prisma.session.update({
       where: { id: sessionId },

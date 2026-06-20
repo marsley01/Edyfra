@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Check, Shield, Zap, Clock, Star, Crown, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+import { showError, showInfo } from "@/lib/toast";
 import { motion } from "framer-motion";
 
 const defaultPlans = [
@@ -93,13 +93,13 @@ export default function UpgradePage() {
       const data = await res.json();
 
       if (data.success && data.authorization_url) {
-        toast.success("Redirecting to secure gateway...");
+        showInfo("Redirecting to secure gateway", { description: "Opening Paystack in a new tab." });
         window.location.href = data.authorization_url;
       } else {
-        toast.error(data.error || "Failed to initiate payment");
+        showError({ title: "We couldn't start the payment", cause: data.error || "Paystack didn't accept the request.", fix: "Try again, or use a different card." });
       }
     } catch (error) {
-      toast.error("Something went wrong");
+      showError({ title: "Something didn't go through", cause: "A hiccup on our side blocked this.", fix: "Give it another try in a few seconds." });
     } finally {
       setLoading(false);
     }

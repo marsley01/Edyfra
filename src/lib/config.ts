@@ -61,12 +61,6 @@ export const TIER_CONFIG = {
   },
 };
 
-// Admin Configuration
-export const ADMIN_CONFIG = {
-  SECRET_KEY: process.env.ADMIN_SECRET_KEY, // Avoid hardcoded fallback in production
-  REQUIRE_VERIFICATION: true,
-};
-
 // Challenge Configuration
 export const CHALLENGE_CONFIG = {
   DEFAULT_SUBJECT: "Mathematics",

@@ -1,0 +1,1565 @@
+The video call system in Edyfra has never 
+worked successfully. Tear out the current 
+broken implementation completely and rebuild 
+it from scratch using Stream Video SDK. 
+Every step must be verified before moving 
+to the next. Apply every change below:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. VERIFY STREAM DASHBOARD CONFIGURATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Before writing any code, add a comment 
+at the top of the implementation file:
+
+// IMPORTANT: Before this works you must:
+// 1. Go to dashboard.getstream.io
+// 2. Select your app
+// 3. Go to Video & Audio section
+// 4. Make sure "default" call type exists
+// 5. Enable the following permissions 
+//    on the "default" call type:
+//    - Send audio: all participants
+//    - Send video: all participants  
+//    - Create call: all participants
+//    - Join call: all participants
+//    - End call: all participants
+// 6. Save the configuration
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. CLEAN INSTALL OF STREAM VIDEO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Remove any existing Stream Video related 
+code and do a clean install:
+
+First find and delete every file that 
+imports from @stream-io/video-react-sdk 
+— all of them. We are starting fresh.
+
+Then install the correct packages:
+npm install @stream-io/video-react-sdk
+npm install @stream-io/node-sdk
+
+Verify in package.json that these are 
+the only Stream packages related to video. 
+There must be no version conflicts.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. ENVIRONMENT VARIABLES — CHECK FIRST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Create a diagnostic file at 
+/app/api/stream/check/route.ts that 
+verifies all Stream environment variables 
+are present and the API key is valid:
+
+import { NextResponse } from 'next/server';
+
+export async function GET() {
+  const checks = {
+    hasApiKey: !!process.env
+      .NEXT_PUBLIC_STREAM_API_KEY,
+    hasSecret: !!process.env
+      .STREAM_SECRET_KEY,
+    apiKeyLength: process.env
+      .NEXT_PUBLIC_STREAM_API_KEY?.length,
+    secretLength: process.env
+      .STREAM_SECRET_KEY?.length,
+  };
+  
+  const allPresent = checks.hasApiKey && 
+    checks.hasSecret;
+    
+  return NextResponse.json({
+    status: allPresent ? 'ok' : 'missing_keys',
+    checks,
+  });
+}
+
+This lets you visit /api/stream/check to 
+instantly verify your keys are loaded 
+before debugging anything else.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. SERVER-SIDE TOKEN GENERATION — FIXED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Create /app/api/stream/video-token/route.ts:
+
+import { StreamClient } from 
+  '@stream-io/node-sdk';
+import { NextRequest, NextResponse } 
+  from 'next/server';
+import { createRouteHandlerClient } 
+  from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+
+export async function GET(
+  req: NextRequest
+) {
+  try {
+    const supabase = createRouteHandlerClient(
+      { cookies }
+    );
+    
+    const { data: { session }, error } = 
+      await supabase.auth.getSession();
+    
+    if (error || !session?.user) {
+      return NextResponse.json(
+        { error: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+    
+    const userId = session.user.id;
+    
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('name')
+      .eq('user_id', userId)
+      .single();
+    
+    const client = new StreamClient(
+      process.env.NEXT_PUBLIC_STREAM_API_KEY!,
+      process.env.STREAM_SECRET_KEY!
+    );
+    
+    // Upsert the user in Stream first
+    await client.upsertUsers([{
+      id: userId,
+      name: profile?.name || 'Edyfra User',
+      role: 'user',
+    }]);
+    
+    // Generate token valid for 1 hour
+    const token = client.generateUserToken({
+      user_id: userId,
+      validity_in_seconds: 3600,
+    });
+    
+    console.log('Video token generated for:', 
+      userId);
+    
+    return NextResponse.json({
+      token,
+      userId,
+      userName: profile?.name || 'Edyfra User',
+      apiKey: process.env
+        .NEXT_PUBLIC_STREAM_API_KEY,
+    });
+    
+  } catch (err: any) {
+    console.error('Token generation failed:', 
+      err.message);
+    return NextResponse.json(
+      { error: err.message },
+      { status: 500 }
+    );
+  }
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. SINGLETON VIDEO CLIENT — ONE INSTANCE ONLY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Create /lib/stream-video-client.ts:
+
+import { StreamVideoClient } 
+  from '@stream-io/video-react-sdk';
+
+let client: StreamVideoClient | null = null;
+let clientUserId: string | null = null;
+
+export async function getStreamVideoClient(
+): Promise<StreamVideoClient | null> {
+  
+  // If client exists for same user, reuse it
+  const res = await fetch(
+    '/api/stream/video-token',
+    { credentials: 'include' }
+  );
+  
+  if (!res.ok) {
+    console.error('Failed to get video token:', 
+      res.status);
+    return null;
+  }
+  
+  const { token, userId, userName, apiKey } = 
+    await res.json();
+  
+  // If already initialized for this user, return
+  if (client && clientUserId === userId) {
+    return client;
+  }
+  
+  // Disconnect previous client if different user
+  if (client && clientUserId !== userId) {
+    await client.disconnectUser();
+    client = null;
+  }
+  
+  // Create new client
+  client = new StreamVideoClient({
+    apiKey,
+    user: { id: userId, name: userName },
+    token,
+  });
+  
+  clientUserId = userId;
+  console.log('Stream Video client created 
+    for user:', userId);
+  
+  return client;
+}
+
+export async function disconnectVideoClient() {
+  if (client) {
+    try {
+      await client.disconnectUser();
+      console.log('Stream Video client 
+        disconnected');
+    } catch (err) {
+      console.error('Disconnect error:', err);
+    } finally {
+      client = null;
+      clientUserId = null;
+    }
+  }
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. VIDEO PROVIDER — WRAP THE STUDY ROOM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Create /components/video/VideoProvider.tsx:
+
+'use client';
+
+import { StreamVideo } 
+  from '@stream-io/video-react-sdk';
+import '@stream-io/video-react-sdk/dist/css/styles.css';
+import { useEffect, useState, createContext, 
+  useContext } 
+  from 'react';
+import { getStreamVideoClient } 
+  from '@/lib/stream-video-client';
+import type { StreamVideoClient, Call } 
+  from '@stream-io/video-react-sdk';
+
+interface VideoContextType {
+  client: StreamVideoClient | null;
+  activeCall: Call | null;
+  setActiveCall: (call: Call | null) => void;
+  isLoading: boolean;
+  error: string | null;
+}
+
+const VideoContext = createContext
+  <VideoContextType>({
+  client: null,
+  activeCall: null,
+  setActiveCall: () => {},
+  isLoading: true,
+  error: null,
+});
+
+export const useVideoContext = () => 
+  useContext(VideoContext);
+
+export function VideoProvider({ 
+  children 
+}: { 
+  children: React.ReactNode 
+}) {
+  const [client, setClient] = 
+    useState<StreamVideoClient | null>(null);
+  const [activeCall, setActiveCall] = 
+    useState<Call | null>(null);
+  const [isLoading, setIsLoading] = 
+    useState(true);
+  const [error, setError] = 
+    useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    
+    const init = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        const videoClient = 
+          await getStreamVideoClient();
+        
+        if (mounted) {
+          if (videoClient) {
+            setClient(videoClient);
+          } else {
+            setError('Could not connect to 
+              video service');
+          }
+        }
+      } catch (err: any) {
+        if (mounted) {
+          setError(err.message);
+          console.error('VideoProvider 
+            init error:', err);
+        }
+      } finally {
+        if (mounted) setIsLoading(false);
+      }
+    };
+    
+    init();
+    
+    return () => { mounted = false; };
+  }, []);
+
+  if (isLoading) return <>{children}</>;
+  
+  if (!client || error) return <>{children}</>;
+
+  return (
+    <VideoContext.Provider value={{ 
+      client, 
+      activeCall, 
+      setActiveCall,
+      isLoading,
+      error,
+    }}>
+      <StreamVideo client={client}>
+        {children}
+      </StreamVideo>
+    </VideoContext.Provider>
+  );
+}
+
+Wrap the study room page with this provider.
+Also wrap the tutor dashboard with it so 
+incoming call notifications work there too.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. DEVICE PERMISSION CHECK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Create /components/video/DeviceCheck.tsx:
+
+'use client';
+
+import { useState } from 'react';
+
+interface DeviceCheckProps {
+  onReady: () => void;
+  onDenied: () => void;
+}
+
+export function DeviceCheck({ 
+  onReady, 
+  onDenied 
+}: DeviceCheckProps) {
+  const [checking, setChecking] = 
+    useState(false);
+  const [error, setError] = 
+    useState<string | null>(null);
+
+  const checkDevices = async () => {
+    setChecking(true);
+    setError(null);
+    
+    try {
+      // Request both camera and mic
+      const stream = await navigator
+        .mediaDevices
+        .getUserMedia({ 
+          video: true, 
+          audio: true 
+        });
+      
+      // Got access — stop the test stream
+      stream.getTracks().forEach(
+        t => t.stop()
+      );
+      
+      onReady();
+      
+    } catch (err: any) {
+      console.error('Device access error:', err);
+      
+      if (err.name === 'NotAllowedError' || 
+          err.name === 'PermissionDeniedError') {
+        setError('Camera and microphone access 
+          was denied. Please allow access in 
+          your browser settings and try again.');
+        onDenied();
+      } else if (err.name === 'NotFoundError') {
+        setError('No camera or microphone 
+          found. Please connect a device 
+          and try again.');
+        onDenied();
+      } else {
+        setError('Could not access your 
+          camera or microphone. 
+          Please try again.');
+        onDenied();
+      }
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  return (
+    <div className="device-check">
+      <div className="device-check-icon">
+        📹
+      </div>
+      <h3>Before you join</h3>
+      <p>Edyfra needs access to your 
+        camera and microphone for 
+        the video call.</p>
+      
+      {error && (
+        <div className="device-error">
+          {error}
+        </div>
+      )}
+      
+      <button 
+        onClick={checkDevices}
+        disabled={checking}
+        className="device-check-btn"
+      >
+        {checking 
+          ? 'Checking...' 
+          : 'Allow Camera and Microphone'}
+      </button>
+      
+      <button 
+        className="audio-only-btn"
+        onClick={() => {
+          // Try audio only
+          navigator.mediaDevices
+            .getUserMedia({ audio: true })
+            .then(s => {
+              s.getTracks().forEach(
+                t => t.stop()
+              );
+              onReady();
+            })
+            .catch(() => onDenied());
+        }}
+      >
+        Join with audio only
+      </button>
+    </div>
+  );
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. START CALL FLOW — BOTH SIDES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Create /components/video/StartCallButton.tsx:
+
+'use client';
+
+import { useState } from 'react';
+import { useVideoContext } 
+  from './VideoProvider';
+import { DeviceCheck } 
+  from './DeviceCheck';
+
+interface StartCallButtonProps {
+  roomId: string;
+  otherUserId: string;
+  otherUserName: string;
+}
+
+export function StartCallButton({
+  roomId,
+  otherUserId,
+  otherUserName,
+}: StartCallButtonProps) {
+  const { client, setActiveCall } = 
+    useVideoContext();
+  const [step, setStep] = useState
+    'idle' | 'device-check' | 
+    'calling' | 'error'
+  >('idle');
+  const [errorMsg, setErrorMsg] = 
+    useState('');
+
+  const handleStartCall = () => {
+    setStep('device-check');
+  };
+
+  const handleDevicesReady = async () => {
+    if (!client) {
+      setErrorMsg('Video service not ready. 
+        Please refresh the page.');
+      setStep('error');
+      return;
+    }
+    
+    setStep('calling');
+    
+    try {
+      // Use roomId as the call ID so both 
+      // sides always join the same call
+      const callId = `room-${roomId}`;
+      const call = client.call(
+        'default', 
+        callId
+      );
+      
+      console.log('Creating call:', callId);
+      
+      // Create the call and ring the other user
+      await call.getOrCreate({
+        ring: true,
+        data: {
+          members: [
+            { user_id: client.user!.id },
+            { user_id: otherUserId },
+          ],
+          custom: {
+            roomId,
+            startedBy: client.user!.name,
+          },
+        },
+      });
+      
+      console.log('Call created, ringing:', 
+        otherUserId);
+      
+      // Join the call ourselves
+      await call.join({ 
+        create: false 
+      });
+      
+      console.log('Joined call successfully');
+      setActiveCall(call);
+      
+    } catch (err: any) {
+      console.error('Call start failed:', err);
+      setErrorMsg(
+        err.message || 
+        'Failed to start call. Please try again.'
+      );
+      setStep('error');
+    }
+  };
+
+  const handleDevicesDenied = () => {
+    setStep('idle');
+  };
+
+  if (step === 'device-check') {
+    return (
+      <div className="call-modal-overlay">
+        <div className="call-modal">
+          <DeviceCheck
+            onReady={handleDevicesReady}
+            onDenied={handleDevicesDenied}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 'calling') {
+    return (
+      <div className="calling-state">
+        <div className="calling-pulse">📞</div>
+        <p>Calling {otherUserName}...</p>
+        <p className="calling-sub">
+          Waiting for them to answer
+        </p>
+      </div>
+    );
+  }
+
+  if (step === 'error') {
+    return (
+      <div className="call-error">
+        <p>⚠️ {errorMsg}</p>
+        <button onClick={() => setStep('idle')}>
+          Try Again
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={handleStartCall}
+      disabled={!client}
+      className="start-call-btn"
+      title={`Start video call with 
+        ${otherUserName}`}
+    >
+      <span>📹</span>
+      <span>Start Video Call</span>
+    </button>
+  );
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. INCOMING CALL NOTIFICATION — FIXED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Create /components/video/IncomingCall.tsx:
+
+'use client';
+
+import { useEffect, useState } from 'react';
+import { 
+  useStreamVideoClient,
+  StreamCall,
+} from '@stream-io/video-react-sdk';
+import type { Call } 
+  from '@stream-io/video-react-sdk';
+
+interface IncomingCallProps {
+  onAccepted: (call: Call) => void;
+}
+
+export function IncomingCall({ 
+  onAccepted 
+}: IncomingCallProps) {
+  const client = useStreamVideoClient();
+  const [ringingCall, setRingingCall] = 
+    useState<Call | null>(null);
+  const [callerName, setCallerName] = 
+    useState('');
+  const [timeLeft, setTimeLeft] = 
+    useState(30);
+
+  useEffect(() => {
+    if (!client) return;
+
+    const unsubscribe = client.on(
+      'call.ring', 
+      (event: any) => {
+        console.log('Incoming call event:', 
+          event);
+        const call = client.call(
+          event.call.type,
+          event.call.id
+        );
+        
+        const caller = event.members?.find(
+          (m: any) => m.user_id !== 
+            client.user?.id
+        );
+        
+        setCallerName(
+          caller?.user?.name || 'Someone'
+        );
+        setRingingCall(call);
+        setTimeLeft(30);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [client]);
+
+  // Auto-decline after 30 seconds
+  useEffect(() => {
+    if (!ringingCall) return;
+    
+    if (timeLeft <= 0) {
+      handleDecline();
+      return;
+    }
+    
+    const timer = setTimeout(() => {
+      setTimeLeft(t => t - 1);
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [ringingCall, timeLeft]);
+
+  const handleAccept = async () => {
+    if (!ringingCall) return;
+    
+    try {
+      await ringingCall.accept();
+      await ringingCall.join();
+      console.log('Call accepted and joined');
+      onAccepted(ringingCall);
+      setRingingCall(null);
+    } catch (err) {
+      console.error('Accept call failed:', err);
+    }
+  };
+
+  const handleDecline = async () => {
+    if (!ringingCall) return;
+    
+    try {
+      await ringingCall.reject();
+      console.log('Call rejected');
+    } catch (err) {
+      console.error('Decline call failed:', err);
+    } finally {
+      setRingingCall(null);
+    }
+  };
+
+  if (!ringingCall) return null;
+
+  return (
+    <div className="incoming-call-overlay">
+      <div className="incoming-call-card">
+        
+        <div className="incoming-avatar">
+          {callerName.charAt(0).toUpperCase()}
+          <div className="incoming-ring-1" />
+          <div className="incoming-ring-2" />
+        </div>
+        
+        <p className="incoming-name">
+          {callerName}
+        </p>
+        <p className="incoming-label">
+          Incoming video call
+        </p>
+        <p className="incoming-timer">
+          Auto-declining in {timeLeft}s
+        </p>
+        
+        <div className="incoming-actions">
+          <button
+            onClick={handleDecline}
+            className="decline-call-btn"
+          >
+            ✕ Decline
+          </button>
+          <button
+            onClick={handleAccept}
+            className="accept-call-btn"
+          >
+            ✓ Accept
+          </button>
+        </div>
+        
+      </div>
+    </div>
+  );
+}
+
+Place this component at the ROOT of the 
+dashboard layout so it listens for 
+incoming calls everywhere — not just 
+inside the study room.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. ACTIVE CALL UI — FULL FEATURED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Create /components/video/ActiveCall.tsx:
+
+'use client';
+
+import {
+  StreamCall,
+  StreamTheme,
+  ParticipantView,
+  useCallStateHooks,
+  useCall,
+  CallingState,
+} from '@stream-io/video-react-sdk';
+import '@stream-io/video-react-sdk/dist/css/styles.css';
+import { useEffect, useState } from 'react';
+import type { Call } 
+  from '@stream-io/video-react-sdk';
+
+function CallTimer() {
+  const [seconds, setSeconds] = useState(0);
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSeconds(s => s + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+  
+  const mins = Math.floor(seconds / 60)
+    .toString().padStart(2, '0');
+  const secs = (seconds % 60)
+    .toString().padStart(2, '0');
+  
+  return (
+    <span className="call-timer">
+      🔴 {mins}:{secs}
+    </span>
+  );
+}
+
+function VideoGrid() {
+  const { useParticipants } = 
+    useCallStateHooks();
+  const participants = useParticipants();
+
+  return (
+    <div className={`video-grid 
+      count-${Math.min(
+        participants.length, 4
+      )}`}>
+      {participants.map(p => (
+        <div
+          key={p.sessionId}
+          className={`video-tile 
+            ${p.isSpeaking ? 'speaking' : ''}
+            ${!p.isVideoCameraEnabled 
+              ? 'no-cam' : ''}`}
+        >
+          {p.isVideoCameraEnabled ? (
+            <ParticipantView
+              participant={p}
+              className="participant-view"
+            />
+          ) : (
+            <div className="no-video-tile">
+              <div className="no-video-avatar">
+                {p.name?.charAt(0)
+                  .toUpperCase() || '?'}
+              </div>
+              <span className="no-video-name">
+                {p.name}
+              </span>
+            </div>
+          )}
+          
+          <div className="tile-info">
+            <span className="tile-name">
+              {p.name}
+              {p.isLocalParticipant && ' (You)'}
+            </span>
+            {p.isMicrophoneMuted && (
+              <span className="muted-icon">
+                🔇
+              </span>
+            )}
+          </div>
+          
+          {p.isSpeaking && (
+            <div className="speaking-indicator" />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function CallControls({ 
+  onEnd 
+}: { 
+  onEnd: () => void 
+}) {
+  const call = useCall();
+  const { 
+    useMicrophoneState,
+    useCameraState,
+    useScreenShareState,
+  } = useCallStateHooks();
+  
+  const { microphone, isMute: micMuted } = 
+    useMicrophoneState();
+  const { camera, isMute: camMuted } = 
+    useCameraState();
+  const { screenShare, status: ssStatus } = 
+    useScreenShareState();
+  
+  const isScreenSharing = 
+    ssStatus === 'enabled';
+  
+  const toggleMic = async () => {
+    try {
+      micMuted 
+        ? await microphone.enable()
+        : await microphone.disable();
+    } catch (err) {
+      console.error('Mic toggle failed:', err);
+    }
+  };
+  
+  const toggleCam = async () => {
+    try {
+      camMuted 
+        ? await camera.enable()
+        : await camera.disable();
+    } catch (err) {
+      console.error('Cam toggle failed:', err);
+    }
+  };
+  
+  const toggleScreen = async () => {
+    try {
+      isScreenSharing
+        ? await screenShare.disable()
+        : await screenShare.enable();
+    } catch (err) {
+      console.error('Screen share failed:', err);
+    }
+  };
+  
+  const endCall = async () => {
+    try {
+      await call?.endCall();
+    } catch {
+      try {
+        await call?.leave();
+      } catch (err) {
+        console.error('Leave failed:', err);
+      }
+    }
+    onEnd();
+  };
+
+  return (
+    <div className="call-controls">
+      <button
+        onClick={toggleMic}
+        className={`ctrl ${
+          micMuted ? 'ctrl-off' : ''
+        }`}
+        title={micMuted ? 'Unmute' : 'Mute'}
+      >
+        <span className="ctrl-icon">
+          {micMuted ? '🔇' : '🎤'}
+        </span>
+        <span className="ctrl-label">
+          {micMuted ? 'Unmute' : 'Mute'}
+        </span>
+      </button>
+      
+      <button
+        onClick={toggleCam}
+        className={`ctrl ${
+          camMuted ? 'ctrl-off' : ''
+        }`}
+        title={camMuted 
+          ? 'Start Video' : 'Stop Video'}
+      >
+        <span className="ctrl-icon">
+          {camMuted ? '📷' : '📹'}
+        </span>
+        <span className="ctrl-label">
+          {camMuted ? 'Start Video' 
+            : 'Stop Video'}
+        </span>
+      </button>
+      
+      <button
+        onClick={toggleScreen}
+        className={`ctrl ${
+          isScreenSharing ? 'ctrl-active' : ''
+        }`}
+        title={isScreenSharing 
+          ? 'Stop Sharing' : 'Share Screen'}
+      >
+        <span className="ctrl-icon">🖥️</span>
+        <span className="ctrl-label">
+          {isScreenSharing 
+            ? 'Stop Share' : 'Share'}
+        </span>
+      </button>
+      
+      <button
+        onClick={endCall}
+        className="ctrl ctrl-end"
+        title="End Call"
+      >
+        <span className="ctrl-icon">📵</span>
+        <span className="ctrl-label">
+          End Call
+        </span>
+      </button>
+    </div>
+  );
+}
+
+export function ActiveCall({ 
+  call,
+  onEnd,
+  subject,
+}: { 
+  call: Call;
+  onEnd: () => void;
+  subject?: string;
+}) {
+  const { useCallCallingState } = 
+    useCallStateHooks();
+
+  return (
+    <StreamCall call={call}>
+      <StreamTheme>
+        <div className="active-call">
+          
+          <div className="call-header">
+            <div className="call-info">
+              <span className="call-subject">
+                {subject || 'Study Session'}
+              </span>
+              <CallTimer />
+            </div>
+            <span className="call-secure">
+              🔒 Encrypted
+            </span>
+          </div>
+          
+          <div className="call-body">
+            <VideoGrid />
+          </div>
+          
+          <CallControls onEnd={onEnd} />
+          
+        </div>
+      </StreamTheme>
+    </StreamCall>
+  );
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. WIRE INTO THE STUDY ROOM PAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+In the study room page:
+
+'use client';
+
+import { useState } from 'react';
+import { VideoProvider, useVideoContext } 
+  from '@/components/video/VideoProvider';
+import { StartCallButton } 
+  from '@/components/video/StartCallButton';
+import { IncomingCall } 
+  from '@/components/video/IncomingCall';
+import { ActiveCall } 
+  from '@/components/video/ActiveCall';
+import type { Call } 
+  from '@stream-io/video-react-sdk';
+
+function StudyRoomContent({
+  roomId,
+  currentUser,
+  otherUser,
+  subject,
+}: StudyRoomProps) {
+  const [activeCall, setActiveCall] = 
+    useState<Call | null>(null);
+
+  const handleCallAccepted = (call: Call) => {
+    setActiveCall(call);
+  };
+
+  const handleCallEnded = () => {
+    setActiveCall(null);
+  };
+
+  if (activeCall) {
+    return (
+      <ActiveCall
+        call={activeCall}
+        onEnd={handleCallEnded}
+        subject={subject}
+      />
+    );
+  }
+
+  return (
+    <div className="study-room-layout">
+      
+      <IncomingCall 
+        onAccepted={handleCallAccepted} 
+      />
+      
+      <div className="study-room-chat">
+        {/* Existing Stream Chat here */}
+      </div>
+      
+      <div className="study-room-toolbar">
+        <StartCallButton
+          roomId={roomId}
+          otherUserId={otherUser.id}
+          otherUserName={otherUser.name}
+        />
+      </div>
+      
+    </div>
+  );
+}
+
+export default function StudyRoom(
+  props: StudyRoomProps
+) {
+  return (
+    <VideoProvider>
+      <StudyRoomContent {...props} />
+    </VideoProvider>
+  );
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. STYLES FOR THE ENTIRE CALL UI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Add to globals.css:
+
+/* ── ACTIVE CALL ────────────────────── */
+.active-call {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 100dvh;
+  background: #04081A;
+  font-family: 'DM Sans', system-ui;
+}
+
+.call-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  padding-top: max(12px, 
+    env(safe-area-inset-top));
+  background: rgba(6,12,28,0.9);
+  border-bottom: 1px solid 
+    rgba(6,182,212,0.12);
+}
+
+.call-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.call-subject {
+  font-size: 14px;
+  font-weight: 500;
+  color: #F0F6FF;
+}
+
+.call-timer {
+  font-size: 13px;
+  color: #EF4444;
+  font-variant-numeric: tabular-nums;
+}
+
+.call-secure {
+  font-size: 11px;
+  color: #4ADE80;
+}
+
+.call-body {
+  flex: 1;
+  overflow: hidden;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── VIDEO GRID ─────────────────────── */
+.video-grid {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  gap: 10px;
+}
+
+.video-grid.count-1 {
+  grid-template-columns: 1fr;
+}
+
+.video-grid.count-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.video-grid.count-3,
+.video-grid.count-4 {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+@media (max-width: 430px) {
+  .video-grid.count-2 {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+}
+
+.video-tile {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #0C1421;
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease;
+  min-height: 120px;
+}
+
+.video-tile.speaking {
+  border-color: #06B6D4;
+  box-shadow: 0 0 20px 
+    rgba(6,182,212,0.25);
+}
+
+.speaking-indicator {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  border: 2px solid #06B6D4;
+  pointer-events: none;
+}
+
+.participant-view {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.no-video-tile {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #080D18;
+}
+
+.no-video-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg, #06B6D4, #0891B2
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-family: 'Syne', system-ui;
+  font-weight: 700;
+  color: white;
+}
+
+.no-video-name {
+  font-size: 13px;
+  color: #94A3B8;
+}
+
+.tile-info {
+  position: absolute;
+  bottom: 8px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tile-name {
+  font-size: 12px;
+  color: white;
+  background: rgba(0,0,0,0.65);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.muted-icon {
+  font-size: 14px;
+  background: rgba(0,0,0,0.65);
+  padding: 3px;
+  border-radius: 6px;
+}
+
+/* ── CALL CONTROLS ──────────────────── */
+.call-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  padding-bottom: max(16px, 
+    env(safe-area-inset-bottom));
+  background: rgba(6,12,28,0.95);
+  border-top: 1px solid 
+    rgba(6,182,212,0.1);
+  flex-wrap: wrap;
+}
+
+.ctrl {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 60px;
+  min-height: 60px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(6,182,212,0.15);
+  background: rgba(8,14,30,0.8);
+  color: #94A3B8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'DM Sans', system-ui;
+}
+
+.ctrl:hover {
+  background: rgba(6,182,212,0.1);
+  color: #06B6D4;
+  border-color: rgba(6,182,212,0.3);
+}
+
+.ctrl-off {
+  background: rgba(239,68,68,0.1);
+  border-color: rgba(239,68,68,0.3);
+  color: #EF4444;
+}
+
+.ctrl-active {
+  background: rgba(6,182,212,0.15);
+  border-color: #06B6D4;
+  color: #06B6D4;
+}
+
+.ctrl-end {
+  background: rgba(239,68,68,0.15);
+  border-color: rgba(239,68,68,0.35);
+  color: #EF4444;
+  margin-left: 12px;
+}
+
+.ctrl-end:hover {
+  background: rgba(239,68,68,0.3);
+}
+
+.ctrl-icon { font-size: 20px; }
+
+.ctrl-label {
+  font-size: 10px;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 375px) {
+  .ctrl-label { display: none; }
+  .ctrl { min-width: 48px; padding: 8px; }
+}
+
+/* ── INCOMING CALL ──────────────────── */
+.incoming-call-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.incoming-call-card {
+  background: #080D18;
+  border: 1px solid rgba(6,182,212,0.25);
+  border-radius: 24px;
+  padding: 36px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
+  box-shadow: 0 0 60px rgba(6,182,212,0.15);
+}
+
+.incoming-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg, #06B6D4, #0891B2
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-family: 'Syne', system-ui;
+  font-weight: 700;
+  color: white;
+  position: relative;
+}
+
+@keyframes ring-pulse {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+.incoming-ring-1,
+.incoming-ring-2 {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid #06B6D4;
+  animation: ring-pulse 1.5s 
+    ease-out infinite;
+}
+
+.incoming-ring-2 {
+  animation-delay: 0.5s;
+}
+
+.incoming-name {
+  font-family: 'Syne', system-ui;
+  font-weight: 700;
+  font-size: 20px;
+  color: #F0F6FF;
+  margin: 0;
+}
+
+.incoming-label {
+  font-size: 13px;
+  color: #6B7E96;
+  margin: 0;
+}
+
+.incoming-timer {
+  font-size: 12px;
+  color: #475569;
+  margin: 0;
+}
+
+.incoming-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.decline-call-btn,
+.accept-call-btn {
+  flex: 1;
+  min-height: 52px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'DM Sans', system-ui;
+  transition: all 0.2s;
+}
+
+.decline-call-btn {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.3);
+  color: #EF4444;
+}
+
+.decline-call-btn:hover {
+  background: rgba(239,68,68,0.2);
+}
+
+.accept-call-btn {
+  background: rgba(74,222,128,0.15);
+  border: 1px solid rgba(74,222,128,0.3);
+  color: #4ADE80;
+}
+
+.accept-call-btn:hover {
+  background: rgba(74,222,128,0.25);
+}
+
+/* ── DEVICE CHECK ───────────────────── */
+.call-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 20px;
+}
+
+.call-modal {
+  background: #080D18;
+  border: 1px solid rgba(6,182,212,0.2);
+  border-radius: 20px;
+  padding: 32px 24px;
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.device-check-icon { font-size: 40px; }
+
+.device-check h3 {
+  font-family: 'Syne', system-ui;
+  font-size: 18px;
+  color: #F0F6FF;
+  margin: 0;
+}
+
+.device-check p {
+  font-size: 14px;
+  color: #6B7E96;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.device-error {
+  font-size: 13px;
+  color: #EF4444;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: 10px;
+  padding: 10px 14px;
+  width: 100%;
+}
+
+.device-check-btn {
+  width: 100%;
+  min-height: 52px;
+  background: #06B6D4;
+  border: none;
+  border-radius: 14px;
+  color: white;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'DM Sans', system-ui;
+}
+
+.audio-only-btn {
+  background: transparent;
+  border: none;
+  color: #475569;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: 'DM Sans', system-ui;
+}
+
+/* ── START CALL BUTTON ──────────────── */
+.start-call-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 20px;
+  background: rgba(6,182,212,0.1);
+  border: 1px solid rgba(6,182,212,0.3);
+  border-radius: 12px;
+  color: #06B6D4;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'DM Sans', system-ui;
+}
+
+.start-call-btn:hover {
+  background: rgba(6,182,212,0.18);
+}
+
+.start-call-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
