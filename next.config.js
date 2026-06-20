@@ -4,10 +4,16 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 });
 
 const nextConfig = {
-  turbopack: {
-    root: __dirname,
-  },
   serverExternalPackages: ["@prisma/client", "prisma"],
+  // Force webpack — Turbopack silently OOM-kills on Vercel with this codebase size
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.alias = {
+        ...(config.resolve.alias || {}),
+      };
+    }
+    return config;
+  },
   compress: true,
   images: {
     minimumCacheTTL: 3600,
