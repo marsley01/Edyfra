@@ -1,6 +1,5 @@
 {
   "regions": ["lhr1"],
-  "buildCommand": "next build --webpack",
   "typescript": { "ignoreBuildErrors": true },
   "crons": [
     {
