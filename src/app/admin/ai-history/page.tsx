@@ -117,9 +117,9 @@ export default function AdminAiHistoryPage() {
               <Bot className="h-3 w-3" />
               AI Conversations
             </div>
-            <h1 className="text-3xl sm:text-4xl font-black tracking-tightest">What the bots are saying.</h1>
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tightest">Chat History</h1>
             <p className="text-muted-foreground font-medium max-w-2xl">
-              Every Eddy and Mash AI message is logged. Review quality, spot abuse, and improve prompts.
+              Review user conversations with the Eddy and Mash bots to ensure quality and spot abuse.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">

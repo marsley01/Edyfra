@@ -1,6 +1,5 @@
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva, type VariantProps } from "class-variance-authority"
-import { Loader2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -41,6 +40,37 @@ const buttonVariants = cva(
   }
 )
 
+export function IosSpinner({ className, ...props }: React.ComponentPropsWithoutRef<"svg">) {
+  return (
+    <svg
+      className={cn("size-4 animate-spin text-current shrink-0", className)}
+      viewBox="0 0 100 100"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ animationDuration: "0.8s", animationTimingFunction: "steps(12)" }}
+      data-icon="inline-start"
+      {...props}
+    >
+      <g transform="translate(50,50)">
+        {[...Array(12)].map((_, i) => (
+          <rect
+            key={i}
+            x="-2"
+            y="-35"
+            width="4"
+            height="18"
+            rx="2"
+            ry="2"
+            fill="currentColor"
+            transform={`rotate(${i * 30})`}
+            opacity={0.15 + (i / 12) * 0.85}
+          />
+        ))}
+      </g>
+    </svg>
+  )
+}
+
 function Button({
   className,
   variant = "default",
@@ -63,7 +93,7 @@ function Button({
       className={cn(buttonVariants({ variant, size, className }), loading && "cursor-wait")}
       {...props}
     >
-      {loading && <Loader2 className="animate-spin" data-icon="inline-start" />}
+      {loading && <IosSpinner />}
       {children}
     </ButtonPrimitive>
   )

@@ -190,7 +190,9 @@ exports.Prisma.TutorProfileScalarFieldEnum = {
   totalAssignmentsToday: 'totalAssignmentsToday',
   responseRate: 'responseRate',
   sessionsAssigned: 'sessionsAssigned',
-  sessionsResponded: 'sessionsResponded'
+  sessionsResponded: 'sessionsResponded',
+  idPhotoUrl: 'idPhotoUrl',
+  selfieUrl: 'selfieUrl'
 };
 
 exports.Prisma.MatchRequestScalarFieldEnum = {
@@ -295,6 +297,8 @@ exports.Prisma.TutorApplicationScalarFieldEnum = {
   reviewedBy: 'reviewedBy',
   reviewedAt: 'reviewedAt',
   notes: 'notes',
+  idPhotoUrl: 'idPhotoUrl',
+  selfieUrl: 'selfieUrl',
   createdAt: 'createdAt'
 };
 
@@ -332,6 +336,13 @@ exports.Prisma.CommentScalarFieldEnum = {
   postId: 'postId',
   userId: 'userId',
   content: 'content',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.FavoriteUserScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  favoriteId: 'favoriteId',
   createdAt: 'createdAt'
 };
 
@@ -1160,6 +1171,7 @@ exports.Prisma.ModelName = {
   FeedPost: 'FeedPost',
   PostLike: 'PostLike',
   Comment: 'Comment',
+  FavoriteUser: 'FavoriteUser',
   Achievement: 'Achievement',
   PlatformSettings: 'PlatformSettings',
   AiConversation: 'AiConversation',

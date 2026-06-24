@@ -211,11 +211,11 @@ function BookingDialog({ tutor }: { tutor: any }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger render={
         <Button className="w-full h-12 rounded-xl font-black text-xs tracking-widest uppercase bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/20 transition-all active:scale-95">
           <Calendar className="mr-2 h-4 w-4" /> Book Session
         </Button>
-      </DialogTrigger>
+      } />
       <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden bg-card border-border rounded-[2rem]">
         <DialogHeader className="p-8 pb-0">
           <DialogTitle className="text-3xl font-black tracking-tightest">Book {tutor.name}</DialogTitle>

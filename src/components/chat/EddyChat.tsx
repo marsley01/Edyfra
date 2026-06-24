@@ -153,8 +153,11 @@ export default function EddyChat() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-transform hover:scale-105 active:scale-95 cursor-pointer"
-        style={{ zIndex: isOpen ? -1 : Z.FAB }}
+        className="fixed right-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-transform hover:scale-105 active:scale-95 cursor-pointer"
+        style={{
+          zIndex: isOpen ? -1 : Z.FAB,
+          bottom: "calc(var(--edyfra-overlay-bottom-edge, 0px) + 24px + env(safe-area-inset-bottom, 0px))",
+        }}
         aria-label="Chat with Eddy"
       >
         <MessageCircle className="h-6 w-6" />
@@ -178,8 +181,12 @@ export default function EddyChat() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 16, scale: 0.95 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="fixed bottom-6 right-6 flex w-[380px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border bg-popover shadow-2xl"
-              style={{ zIndex: Z.FAB, height: "min(560px, calc(100vh - 80px))" }}
+              className="fixed right-6 flex w-[380px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border bg-popover shadow-2xl"
+              style={{
+                zIndex: Z.FAB,
+                bottom: "calc(var(--edyfra-overlay-bottom-edge, 0px) + 24px + env(safe-area-inset-bottom, 0px))",
+                height: "min(560px, calc(100vh - 80px - var(--edyfra-overlay-bottom-edge, 0px) - env(safe-area-inset-bottom, 0px)))",
+              }}
             >
               <div className="flex items-center gap-3 border-b px-4 py-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
@@ -327,7 +334,7 @@ export default function EddyChat() {
                               )}
                             </div>
                             <div
-                              className={`rounded-2xl px-3.5 py-2 text-sm leading-relaxed whitespace-pre-wrap break-words max-h-72 overflow-y-auto ${
+                              className={`rounded-2xl px-3.5 py-2 text-sm leading-relaxed whitespace-pre-wrap break-words ${
                                 msg.role === "user"
                                   ? "bg-primary text-primary-foreground"
                                   : "bg-muted"

@@ -97,6 +97,7 @@ export function OverlayManagerProvider({ children }: { children: ReactNode }) {
     let top = 0;
     let bottom = 0;
     let right = 0;
+    let bottomEdge = 0;
 
     for (const o of next) {
       const size = o.size;
@@ -106,6 +107,9 @@ export function OverlayManagerProvider({ children }: { children: ReactNode }) {
       if (o.edge === "bottom" || o.edge === "bottom-right" || o.edge === "bottom-left" || o.edge === "fullscreen") {
         bottom = Math.max(bottom, size);
       }
+      if (o.edge === "bottom") {
+        bottomEdge = Math.max(bottomEdge, size);
+      }
       if (o.edge === "bottom-right") {
         right = Math.max(right, size);
       }
@@ -114,6 +118,7 @@ export function OverlayManagerProvider({ children }: { children: ReactNode }) {
     const root = document.documentElement;
     root.style.setProperty("--edyfra-overlay-top", `${top}px`);
     root.style.setProperty("--edyfra-overlay-bottom", `${bottom}px`);
+    root.style.setProperty("--edyfra-overlay-bottom-edge", `${bottomEdge}px`);
     root.style.setProperty("--edyfra-overlay-right", `${right}px`);
   }, []);
 

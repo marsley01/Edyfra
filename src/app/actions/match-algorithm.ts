@@ -390,7 +390,12 @@ export async function findTier1Match(
       if (tpB.rating !== tpA.rating) return tpB.rating - tpA.rating;
 
       // 4. Fewer assignments today
-      return tpA.totalAssignmentsToday - tpB.totalAssignmentsToday;
+      if (tpA.totalAssignmentsToday !== tpB.totalAssignmentsToday) {
+        return tpA.totalAssignmentsToday - tpB.totalAssignmentsToday;
+      }
+
+      // 5. Random fallback to ensure we don't pick the exact same tutor every time if all else is equal
+      return Math.random() - 0.5;
     });
 
     return eligible[0]?.id || null;

@@ -8,6 +8,18 @@
     {
       "path": "/api/cron/weekly-report",
       "schedule": "0 20 * * 0"
+    },
+    {
+      "path": "/api/cron/expire-bookings",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/daily-checkin",
+      "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/reminders",
+      "schedule": "*/5 * * * *"
     }
   ]
 }

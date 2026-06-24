@@ -5,6 +5,7 @@ import { EduLevel } from "@prisma/client";
 import { generateAIResponse } from "@/utils/openrouter";
 import { SESSION_CONFIG, CHALLENGE_CONFIG } from "@/lib/config";
 import { recalibrateTier } from "./user";
+import { getAdminGlobalSettings } from "@/app/actions/admin";
 
 interface ChallengeGenerationRequest {
   level: string;
@@ -466,9 +467,12 @@ export async function saveChallengeAttempt(userId: string, challengeId: string, 
     const platformSettings = await prisma.platformSettings.findUnique({
       where: { key: "challenge_points" },
     });
+    const globalSettings = await getAdminGlobalSettings();
     const configPoints = (platformSettings?.value as any)?.value || SESSION_CONFIG.CHALLENGE_MEDIUM_POINTS;
     const difficultyMultiplier = challenge.level === "UNIVERSITY" ? 1.5 : 1;
-    const pointsEarned = correct ? Math.round(configPoints * difficultyMultiplier) : 0;
+    const multiplierStr = globalSettings.pointsMultiplier || "1x";
+    const globalMultiplier = parseFloat(multiplierStr.replace("x", "")) || 1;
+    const pointsEarned = correct ? Math.round(configPoints * difficultyMultiplier * globalMultiplier) : 0;
 
     if (existingAttempt) {
       return await prisma.dailyChallengeAttempt.update({
@@ -667,7 +671,11 @@ Format: {"question": "...", "options": ["A", "B", "C", "D"], "answer": "A", "exp
       },
     });
   } catch (error) {
-    console.error("Error generating personalized challenge:", error);
-    throw error instanceof Error ? error : new Error("Failed to generate personalized challenge");
+    console.warn("Error generating personalized challenge, using fallback:", error);
+    try {
+      return await seedStaticChallenge(level, "Mathematics");
+    } catch (fallbackErr) {
+      throw error instanceof Error ? error : new Error("Failed to generate personalized challenge");
+    }
   }
 }

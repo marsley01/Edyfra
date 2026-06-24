@@ -82,8 +82,8 @@ export function StartCallButton({
 
   if (step === 'device-check') {
     return (
-      <div className="call-modal-overlay">
-        <div className="call-modal">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+        <div className="w-full max-w-md rounded-3xl bg-card border border-border/50 shadow-2xl p-6">
           <DeviceCheck
             onReady={handleDevicesReady}
             onDenied={handleDevicesDenied}
@@ -95,20 +95,20 @@ export function StartCallButton({
 
   if (step === 'calling') {
     return (
-      <div className="calling-state">
+      <div className="flex flex-col items-center justify-center space-y-4 p-4 text-center">
         <audio src="/sounds/popcorn.mp3" autoPlay loop />
-        <div className="calling-pulse">📞</div>
-        <p>Calling {otherUserName}...</p>
-        <p className="calling-sub">Waiting for them to answer</p>
+        <div className="flex h-16 w-16 animate-pulse items-center justify-center rounded-full bg-primary/20 text-2xl text-primary">📞</div>
+        <p className="text-sm font-bold text-foreground">Calling {otherUserName}...</p>
+        <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Waiting for them to answer</p>
       </div>
     );
   }
 
   if (step === 'error') {
     return (
-      <div className="call-error">
-        <p>⚠️ {errorMsg}</p>
-        <button onClick={() => setStep('idle')}>Try Again</button>
+      <div className="flex flex-col items-center space-y-3 p-4 bg-red-500/10 rounded-2xl border border-red-500/20 text-center">
+        <p className="text-sm font-medium text-red-500">⚠️ {errorMsg}</p>
+        <button onClick={() => setStep('idle')} className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-colors">Try Again</button>
       </div>
     );
   }
@@ -117,11 +117,11 @@ export function StartCallButton({
     <button
       onClick={handleStartCall}
       disabled={!client}
-      className="start-call-btn"
+      className="flex items-center gap-2 h-10 px-4 bg-violet-600 hover:bg-violet-700 text-white rounded-xl shadow-lg shadow-violet-600/20 transition-all font-black text-[10px] uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
       title={`Start video call with ${otherUserName}`}
     >
-      <span>📹</span>
-      <span>Start Video Call</span>
+      <span className="text-sm">📹</span>
+      <span className="hidden sm:inline">Start Video Call</span>
     </button>
   );
 }

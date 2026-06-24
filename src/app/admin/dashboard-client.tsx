@@ -145,8 +145,8 @@ export function AdminDashboardClient({
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
         <div className="space-y-1">
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tighter">Platform Overview</h1>
-          <p className="text-muted-foreground text-xs sm:text-sm font-bold tracking-widest uppercase">Here&apos;s how everything is running</p>
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tighter">Welcome back, Admin!</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm font-bold tracking-widest uppercase">Here's your quick overview of what's happening today.</p>
         </div>
         <div className="flex gap-3 sm:gap-4">
            <Button onClick={() => { router.push("/admin/sessions"); }} className="rounded-2xl font-bold px-4 sm:px-8 h-12 sm:h-14 text-xs border-border hover:bg-secondary bg-secondary">
@@ -223,8 +223,8 @@ export function AdminDashboardClient({
           <Card className="rounded-[3rem] overflow-hidden border-border bg-card shadow-sm">
             <CardHeader className="p-6 sm:p-10 border-b flex flex-row items-center justify-between bg-secondary/10">
               <div>
-                <CardTitle className="text-xl sm:text-2xl font-black tracking-tight">Tutor Applications</CardTitle>
-                <CardDescription className="font-medium text-muted-foreground text-xs sm:text-sm">People waiting to join as tutors.</CardDescription>
+                <CardTitle className="text-xl sm:text-2xl font-black tracking-tight">Pending Tutors</CardTitle>
+                <CardDescription className="font-medium text-muted-foreground text-xs sm:text-sm">These bright minds are waiting for your approval to start mentoring.</CardDescription>
               </div>
               <Link href="/admin/tutors">
                  <Button variant="ghost" className="rounded-xl font-bold text-xs uppercase tracking-widest">View All</Button>
@@ -409,9 +409,9 @@ export function AdminDashboardClient({
           <Card className="rounded-[3rem] overflow-hidden bg-slate-900 border-white/5 text-white">
             <CardHeader className="p-6 sm:p-10">
               <CardTitle className="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-3">
-                 <Activity className="h-5 w-5 sm:h-6 sm:w-6 text-primary" /> Platform Health
+                 <Activity className="h-5 w-5 sm:h-6 sm:w-6 text-primary" /> Live Pulse
               </CardTitle>
-              <CardDescription className="text-white/40 text-xs sm:text-sm">What&apos;s happening right now.</CardDescription>
+              <CardDescription className="text-white/40 text-xs sm:text-sm">The heartbeat of Edyfra, right this second.</CardDescription>
             </CardHeader>
             <CardContent className="px-6 sm:px-10 space-y-6 sm:space-y-10 pb-6 sm:pb-12">
                {healthChecks.map(v => (
@@ -514,8 +514,8 @@ export function AdminDashboardClient({
                <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-xl sm:text-3xl font-black text-white tracking-tighter">Platform Numbers</CardTitle>
-              <CardDescription className="text-white/40 font-medium text-sm sm:text-lg">Where things stand right now.</CardDescription>
+              <CardTitle className="text-xl sm:text-3xl font-black text-white tracking-tighter">Your Community Numbers</CardTitle>
+              <CardDescription className="text-white/40 font-medium text-sm sm:text-lg">Here's where we stand with our scholars and experts.</CardDescription>
             </div>
           </div>
           <div className="flex gap-3 sm:gap-4">
