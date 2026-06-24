@@ -267,9 +267,15 @@ export function Footer() {
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
             <span>&copy; {new Date().getFullYear()} Edyfra Platforms.</span>
             <span className="hidden sm:inline">&middot;</span>
-            <span>Built with</span>
-            <Heart className="h-3 w-3 text-destructive fill-destructive" />
-            <span>in Nairobi.</span>
+            <span>built by</span>
+            <Link
+              href="https://marsley-mash-site.vercel.app"
+              target="_blank"
+              rel="noreferrer"
+              className="text-primary hover:text-primary/80 transition-colors underline underline-offset-2"
+            >
+              Mash
+            </Link>
           </p>
           <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
             <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
