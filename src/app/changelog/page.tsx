@@ -1,184 +1,164 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
-  Sparkles,
-  ArrowUp,
-  Bug,
-  ChevronDown,
   Calendar,
-  Tag,
+  ChevronDown,
+  ChevronUp,
+  Sparkles,
+  Rocket,
+  ShieldCheck,
+  Video,
+  Bug,
+  Star,
+  type LucideIcon,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { changelog } from "@/data/changelog";
 
-const typeIcons = {
-  features: Sparkles,
-  improvements: ArrowUp,
-  fixes: Bug,
-} as const;
+const icons: Record<number, LucideIcon> = {
+  0: ShieldCheck,
+  1: Video,
+  2: Rocket,
+};
 
-const typeColors = {
-  features:
-    "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
-  improvements:
-    "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
-  fixes: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20",
-} as const;
+const iconColors: Record<number, string> = {
+  0: "bg-violet-500 text-white ring-violet-200 dark:ring-violet-900",
+  1: "bg-blue-500 text-white ring-blue-200 dark:ring-blue-900",
+  2: "bg-emerald-500 text-white ring-emerald-200 dark:ring-emerald-900",
+};
 
-function ChangelogCard({
-  entry,
-  index,
-}: {
-  entry: (typeof changelog)[number];
-  index: number;
-}) {
-  const [expanded, setExpanded] = useState(index === 0);
+const badgeColors: Record<number, string> = {
+  0: "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-900/30 dark:text-violet-300 dark:border-violet-800",
+  1: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800",
+  2: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800",
+};
 
-  const sections = [
-    { key: "features" as const, label: "New Features" },
-    { key: "improvements" as const, label: "Improvements" },
-    { key: "fixes" as const, label: "Bug Fixes" },
-  ].filter((s) => entry[s.key]?.length);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
-    >
-      <Card
-        className={cn(
-          "border-border/50 overflow-hidden transition-all duration-300",
-          expanded ? "shadow-lg" : "shadow-sm hover:shadow-md"
-        )}
-      >
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="w-full text-left"
-        >
-          <CardHeader className="pb-0">
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-2 flex-1 min-w-0">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <Badge variant="secondary" className="font-mono text-xs">
-                    v{entry.version}
-                  </Badge>
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Calendar className="h-3.5 w-3.5" />
-                    {entry.date}
-                  </div>
-                </div>
-                <h3 className="text-lg font-bold tracking-tight">
-                  {entry.title}
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {entry.summary}
-                </p>
-              </div>
-              <motion.div
-                animate={{ rotate: expanded ? 180 : 0 }}
-                transition={{ duration: 0.2 }}
-                className="mt-1 shrink-0"
-              >
-                <ChevronDown className="h-5 w-5 text-muted-foreground" />
-              </motion.div>
-            </div>
-          </CardHeader>
-        </button>
-
-        <AnimatePresence initial={false}>
-          {expanded && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="overflow-hidden"
-            >
-              <CardContent className="pt-4 pb-6 space-y-5">
-                {sections.map(({ key, label }) => {
-                  const Icon = typeIcons[key];
-                  const items = entry[key]!;
-                  return (
-                    <div key={key}>
-                      <div className="flex items-center gap-2 mb-2.5">
-                        <div
-                          className={cn(
-                            "p-1 rounded-md border",
-                            typeColors[key]
-                          )}
-                        >
-                          <Icon className="h-3.5 w-3.5" />
-                        </div>
-                        <span className="text-sm font-semibold">{label}</span>
-                        <Badge
-                          variant="outline"
-                          className="ml-auto text-xs font-mono"
-                        >
-                          {items.length}
-                        </Badge>
-                      </div>
-                      <ul className="space-y-1.5">
-                        {items.map((item, i) => (
-                          <li
-                            key={i}
-                            className="flex items-start gap-2.5 text-sm text-muted-foreground pl-1"
-                          >
-                            <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted-foreground/40 shrink-0" />
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  );
-                })}
-              </CardContent>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </Card>
-    </motion.div>
-  );
+function getIcon(index: number): LucideIcon {
+  return icons[index] ?? Rocket;
 }
 
 export default function ChangelogPage() {
-  return (
-    <div className="min-h-screen">
-      <section className="relative overflow-hidden border-b border-border/40">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
-        <div className="container mx-auto px-4 sm:px-6 py-20 sm:py-28 relative">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-2xl"
-          >
-            <div className="flex items-center gap-2 text-primary mb-4">
-              <Tag className="h-4 w-4" />
-              <span className="text-sm font-medium uppercase tracking-wider">
-                Changelog
-              </span>
-            </div>
-            <h1 className="text-4xl sm:text-5xl font-black tracking-tight mb-4">
-              What&apos;s new?
-            </h1>
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              Every update, improvement, and fix — handcrafted for you.
-            </p>
-          </motion.div>
-        </div>
-      </section>
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(0);
 
-      <section className="container mx-auto px-4 sm:px-6 py-12 sm:py-16">
-        <div className="max-w-2xl mx-auto space-y-6">
-          {changelog.map((entry, index) => (
-            <ChangelogCard key={entry.version} entry={entry} index={index} />
-          ))}
+  return (
+    <div className="relative min-h-screen px-6 py-16 sm:px-8 lg:px-16 overflow-hidden">
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-100/40 rounded-full blur-3xl -z-10 dark:bg-indigo-900/20" />
+      <div className="absolute bottom-10 right-10 w-96 h-96 bg-purple-100/40 rounded-full blur-3xl -z-10 dark:bg-purple-900/20" />
+
+      <div className="max-w-3xl mx-auto mb-16 text-center sm:text-left">
+        <div className="inline-flex items-center gap-2 px-3 py-1 text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 rounded-full mb-4">
+          <Sparkles className="w-4 h-4" />
+          <span>Fresh product drops</span>
         </div>
-      </section>
+        <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
+          What&apos;s new?
+        </h1>
+        <p className="mt-3 text-lg text-muted-foreground">
+          Every update, improvement, and fix — handcrafted for you.
+        </p>
+      </div>
+
+      <div className="max-w-3xl mx-auto relative">
+        <div className="absolute left-6 top-4 bottom-4 w-0.5 bg-gradient-to-b from-indigo-200 via-blue-200 to-slate-200 dark:from-indigo-800 dark:via-blue-800 dark:to-slate-700" />
+
+        <div className="space-y-8">
+          {changelog.map((update, index) => {
+            const IconComponent = getIcon(index);
+            const isExpanded = expandedIndex === index;
+
+            return (
+              <div key={update.version} className="relative pl-14 group">
+                <div
+                  className={`absolute left-2 top-2 w-9 h-9 rounded-full flex items-center justify-center ring-4 transition-all duration-300 group-hover:scale-110 ${iconColors[index] ?? iconColors[0]}`}
+                >
+                  <IconComponent className="w-4 h-4" />
+                </div>
+
+                <div
+                  onClick={() =>
+                    setExpandedIndex(isExpanded ? null : index)
+                  }
+                  className="cursor-pointer bg-card border border-border/80 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-border hover:-translate-y-0.5"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`px-2.5 py-0.5 text-xs font-semibold rounded-full border ${badgeColors[index] ?? badgeColors[0]}`}
+                      >
+                        v{update.version}
+                      </span>
+
+                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <Calendar className="w-3.5 h-3.5" />
+                        <span>{update.date}</span>
+                      </div>
+                    </div>
+
+                    <div className="text-muted-foreground group-hover:text-foreground transition-colors self-end sm:self-auto">
+                      {isExpanded ? (
+                        <ChevronUp className="w-5 h-5" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5" />
+                      )}
+                    </div>
+                  </div>
+
+                  <h3 className="text-xl font-bold text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                    {update.title}
+                  </h3>
+
+                  <p className="mt-2 text-muted-foreground leading-relaxed text-sm sm:text-base">
+                    {update.description}
+                  </p>
+
+                  {isExpanded && (
+                    <div className="mt-4 pt-4 border-t border-border text-sm space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                      {update.highlights && update.highlights.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-2 text-foreground font-semibold">
+                            <Star className="w-4 h-4 text-indigo-500" />
+                            <span>What&apos;s new</span>
+                          </div>
+                          <ul className="space-y-1.5">
+                            {update.highlights.map((item, i) => (
+                              <li
+                                key={i}
+                                className="flex items-start gap-2.5 text-muted-foreground pl-1"
+                              >
+                                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-indigo-400/50 shrink-0" />
+                                {item}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {update.fixes && update.fixes.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-2 text-foreground font-semibold">
+                            <Bug className="w-4 h-4 text-amber-500" />
+                            <span>Fixes</span>
+                          </div>
+                          <ul className="space-y-1.5">
+                            {update.fixes.map((item, i) => (
+                              <li
+                                key={i}
+                                className="flex items-start gap-2.5 text-muted-foreground pl-1"
+                              >
+                                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-amber-400/50 shrink-0" />
+                                {item}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

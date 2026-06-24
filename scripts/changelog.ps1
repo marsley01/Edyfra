@@ -1,6 +1,5 @@
 param([string]$Message = "")
 
-# Get last version from changelog.ts
 $dataFile = "src/data/changelog.ts"
 $content = Get-Content $dataFile -Raw
 
@@ -9,7 +8,6 @@ if ($content -match 'version:\s+"([^"]+)"') {
   $lastVersion = $matches[1]
 }
 
-# Get commits since last tag matching that version, or use a reasonable default
 $since = "1 week ago"
 try {
   $tagCheck = git tag -l "v$lastVersion" 2>$null
@@ -23,65 +21,58 @@ if (-not $log) {
   $log = git log --oneline --no-decorate -20 2>$null
 }
 
-$features = @()
-$improvements = @()
+$highlights = @()
 $fixes = @()
 $other = @()
 
 foreach ($line in $log) {
   $msg = $line -replace '^[a-f0-9]+\s+', ''
-  if ($msg -match '^feat[(:]') {
-    $clean = $msg -replace '^feat(\([^)]*\))?:\s*', ''
-    $features += $clean
-  } elseif ($msg -match '^fix[(:]') {
+  if ($msg -match '^fix[(:]') {
     $clean = $msg -replace '^fix(\([^)]*\))?:\s*', ''
+    # Rewrite internal tech references to user-safe language
+    $clean = $clean -replace '(?i)\b(supabase|prisma|redis|webpack|turbopack|postgres|sql)\b.*', 'backend improvements'
     $fixes += $clean
-  } elseif ($msg -match '^(chore|refactor|improve|perf)') {
-    $clean = $msg -replace '^(chore|refactor|improve|perf)(\([^)]*\))?:\s*', ''
-    $improvements += $clean
   } else {
-    $other += $msg
+    $clean = $msg -replace '^(feat|chore|refactor|improve|perf|style|docs)(\([^)]*\))?:\s*', ''
+    $clean = $clean -replace '(?i)\b(supabase|prisma|redis|webpack|turbopack|postgres|sql|stream|getstream)\b.*', 'platform improvements'
+    $highlights += $clean
   }
 }
 
-# Bump version (simple patch bump)
 $parts = $lastVersion -split '\.'
 $patch = [int]$parts[2] + 1
 $newVersion = "$($parts[0]).$($parts[1]).$patch"
 
 $today = Get-Date -Format "MMMM dd, yyyy"
-
 $title = if ($Message) { $Message } else { "New update" }
-
-$summary = "What's new in this release."
-if ($features.Count -gt 0) {
-  $summary = "$($features[0])"
+$desc = "What's new in this release."
+if ($highlights.Count -gt 0) {
+  $desc = $highlights[0]
 }
+
+$hlLines = ($highlights | ForEach-Object { "      `"$_`"," }) -join "`n"
+$fixLines = ($fixes | ForEach-Object { "      `"$_`"," }) -join "`n"
 
 $newEntry = @"
   {
     version: "$newVersion",
     date: "$today",
     title: "$title",
-    summary: "$summary",
-    features: [
-$(($features | ForEach-Object { "      `"$_`"," }) -join "`n")
-    ],
-    improvements: [
-$(($improvements | ForEach-Object { "      `"$_`"," }) -join "`n")
+    description: "$desc",
+    highlights: [
+$hlLines
     ],
     fixes: [
-$(($fixes | ForEach-Object { "      `"$_`"," }) -join "`n")
+$fixLines
     ],
   },
 "@
 
-# Insert after the opening array
 $newContent = $content -replace '(export const changelog: ChangelogEntry\[\] = \[)', "`$1`n$newEntry"
 
 $newContent | Set-Content $dataFile
 
 Write-Host "`n✅ Changelog draft created for v$newVersion"
 Write-Host "   File: $dataFile"
-Write-Host "`n📝 Open it and personalize the descriptions before committing!"
-Write-Host "   Then run: git add src/data/changelog.ts && git commit -m 'chore: update changelog'`n"
+Write-Host "`n📝 Open it and rewrite the descriptions in your own words!"
+Write-Host "   Then: git add src/data/changelog.ts && git commit -m 'chore: update changelog'`n"
