@@ -28,6 +28,7 @@ export default function StudyPage() {
   const router = useRouter();
   const supabase = createClient();
   const [userData, setUserData] = useState<any>(null);
+  const [subjectsLoaded, setSubjectsLoaded] = useState(false);
   const [quoteIndex, setQuoteIndex] = useState(0);
 
   const {
@@ -46,6 +47,10 @@ export default function StudyPage() {
   useEffect(() => {
     getUserData().then((data) => {
       setUserData(data);
+      if (data?.studentProfile?.subjects?.length && !formData.subject) {
+        setFormData({ subject: data.studentProfile.subjects[0], topic: formData.topic });
+      }
+      setSubjectsLoaded(true);
     }).catch(console.error);
     
     // Sweep unmatched requests on mount
@@ -143,7 +148,7 @@ export default function StudyPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               <div className="space-y-4">
                 <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">What subject?</label>
-                <Select onValueChange={(v: string | null) => v && setFormData({ ...formData, subject: v })}>
+                <Select value={formData.subject || null} onValueChange={(v: string | null) => v && setFormData({ ...formData, subject: v })}>
                   <SelectTrigger className="h-20 rounded-[2rem] border-border bg-background font-black px-8 text-2xl focus:ring-primary">
                     <SelectValue placeholder="Pick a subject" />
                   </SelectTrigger>

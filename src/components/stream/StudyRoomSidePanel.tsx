@@ -185,7 +185,7 @@ export function StudyRoomSidePanel({ subject, topic, className = "" }: StudyRoom
                 <div className="mt-2 flex items-center gap-1.5">
                   <Bookmark className="h-3 w-3 text-violet-500" />
                   <span className="text-[9px] font-bold text-violet-500 uppercase tracking-wider">
-                    Active topic
+                    Working on
                   </span>
                 </div>
               )}

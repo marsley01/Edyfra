@@ -336,15 +336,13 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
                   <p className="text-xs font-bold">{session.subject}</p>
                 </div>
               </div>
-              {session.topic && (
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-3.5 w-3.5 text-violet-500" />
-                  <div>
-                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Topic</p>
-                    <p className="text-xs font-bold">{session.topic}</p>
-                  </div>
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-3.5 w-3.5 text-violet-500" />
+                <div>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Working on</p>
+                  <p className="text-xs font-bold">{session.topic || "General study"}</p>
                 </div>
-              )}
+              </div>
               <div className="flex items-center gap-2">
                 <Clock className="h-3.5 w-3.5 text-amber-500" />
                 <div>
