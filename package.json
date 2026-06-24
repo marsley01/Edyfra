@@ -13,7 +13,9 @@
     "db:generate": "prisma generate",
     "db:studio": "prisma studio",
     "db:push": "prisma db push --schema prisma/schema.prisma",
-    "db:migrate:15": "node scripts/run-migration.mjs supabase/migrations/15_institution_v2_system.sql"
+    "db:migrate:15": "node scripts/run-migration.mjs supabase/migrations/15_institution_v2_system.sql",
+    "changelog": "powershell -File scripts/changelog.ps1",
+    "changelog:new": "powershell -File scripts/changelog.ps1 -Message"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
