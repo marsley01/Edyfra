@@ -1,15 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { createClient } from "@/utils/supabase/server";
 
 const MODERATION_URL = process.env.PYTHON_MODERATION_URL || "http://localhost:8003";
 
 export async function POST(req: NextRequest) {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await req.json();
     const { text, userId, sessionId } = body;
 
     if (!text || !userId) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+    }
+
+    // Only allow users to moderate their own content
+    if (userId !== user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     let result = null;

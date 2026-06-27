@@ -3,16 +3,34 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import prisma from "@/lib/prisma";
 import { Role } from "@prisma/client";
+import { isFounderEmail } from "@/utils/admin-guard";
 
 export async function GET(request: NextRequest) {
   try {
+    const adminSecret = process.env.ADMIN_SECRET_KEY;
+    const providedSecret = request.headers.get("x-admin-secret") || request.nextUrl.searchParams.get("secret");
+
+    if (adminSecret && providedSecret !== adminSecret) {
+      return NextResponse.json(
+        { error: "Forbidden: Invalid admin setup secret" },
+        { status: 403 }
+      );
+    }
+
     const supabase = await createClient();
     const { data: { user }, error } = await supabase.auth.getUser();
-    
+
     if (error || !user) {
       return NextResponse.json(
-        { error: "Unauthorized: No user found" }, 
+        { error: "Unauthorized: No user found" },
         { status: 401 }
+      );
+    }
+
+    if (!isFounderEmail(user.email)) {
+      return NextResponse.json(
+        { error: "Forbidden: You are not authorized to become an admin" },
+        { status: 403 }
       );
     }
 

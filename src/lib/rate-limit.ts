@@ -1,34 +1,16 @@
+import { Redis } from "@upstash/redis";
+
 type RateLimitConfig = {
   interval: number;
   maxRequests: number;
 };
 
-type RateLimitEntry = {
-  count: number;
-  resetAt: number;
-};
-
-const stores = new Map<string, RateLimitEntry>();
-
-/**
- * Periodically prune expired entries so a long-running server doesn't grow
- * the map without bound. We cap the prune at a small number per tick so the
- * cleanup itself stays O(1) amortized under load.
- */
-let lastSweep = Date.now();
-const SWEEP_INTERVAL_MS = 60_000;
-const MAX_ENTRIES_BEFORE_FORCED_SWEEP = 5_000;
-
-function sweepIfNeeded(now: number) {
-  if (stores.size === 0) return;
-  const due = now - lastSweep >= SWEEP_INTERVAL_MS;
-  const overflowing = stores.size > MAX_ENTRIES_BEFORE_FORCED_SWEEP;
-  if (!due && !overflowing) return;
-  for (const [key, entry] of stores) {
-    if (now >= entry.resetAt) stores.delete(key);
-  }
-  lastSweep = now;
-}
+const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+  ? new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL!,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+    })
+  : null;
 
 function getConfig(path: string): RateLimitConfig {
   if (path.startsWith("/api/auth") || path.startsWith("/api/setup-admin")) {
@@ -40,8 +22,6 @@ function getConfig(path: string): RateLimitConfig {
   if (path.startsWith("/api/push")) {
     return { interval: 60_000, maxRequests: 20 };
   }
-  // Public contact + newsletter endpoints: 5 per minute per IP is plenty
-  // for humans and pushes back hard against scrapers/spammers.
   if (path.startsWith("/api/contact") || path.startsWith("/api/newsletter")) {
     return { interval: 60_000, maxRequests: 5 };
   }
@@ -50,24 +30,27 @@ function getConfig(path: string): RateLimitConfig {
 
 export async function rateLimit(key: string, config?: RateLimitConfig): Promise<{ success: boolean; remaining: number; resetAt: number }> {
   const cfg = config ?? { interval: 60_000, maxRequests: 30 };
-  const now = Date.now();
-  sweepIfNeeded(now);
 
-  let entry = stores.get(key);
+  if (redis) {
+    const windowSeconds = Math.ceil(cfg.interval / 1000);
+    const redisKey = `rl:${key}`;
 
-  if (!entry || now >= entry.resetAt) {
-    entry = { count: 1, resetAt: now + cfg.interval };
-    stores.set(key, entry);
-    return { success: true, remaining: cfg.maxRequests - 1, resetAt: entry.resetAt };
+    const result = await redis.pipeline()
+      .incr(redisKey)
+      .expire(redisKey, windowSeconds)
+      .exec();
+
+    const count = result[0] as number;
+    const ttl = result[1] as number;
+
+    if (count > cfg.maxRequests) {
+      return { success: false, remaining: 0, resetAt: Date.now() + (ttl || 0) * 1000 };
+    }
+
+    return { success: true, remaining: Math.max(0, cfg.maxRequests - count), resetAt: Date.now() + (ttl || 0) * 1000 };
   }
 
-  entry.count++;
-
-  if (entry.count > cfg.maxRequests) {
-    return { success: false, remaining: 0, resetAt: entry.resetAt };
-  }
-
-  return { success: true, remaining: cfg.maxRequests - entry.count, resetAt: entry.resetAt };
+  return { success: true, remaining: cfg.maxRequests - 1, resetAt: Date.now() + cfg.interval };
 }
 
 export function getRateLimitKey(request: Request): string {

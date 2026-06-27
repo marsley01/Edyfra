@@ -2,7 +2,6 @@ import os
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
-import json
 
 load_dotenv()
 
@@ -23,22 +22,35 @@ def get_db():
         db.close()
 
 
+def _make_params_safe(params: dict | None) -> dict:
+    """Sanitize parameter values to prevent NoSQL-style injection."""
+    if params is None:
+        return {}
+    safe = {}
+    for k, v in params.items():
+        if isinstance(v, str):
+            safe[k] = v.replace("\x00", "")
+        else:
+            safe[k] = v
+    return safe
+
+
 def execute_query(query: str, params: dict = None):
     with engine.connect() as conn:
-        result = conn.execute(text(query), params or {})
+        result = conn.execute(text(query), _make_params_safe(params))
         conn.commit()
         return result
 
 
 def fetch_all(query: str, params: dict = None):
     with engine.connect() as conn:
-        result = conn.execute(text(query), params or {})
+        result = conn.execute(text(query), _make_params_safe(params))
         rows = result.fetchall()
         return [dict(row._mapping) for row in rows]
 
 
 def fetch_one(query: str, params: dict = None):
     with engine.connect() as conn:
-        result = conn.execute(text(query), params or {})
+        result = conn.execute(text(query), _make_params_safe(params))
         row = result.fetchone()
         return dict(row._mapping) if row else None

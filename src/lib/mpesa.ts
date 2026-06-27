@@ -20,11 +20,13 @@ function getMpesaConfig() {
   return config;
 }
 
-const IS_SANDBOX = true;
+const isSandbox = () => (process.env.MPESA_ENV || "sandbox") !== "production";
 
-const BASE_URL = IS_SANDBOX 
-  ? "https://sandbox.safaricom.co.ke" 
-  : "https://api.safaricom.co.ke";
+function getBaseUrl() {
+  return isSandbox()
+    ? "https://sandbox.safaricom.co.ke"
+    : "https://api.safaricom.co.ke";
+}
 
 /**
  * Get Safaricom Access Token
@@ -35,7 +37,7 @@ export async function getMpesaToken() {
   
   try {
     const { data } = await axios.get(
-      `${BASE_URL}/oauth/v1/generate?grant_type=client_credentials`,
+      `${getBaseUrl()}/oauth/v1/generate?grant_type=client_credentials`,
       {
         headers: {
           Authorization: `Basic ${auth}`,
@@ -78,7 +80,7 @@ export async function initiateStkPush({
 
   try {
     const { data } = await axios.post(
-      `${BASE_URL}/mpesa/stkpush/v1/processrequest`,
+      `${getBaseUrl()}/mpesa/stkpush/v1/processrequest`,
       {
         BusinessShortCode: cfg.shortcode,
         Password: password,
@@ -128,11 +130,16 @@ export async function initiateB2CPayout({
   if (formattedPhone.startsWith("+")) formattedPhone = formattedPhone.slice(1);
 
   try {
+    const securityCredential = process.env.MPESA_B2C_SECURITY_CREDENTIAL;
+    if (!securityCredential) {
+      throw new Error("MPESA_B2C_SECURITY_CREDENTIAL is not configured. Generate it using Safaricom's public certificate.");
+    }
+
     const { data } = await axios.post(
-      `${BASE_URL}/mpesa/b2c/v1/paymentrequest`,
+      `${getBaseUrl()}/mpesa/b2c/v1/paymentrequest`,
       {
         InitiatorName: "EdyfraAdmin",
-        SecurityCredential: "YOUR_ENCRYPTED_PASSWORD", // Needs Safaricom certificate encryption
+        SecurityCredential: securityCredential,
         CommandID: "BusinessPayment", // or SalaryPayment
         Amount: Math.round(amount),
         PartyA: cfg.shortcode,

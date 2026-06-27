@@ -8,8 +8,10 @@ from better_profanity import profanity
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from shared.db import execute_query, fetch_one
 from shared.models import ModerationRequest, ModerationResponse
+from shared import ServiceAuthMiddleware
 
 app = FastAPI(title="Edyfra Content Moderation Service", version="1.0.0")
+app.add_middleware(ServiceAuthMiddleware)
 
 TOXIC_PATTERNS = [
     r"\b(hate|kill|die|attack|violence|terror)\b",
@@ -122,5 +124,6 @@ def moderate_content(req: ModerationRequest):
 if __name__ == "__main__":
     import uvicorn
 
+    host = os.getenv("HOST", "127.0.0.1")
     port = int(os.getenv("PORT", 8003))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(app, host=host, port=port)
