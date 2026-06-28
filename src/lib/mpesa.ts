@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 function getMpesaConfig() {
   const config = {
@@ -10,7 +10,7 @@ function getMpesaConfig() {
   };
 
   const missing = Object.entries(config)
-    .filter(([_, value]) => !value)
+    .filter(([, value]) => !value)
     .map(([key]) => key);
 
   if (missing.length > 0) {
@@ -45,8 +45,9 @@ export async function getMpesaToken() {
       }
     );
     return data.access_token;
-  } catch (error: any) {
-    console.error("[Mpesa] OAuth Error:", error.response?.data || error.message);
+  } catch (error) {
+    const err = error as AxiosError<{ errorMessage?: string }>;
+    console.error("[Mpesa] OAuth Error:", err.response?.data || err.message);
     throw new Error("Failed to get M-Pesa access token");
   }
 }
@@ -101,9 +102,10 @@ export async function initiateStkPush({
       }
     );
     return data;
-  } catch (error: any) {
-    console.error("[Mpesa] STK Push Error:", error.response?.data || error.message);
-    throw new Error(error.response?.data?.errorMessage || "Failed to initiate M-Pesa payment");
+  } catch (error) {
+    const err = error as AxiosError<{ errorMessage?: string }>;
+    console.error("[Mpesa] STK Push Error:", err.response?.data || err.message);
+    throw new Error((err.response?.data as { errorMessage?: string } | undefined)?.errorMessage || "Failed to initiate M-Pesa payment");
   }
 }
 
@@ -156,8 +158,9 @@ export async function initiateB2CPayout({
       }
     );
     return data;
-  } catch (error: any) {
-    console.error("[Mpesa] B2C Error:", error.response?.data || error.message);
+  } catch (error) {
+    const err = error as AxiosError;
+    console.error("[Mpesa] B2C Error:", err.response?.data || err.message);
     throw new Error("Failed to initiate M-Pesa payout");
   }
 }

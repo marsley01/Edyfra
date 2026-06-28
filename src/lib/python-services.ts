@@ -4,7 +4,7 @@ const PYTHON_SERVICES = {
   moderation: process.env.PYTHON_MODERATION_URL || "http://localhost:8003",
 };
 
-async function callService(service: keyof typeof PYTHON_SERVICES, endpoint: string, body: any) {
+async function callService(service: keyof typeof PYTHON_SERVICES, endpoint: string, body: Record<string, unknown>) {
   try {
     const res = await fetch(`${PYTHON_SERVICES[service]}${endpoint}`, {
       method: "POST",

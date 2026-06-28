@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { createMatchRequest } from "@/app/actions/match";
+import { createMatchRequest, initiateAutoMatch } from "@/app/actions/match";
 import { Zap, Search, Users, Cpu, Sparkles, Calendar as CalendarIcon } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/utils/supabase/client";
@@ -15,6 +15,7 @@ import { createClient } from "@/utils/supabase/client";
 import { getSubjectsByLevel } from "@/utils/subjects";
 import { getUserData } from "@/app/actions/user";
 import { useMatchStore } from "@/store/matchStore";
+import { useMatch } from "@/lib/match-context";
 
 const QUOTES = [
   "\"Education is the most powerful weapon which you can use to change the world.\" - Nelson Mandela",
@@ -43,6 +44,8 @@ export default function StudyPage() {
     setCurrentRequestId,
     reset
   } = useMatchStore();
+
+  const matchCtx = useMatch();
 
   useEffect(() => {
     getUserData().then((data) => {
@@ -89,6 +92,17 @@ export default function StudyPage() {
       }
       
       setCurrentRequestId(result.matchRequestId || null);
+      const requestId = result.matchRequestId!;
+      
+      // Kick off auto-matching (tier1 tutor → tier2 peer → tier3 AI)
+      initiateAutoMatch(requestId).then((matchResult) => {
+        if (matchResult.success && matchResult.sessionId) {
+          router.push(`/study-room/${matchResult.sessionId}`);
+        }
+      }).catch(console.error);
+      
+      // Bridge to MatchProvider context so it polls checkMatchStatus
+      matchCtx.startMatch(requestId);
       
       // Broadcast the request to all online users/tutors
       const { data: { user } } = await supabase.auth.getUser();
@@ -98,7 +112,7 @@ export default function StudyPage() {
             type: 'broadcast',
             event: 'new-request',
             payload: {
-              requestId: result.matchRequestId,
+              requestId,
               studentId: user.id,
               studentName: user.user_metadata?.name || 'A student',
               subject: formData.subject,

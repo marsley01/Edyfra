@@ -13,7 +13,7 @@ import { PushSubscriptionManager } from "@/components/push-subscription-manager"
 import EddyChatWrapper from "@/components/chat/EddyChatWrapper";
 import { OverlayManagerProvider } from "@/lib/overlay-manager";
 import { ClickFeedback } from "@/components/click-feedback";
-import { getAdminGlobalSettings, checkAdminStatus } from "@/app/actions/admin";
+import { MaintenanceGate } from "@/components/maintenance-gate";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -89,24 +89,14 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
 };
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const settings = await getAdminGlobalSettings();
-  const isAdmin = await checkAdminStatus();
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
-        {settings.maintenanceMode && !isAdmin ? (
-          <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-4 text-center">
-            <h1 className="text-4xl md:text-6xl font-black tracking-tighter mb-4 text-primary">Edyfra</h1>
-            <h2 className="text-2xl md:text-3xl font-bold mb-2">We'll be right back.</h2>
-            <p className="text-muted-foreground max-w-md">The platform is currently undergoing scheduled maintenance. Please check back later.</p>
-          </div>
-        ) : (
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -116,7 +106,9 @@ export default async function RootLayout({
           <OverlayManagerProvider>
             <ThemeColorManager />
             <ClickFeedback />
-            <ConditionalShell>{children}</ConditionalShell>
+            <MaintenanceGate>
+              <ConditionalShell>{children}</ConditionalShell>
+            </MaintenanceGate>
             <ServiceWorkerRegister />
             <PushSubscriptionManager />
             <EddyChatWrapper />
@@ -125,7 +117,6 @@ export default async function RootLayout({
             <SpeedInsights />
           </OverlayManagerProvider>
         </ThemeProvider>
-        )}
       </body>
     </html>
   );

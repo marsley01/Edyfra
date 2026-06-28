@@ -1,15 +1,3 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-function getGoogleApiKey(): string {
-  const key = process.env.GOOGLE_AI_KEY;
-  if (!key) {
-    throw new Error("GOOGLE_AI_KEY is not defined. Please set it in your environment variables.");
-  }
-  return key;
-}
-
-const genAI = new GoogleGenerativeAI(getGoogleApiKey());
-
 export const AVAILABLE_MODELS = [
   { id: "google/gemini-2.0-flash-lite", label: "Gemini 2.0 Flash Lite", costPer1K: 0 },
   { id: "google/gemini-2.0-flash-exp:free", label: "Gemini 2.0 Flash (Free)", costPer1K: 0 },

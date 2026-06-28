@@ -22,7 +22,7 @@ export async function getStreamVideoClient(): Promise<StreamVideoClient | null> 
     return null;
   }
 
-  const { token, userId, userName, apiKey } = tokenData;
+  const { userId, userName, apiKey } = tokenData;
 
   if (client && clientUserId === userId) {
     return client;

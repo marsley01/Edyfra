@@ -45,8 +45,6 @@ function joinLines(parts: Array<string | undefined>) {
  */
 export function showError({ title, cause, fix, raw, id, action }: ErrorToastInput) {
   if (raw !== undefined) {
-    // Logs only — users never see the raw error.
-    // eslint-disable-next-line no-console
     console.error(`[toast] ${title}`, raw);
   }
   const description = joinLines([cause, fix]);
@@ -91,7 +89,8 @@ export function showLoading(title: string, opts?: { description?: string; id?: s
  * know what went wrong — but prefer hand-written copy when you do.
  */
 export function explainError(err: unknown, fallbackTitle = "Something went sideways"): ErrorToastInput {
-  const msg = typeof err === "string" ? err : (err as any)?.message || (err as any)?.error || "";
+  const errObj = err as Record<string, unknown> | null;
+  const msg = typeof err === "string" ? err : (typeof errObj?.message === "string" ? errObj.message : (typeof errObj?.error === "string" ? errObj.error : ""));
   const lower = msg.toLowerCase();
 
   // Network / offline
