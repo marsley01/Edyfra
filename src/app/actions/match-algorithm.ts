@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { EduLevel, MatchTier } from "@/generated/client";
 import { SESSION_CONFIG, TUTOR_CONFIG } from "@/lib/config";
 import { randomBytes } from "crypto";
-import { syncUsersToStream } from "@/lib/user-sync";
+import { syncUsersToStream, getServerStreamClient, MASH_AI_USER_ID } from "@/lib/user-sync";
 import { notifyUser } from "@/app/actions/notifications";
 
 // ─── Atomic Commit Helpers ────────────────────────────────────────────────────
@@ -74,6 +74,21 @@ export async function commitHumanMatch(
 
     return session;
   });
+
+  // Pre-create the Stream Chat channel so the client doesn't need
+  // ReadChannel permission — the server admin client bypasses role checks.
+  try {
+    const streamClient = getServerStreamClient();
+    if (streamClient) {
+      const channel = streamClient.channel("messaging", result.id, {
+        members: [studentId, partnerId, MASH_AI_USER_ID],
+        created_by_id: studentId,
+      } as any);
+      await channel.create();
+    }
+  } catch (e) {
+    console.warn("[commitHumanMatch] Stream channel creation failed (non-fatal):", e);
+  }
 
   return { sessionId: result.id, roomId };
 }
@@ -154,6 +169,21 @@ export async function commitAISession(
 
     return session;
   });
+
+  // Pre-create the Stream Chat channel so the client can watch it without
+  // needing the ReadChannel permission for the 'user' role.
+  try {
+    const streamClient = getServerStreamClient();
+    if (streamClient) {
+      const channel = streamClient.channel("messaging", result.id, {
+        members: [studentId, MASH_AI_USER_ID],
+        created_by_id: studentId,
+      } as any);
+      await channel.create();
+    }
+  } catch (e) {
+    console.warn("[commitAISession] Stream channel creation failed (non-fatal):", e);
+  }
 
   return { sessionId: result.id, roomId };
 }
