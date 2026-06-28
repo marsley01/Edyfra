@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { createMatchRequest, initiateAutoMatch } from "@/app/actions/match";
+import { createMatchRequest } from "@/app/actions/match";
 import { Search } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/utils/supabase/client";
@@ -26,6 +26,7 @@ export default function StudyPage() {
   const router = useRouter();
   const supabase = createClient();
   const [userData, setUserData] = useState<any>(null);
+  const aiFallbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const {
     isMatching,
@@ -37,10 +38,18 @@ export default function StudyPage() {
     setTimer,
     setFormData,
     setCurrentRequestId,
-    reset
+    reset: resetStore
   } = useMatchStore();
 
   const matchCtx = useMatch();
+
+  // Cleanup AI fallback timer when component unmounts or matching resets
+  const clearAiTimer = () => {
+    if (aiFallbackTimer.current) {
+      clearTimeout(aiFallbackTimer.current);
+      aiFallbackTimer.current = null;
+    }
+  };
 
   useEffect(() => {
     getUserData().then((data) => {
@@ -53,9 +62,17 @@ export default function StudyPage() {
     import("@/app/actions/match").then(({ sweepUnmatchedRequests }) => {
       sweepUnmatchedRequests();
     }).catch(console.error);
+
+    return () => clearAiTimer();
   }, []);
 
   const subjects = getSubjectsByLevel(userData?.educationLevel || "HIGH_SCHOOL");
+
+  const reset = () => {
+    clearAiTimer();
+    resetStore();
+    matchCtx.cancelMatch();
+  };
 
   const handleMatchMe = async () => {
     if (!formData.subject) {
@@ -78,14 +95,10 @@ export default function StudyPage() {
       setCurrentRequestId(result.matchRequestId || null);
       const requestId = result.matchRequestId!;
 
-      initiateAutoMatch(requestId).then((matchResult) => {
-        if (matchResult.success && matchResult.sessionId) {
-          router.push(`/study-room/${matchResult.sessionId}`);
-        }
-      }).catch(console.error);
-
+      // Start MatchProvider polling (detects tutor acceptance + auto-redirects)
       matchCtx.startMatch(requestId);
 
+      // Broadcast the request to online tutors via Supabase Realtime
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         try {
@@ -104,6 +117,19 @@ export default function StudyPage() {
           console.error('Broadcast failed, but matching continues:', broadcastErr);
         }
       }
+
+      // After the matching window (60s), fall back to AI if still unmatched
+      aiFallbackTimer.current = setTimeout(async () => {
+        try {
+          const { initiateAutoMatch } = await import("@/app/actions/match");
+          const matchResult = await initiateAutoMatch(requestId);
+          if (matchResult.success && matchResult.sessionId) {
+            router.push(`/study-room/${matchResult.sessionId}`);
+          }
+        } catch (e) {
+          console.error("AI fallback failed:", e);
+        }
+      }, 65000);
 
       toast.success("Request submitted! Searching for help...");
     } catch (error) {
