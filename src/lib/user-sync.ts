@@ -95,7 +95,7 @@ export async function syncUserToStream(
     id: profile.id,
     name: profile.name,
     image: profile.image || undefined,
-    role: "channel_member",
+    role: "user",
   });
   return profile;
 }
@@ -127,7 +127,7 @@ export async function syncUsersToStream(
         id: p.id,
         name: p.name || "User",
         image: p.avatar || undefined,
-        role: "channel_member",
+        role: "user",
       });
       results.push({ id: p.id, name: p.name || "User", image: p.avatar });
     } catch (err) {
@@ -151,7 +151,7 @@ export async function syncAIUserToStream(): Promise<void> {
     await client.upsertUser({
       id: MASH_AI_USER_ID,
       name: "Mash AI",
-      role: "channel_member",
+      role: "user",
     });
   } catch (err) {
     // mash-ai is a system user — a failure here is non-fatal
