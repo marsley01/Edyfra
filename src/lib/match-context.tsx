@@ -74,7 +74,7 @@ export function MatchProvider({ children }: { children: ReactNode }) {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [state.step]);
 
-  // Poll for match status
+  // Poll for match status and run matchmaking
   useEffect(() => {
     if (!state.matchRequestId || state.step === "matched") return;
 
@@ -83,8 +83,8 @@ export function MatchProvider({ children }: { children: ReactNode }) {
       if (typeof document !== "undefined" && document.hidden) return;
       
       try {
-        const { checkMatchStatus } = await import("@/app/actions/match");
-        const res = await checkMatchStatus(state.matchRequestId!);
+        const { initiateAutoMatch } = await import("@/app/actions/match");
+        const res = await initiateAutoMatch(state.matchRequestId!);
         if (res.success && res.sessionId) {
           setState(prev => ({ ...prev, step: "matched", sessionId: res.sessionId ?? null }));
           showSuccess("Match found!", { description: "Taking you there now." });
@@ -93,7 +93,9 @@ export function MatchProvider({ children }: { children: ReactNode }) {
             clearState();
           }, 1500);
         }
-      } catch {}
+      } catch (err) {
+        console.error("Polling matchmaking error:", err);
+      }
     }, 3000);
 
     return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
@@ -115,9 +117,18 @@ export function MatchProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const cancelMatch = useCallback(() => {
+    const requestId = state.matchRequestId;
     clearState();
     setState({ step: "idle", matchRequestId: null, timer: TOTAL_TIME, sessionId: null });
-  }, []);
+    
+    if (requestId) {
+      import("@/app/actions/match").then(({ cancelMatchRequest }) => {
+        cancelMatchRequest(requestId);
+      }).catch(err => {
+        console.error("Failed to cancel match request on server:", err);
+      });
+    }
+  }, [state.matchRequestId]);
 
   const setStep = useCallback((step: MatchStep) => {
     setState(prev => ({ ...prev, step }));

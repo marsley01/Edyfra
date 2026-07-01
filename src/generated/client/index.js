@@ -1236,7 +1236,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\Mash\\Desktop\\Project Apps\\edyfra\\src\\generated\\client",
+      "value": "C:\\Users\\Mash\\Desktop\\Project Apps\\Edyfra\\src\\generated\\client",
       "fromEnvVar": null
     },
     "config": {
@@ -1262,12 +1262,11 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\Mash\\Desktop\\Project Apps\\edyfra\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\Mash\\Desktop\\Project Apps\\Edyfra\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null,
-    "schemaEnvPath": "../../../.env"
+    "rootEnvPath": null
   },
   "relativePath": "../../../prisma",
   "clientVersion": "6.19.3",

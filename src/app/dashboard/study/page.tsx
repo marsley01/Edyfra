@@ -14,7 +14,7 @@ import { createClient } from "@/utils/supabase/client";
 
 import { getSubjectsByLevel } from "@/utils/subjects";
 import { getUserData } from "@/app/actions/user";
-import { useMatchStore } from "@/store/matchStore";
+import { useMatch } from "@/lib/match-context";
 
 const QUOTES = [
   "\"Education is the most powerful weapon which you can use to change the world.\" - Nelson Mandela",
@@ -30,19 +30,10 @@ export default function StudyPage() {
   const [userData, setUserData] = useState<any>(null);
   const [subjectsLoaded, setSubjectsLoaded] = useState(false);
   const [quoteIndex, setQuoteIndex] = useState(0);
+  const [formData, setFormData] = useState({ subject: "", topic: "" });
 
-  const {
-    isMatching,
-    matchStep,
-    timer,
-    formData,
-    setMatching,
-    setMatchStep,
-    setTimer,
-    setFormData,
-    setCurrentRequestId,
-    reset
-  } = useMatchStore();
+  const { step, timer, startMatch, cancelMatch } = useMatch();
+  const isMatching = step !== "idle";
 
   useEffect(() => {
     getUserData().then((data) => {
@@ -76,19 +67,14 @@ export default function StudyPage() {
       return;
     }
 
-    setMatching(true);
-    setMatchStep(1);
-    setTimer(90);
-
     try {
       const result = await createMatchRequest(formData);
       if (!result.success) {
         toast.error(result.error || "Failed to start matching. Please try again.");
-        reset();
         return;
       }
       
-      setCurrentRequestId(result.matchRequestId || null);
+      startMatch(result.matchRequestId!);
       
       // Broadcast the request to all online users/tutors
       const { data: { user } } = await supabase.auth.getUser();
@@ -114,7 +100,6 @@ export default function StudyPage() {
     } catch (error) {
       console.error("Matching error:", error);
       toast.error("Failed to start matching. Please try again.");
-      reset();
     }
   };
 
@@ -181,7 +166,7 @@ export default function StudyPage() {
         </Card>
       ) : (
         <Card className="min-h-[500px] flex flex-col items-center justify-center text-center p-12 md:p-20 border-border/50 bg-secondary/30 backdrop-blur-3xl rounded-[3rem] shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 left-0 h-2 bg-primary transition-all duration-1000 shadow-[0_0_20px_rgba(139,92,246,0.5)]" style={{ width: `${(timer/90)*100}%` }} />
+          <div className="absolute top-0 left-0 h-2 bg-primary transition-all duration-1000 shadow-[0_0_20px_rgba(139,92,246,0.5)]" style={{ width: `${(timer/60)*100}%` }} />
           
           <div className="absolute top-8 left-0 w-full px-8">
             <AnimatePresence mode="wait">
@@ -198,7 +183,7 @@ export default function StudyPage() {
           </div>
 
           <AnimatePresence mode="wait">
-            {matchStep === 1 && (
+            {step === "tutor" && (
               <motion.div
                 key="tutor"
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -223,7 +208,7 @@ export default function StudyPage() {
               </motion.div>
             )}
 
-            {matchStep === 2 && (
+            {step === "peer" && (
               <motion.div
                 key="peer"
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -248,7 +233,7 @@ export default function StudyPage() {
               </motion.div>
             )}
 
-            {matchStep === 3 && (
+            {step === "ai" && (
               <motion.div
                 key="ai"
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -276,7 +261,7 @@ export default function StudyPage() {
 
           <Button
             variant="ghost"
-            onClick={() => reset()}
+            onClick={() => cancelMatch()}
             className="mt-16 text-muted-foreground hover:text-red-500 font-black text-[10px] tracking-widest uppercase transition-colors"
           >
             Cancel

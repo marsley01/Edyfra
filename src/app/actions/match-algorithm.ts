@@ -555,7 +555,16 @@ export async function executeSmartMatching(
       where: { id: matchRequestId },
     });
     if (!matchRequest) return { success: false, error: "Match request not found" };
-    if (matchRequest.sessionId) return { success: false, error: "Already matched" };
+    
+    // If already matched (e.g. manually accepted by a tutor or matched in a previous check)
+    // return success along with the sessionId.
+    if (matchRequest.sessionId) {
+      return {
+        success: true,
+        sessionId: matchRequest.sessionId,
+        tier: matchRequest.resolvedAs || undefined,
+      };
+    }
 
     const student = await prisma.user.findUnique({
       where: { id: matchRequest.studentId },
@@ -591,8 +600,17 @@ export async function executeSmartMatching(
       requestedSubject: matchRequest.subject,
     };
 
+    // Stagger matching tiers based on elapsed time:
+    // - TIER 1 (Tutor): 0 - 30 seconds
+    // - TIER 2 (Peer): 30+ seconds
+    // - TIER 3 (AI Fallback): 55+ seconds
+    const elapsedMs = Date.now() - matchRequest.createdAt.getTime();
+    const tryTutor = true; // Always try tutor if one is available
+    const tryPeer = elapsedMs >= 30 * 1000;
+    const tryAI = elapsedMs >= 55 * 1000 && !options?.skipAI;
+
     // ============ STEP 0: GROUP SESSION ============
-    if (!matchRequest.tier1Tried) {
+    if (tryTutor) {
       const groupResult = await tryJoinGroupSession(
         matchRequest.studentId,
         matchRequestId,
@@ -613,7 +631,7 @@ export async function executeSmartMatching(
     }
 
     // ============ STEP 1: TUTOR MATCH (Load Balanced) ============
-    if (!matchRequest.tier1Tried) {
+    if (tryTutor) {
       const tier1Partner = await findTier1Match(
         matchRequest.studentId,
         matchRequest.subject,
@@ -623,13 +641,11 @@ export async function executeSmartMatching(
       if (tier1Partner) {
         partnerId = tier1Partner;
         tier = "TUTOR";
-      } else {
-        await markTierExhausted(matchRequestId, 1);
       }
     }
 
     // ============ STEP 2: PEER MATCH ============
-    if (!partnerId && !matchRequest.tier2Tried) {
+    if (!partnerId && tryPeer) {
       const tier2Partner = await findTier2Match(
         matchRequest.studentId,
         student.studentProfile?.subjects || [matchRequest.subject],
@@ -639,14 +655,12 @@ export async function executeSmartMatching(
       if (tier2Partner) {
         partnerId = tier2Partner;
         tier = "PEER";
-      } else {
-        await markTierExhausted(matchRequestId, 2);
       }
     }
 
     // ============ STEP 3: AI MATCH ============
-    if (!partnerId && options?.skipAI) {
-      return { success: false, error: "No human match found, AI skipped by caller", debug: debugInfo };
+    if (!partnerId && !tryAI) {
+      return { success: false, error: "Searching for human match...", debug: debugInfo };
     }
 
     if (!partnerId) {
