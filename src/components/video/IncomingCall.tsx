@@ -55,13 +55,11 @@ export function IncomingCall({ onAccepted }: IncomingCallProps) {
     const unsubscribeRing = client.on('call.ring', handleRing);
     const unsubscribeEnded = client.on('call.ended', handleDismiss);
     const unsubscribeRejected = client.on('call.rejected', handleDismiss);
-    const unsubscribeCanceled = client.on('call.canceled', handleDismiss);
 
     return () => {
       unsubscribeRing();
       unsubscribeEnded();
       unsubscribeRejected();
-      unsubscribeCanceled();
     };
   }, [client]);
 
