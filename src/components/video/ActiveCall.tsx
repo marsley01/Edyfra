@@ -85,9 +85,16 @@ function VideoGrid() {
 function RingtonePlayer() {
   const { useParticipants } = useCallStateHooks();
   const participants = useParticipants();
+  const [hasAnswered, setHasAnswered] = useState(false);
 
   useEffect(() => {
-    if (participants.length === 1) {
+    if (participants.length > 1) {
+      setHasAnswered(true);
+    }
+  }, [participants.length]);
+
+  useEffect(() => {
+    if (participants.length === 1 && !hasAnswered) {
       const audio = new Audio('/sounds/ringtone.mp3');
       audio.loop = true;
       audio.play().catch((err) => console.log('[RingtonePlayer] Audio play blocked:', err));
@@ -97,7 +104,7 @@ function RingtonePlayer() {
         audio.currentTime = 0;
       };
     }
-  }, [participants.length]);
+  }, [participants.length, hasAnswered]);
 
   return null;
 }
@@ -221,12 +228,22 @@ export function ActiveCall({
     call.camera?.enable().catch((err) => console.error('[ActiveCall] Camera enable failed:', err));
     call.microphone?.enable().catch((err) => console.error('[ActiveCall] Mic enable failed:', err));
 
+    const handleCallEnded = () => {
+      console.log('[ActiveCall] Call ended or rejected by remote');
+      onEnd();
+    };
+
+    const unsubscribeEnded = call.on('call.ended', handleCallEnded);
+    const unsubscribeRejected = call.on('call.rejected', handleCallEnded);
+
     return () => {
       call.camera?.disable().catch(() => {});
       call.microphone?.disable().catch(() => {});
       call.leave().catch(() => {});
+      unsubscribeEnded();
+      unsubscribeRejected();
     };
-  }, [call]);
+  }, [call, onEnd]);
 
   return (
     <StreamCall call={call}>

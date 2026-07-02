@@ -30,14 +30,12 @@ export const changelog: ChangelogEntry[] = [
   {
     version: "1.0.0",
     date: "June 20, 2026",
-    title: "Real-Time Study Rooms & Video Calling",
+    title: "Study Rooms & UI Overhaul",
     description:
-      "Major update introducing real-time collaboration, video calls, and study rooms.",
+      "Major update introducing study rooms, daily challenges, and an overhauled study page.",
     highlights: [
-      "Video calling and screen sharing in study rooms",
-      "Minimise your call and keep browsing — call stays in a floating bubble",
+      "Study rooms for collaboration",
       "Chat with AI assistance using @Eddy mentions",
-      "Incoming call notifications with ringtone",
       "Challenges page completely overhauled and easier to use",
       "Study page reorganized so you find content faster",
     ],

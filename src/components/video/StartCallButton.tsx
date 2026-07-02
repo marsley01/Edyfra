@@ -20,6 +20,7 @@ export function StartCallButton({
   const { client, setActiveCall } = useVideoContext();
   const [step, setStep] = useState<Step>('idle');
   const [errorMsg, setErrorMsg] = useState('');
+  const [outgoingCall, setOutgoingCall] = useState<any>(null);
 
   const handleStartCall = () => {
     if (localStorage.getItem('edyfra_video_perm') === 'granted') {
@@ -39,9 +40,11 @@ export function StartCallButton({
     setStep('calling');
 
     try {
-      // Use roomId as the call ID so both sides always join the same call
-      const callId = `room-${roomId}`;
+      // Use a unique ID for each call attempt so it rings properly every time
+      const callId = `room-${roomId}-${Math.random().toString(36).substring(7)}`;
       const call = client.call('default', callId);
+      
+      setOutgoingCall(call);
 
       console.log('[StartCallButton] Creating call:', callId);
 
@@ -62,11 +65,28 @@ export function StartCallButton({
 
       console.log('[StartCallButton] Call created, ringing:', otherUserId);
 
-      // Join the call ourselves
-      await call.join({ create: false });
+      let unsubscribeAccepted: () => void;
+      let unsubscribeRejected: () => void;
 
-      console.log('[StartCallButton] Joined call successfully');
-      setActiveCall(call);
+      unsubscribeAccepted = call.on('call.accepted', async () => {
+        console.log('[StartCallButton] Call accepted by remote');
+        unsubscribeAccepted?.();
+        unsubscribeRejected?.();
+        
+        await call.join({ create: false });
+        console.log('[StartCallButton] Joined call successfully');
+        setActiveCall(call);
+        setStep('idle');
+      });
+
+      unsubscribeRejected = call.on('call.rejected', () => {
+        console.log('[StartCallButton] Call rejected by remote');
+        unsubscribeAccepted?.();
+        unsubscribeRejected?.();
+        setErrorMsg('Call was declined.');
+        setStep('error');
+      });
+
     } catch (err: any) {
       console.error('[StartCallButton] Call start failed:', err);
       setErrorMsg(
@@ -100,6 +120,19 @@ export function StartCallButton({
         <div className="flex h-16 w-16 animate-pulse items-center justify-center rounded-full bg-primary/20 text-2xl text-primary">📞</div>
         <p className="text-sm font-bold text-foreground">Calling {otherUserName}...</p>
         <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Waiting for them to answer</p>
+        <button 
+          onClick={async () => {
+            try {
+              await outgoingCall?.reject(); // Reject acts to cancel ringing
+            } catch (err) {
+              console.error('Cancel failed', err);
+            }
+            setStep('idle');
+          }}
+          className="mt-2 px-6 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-black text-[10px] tracking-widest uppercase transition-colors rounded-xl"
+        >
+          Cancel
+        </button>
       </div>
     );
   }

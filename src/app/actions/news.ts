@@ -43,7 +43,10 @@ const KE_KEYWORDS = [
   "nairobi", "mombasa", "kisumu", "eldoret", "nakuru",
 ];
 
-function getFallbackImage(category: string): string {
+function getFallbackImage(category: string, title: string = "", source: string = ""): string {
+  if (title && source && isKenyanArticle(source, title)) {
+    return "/kenya-news-placeholder.jpg";
+  }
   return CATEGORY_IMAGES[category] || GENERIC_FALLBACK;
 }
 
@@ -78,7 +81,7 @@ export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
       slug: a.slug,
       excerpt: a.summary || "",
       content: a.body || a.content || "",
-      cover_image: a.coverImage || a.cover_image || getFallbackImage(a.category),
+      cover_image: a.coverImage || a.cover_image || getFallbackImage(a.category, a.title, a.authorId ? "Author" : "Edyfra Desk"),
       category: a.category,
       author: a.authorId ? "Author" : "Edyfra Desk",
       published_at: a.publishedAt || a.createdAt,
@@ -110,7 +113,7 @@ export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
           if (og) {
             finalImageUrl = og;
           } else if (isKenyanArticle(item.source, item.title)) {
-            finalImageUrl = "/kenya-news-magazine.png";
+            finalImageUrl = "/kenya-news-placeholder.jpg";
           }
         }
 
@@ -120,7 +123,7 @@ export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
           slug: `rss-${index}`,
           excerpt: excerpt,
           content: item.link,
-          cover_image: finalImageUrl || getFallbackImage(item.category),
+          cover_image: finalImageUrl || getFallbackImage(item.category, item.title, item.source),
           category: item.category || "Global Updates",
           author: item.source,
           published_at: item.pubDate,
@@ -223,7 +226,7 @@ Keep it under 3 paragraphs (max 200 words). Focus on why it matters to students,
     slug: data.slug,
     excerpt: data.summary || "",
     content: data.body,
-    cover_image: data.coverImage || data.cover_image || getFallbackImage(data.category),
+    cover_image: data.coverImage || data.cover_image || getFallbackImage(data.category, data.title, data.authorId ? "Author" : "Edyfra Desk"),
     category: data.category,
     author: data.authorId ? "Author" : "Edyfra Desk",
     published_at: data.publishedAt || data.createdAt
