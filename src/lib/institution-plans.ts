@@ -1,7 +1,3 @@
-// Three institution plans. The price IDs are Paystack plan codes — these
-// need to be set in the founder admin when Paystack integration is wired
-// up. For now we expose the canonical pricing + student cap to all callers.
-
 import type { InstitutionPlan } from "@/generated/client";
 
 export interface PlanDefinition {

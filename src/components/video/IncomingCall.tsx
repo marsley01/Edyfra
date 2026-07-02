@@ -31,7 +31,7 @@ export function IncomingCall({ onAccepted }: IncomingCallProps) {
   useEffect(() => {
     if (!client) return;
 
-    const unsubscribe = client.on('call.ring', (event: any) => {
+    const handleRing = (event: any) => {
       console.log('[IncomingCall] Incoming call event:', event);
       const call = client.call(event.call.type, event.call.id);
       const caller = event.members?.find(
@@ -41,9 +41,28 @@ export function IncomingCall({ onAccepted }: IncomingCallProps) {
       setRingingCall(call);
       setTimeLeft(30);
       setActionError(null);
-    });
+    };
 
-    return () => unsubscribe();
+    const handleDismiss = (event: any) => {
+      setRingingCall((prev) => {
+        if (prev && prev.id === event.call?.id) {
+          return null;
+        }
+        return prev;
+      });
+    };
+
+    const unsubscribeRing = client.on('call.ring', handleRing);
+    const unsubscribeEnded = client.on('call.ended', handleDismiss);
+    const unsubscribeRejected = client.on('call.rejected', handleDismiss);
+    const unsubscribeCanceled = client.on('call.canceled', handleDismiss);
+
+    return () => {
+      unsubscribeRing();
+      unsubscribeEnded();
+      unsubscribeRejected();
+      unsubscribeCanceled();
+    };
   }, [client]);
 
   // Play ringing sound

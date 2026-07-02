@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 const USER_DATA_CACHE_KEY = "edyfra_user_data_cache";
 
-function readUserDataCache(): any {
+function readUserDataCache(): Record<string, unknown> | null {
   try {
     const raw = localStorage.getItem(USER_DATA_CACHE_KEY);
     if (raw) return JSON.parse(raw);
@@ -10,16 +10,32 @@ function readUserDataCache(): any {
   return null;
 }
 
-function writeUserDataCache(data: any) {
+function writeUserDataCache(data: Record<string, unknown>) {
   try {
     localStorage.setItem(USER_DATA_CACHE_KEY, JSON.stringify(data));
   } catch { /* noop */ }
 }
 
+export interface AntigravityUserData {
+  id: string;
+  points?: number;
+  streakDays?: number;
+  educationLevel?: string;
+  referralCode?: string;
+  name?: string;
+  email?: string;
+  role?: string;
+  avatar?: string | null;
+  lastActiveAt?: string | null;
+  studentProfile?: { subjects?: string[] } | null;
+  tutorProfile?: { subjects?: string[] } | null;
+  [key: string]: unknown;
+}
+
 // 1. Antigravity-Safe Data Loading Hook with localStorage cache
 export function useSafeUserData() {
-  const [userData, setUserData] = useState<any>(() => {
-    if (typeof window !== 'undefined') return readUserDataCache();
+  const [userData, setUserData] = useState<AntigravityUserData | null>(() => {
+    if (typeof window !== 'undefined') return readUserDataCache() as AntigravityUserData | null;
     return null;
   });
   const [loading, setLoading] = useState(true);
@@ -89,17 +105,17 @@ export function useSafeUserData() {
 }
 
 // 2. Antigravity-Safe Supabase Client
-export function createAntigravitySafeClient() {
+export async function createAntigravitySafeClient() {
   if (typeof window === 'undefined') {
     return null;
   }
 
   try {
-    const { createBrowserClient } = require('@supabase/ssr');
+    const { createBrowserClient } = await import('@supabase/ssr');
     
     return createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
   } catch (error) {
     console.error('Failed to create Supabase client:', error);
@@ -137,8 +153,8 @@ export function useSessionCounter(userId: string) {
 }
 
 // 4. Safe Storage Hook
-export function useSafeStorage(key: string, defaultValue: any) {
-  const [value, setValue] = useState(defaultValue);
+export function useSafeStorage<T>(key: string, defaultValue: T) {
+  const [value, setValue] = useState<T>(defaultValue);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -148,7 +164,7 @@ export function useSafeStorage(key: string, defaultValue: any) {
       try {
         const stored = localStorage.getItem(key);
         if (stored) {
-          setValue(JSON.parse(stored));
+          setValue(JSON.parse(stored) as T);
         }
       } catch (error) {
         console.error('Storage access error:', error);
@@ -156,7 +172,7 @@ export function useSafeStorage(key: string, defaultValue: any) {
     }
   }, [key]);
 
-  const setStoredValue = (newValue: any) => {
+  const setStoredValue = (newValue: T) => {
     try {
       setValue(newValue);
       if (typeof window !== 'undefined') {
@@ -167,7 +183,7 @@ export function useSafeStorage(key: string, defaultValue: any) {
     }
   };
 
-  return [value, setStoredValue, mounted];
+  return [value, setStoredValue, mounted] as const;
 }
 
 // 5. Dashboard Loading Component

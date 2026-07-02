@@ -54,7 +54,7 @@ Edyfra connects students with verified tutors and high-performing peers in real-
 
 **Institution Management**: School/university accounts with staff roles, student rosters, document uploads, and private tutoring.
 
-**Payments**: Paystack (cards) and M-Pesa (mobile money) for session payments, resource purchases, and tutor payouts.
+**Payments**: M-Pesa (mobile money) for session payments, resource purchases, and tutor payouts.
 
 **Referral Program**: Share your referral code and earn rewards when friends join.
 
@@ -68,7 +68,7 @@ Edyfra connects students with verified tutors and high-performing peers in real-
 
 **"How do I become a tutor?"** → Go to Dashboard → "Become a Tutor" and complete the application process.
 
-**"How do payments work?"** → Sessions can be paid via Paystack (card) or M-Pesa. Tutors receive payouts to their M-Pesa or bank.
+**"How do payments work?"** → Sessions can be paid via M-Pesa. Tutors receive payouts to their M-Pesa or bank.
 
 **"How do I reset my password?"** → Go to the login page → "Forgot Password" and follow the email instructions.
 
