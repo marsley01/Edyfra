@@ -9,7 +9,7 @@ import {
   SfuModels,
 } from '@stream-io/video-react-sdk';
 import '@stream-io/video-react-sdk/dist/css/styles.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Call } from '@stream-io/video-react-sdk';
 
 // ── Call Timer ───────────────────────────────────────────────────────────────
@@ -223,6 +223,13 @@ export function ActiveCall({
   onEnd: () => void;
   subject?: string;
 }) {
+  // Keep a stable ref to the latest onEnd so the effect below never needs
+  // onEnd in its dependency array (that instability was the root cause).
+  const onEndRef = useRef(onEnd);
+  useEffect(() => {
+    onEndRef.current = onEnd;
+  }, [onEnd]);
+
   useEffect(() => {
     // Auto-enable devices when joining
     call.camera?.enable().catch((err) => console.error('[ActiveCall] Camera enable failed:', err));
@@ -230,12 +237,19 @@ export function ActiveCall({
 
     const handleCallEnded = () => {
       console.log('[ActiveCall] Call ended or rejected by remote');
-      onEnd();
+      onEndRef.current();
     };
 
     const unsubscribeEnded = call.on('call.ended', handleCallEnded);
     const unsubscribeRejected = call.on('call.rejected', handleCallEnded);
 
+    // Cleanup now only fires when call.id actually changes or on a true
+    // unmount — NOT on every incidental parent re-render like before (the
+    // old dependency was `onEnd`, a fresh inline function on every render,
+    // which caused this cleanup to run seconds after joining and silently
+    // drop the media session even though ring/accept/join had succeeded).
+    // With the dependency stabilized to call.id, leaving here is now safe
+    // and correct — it only leaves the specific call this effect was for.
     return () => {
       call.camera?.disable().catch(() => {});
       call.microphone?.disable().catch(() => {});
@@ -243,7 +257,8 @@ export function ActiveCall({
       unsubscribeEnded();
       unsubscribeRejected();
     };
-  }, [call, onEnd]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [call.id]);
 
   return (
     <StreamCall call={call}>
