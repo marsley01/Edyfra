@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { Role } from "@/generated/client";
-import { getUserData } from "@/app/actions/user";
+import { checkAdminStatus } from "@/app/actions/admin";
 
 // List all challenges (for admin)
 export async function GET(req: NextRequest) {
   try {
-    const user = await getUserData();
-    if (!user || user.role !== Role.ADMIN) {
+    const isAdmin = await checkAdminStatus();
+    if (!isAdmin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -26,8 +25,8 @@ export async function GET(req: NextRequest) {
 // Delete a challenge
 export async function DELETE(req: NextRequest) {
   try {
-    const user = await getUserData();
-    if (!user || user.role !== Role.ADMIN) {
+    const isAdmin = await checkAdminStatus();
+    if (!isAdmin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 

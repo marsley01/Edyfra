@@ -6,6 +6,13 @@ import { notifyUser } from "@/app/actions/notifications";
 
 export async function POST(request: Request) {
   try {
+    const cronSecret = process.env.CRON_SECRET;
+    const providedSecret = request.headers.get("x-cron-secret") || request.headers.get("authorization")?.replace("Bearer ", "");
+
+    if (cronSecret && providedSecret !== cronSecret) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
     const payload = await request.json();
 
     // Ensure this is an UPDATE event and status changed to COMPLETED

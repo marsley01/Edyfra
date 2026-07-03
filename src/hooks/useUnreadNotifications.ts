@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { getUnreadCount, getLatestNotification } from "@/app/actions/notifications";
+import type { Notification } from "@/generated/client";
 
 interface UnreadState {
   count: number;
   latestId: string | null;
-  latest: { id: string; title: string; body: string; createdAt: Date; type: string; actionUrl?: string | null } | null;
+  latest: Pick<Notification, "id" | "title" | "body" | "createdAt" | "type" | "actionUrl"> | null;
   markRead: () => void;
   refresh: () => Promise<void>;
 }
@@ -32,7 +33,7 @@ async function refresh(): Promise<void> {
     if (cached && latest) {
       const isNew = !cached.latestId || cached.latestId !== latest.id;
       if (isNew) {
-        const createdAge = Date.now() - new Date(latest.createdAt as any).getTime();
+        const createdAge = Date.now() - new Date(latest.createdAt).getTime();
         if (createdAge < 5 * 60 * 1000 && "Notification" in window) {
           if (Notification.permission === "granted") {
             try {
@@ -57,9 +58,9 @@ async function refresh(): Promise<void> {
             id: latest.id,
             title: latest.title,
             body: latest.body,
-            createdAt: latest.createdAt as any,
-            type: (latest as any).type,
-            actionUrl: (latest as any).actionUrl,
+            createdAt: latest.createdAt,
+            type: latest.type,
+            actionUrl: latest.actionUrl,
           }
         : null,
       markRead: () => {

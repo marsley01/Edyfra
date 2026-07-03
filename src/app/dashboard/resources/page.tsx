@@ -168,35 +168,10 @@ export default function MarketplacePage() {
 
     setIsPaying(true);
     try {
-      const res = await fetch("/api/paystack/initialize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: selectedResource.price,
-          type: "resource",
-          id: selectedResource.id,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.success && data.authorization_url) {
-        showSuccess("Redirecting to secure checkout…", {
-          description: "You'll be back here automatically once payment is confirmed.",
-        });
-        window.location.href = data.authorization_url;
-      } else {
-        showError({
-          title: "We couldn't start your payment",
-          cause: data.error || "Paystack didn't return a checkout link.",
-          fix: "Try again in a moment, or use a different payment method.",
-        });
-      }
-    } catch (err) {
       showError({
-        title: "Payment service didn't respond",
-        cause: "Your connection blinked or the gateway is busy.",
-        fix: "Wait a few seconds and try again.",
-        raw: err,
+        title: "Card payments are currently unavailable",
+        cause: "Paystack integration has been removed.",
+        fix: "Please use M-Pesa or check back later.",
       });
     } finally {
       setIsPaying(false);

@@ -1,11 +1,10 @@
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva, type VariantProps } from "class-variance-authority"
-import { Loader2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "relative group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -41,6 +40,37 @@ const buttonVariants = cva(
   }
 )
 
+export function IosSpinner({ className, ...props }: React.ComponentPropsWithoutRef<"svg">) {
+  return (
+    <svg
+      className={cn("size-4 animate-spin text-current shrink-0", className)}
+      viewBox="0 0 100 100"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ animationDuration: "0.8s", animationTimingFunction: "steps(12)" }}
+      data-icon="inline-start"
+      {...props}
+    >
+      <g transform="translate(50,50)">
+        {[...Array(12)].map((_, i) => (
+          <rect
+            key={i}
+            x="-2"
+            y="-35"
+            width="4"
+            height="18"
+            rx="2"
+            ry="2"
+            fill="currentColor"
+            transform={`rotate(${i * 30})`}
+            opacity={0.15 + (i / 12) * 0.85}
+          />
+        ))}
+      </g>
+    </svg>
+  )
+}
+
 function Button({
   className,
   variant = "default",
@@ -60,10 +90,10 @@ function Button({
       data-size={size}
       aria-busy={loading || ariaBusy || undefined}
       disabled={disabled || loading}
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={cn(buttonVariants({ variant, size, className }), loading && "cursor-wait")}
       {...props}
     >
-      {loading && <Loader2 className="animate-spin" data-icon="inline-start" />}
+      {loading && <IosSpinner />}
       {children}
     </ButtonPrimitive>
   )

@@ -14,6 +14,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { NotificationBell, NotificationCountBadge } from "@/components/dashboard/NotificationBell";
 import { cn } from "@/lib/utils";
+import { useRegisterOverlay } from "@/lib/overlay-manager";
 
 // The 5 bottom tabs — most-used pages
 const BOTTOM_TABS = [
@@ -47,6 +48,8 @@ export default function MobileNav({ user }: { user: User }) {
   const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+
+  useRegisterOverlay({ id: "student-mobile-nav", edge: "bottom", size: 64, slot: "mobile-nav" });
 
   const showBackButton = pathname !== "/dashboard";
   const pageTitle = PAGE_TITLES[pathname] ?? "Dashboard";

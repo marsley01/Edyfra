@@ -1,4 +1,4 @@
-import webpush from "web-push";
+import webpush, { WebPushError } from "web-push";
 
 const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 const privateKey = process.env.VAPID_PRIVATE_KEY;
@@ -29,15 +29,16 @@ export async function sendPushNotification(
 
   try {
     await webpush.sendNotification(
-      subscription as any,
+      subscription as unknown as webpush.PushSubscription,
       JSON.stringify(payload)
     );
     return "sent";
-  } catch (err: any) {
-    if (err.statusCode === 410 || err.statusCode === 404) {
+  } catch (err) {
+    const pushErr = err as WebPushError;
+    if (pushErr.statusCode === 410 || pushErr.statusCode === 404) {
       return "expired";
     }
-    console.error("[sendPushNotification] delivery error:", err?.statusCode, err?.message, err?.body);
+    console.error("[sendPushNotification] delivery error:", pushErr.statusCode, pushErr.message, pushErr.body);
     return "error";
   }
 }

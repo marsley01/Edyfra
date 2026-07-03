@@ -11,7 +11,8 @@ import { applyToBecomeTutor } from "@/app/actions/admin-tutor";
 import { showError, showSuccess } from "@/lib/toast";
 import { createClient } from "@/utils/supabase/client";
 import LevelXPBar from "@/components/dashboard/LevelXPBar";
-import { getTimeGreeting } from "@/lib/greeting";
+import { submitTutorApplication } from "@/app/actions/tutor-kyc";
+import FavoriteButton from "@/components/dashboard/FavoriteButton";
 
 const DailyChallengeCard = dynamic(
   () => import("@/components/dashboard/DailyChallengeCard"),
@@ -57,6 +58,10 @@ export default function DashboardPageContent() {
   const [appStatus, setAppStatus] = useState<'NONE' | 'PENDING' | 'APPROVED' | 'REJECTED'>('NONE');
   const [appLoading, setAppLoading] = useState(false);
   const [challengeCompleted, setChallengeCompleted] = useState(false);
+  
+  const [showKycModal, setShowKycModal] = useState(false);
+  const [idPhoto, setIdPhoto] = useState<File | null>(null);
+  const [selfie, setSelfie] = useState<File | null>(null);
 
   useEffect(() => {
     if (!userData?.id) return;
@@ -110,13 +115,21 @@ export default function DashboardPageContent() {
   }, [userData?.id, userData?.role]);
 
   const handleApplyTutor = async () => {
+    if (!idPhoto || !selfie) {
+      showError({ title: "Missing photos", cause: "You must provide an ID and a selfie for verification." });
+      return;
+    }
     setAppLoading(true);
     try {
-      const result = await applyToBecomeTutor({
-        subjects: userData?.studentProfile?.subjects || [],
-      });
+      const formData = new FormData();
+      formData.append("idPhoto", idPhoto);
+      formData.append("selfie", selfie);
+      formData.append("subjects", JSON.stringify(userData?.studentProfile?.subjects || []));
+
+      const result = await submitTutorApplication(formData);
       if (result.success) {
         setAppStatus('PENDING');
+        setShowKycModal(false);
         showSuccess("Application submitted", { description: "We'll review it and get back to you." });
       } else {
         showError({
@@ -215,7 +228,7 @@ export default function DashboardPageContent() {
               {subtext}
             </p>
          </div>
-         <Link href="/dashboard/study" className="shrink-0">
+         <Link href="/dashboard/study" target="_blank" rel="noopener noreferrer" className="shrink-0">
            <Button className="w-full sm:w-auto bg-foreground text-background hover:bg-foreground/90 font-black text-xs tracking-widest px-8 h-12 sm:h-14 rounded-full uppercase shadow-xl transition-all active:scale-95 gap-3">
              <Zap className="h-4 w-4 fill-current text-primary" />
              Start Session
@@ -259,7 +272,7 @@ export default function DashboardPageContent() {
                            {booking.status}
                          </span>
                          {booking.status === 'confirmed' && (
-                           <Button onClick={() => window.location.href = `/study-room/${booking.id}`} className="bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-full h-7 px-3">
+                           <Button onClick={() => window.open(`/study-room/${booking.id}`, '_blank')} className="bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-full h-7 px-3">
                              Join
                            </Button>
                          )}
@@ -271,20 +284,25 @@ export default function DashboardPageContent() {
                
                {recentSessions.length > 0 && <h4 className="text-[11px] font-black uppercase tracking-widest text-muted-foreground pt-1">Past Sessions</h4>}
                {recentSessions.map((session) => (
-                 <Link href={`/study-room/${session.id}`} key={session.id} className="block">
+                 <Link href={`/study-room/${session.id}`} key={session.id} target="_blank" rel="noopener noreferrer" className="block">
                    <div className="flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-background border border-border/50 hover:border-primary/30 transition-all active:scale-[0.99]">
                      <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-black text-base shrink-0">
                        {session.subject[0]}
                      </div>
                      <div className="flex-1 min-w-0">
-                       <p className="font-bold text-sm truncate">{session.topic || session.subject}</p>
+                       <p className="font-bold text-sm truncate flex items-center gap-2">
+                         {session.topic || session.subject}
+                       </p>
                        <p className="text-[11px] text-muted-foreground font-medium mt-0.5">
                          {session.partner?.name ? (session.tier === "TUTOR" ? "Tutor" : "Peer") : "Mash AI"} · {new Date(session.createdAt).toLocaleDateString()}
                        </p>
                      </div>
-                     <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full bg-secondary shrink-0">
-                       {session.status}
-                     </span>
+                     <div className="flex items-center gap-2 shrink-0">
+                       {(session.partner as any)?.id && <FavoriteButton userId={(session.partner as any).id} />}
+                       <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full bg-secondary">
+                         {session.status}
+                       </span>
+                     </div>
                    </div>
                  </Link>
                ))}
@@ -411,7 +429,7 @@ export default function DashboardPageContent() {
                 </div>
               ) : (
                 <Button 
-                  onClick={handleApplyTutor}
+                  onClick={() => setShowKycModal(true)}
                   disabled={appLoading}
                   className="w-full sm:w-auto h-11 px-6 rounded-full bg-primary hover:bg-primary/90 text-white font-black text-xs tracking-widest uppercase shadow-lg transition-all active:scale-95 gap-2"
                 >
@@ -423,6 +441,33 @@ export default function DashboardPageContent() {
                 </Button>
               )}
             </div>
+         </div>
+       )}
+
+       {showKycModal && (
+         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+           <div className="bg-card w-full max-w-md rounded-3xl border border-border shadow-2xl p-6 space-y-6">
+             <h3 className="text-xl font-black tracking-tight">Tutor Verification</h3>
+             <p className="text-sm text-muted-foreground">To become a tutor, please provide a photo of your University/High School ID, and a clear selfie for identity verification.</p>
+             
+             <div className="space-y-4">
+               <div>
+                 <label className="block text-xs font-black uppercase tracking-widest text-muted-foreground mb-2">School ID Photo</label>
+                 <input type="file" accept="image/*" onChange={(e) => setIdPhoto(e.target.files?.[0] || null)} className="w-full text-sm" />
+               </div>
+               <div>
+                 <label className="block text-xs font-black uppercase tracking-widest text-muted-foreground mb-2">Clear Selfie</label>
+                 <input type="file" accept="image/*" onChange={(e) => setSelfie(e.target.files?.[0] || null)} className="w-full text-sm" />
+               </div>
+             </div>
+
+             <div className="flex gap-3">
+               <Button variant="outline" onClick={() => setShowKycModal(false)} className="flex-1 rounded-full">Cancel</Button>
+               <Button onClick={handleApplyTutor} disabled={!idPhoto || !selfie || appLoading} className="flex-1 rounded-full bg-primary text-white">
+                 {appLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit Application"}
+               </Button>
+             </div>
+           </div>
          </div>
        )}
     </div>
