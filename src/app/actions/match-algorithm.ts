@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { EduLevel, MatchTier } from "@/generated/client";
 import { SESSION_CONFIG, TUTOR_CONFIG } from "@/lib/config";
 import { randomBytes } from "crypto";
-import { syncUsersToStream } from "@/lib/user-sync";
+import { syncUsersToStream, getServerStreamClient, MASH_AI_USER_ID } from "@/lib/user-sync";
 import { notifyUser } from "@/app/actions/notifications";
 
 // ─── Atomic Commit Helpers ────────────────────────────────────────────────────
@@ -74,6 +74,21 @@ export async function commitHumanMatch(
 
     return session;
   });
+
+  // Pre-create the Stream Chat channel so the client doesn't need
+  // ReadChannel permission — the server admin client bypasses role checks.
+  try {
+    const streamClient = getServerStreamClient();
+    if (streamClient) {
+      const channel = streamClient.channel("messaging", result.id, {
+        members: [studentId, partnerId, MASH_AI_USER_ID],
+        created_by_id: studentId,
+      } as any);
+      await channel.create();
+    }
+  } catch (e) {
+    console.warn("[commitHumanMatch] Stream channel creation failed (non-fatal):", e);
+  }
 
   return { sessionId: result.id, roomId };
 }
@@ -154,6 +169,21 @@ export async function commitAISession(
 
     return session;
   });
+
+  // Pre-create the Stream Chat channel so the client can watch it without
+  // needing the ReadChannel permission for the 'user' role.
+  try {
+    const streamClient = getServerStreamClient();
+    if (streamClient) {
+      const channel = streamClient.channel("messaging", result.id, {
+        members: [studentId, MASH_AI_USER_ID],
+        created_by_id: studentId,
+      } as any);
+      await channel.create();
+    }
+  } catch (e) {
+    console.warn("[commitAISession] Stream channel creation failed (non-fatal):", e);
+  }
 
   return { sessionId: result.id, roomId };
 }
@@ -390,7 +420,12 @@ export async function findTier1Match(
       if (tpB.rating !== tpA.rating) return tpB.rating - tpA.rating;
 
       // 4. Fewer assignments today
-      return tpA.totalAssignmentsToday - tpB.totalAssignmentsToday;
+      if (tpA.totalAssignmentsToday !== tpB.totalAssignmentsToday) {
+        return tpA.totalAssignmentsToday - tpB.totalAssignmentsToday;
+      }
+
+      // 5. Random fallback to ensure we don't pick the exact same tutor every time if all else is equal
+      return Math.random() - 0.5;
     });
 
     return eligible[0]?.id || null;
@@ -550,7 +585,16 @@ export async function executeSmartMatching(
       where: { id: matchRequestId },
     });
     if (!matchRequest) return { success: false, error: "Match request not found" };
-    if (matchRequest.sessionId) return { success: false, error: "Already matched" };
+    
+    // If already matched (e.g. manually accepted by a tutor or matched in a previous check)
+    // return success along with the sessionId.
+    if (matchRequest.sessionId) {
+      return {
+        success: true,
+        sessionId: matchRequest.sessionId,
+        tier: matchRequest.resolvedAs || undefined,
+      };
+    }
 
     const student = await prisma.user.findUnique({
       where: { id: matchRequest.studentId },
@@ -586,8 +630,17 @@ export async function executeSmartMatching(
       requestedSubject: matchRequest.subject,
     };
 
+    // Stagger matching tiers based on elapsed time:
+    // - TIER 1 (Tutor): 0 - 30 seconds
+    // - TIER 2 (Peer): 30+ seconds
+    // - TIER 3 (AI Fallback): 55+ seconds
+    const elapsedMs = Date.now() - matchRequest.createdAt.getTime();
+    const tryTutor = true; // Always try tutor if one is available
+    const tryPeer = elapsedMs >= 30 * 1000;
+    const tryAI = elapsedMs >= 55 * 1000 && !options?.skipAI;
+
     // ============ STEP 0: GROUP SESSION ============
-    if (!matchRequest.tier1Tried) {
+    if (tryTutor) {
       const groupResult = await tryJoinGroupSession(
         matchRequest.studentId,
         matchRequestId,
@@ -608,7 +661,7 @@ export async function executeSmartMatching(
     }
 
     // ============ STEP 1: TUTOR MATCH (Load Balanced) ============
-    if (!matchRequest.tier1Tried) {
+    if (tryTutor) {
       const tier1Partner = await findTier1Match(
         matchRequest.studentId,
         matchRequest.subject,
@@ -618,13 +671,11 @@ export async function executeSmartMatching(
       if (tier1Partner) {
         partnerId = tier1Partner;
         tier = "TUTOR";
-      } else {
-        await markTierExhausted(matchRequestId, 1);
       }
     }
 
     // ============ STEP 2: PEER MATCH ============
-    if (!partnerId && !matchRequest.tier2Tried) {
+    if (!partnerId && tryPeer) {
       const tier2Partner = await findTier2Match(
         matchRequest.studentId,
         student.studentProfile?.subjects || [matchRequest.subject],
@@ -634,14 +685,12 @@ export async function executeSmartMatching(
       if (tier2Partner) {
         partnerId = tier2Partner;
         tier = "PEER";
-      } else {
-        await markTierExhausted(matchRequestId, 2);
       }
     }
 
     // ============ STEP 3: AI MATCH ============
-    if (!partnerId && options?.skipAI) {
-      return { success: false, error: "No human match found, AI skipped by caller", debug: debugInfo };
+    if (!partnerId && !tryAI) {
+      return { success: false, error: "Searching for human match...", debug: debugInfo };
     }
 
     if (!partnerId) {

@@ -40,13 +40,13 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col overflow-hidden bg-background">
-      <HomeHero />
+      <HomeHero stats={stats} />
       <LogoCloud />
       <HomeFeatures />
       <HomeStats stats={stats} />
       <HomeNews />
       <HomeTestimonials initialReviews={reviews} />
-      <HomeCTA />
+      <HomeCTA stats={stats} />
       <AbstractAnimation />
       <HomeNewsletter />
       {/* New sections below CTA */}

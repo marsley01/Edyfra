@@ -9,26 +9,43 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { completeOnboarding } from "@/app/actions/onboarding";
-import { 
-  Loader2, BookOpen,
-  GraduationCap, ArrowRight, CheckCircle2, 
-  Sparkles, ShieldCheck, Search 
-} from "lucide-react";
+import { Loader2, BookOpen, GraduationCap, ArrowRight, CheckCircle2, Sparkles, ShieldCheck, Search } from "lucide-react";
 import { EDUCATIONAL_SUBJECTS } from "@/utils/subjects";
 import { cn } from "@/lib/utils";
 import { showError, showSuccess } from "@/lib/toast";
+import { createClient } from "@/utils/supabase/client";
+import { useEffect } from "react";
 
 export default function TutorOnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [subjectSearch, setSubjectSearch] = useState("");
+  const [userName, setUserName] = useState<string>("Tutor");
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.user_metadata?.name || user?.user_metadata?.full_name) {
+        setUserName(user.user_metadata.name || user.user_metadata.full_name);
+      }
+    };
+    fetchUser();
+  }, []);
   const [formData, setFormData] = useState({
     role: "TUTOR",
     educationLevel: "UNIVERSITY",
     curriculum: [] as string[],
     subjects: [] as string[],
     bio: "",
+    kycName: "",
+    kycIdNumber: "",
+    kycInstitution: "",
+    kycIdPhotoUrl: "",
+    kycSelfieUrl: "",
+    kycSchoolIdUrl: "",
   });
 
   const nextStep = () => setStep(s => s + 1);
@@ -66,6 +83,12 @@ export default function TutorOnboardingPage() {
         weakTopics: [],
         studyStyle: "solo",
         verificationPath: "GRADES",
+        kycName: formData.kycName,
+        kycIdNumber: formData.kycIdNumber,
+        kycInstitution: formData.kycInstitution,
+        kycIdPhotoUrl: formData.kycIdPhotoUrl,
+        kycSelfieUrl: formData.kycSelfieUrl,
+        kycSchoolIdUrl: formData.kycSchoolIdUrl,
       });
       if (result.success) {
         showSuccess("Application submitted", { description: "We'll review it and email you within a couple of business days." });
@@ -94,7 +117,7 @@ export default function TutorOnboardingPage() {
            <motion.div 
              className="h-full bg-primary shadow-[0_0_20px_rgba(139,92,246,0.5)]" 
              initial={{ width: "0%" }}
-             animate={{ width: `${(step/3) * 100}%` }}
+             animate={{ width: `${(step/4) * 100}%` }}
              transition={{ type: "spring", damping: 20 }}
            />
         </div>
@@ -107,7 +130,7 @@ export default function TutorOnboardingPage() {
                 <ShieldCheck className="h-8 w-8" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-3xl font-black tracking-tightest">Help others succeed.</h3>
+                <h3 className="text-3xl font-black tracking-tightest">Help others succeed, {userName.split(' ')[0]}.</h3>
                 <p className="text-primary-foreground/70 font-medium text-sm leading-relaxed">
                   We&apos;ll set up your tutor profile so students can find and book you.
                 </p>
@@ -134,7 +157,7 @@ export default function TutorOnboardingPage() {
               {step === 1 && (
                 <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-10">
                    <div className="space-y-2">
-                      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Step 01 / 03</p>
+                      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Step 01 / 04</p>
                       <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Teaching Level.</h2>
                    </div>
                    
@@ -200,7 +223,7 @@ export default function TutorOnboardingPage() {
               {step === 2 && (
                 <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-10">
                    <div className="space-y-2">
-                      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Step 02 / 03</p>
+                      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Step 02 / 04</p>
                       <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Your Subjects.</h2>
                    </div>
 
@@ -258,7 +281,127 @@ export default function TutorOnboardingPage() {
               {step === 3 && (
                 <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-10">
                    <div className="space-y-2">
-                      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500">Step 03 / 03</p>
+                      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Step 03 / 04</p>
+                      <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Identity Verification.</h2>
+                      <p className="text-muted-foreground text-sm font-medium">To maintain a safe community, we need to verify who you are.</p>
+                   </div>
+
+                   <div className="space-y-6">
+                      <div className="space-y-3">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">Full Legal Name</Label>
+                        <Input 
+                          placeholder="As it appears on your ID" 
+                          className="h-16 rounded-[2rem] border-border bg-background font-bold px-6 text-lg focus-visible:ring-primary"
+                          value={formData.kycName}
+                          onChange={(e) => setFormData({ ...formData, kycName: e.target.value })}
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-3">
+                          <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">ID or Passport Number</Label>
+                          <Input 
+                            placeholder="e.g. 12345678" 
+                            className="h-16 rounded-[2rem] border-border bg-background font-bold px-6 text-lg focus-visible:ring-primary"
+                            value={formData.kycIdNumber}
+                            onChange={(e) => setFormData({ ...formData, kycIdNumber: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-3">
+                          <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">Institution Name</Label>
+                          <Input 
+                            placeholder="e.g. University of Nairobi" 
+                            className="h-16 rounded-[2rem] border-border bg-background font-bold px-6 text-lg focus-visible:ring-primary"
+                            value={formData.kycInstitution}
+                            onChange={(e) => setFormData({ ...formData, kycInstitution: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-6">
+                        <div className="space-y-3">
+                          <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">National ID / Passport Photo</Label>
+                          <div className="flex items-center gap-4">
+                             <Button 
+                               variant="outline" 
+                               className="h-16 rounded-[2rem] px-8 font-bold text-sm"
+                               onClick={() => {
+                                 setUploading(true);
+                                 setTimeout(() => {
+                                   setFormData({ ...formData, kycIdPhotoUrl: "https://mock-storage.url/id-photo.jpg" });
+                                   setUploading(false);
+                                 }, 1000);
+                               }}
+                               disabled={uploading}
+                             >
+                               {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Select File"}
+                               {uploading ? "Uploading..." : formData.kycIdPhotoUrl ? "ID Uploaded" : "Upload ID Photo"}
+                             </Button>
+                             {formData.kycIdPhotoUrl && <CheckCircle2 className="h-6 w-6 text-emerald-500" />}
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">Selfie Photo</Label>
+                          <div className="flex items-center gap-4">
+                             <Button 
+                               variant="outline" 
+                               className="h-16 rounded-[2rem] px-8 font-bold text-sm"
+                               onClick={() => {
+                                 setUploading(true);
+                                 setTimeout(() => {
+                                   setFormData({ ...formData, kycSelfieUrl: "https://mock-storage.url/selfie.jpg" });
+                                   setUploading(false);
+                                 }, 1000);
+                               }}
+                               disabled={uploading}
+                             >
+                               {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Select File"}
+                               {uploading ? "Uploading..." : formData.kycSelfieUrl ? "Selfie Uploaded" : "Upload Selfie"}
+                             </Button>
+                             {formData.kycSelfieUrl && <CheckCircle2 className="h-6 w-6 text-emerald-500" />}
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">School / Institution ID</Label>
+                          <div className="flex items-center gap-4">
+                             <Button 
+                               variant="outline" 
+                               className="h-16 rounded-[2rem] px-8 font-bold text-sm"
+                               onClick={() => {
+                                 setUploading(true);
+                                 setTimeout(() => {
+                                   setFormData({ ...formData, kycSchoolIdUrl: "https://mock-storage.url/school-id.jpg" });
+                                   setUploading(false);
+                                 }, 1000);
+                               }}
+                               disabled={uploading}
+                             >
+                               {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Select File"}
+                               {uploading ? "Uploading..." : formData.kycSchoolIdUrl ? "School ID Uploaded" : "Upload School ID"}
+                             </Button>
+                             {formData.kycSchoolIdUrl && <CheckCircle2 className="h-6 w-6 text-emerald-500" />}
+                          </div>
+                        </div>
+                      </div>
+                   </div>
+
+                    <div className="pt-8 flex justify-between gap-4">
+                      <Button variant="ghost" onClick={prevStep} className="rounded-full h-16 px-10 font-black text-xs tracking-widest uppercase hover:bg-secondary transition-all">Back</Button>
+                      <Button 
+                        disabled={!formData.kycName || !formData.kycIdNumber || !formData.kycInstitution || !formData.kycIdPhotoUrl || !formData.kycSelfieUrl || !formData.kycSchoolIdUrl} 
+                        onClick={nextStep} 
+                        className="flex-1 rounded-full h-16 font-black text-xs tracking-widest uppercase bg-primary hover:bg-primary/90 text-white shadow-2xl shadow-primary/20 transition-all active:scale-95"
+                      >
+                         Continue <ArrowRight className="ml-3 h-4 w-4" />
+                      </Button>
+                   </div>
+                </motion.div>
+              )}
+
+              {step === 4 && (
+                <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-10">
+                   <div className="space-y-2">
+                      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500">Step 04 / 04</p>
                       <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Almost there — tell us about you.</h2>
                       <p className="text-muted-foreground text-sm font-medium">Write a short professional summary so students know what to expect from you.</p>
                    </div>

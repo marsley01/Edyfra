@@ -10,6 +10,9 @@ const ALLOWED_ORIGINS = [
 
 const SERVER_ACTION_LIMIT = { interval: 60_000, maxRequests: 20 };
 
+// Mutation methods that require CSRF protection
+const MUTATION_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+
 function setCorsHeaders(response: NextResponse, origin: string | null) {
   const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]
   response.headers.set('Access-Control-Allow-Origin', allowedOrigin)
@@ -24,10 +27,38 @@ function setCorsHeaders(response: NextResponse, origin: string | null) {
   return response
 }
 
+function getAppUrl(): string {
+  return process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://edyfra.com';
+}
+
+function validateCsrf(request: NextRequest): boolean {
+  if (!MUTATION_METHODS.has(request.method)) return true;
+
+  const origin = request.headers.get('origin');
+  const referer = request.headers.get('referer');
+
+  if (!origin && !referer) return false;
+
+  const appUrl = getAppUrl();
+  const allowedUrls = [appUrl, ...ALLOWED_ORIGINS];
+
+  const isValidOrigin = !!origin && allowedUrls.some(u => origin.startsWith(u));
+  const isValidReferer = !!referer && allowedUrls.some(u => referer.startsWith(u));
+
+  return isValidOrigin || isValidReferer;
+}
+
 export async function middleware(request: NextRequest) {
   const url = new URL(request.url)
   const isApiRoute = url.pathname.startsWith('/api/')
   const origin = request.headers.get('origin')
+
+  // CSRF check for mutation requests on non-API routes (server actions)
+  if (!isApiRoute && MUTATION_METHODS.has(request.method) && request.headers.get('content-type')?.includes('text/plain')) {
+    if (!validateCsrf(request)) {
+      return new NextResponse(null, { status: 204 });
+    }
+  }
 
   // CORS preflight for API routes
   if (isApiRoute && request.method === 'OPTIONS') {

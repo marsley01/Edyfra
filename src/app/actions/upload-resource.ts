@@ -25,30 +25,43 @@ export async function uploadResource(formData: FormData) {
     return { error: "Missing required fields" };
   }
 
+  // Validate file type and size
+  const allowedTypes = ["application/pdf", "image/png", "image/jpeg", "image/jpg", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation"];
+  const maxSize = 20 * 1024 * 1024; // 20MB
+
+  if (!allowedTypes.includes(file.type)) {
+    return { error: "Invalid file type. Allowed: PDF, images, Word documents, PowerPoint presentations." };
+  }
+  if (file.size > maxSize) {
+    return { error: "File too large. Maximum size is 20MB." };
+  }
+
   // Ensure the Prisma User record exists (foreign key requirement)
   const existingUser = await prisma.user.findUnique({ where: { id: user.id } });
   if (!existingUser) {
     return { error: "Please visit your dashboard first to activate your account before uploading." };
   }
 
-  const adminClient = createAdminClient();
+  const supabaseClient = await createClient();
   const fileExt = file.name.split(".").pop();
-  const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+  const sanitizedExt = fileExt?.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() || "bin";
+  const fileName = `${user.id}/${Date.now()}.${sanitizedExt}`;
 
-  // Try uploading to storage — create bucket if it doesn't exist
-  let { error: uploadError } = await adminClient.storage
+  // Try uploading to storage using the user's authenticated session
+  let { error: uploadError } = await supabaseClient.storage
     .from("resources")
     .upload(fileName, file, { cacheControl: "3600", upsert: false });
 
   if (uploadError) {
     if (uploadError.message?.includes("bucket") || uploadError.message?.includes("not found")) {
+      const adminClient = createAdminClient();
       const { error: bucketError } = await adminClient.storage.createBucket("resources", {
         public: true,
       });
       if (bucketError) {
         return { error: `Storage unavailable: ${bucketError.message}` };
       }
-      const { error: retryError } = await adminClient.storage
+      const { error: retryError } = await supabaseClient.storage
         .from("resources")
         .upload(fileName, file, { cacheControl: "3600", upsert: false });
       if (retryError) {
@@ -59,7 +72,7 @@ export async function uploadResource(formData: FormData) {
     }
   }
 
-  const { data: { publicUrl } } = adminClient.storage.from("resources").getPublicUrl(fileName);
+  const { data: { publicUrl } } = supabaseClient.storage.from("resources").getPublicUrl(fileName);
 
   try {
     await prisma.resource.create({

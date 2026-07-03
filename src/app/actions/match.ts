@@ -241,6 +241,19 @@ export async function forceAIFallback(requestId: string) {
   return { success: true, sessionId };
 }
 
+export async function cancelMatchRequest(requestId: string) {
+  try {
+    await prisma.matchRequest.delete({
+      where: { id: requestId },
+    });
+    revalidatePath("/tutor/requests");
+    return { success: true };
+  } catch (error) {
+    console.error("Error cancelling match request:", error);
+    return { success: false, error: "Failed to cancel match request" };
+  }
+}
+
 export async function sweepUnmatchedRequests() {
   try {
     const result = await sweepAndAIFallback();

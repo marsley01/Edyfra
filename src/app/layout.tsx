@@ -6,12 +6,14 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeColorManager } from "@/components/theme-color-manager";
+
 import { ConditionalShell } from "@/components/conditional-shell";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { PushSubscriptionManager } from "@/components/push-subscription-manager";
 import EddyChatWrapper from "@/components/chat/EddyChatWrapper";
 import { OverlayManagerProvider } from "@/lib/overlay-manager";
 import { ClickFeedback } from "@/components/click-feedback";
+import { MaintenanceGate } from "@/components/maintenance-gate";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -26,13 +28,13 @@ export const metadata: Metadata = {
     "edyfra", "study platform kenya", "tutors kenya", "AI learning", "university tutors",
     "high school tutors", "online study", "peer learning", "education kenya",
   ],
-  authors: [{ name: "Edyfra", url: process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://edyfra.space" }],
+  authors: [{ name: "Edyfra", url: "https://edyfra-v2.vercel.app" }],
   creator: "Edyfra",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://edyfra.space"),
+  metadataBase: new URL("https://edyfra-v2.vercel.app"),
    openGraph: {
   type: "website",
   locale: "en_KE",
-  url: process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://edyfra.space",
+  url: "https://edyfra-v2.vercel.app",
   siteName: "Edyfra",
   title: "Edyfra — Kenya's Institutional Study Platform",
   description: "AI-powered tutor matching, live study rooms, and institutional analytics for Kenyan scholars.",
@@ -104,7 +106,9 @@ export default function RootLayout({
           <OverlayManagerProvider>
             <ThemeColorManager />
             <ClickFeedback />
-            <ConditionalShell>{children}</ConditionalShell>
+            <MaintenanceGate>
+              <ConditionalShell>{children}</ConditionalShell>
+            </MaintenanceGate>
             <ServiceWorkerRegister />
             <PushSubscriptionManager />
             <EddyChatWrapper />

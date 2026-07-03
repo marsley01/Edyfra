@@ -226,7 +226,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <div className="relative group hidden sm:block">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
              <input
-                   placeholder="Execute command..."
+                   placeholder="Search dashboard..."
                    className="bg-white/5 border border-white/5 rounded-full py-1.5 pl-9 pr-4 text-[9px] sm:text-[10px] font-bold tracking-widest focus:outline-none focus:border-primary/50 transition-all w-32 sm:w-48 xl:w-64"
                  />
               </div>
@@ -311,7 +311,7 @@ function AdminSidebarContent({ pathname, navItems, adminUser, supabase, router, 
               <p className="text-sm font-black truncate">{adminUser?.email || "Founder"}</p>
               <div className="flex items-center gap-1.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Founder Access</span>
+                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Administrator</span>
               </div>
             </div>
           </div>
@@ -319,7 +319,7 @@ function AdminSidebarContent({ pathname, navItems, adminUser, supabase, router, 
             onClick={() => supabase.auth.signOut().then(() => router.push("/login"))}
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/5 hover:bg-destructive/10 hover:text-destructive text-[10px] font-black uppercase tracking-widest transition-all border border-white/5"
           >
-            <LogOut className="h-3.5 w-3.5" /> Terminate Session
+            <LogOut className="h-3.5 w-3.5" /> Sign Out
           </button>
         </div>
       </div>
