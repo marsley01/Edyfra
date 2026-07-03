@@ -27,6 +27,12 @@ export async function POST(req: NextRequest) {
     }
 
     if (ResultCode === 0) {
+      // Prevent replay: check if payment was already completed
+      if (payment.status === "completed") {
+        console.warn(`[Mpesa Callback] Duplicate callback for already-completed payment: ${CheckoutRequestID}`);
+        return NextResponse.json({ ResultCode: 0, ResultDesc: "Accepted" });
+      }
+
       // Success
       const metadata = CallbackMetadata.Item;
       const mpesaReceipt = metadata.find((item: any) => item.Name === "MpesaReceiptNumber")?.Value;

@@ -18,6 +18,7 @@ const navLinks = [
   { name: "Roadmap", href: "/roadmap" },
   { name: "Institutions", href: "/institution" },
   { name: "News", href: "/news" },
+  { name: "Changelog", href: "/changelog" },
   { name: "About", href: "/about" },
 ];
 

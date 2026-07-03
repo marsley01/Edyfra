@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { completeOnboarding } from "@/app/actions/onboarding";
 import { Loader2, BookOpen, MapPin, GraduationCap, ArrowRight, CheckCircle2, AlertCircle, Sparkles } from "lucide-react";
 import { EDUCATIONAL_SUBJECTS } from "@/utils/subjects";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/utils/supabase/client";
 
 export default function StudentOnboardingPage() {
   const router = useRouter();
@@ -25,6 +26,18 @@ export default function StudentOnboardingPage() {
     weakTopics: [] as string[],
     studyStyle: "",
   });
+  const [userName, setUserName] = useState<string>("Student");
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.user_metadata?.name || user?.user_metadata?.full_name) {
+        setUserName(user.user_metadata.name || user.user_metadata.full_name);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const nextStep = () => setStep(s => s + 1);
   const prevStep = () => setStep(s => s - 1);
@@ -90,7 +103,7 @@ export default function StudentOnboardingPage() {
                 <GraduationCap className="h-8 w-8" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-3xl font-black tracking-tightest text-white">Your journey starts here.</h3>
+                <h3 className="text-3xl font-black tracking-tightest text-white">Your journey starts here, {userName.split(' ')[0]}.</h3>
                 <p className="text-primary-foreground/70 font-medium text-sm leading-relaxed">
                   A few quick questions so we can personalise Edyfra just for you.
                 </p>
@@ -118,7 +131,7 @@ export default function StudentOnboardingPage() {
                 <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-10">
                    <div className="space-y-2">
                       <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Step 01 / 05</p>
-                      <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Where are you in school?</h2>
+                      <h2 className="text-4xl md:text-5xl font-black tracking-tightest">Where are you in school, {userName.split(' ')[0]}?</h2>
                    </div>
                    
                    <div className="space-y-8">

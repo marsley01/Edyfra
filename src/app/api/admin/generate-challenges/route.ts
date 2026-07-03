@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateChallenges } from "@/app/actions/challenge-ai";
-import { getUserData } from "@/app/actions/user";
-import { Role } from "@/generated/client";
+import { checkAdminStatus } from "@/app/actions/admin";
 
 export async function POST(req: NextRequest) {
   try {
-    // Check if user is admin
-    const user = await getUserData();
-    if (!user || user.role !== Role.ADMIN) {
+    // Check if user is admin (handles founder check)
+    const isAdmin = await checkAdminStatus();
+    if (!isAdmin) {
       return NextResponse.json(
         { error: "Unauthorized: Admin access required" },
         { status: 403 }

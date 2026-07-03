@@ -1,12 +1,11 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { MessageCircle, Sparkles, Zap, Trophy, BookOpen, Users, Star, CheckCircle } from "lucide-react";
 
-export function HomeHero() {
+export function HomeHero({ stats }: { stats?: { value: number; label: string }[] }) {
   const WHATSAPP_CHANNEL = "https://whatsapp.com/channel/0029Vb7GgdmHLHQfoNgSjo1P";
+  
+  const studentCount = stats?.[0]?.value ? `${stats[0].value.toLocaleString()}+` : "Growing";
 
   return (
     <section className="relative min-h-[90vh] flex flex-col items-center justify-center text-center px-6 overflow-hidden pt-20 pb-0">
@@ -16,14 +15,9 @@ export function HomeHero() {
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-violet-500/5 blur-[100px] rounded-full" />
       </div>
 
-      <div className="relative z-10 max-w-5xl space-y-10 w-full">
+      <div className="relative z-10 max-w-5xl space-y-10 w-full animate-in fade-in slide-in-from-bottom-8 duration-700">
         {/* Hero text */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="space-y-6"
-        >
+        <div className="space-y-6">
           <h1 className="text-6xl md:text-8xl lg:text-[100px] font-black tracking-tightest leading-[0.9] text-foreground">
             Education, <br />
             <span className="text-primary">reimagined.</span>
@@ -31,15 +25,10 @@ export function HomeHero() {
           <p className="text-lg md:text-2xl text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed">
             Your personal study base for school, revision, mentorship, and momentum. Mash AI, verified tutors, and real students help you move from stuck to ready.
           </p>
-        </motion.div>
+        </div>
 
         {/* CTA Buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4"
-        >
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link href="/signup">
             <Button className="h-16 px-12 rounded-full bg-foreground text-background hover:bg-foreground/90 font-black text-xs tracking-widest uppercase shadow-2xl transition-all active:scale-95">
               Start Your Study Plan
@@ -51,21 +40,12 @@ export function HomeHero() {
               Join Student Updates
             </Button>
           </a>
-        </motion.div>
+        </div>
 
         {/* ── Premium Dashboard Mockup ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 80 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.2, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="relative w-full mx-auto mt-8 px-2 md:px-0"
-        >
+        <div className="relative w-full mx-auto mt-8 px-2 md:px-0">
           {/* Floating badge — top left */}
-          <motion.div
-            animate={{ y: [0, -10, 0] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -top-8 -left-2 md:-left-6 z-20 hidden md:flex items-center gap-3 bg-background/95 backdrop-blur-xl border border-border rounded-2xl px-4 py-2.5 shadow-xl"
-          >
+          <div className="absolute -top-8 -left-2 md:-left-6 z-20 hidden md:flex items-center gap-3 bg-background/95 backdrop-blur-xl border border-border rounded-2xl px-4 py-2.5 shadow-xl animate-bounce">
             <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center">
               <CheckCircle className="h-4 w-4 text-emerald-500" />
             </div>
@@ -73,14 +53,10 @@ export function HomeHero() {
               <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Match Found</p>
               <p className="text-sm font-black">Tutor connected!</p>
             </div>
-          </motion.div>
+          </div>
 
           {/* Floating badge — top right */}
-          <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-            className="absolute -top-6 -right-2 md:-right-6 z-20 hidden md:flex items-center gap-3 bg-background/95 backdrop-blur-xl border border-border rounded-2xl px-4 py-2.5 shadow-xl"
-          >
+          <div className="absolute -top-6 -right-2 md:-right-6 z-20 hidden md:flex items-center gap-3 bg-background/95 backdrop-blur-xl border border-border rounded-2xl px-4 py-2.5 shadow-xl animate-bounce delay-150">
             <div className="w-8 h-8 rounded-xl bg-yellow-500/10 flex items-center justify-center">
               <Trophy className="h-4 w-4 text-yellow-500" />
             </div>
@@ -88,7 +64,7 @@ export function HomeHero() {
               <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Points earned</p>
               <p className="text-sm font-black">+120 XP 🔥</p>
             </div>
-          </motion.div>
+          </div>
 
           {/* Main mockup window */}
           <div className="relative rounded-[2rem] overflow-hidden border border-border/60 shadow-[0_40px_120px_-20px_rgba(0,0,0,0.15)] dark:shadow-[0_40px_120px_-20px_rgba(0,0,0,0.5)] bg-background">
@@ -192,12 +168,7 @@ export function HomeHero() {
                     <p className="text-[9px] font-black uppercase tracking-widest text-primary">Daily Challenge</p>
                     <p className="text-xs font-bold mt-1 text-foreground">Algebra Quiz</p>
                     <div className="h-1.5 bg-primary/20 rounded-full mt-2 overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: "65%" }}
-                        transition={{ duration: 1.5, delay: 1 }}
-                        className="h-full bg-primary rounded-full"
-                      />
+                      <div className="h-full bg-primary rounded-full w-[65%]" />
                     </div>
                   </div>
                 </div>
@@ -206,11 +177,7 @@ export function HomeHero() {
           </div>
 
           {/* Bottom social proof badge */}
-          <motion.div
-            animate={{ y: [0, -6, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-            className="absolute -bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-background/95 backdrop-blur-xl border border-border rounded-full px-6 py-2.5 shadow-xl whitespace-nowrap"
-          >
+          <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-background/95 backdrop-blur-xl border border-border rounded-full px-6 py-2.5 shadow-xl whitespace-nowrap">
             <div className="flex -space-x-2">
               {["#8b5cf6", "#06b6d4", "#f59e0b", "#10b981"].map((c, i) => (
                 <div key={i} className="w-6 h-6 rounded-full border-2 border-background flex items-center justify-center text-[8px] text-white font-black" style={{ backgroundColor: c }}>
@@ -219,10 +186,10 @@ export function HomeHero() {
               ))}
             </div>
             <p className="text-xs font-black">
-              <span className="text-primary">2,400+</span> students studying right now
+              <span className="text-primary">{studentCount}</span> students studying right now
             </p>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </div>
 
       {/* Bottom gradient fade */}

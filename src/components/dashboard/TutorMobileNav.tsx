@@ -14,6 +14,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { NotificationBell, NotificationCountBadge } from "@/components/dashboard/NotificationBell";
 import { cn } from "@/lib/utils";
+import { useRegisterOverlay } from "@/lib/overlay-manager";
 
 const BOTTOM_TABS = [
   { href: "/tutor", label: "Home", icon: LayoutDashboard },
@@ -38,6 +39,8 @@ export function TutorMobileNav({ user }: { user: User }) {
   const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+
+  useRegisterOverlay({ id: "tutor-mobile-nav", edge: "bottom", size: 64, slot: "mobile-nav" });
 
   const showBackButton = pathname !== "/tutor";
   const pageTitle = PAGE_TITLES[pathname] ?? "Tutor Hub";

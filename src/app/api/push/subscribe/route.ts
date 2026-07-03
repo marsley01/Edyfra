@@ -15,6 +15,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid subscription" }, { status: 400 });
     }
 
+    // Validate input sizes to prevent resource exhaustion
+    if (typeof endpoint !== "string" || endpoint.length > 2048) {
+      return NextResponse.json({ error: "Invalid endpoint" }, { status: 400 });
+    }
+    if (typeof keys.p256dh !== "string" || keys.p256dh.length > 512) {
+      return NextResponse.json({ error: "Invalid p256dh key" }, { status: 400 });
+    }
+    if (typeof keys.auth !== "string" || keys.auth.length > 512) {
+      return NextResponse.json({ error: "Invalid auth key" }, { status: 400 });
+    }
+
     await prisma.pushSubscription.upsert({
       where: { endpoint },
       create: {

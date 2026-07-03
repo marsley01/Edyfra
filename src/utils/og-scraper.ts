@@ -26,8 +26,7 @@ export async function fetchOgImage(url: string): Promise<string | null> {
     }
 
     return null;
-  } catch (err) {
-    // Fail silently on timeout or network errors so news still loads
+  } catch {
     return null;
   }
 }
