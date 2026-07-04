@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+
 @custom-variant dark (&:is(.dark *));
 
 /* ── iOS Safari green screen fix ── */
@@ -141,7 +142,7 @@ html {
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 4px);
   --radius-xl: calc(var(--radius) + 8px);
-  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-sans: system-ui, sans-serif;
   --tracking-tighter: -0.02em;
   --tracking-tightest: -0.05em;
 }

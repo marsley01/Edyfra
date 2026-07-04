@@ -31,7 +31,7 @@ export function IncomingRequests() {
         (payload: any) => {
           const newBooking = payload.new;
           // Fetch student details
-          fetch(`/api/users/${newBooking.student_id}`)
+          fetch(`/api/users/${newBooking.student_id}`, { signal: AbortSignal.timeout(5000) })
             .then(res => res.json())
             .then(student => {
               setRequests(prev => {

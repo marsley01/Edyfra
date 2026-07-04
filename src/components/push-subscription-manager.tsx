@@ -19,9 +19,12 @@ export function PushSubscriptionManager() {
       return;
     }
 
+    const ctrl = new AbortController();
+
     const syncSubscription = async () => {
       try {
         const registration = await navigator.serviceWorker.ready;
+        if (ctrl.signal.aborted) return;
         const existing = await registration.pushManager.getSubscription();
 
         if (existing) {
@@ -37,6 +40,7 @@ export function PushSubscriptionManager() {
                 endpoint: raw.endpoint,
                 keys: raw.keys,
               }),
+              signal: ctrl.signal,
             });
           } catch {
             // Network blip — will retry on next page load
@@ -48,7 +52,7 @@ export function PushSubscriptionManager() {
         // granted (we don't surprise users with the prompt).
         if (Notification.permission !== "granted") return;
 
-        const res = await fetch("/api/push/vapid-public-key");
+        const res = await fetch("/api/push/vapid-public-key", { signal: ctrl.signal });
         if (!res.ok) return;
         const { publicKey } = await res.json();
         if (!publicKey) return;
@@ -66,6 +70,7 @@ export function PushSubscriptionManager() {
             endpoint: raw.endpoint,
             keys: raw.keys,
           }),
+          signal: ctrl.signal,
         });
       } catch {
         // silently fail — user might have denied permission, or SW not ready
@@ -75,6 +80,8 @@ export function PushSubscriptionManager() {
     if (Notification.permission === "granted") {
       syncSubscription();
     }
+
+    return () => ctrl.abort();
   }, []);
 
   return null;

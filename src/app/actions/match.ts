@@ -103,12 +103,11 @@ export async function acceptMatchRequest(requestId: string) {
   });
 
   if (!matchRequest || matchRequest.sessionId) {
-    return { success: false, error: "Request already matched or not found" };
+    return { success: false, error: "Match request no longer available." };
   }
 
-  const userData = await prisma.user.findUnique({ 
+  const userData = await prisma.user.findUnique({
     where: { id: user.id },
-    include: { tutorProfile: true }
   });
   
   const tier = userData?.role === Role.TUTOR ? "TUTOR" : "PEER";

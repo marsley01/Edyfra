@@ -99,6 +99,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin/challenges", label: "AI Challenges", icon: Award },
     { href: "/admin/insights", label: "Site Insights", icon: TrendingUp },
     { href: "/admin/settings", label: "Settings", icon: Settings },
+    { href: "/admin/institutions", label: "Institution Applications", icon: Building2 },
     { href: "/admin/ai-settings", label: "AI Settings", icon: Cpu },
   ];
 
@@ -172,7 +173,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 initial={{ x: "-100%" }}
                 animate={{ x: 0 }}
                 exit={{ x: "-100%" }}
-                transition={{ type: "spring", damping: 30, stiffness: 260 }}
+                transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
                 className="fixed inset-y-0 left-0 w-[88vw] max-w-72 bg-[#050505] z-[70] shadow-2xl overflow-y-auto custom-scrollbar"
               >
               <div className="absolute top-6 right-6 z-50">
@@ -288,11 +289,7 @@ function AdminSidebarContent({ pathname, navItems, adminUser, supabase, router, 
               )}
             >
               {isActive && (
-                <motion.div
-                  layoutId="active-pill"
-                  className="absolute left-0 w-1 h-6 bg-primary rounded-full"
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                />
+                <div className="absolute left-0 w-1 h-6 bg-primary rounded-full" />
               )}
               <item.icon className={cn("h-4 w-4 transition-transform group-hover:scale-110", isActive ? "text-primary" : "")} />
               {item.label}

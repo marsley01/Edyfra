@@ -42,6 +42,8 @@
     "node_modules",
     "scripts",
     "prisma",
-    "supabase"
+    "supabase",
+    "scratch",
+    "sentry*.config.ts"
   ]
 }

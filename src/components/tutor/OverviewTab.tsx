@@ -106,15 +106,13 @@ export function OverviewTab() {
     { label: "Earnings", value: `KSH ${(profile?.totalSessions || 0) * (profile?.hourlyRate || 0)}`, icon: Wallet, color: "text-primary", bg: "bg-primary/10" },
     { label: "Rating", value: profile?.rating ? profile.rating.toFixed(1) : "New", icon: Star, color: "text-yellow-500", bg: "bg-yellow-500/10" },
   ];
-  
-  const tutorName = profile?.user?.name?.split(" ")[0] || "Tutor";
 
   return (
     <div className="space-y-12 animate-in fade-in duration-700 font-sans p-2">
       {/* Premium Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
         <div className="space-y-2">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tightest">{(() => { const g = getTimeGreeting(tutorName); return `${g.text}${g.key === "late" ? "?" : "."} ${g.emoji}`; })()}</h1>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tightest">{(() => { const g = getTimeGreeting(profile?.user?.name ?? "Tutor"); return `${g.text}${g.key === "late" ? "?" : "."} ${g.emoji}`; })()}</h1>
           <p className="text-muted-foreground text-lg font-medium">Here is your upcoming teaching schedule.</p>
         </div>
 

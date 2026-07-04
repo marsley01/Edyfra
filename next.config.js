@@ -4,6 +4,9 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 });
 
 const nextConfig = {
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
+  },
   turbopack: {
     root: __dirname,
   },

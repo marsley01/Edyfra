@@ -1,6 +1,8 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { RSSService, RSSItem } from "@/utils/rss-service";
+import { getCached, TTL } from "@/lib/cache";
 
 export interface NewsArticle {
   id: string;
@@ -16,7 +18,6 @@ export interface NewsArticle {
   isDraft?: boolean;
 }
 
-import { RSSService, RSSItem } from "@/utils/rss-service";
 import { fetchOgImage } from "@/utils/og-scraper";
 
 const CATEGORY_IMAGES: Record<string, string> = {
@@ -61,6 +62,7 @@ function kenyanBoost(item: { source: string; title: string }): number {
 }
 
 export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
+  return getCached(`news:latest:${limit}`, TTL.KNOWLEDGE_FEED, async () => {
   const supabase = await createClient();
 
   // Fetch extra articles to allow room for Kenyan prioritization
@@ -137,6 +139,7 @@ export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
     console.error("News Fallback Error:", err);
     return [];
   }
+  });
 }
 
 import { AIService } from "@/utils/ai-service";

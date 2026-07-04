@@ -19,6 +19,7 @@ export function PushNotificationManager() {
   const [swState, setSwState] = useState<string>("unknown");
 
   useEffect(() => {
+    const ctrl = new AbortController();
     if (
       typeof window === "undefined" ||
       !("Notification" in window) ||
@@ -33,15 +34,20 @@ export function PushNotificationManager() {
 
     navigator.serviceWorker.ready
       .then((reg) => {
+        if (ctrl.signal.aborted) return;
         setSwState(reg.active?.state || "activated");
         return reg.pushManager.getSubscription();
       })
       .then((sub) => {
+        if (ctrl.signal.aborted) return;
         setSubscribed(!!sub);
       })
       .catch(() => {
+        if (ctrl.signal.aborted) return;
         setSwState("error");
       });
+
+    return () => ctrl.abort();
   }, []);
 
   const subscribe = useCallback(async () => {
@@ -69,7 +75,7 @@ export function PushNotificationManager() {
 
       const reg = await navigator.serviceWorker.ready;
 
-      const keyRes = await fetch("/api/push/vapid-public-key");
+      const keyRes = await fetch("/api/push/vapid-public-key", { signal: AbortSignal.timeout(10000) });
       if (!keyRes.ok) {
         showError({
           title: "Push isn't set up yet",
@@ -106,6 +112,7 @@ export function PushNotificationManager() {
           endpoint: raw.endpoint,
           keys: raw.keys,
         }),
+        signal: AbortSignal.timeout(10000),
       });
 
       if (!saveRes.ok) {
@@ -143,6 +150,7 @@ export function PushNotificationManager() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ endpoint: raw.endpoint }),
+          signal: AbortSignal.timeout(10000),
         }).catch(() => {});
         await sub.unsubscribe();
       }
@@ -162,7 +170,7 @@ export function PushNotificationManager() {
   const sendTest = useCallback(async () => {
     setTesting(true);
     try {
-      const res = await fetch("/api/push/test", { method: "POST" });
+      const res = await fetch("/api/push/test", { method: "POST", signal: AbortSignal.timeout(10000) });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data?.error || "Test failed");

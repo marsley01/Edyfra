@@ -93,6 +93,7 @@ export function Footer() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim(), source: "landing_page" }),
+        signal: AbortSignal.timeout(10000),
       });
 
       if (!res.ok) {

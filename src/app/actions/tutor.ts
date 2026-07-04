@@ -6,6 +6,8 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getUserData } from "./user";
 import { TUTOR_CONFIG } from "@/lib/config";
+import { acceptMatchRequest } from "./match";
+import { getCached, TTL } from "@/lib/cache";
 
 export const getTutorProfile = cache(async () => {
   try {
@@ -90,7 +92,6 @@ export async function updateTutorAvailability(schedule: any) {
   }
 }
 
-import { acceptMatchRequest } from "./match";
 export { acceptMatchRequest };
 
 export async function getTutorStats() {
@@ -119,11 +120,14 @@ export async function getTutorStats() {
 }
 
 export async function getVerifiedTutors(level?: EduLevel) {
+  const cacheKey = level ? `tutors:verified:${level}` : `tutors:verified:all`;
+  return getCached(cacheKey, TTL.APPROVED_TUTORS, async () => {
   try {
     const whereClause: any = {
       role: Role.TUTOR,
       tutorProfile: {
-        isNot: null
+        isNot: null,
+        isVerified: true
       }
     };
     if (level) {
@@ -145,6 +149,7 @@ export async function getVerifiedTutors(level?: EduLevel) {
     console.error("Error in getVerifiedTutors:", error);
     return [];
   }
+  });
 }
 
 /** Elevates the current user to Admin for setup purposes */

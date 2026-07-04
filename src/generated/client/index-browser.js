@@ -140,7 +140,6 @@ exports.Prisma.UserScalarFieldEnum = {
   strikes: 'strikes',
   createdAt: 'createdAt',
   bio: 'bio',
-  settings: 'settings',
   curriculum: 'curriculum',
   dailyMessageCount: 'dailyMessageCount',
   dailySearchCount: 'dailySearchCount',
@@ -472,6 +471,7 @@ exports.Prisma.UserPreferencesScalarFieldEnum = {
   showOnlineStatus: 'showOnlineStatus',
   allowTutorRequests: 'allowTutorRequests',
   enableMashFallback: 'enableMashFallback',
+  studyHoursPerWeek: 'studyHoursPerWeek',
   updatedAt: 'updatedAt'
 };
 
@@ -618,24 +618,7 @@ exports.Prisma.InstitutionScalarFieldEnum = {
   plan: 'plan',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  isActive: 'isActive',
-  status: 'status',
-  schoolType: 'schoolType',
-  curriculum: 'curriculum',
-  county: 'county',
-  subCounty: 'subCounty',
-  studentCount: 'studentCount',
-  adminName: 'adminName',
-  adminTitle: 'adminTitle',
-  adminPhone: 'adminPhone',
-  adminEmail: 'adminEmail',
-  primaryAdminUserId: 'primaryAdminUserId',
-  planTier: 'planTier',
-  currentTermId: 'currentTermId',
-  approvedAt: 'approvedAt',
-  approvedByUserId: 'approvedByUserId',
-  motto: 'motto',
-  address: 'address'
+  isActive: 'isActive'
 };
 
 exports.Prisma.InstitutionStaffScalarFieldEnum = {
@@ -685,6 +668,33 @@ exports.Prisma.InstitutionDocumentScalarFieldEnum = {
   fileSize: 'fileSize',
   uploadedBy: 'uploadedBy',
   createdAt: 'createdAt'
+};
+
+exports.Prisma.ProcessingJobScalarFieldEnum = {
+  id: 'id',
+  institutionId: 'institutionId',
+  filePath: 'filePath',
+  status: 'status',
+  error: 'error',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.InstitutionApplicationScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  institutionName: 'institutionName',
+  phone: 'phone',
+  message: 'message',
+  status: 'status',
+  adminNotes: 'adminNotes',
+  reviewedById: 'reviewedById',
+  reviewedAt: 'reviewedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.TutorAvailabilityScalarFieldEnum = {
@@ -986,15 +996,15 @@ exports.Prisma.QueryMode = {
   insensitive: 'insensitive'
 };
 
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
 exports.Prisma.JsonNullValueFilter = {
   DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
-};
-
-exports.Prisma.NullsOrder = {
-  first: 'first',
-  last: 'last'
 };
 exports.Gender = exports.$Enums.Gender = {
   MALE: 'MALE',
@@ -1058,40 +1068,12 @@ exports.AppStatus = exports.$Enums.AppStatus = {
   REJECTED: 'REJECTED'
 };
 
-exports.InstitutionStatus = exports.$Enums.InstitutionStatus = {
-  PENDING: 'PENDING',
-  ACTIVE: 'ACTIVE',
-  SUSPENDED: 'SUSPENDED',
-  REJECTED: 'REJECTED'
-};
-
-exports.SchoolType = exports.$Enums.SchoolType = {
-  PRIMARY: 'PRIMARY',
-  SECONDARY: 'SECONDARY',
-  COLLEGE: 'COLLEGE',
-  UNIVERSITY: 'UNIVERSITY'
-};
-
-exports.Curriculum = exports.$Enums.Curriculum = {
-  CBC: 'CBC',
-  EIGHT_FOUR_FOUR: 'EIGHT_FOUR_FOUR',
-  IGCSE: 'IGCSE',
-  MIXED: 'MIXED',
-  UNIVERSITY: 'UNIVERSITY'
-};
-
 exports.AdminTitle = exports.$Enums.AdminTitle = {
   PRINCIPAL: 'PRINCIPAL',
   DEPUTY: 'DEPUTY',
   HOD: 'HOD',
   REGISTRAR: 'REGISTRAR',
   OTHER: 'OTHER'
-};
-
-exports.InstitutionPlan = exports.$Enums.InstitutionPlan = {
-  STARTER: 'STARTER',
-  GROWTH: 'GROWTH',
-  ENTERPRISE: 'ENTERPRISE'
 };
 
 exports.ResultTrend = exports.$Enums.ResultTrend = {
@@ -1201,6 +1183,8 @@ exports.Prisma.ModelName = {
   InstitutionTutor: 'InstitutionTutor',
   InstitutionMember: 'InstitutionMember',
   InstitutionDocument: 'InstitutionDocument',
+  ProcessingJob: 'ProcessingJob',
+  InstitutionApplication: 'InstitutionApplication',
   TutorAvailability: 'TutorAvailability',
   Booking: 'Booking',
   BookingReminder: 'BookingReminder',

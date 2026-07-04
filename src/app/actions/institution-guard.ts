@@ -33,7 +33,7 @@ export const getActiveInstitutionMembership = cache(async (): Promise<{
       include: { institution: true },
     });
     if (!member) return null;
-    if (member.institution.status !== "ACTIVE") return null;
+    if (!member.institution.isActive) return null;
 
     return {
       member,
@@ -68,7 +68,7 @@ export async function requireInstitutionAdmin() {
           include: { institution: true },
         })
       : null;
-    if (pending && pending.institution.status === "PENDING") {
+    if (pending && !pending.institution.isActive) {
       redirect("/institution/pending");
     }
     redirect("/institution/login");

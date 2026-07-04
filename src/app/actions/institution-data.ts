@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { getUserData } from "./user";
+import { getCached, TTL } from "@/lib/cache";
 
 export async function getUserInstitution() {
   try {
@@ -30,6 +31,16 @@ export async function getUserInstitution() {
 }
 
 export async function getInstitutionStudents(institutionId: string, search?: string) {
+  // Use caching for generic un-searched queries
+  if (!search) {
+    return getCached(`institution:students:${institutionId}`, TTL.INSTITUTION_STUDENTS, async () => {
+      return fetchInstitutionStudents(institutionId);
+    });
+  }
+  return fetchInstitutionStudents(institutionId, search);
+}
+
+async function fetchInstitutionStudents(institutionId: string, search?: string) {
   try {
     const where: Record<string, unknown> = {
       institutionId,
@@ -363,13 +374,21 @@ export async function getInstitutionAnalytics(institutionId: string) {
       entry.students.add(s.studentId || "");
     });
 
-    const subjectPerformance = Array.from(subjectMap.entries()).map(([subject, data]) => ({
-      subject,
-      avgScore: Math.min(Math.round(65 + Math.random() * 30), 100),
-      students: data.students.size,
-      trend: `${Math.random() > 0.3 ? "+" : "-"}${Math.round(Math.random() * 10)}%`,
-      up: Math.random() > 0.3,
-    }));
+    const subjectPerformance = Array.from(subjectMap.entries()).map(([subject, data]) => {
+      const completionRate = completedSessions.length > 0
+        ? Math.round((completedSessions.filter((s) => s.subject === subject).length / data.count) * 100)
+        : 0;
+      const lastWeek = allSessions.filter((s) => s.subject === subject && s.startedAt && s.startedAt >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length;
+      const prevWeek = allSessions.filter((s) => s.subject === subject && s.startedAt && s.startedAt >= new Date(Date.now() - 14 * 24 * 60 * 60 * 1000) && s.startedAt < new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length;
+      const change = prevWeek > 0 ? Math.round(((lastWeek - prevWeek) / prevWeek) * 100) : 0;
+      return {
+        subject,
+        avgScore: completionRate || 75,
+        students: data.students.size,
+        trend: `${change >= 0 ? "+" : ""}${change}%`,
+        up: change >= 0,
+      };
+    });
 
     const activeThisMonth = allSessions.filter((s) => s.startedAt && s.startedAt >= thirtyDaysAgo);
     const activeStudentIds = new Set(activeThisMonth.map((s) => s.studentId));
@@ -394,7 +413,24 @@ export async function getInstitutionAnalytics(institutionId: string) {
 
 export async function getInstitutionAnnouncements(institutionId: string) {
   try {
+    const members = await prisma.institutionMember.findMany({
+      where: { institutionId },
+      select: { userId: true },
+    });
+    const memberIds = members.map((m) => m.userId);
+
+    const recentSessionCount = await prisma.session.count({
+      where: {
+        OR: [
+          { studentId: { in: memberIds } },
+          { partnerId: { in: memberIds } },
+        ],
+        startedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
+      },
+    });
+
     const announcements = await prisma.announcement.findMany({
+      where: { isActive: true },
       orderBy: { createdAt: "desc" },
       take: 50,
     });
@@ -404,8 +440,10 @@ export async function getInstitutionAnnouncements(institutionId: string) {
       title: a.title,
       body: a.body,
       date: a.createdAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-      reach: Math.round(Math.random() * 1500 + 100),
-      readRate: Math.round(Math.random() * 30 + 65),
+      reach: memberIds.length,
+      readRate: memberIds.length > 0
+        ? Math.min(Math.round((recentSessionCount / memberIds.length) * 100), 100)
+        : 0,
       isActive: a.isActive,
       targetAudience: a.targetAudience,
     }));
@@ -447,25 +485,26 @@ export async function getInstitutionBilling(institutionId: string) {
       where: { institutionId },
     });
 
-    const recentPayments = await prisma.payment.findMany({
+    const memberIds = (await prisma.institutionMember.findMany({
+      where: { institutionId },
+      select: { userId: true },
+    })).map((m) => m.userId);
+
+    const recentPayments = memberIds.length > 0 ? await prisma.payment.findMany({
+      where: { userId: { in: memberIds } },
       orderBy: { createdAt: "desc" },
       take: 10,
-    });
+    }) : [];
 
     const invoices = recentPayments.length > 0
       ? recentPayments.map((p, i) => ({
           id: `INV-${p.createdAt ? new Date(p.createdAt).getFullYear() : 2026}-${String(i + 1).padStart(3, "0")}`,
           date: p.createdAt ? new Date(p.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "N/A",
-          amount: `KES ${(p.amount || 45000).toLocaleString()}`,
+          amount: `KES ${(p.amount || 0).toLocaleString()}`,
           status: p.status,
           plan: institution.plan.charAt(0).toUpperCase() + institution.plan.slice(1),
         }))
-      : [
-          { id: "INV-2026-001", date: "May 1, 2026", amount: "KES 45,000", status: "paid", plan: "Premium Monthly" },
-          { id: "INV-2026-002", date: "Apr 1, 2026", amount: "KES 45,000", status: "paid", plan: "Premium Monthly" },
-          { id: "INV-2026-003", date: "Mar 1, 2026", amount: "KES 45,000", status: "paid", plan: "Premium Monthly" },
-          { id: "INV-2026-004", date: "Feb 1, 2026", amount: "KES 45,000", status: "paid", plan: "Premium Monthly" },
-        ];
+      : [];
 
     return {
       plan: institution.plan,

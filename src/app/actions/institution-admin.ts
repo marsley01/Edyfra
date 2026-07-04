@@ -331,7 +331,7 @@ export async function addStudent(input: AddStudentInput) {
         email: data.email.toLowerCase(),
         name: data.fullName,
         role: "STUDENT",
-        county: membership.institution.county ?? "Unknown",
+        county: "Unknown",
         formYear: data.formYear,
       },
     });
@@ -534,7 +534,7 @@ export async function inviteTeacher(input: InviteTeacherInput) {
       subject: `You're invited to join ${membership.institution.name} on Edyfra`,
       html: `
         <h2>Hi ${data.name},</h2>
-        <p>${membership.institution.adminName ?? "The admin"} from <strong>${membership.institution.name}</strong> has invited you to teach on Edyfra under their institution.</p>
+        <p>The admin from <strong>${membership.institution.name}</strong> has invited you to teach on Edyfra under their institution.</p>
         <p>Subjects you'll teach: ${data.subjects.join(", ")}</p>
         <p>Accept the invitation by creating your teacher account:</p>
         <p><a href="${acceptUrl}" style="display:inline-block;padding:12px 24px;background:#3730A3;color:white;border-radius:8px;text-decoration:none;">Accept invitation</a></p>
@@ -638,7 +638,7 @@ export async function addDeputyAdmin(input: z.infer<typeof DeputySchema>) {
         email: data.email.toLowerCase(),
         name: data.name,
         role: "STUDENT", // base role; InstitutionMember is the institution-specific role
-        county: membership.institution.county ?? "Unknown",
+        county: "Unknown",
       },
     });
   }

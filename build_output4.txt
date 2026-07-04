@@ -1,0 +1,73 @@
+﻿
+> edyfra@0.1.0 build
+> next build --webpack
+
+node.exe : Warning: Custom Cache-Control headers detected for the following routes:
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Warning: Custom...llowing routes::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  - /_next/static/:path*
+
+Setting a custom Cache-Control header can break Next.js development behavior.
+Γû▓ Next.js 16.2.10 (webpack)
+- Experiments (use with caution):
+  ┬╖ optimizePackageImports
+
+ΓÜá The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: 
+https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+Failed to compile.
+
+./src/app/admin/content/page.tsx
+Module parse failed: Identifier 'toast' has already been declared (9:9)
+File was processed with these loaders:
+ * ./node_modules/next/dist/build/webpack/loaders/next-flight-client-module-loader.js
+ * ./node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
+You may need an additional loader to handle the result of these loaders.
+| import { Plus, Edit3, Trash2, Calendar, Search, Loader2, Sparkles, Filter } from 
+"__barrel_optimize__?names=Calendar,Edit3,Filter,Loader2,Plus,Search,Sparkles,Trash2!=!lucide-react";
+| import { createClient } from "@/utils/supabase/client";
+> import { toast } from "__barrel_optimize__?names=toast!=!sonner";
+| export default function AdminContentPage() {
+|     const supabase = createClient();
+
+Import trace for requested module:
+./src/app/admin/content/page.tsx
+
+./src/app/admin/feedback/page.tsx
+Module parse failed: Identifier 'toast' has already been declared (12:9)
+File was processed with these loaders:
+ * ./node_modules/next/dist/build/webpack/loaders/next-flight-client-module-loader.js
+ * ./node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
+You may need an additional loader to handle the result of these loaders.
+| import { Input } from "@/components/ui/input";
+| import { Star, MessageSquare, Search, Loader2, Trophy } from 
+"__barrel_optimize__?names=Loader2,MessageSquare,Search,Star,Trophy!=!lucide-react";
+> import { toast } from "__barrel_optimize__?names=toast!=!sonner";
+| import { motion } from "__barrel_optimize__?names=motion!=!framer-motion";
+| export default function AdminFeedbackPage() {
+
+Import trace for requested module:
+./src/app/admin/feedback/page.tsx
+
+./src/app/admin/insights/page.tsx
+Module parse failed: Identifier 'toast' has already been declared (8:9)
+File was processed with these loaders:
+ * ./node_modules/next/dist/build/webpack/loaders/next-flight-client-module-loader.js
+ * ./node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
+You may need an additional loader to handle the result of these loaders.
+| import { BarChart, Globe, Activity, Search, ExternalLink, TrendingUp, Zap, Loader2 } from 
+"__barrel_optimize__?names=Activity,BarChart,ExternalLink,Globe,Loader2,Search,TrendingUp,Zap!=!lucide-react";
+| import { getAdminDashboardMetrics } from "@/app/actions/admin";
+> import { toast } from "__barrel_optimize__?names=toast!=!sonner";
+| export default function AdminInsightsPage() {
+|     const [metrics, setMetrics] = useState(null);
+
+Import trace for requested module:
+./src/app/admin/insights/page.tsx
+
+
+> Build failed because of webpack errors

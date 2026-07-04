@@ -6,6 +6,7 @@ let clientUserId: string | null = null;
 async function fetchVideoToken() {
   const res = await fetch('/api/stream/video-token', {
     credentials: 'include',
+    signal: AbortSignal.timeout(10000),
   });
   if (!res.ok) {
     throw new Error('Failed to get video token');
@@ -43,6 +44,7 @@ export async function getStreamVideoClient(): Promise<StreamVideoClient | null> 
     tokenProvider: async () => {
       const res = await fetch('/api/stream/video-token', {
         credentials: 'include',
+        signal: AbortSignal.timeout(10000),
       });
       if (!res.ok) throw new Error('Token refresh failed');
       const data = await res.json();
