@@ -144,6 +144,7 @@ export default function UploadResourcePage() {
           price: price || 0,
           file_path: publicUrl,
         }),
+        signal: AbortSignal.timeout(15000),
       });
 
       const data = await res.json();

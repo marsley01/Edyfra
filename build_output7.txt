@@ -1,0 +1,40 @@
+﻿
+> edyfra@0.1.0 build
+> next build --webpack
+
+node.exe : Warning: Custom Cache-Control headers detected for the following routes:
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Warning: Custom...llowing routes::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  - /_next/static/:path*
+
+Setting a custom Cache-Control header can break Next.js development behavior.
+Γû▓ Next.js 16.2.10 (webpack)
+- Experiments (use with caution):
+  ┬╖ optimizePackageImports
+
+ΓÜá The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: 
+https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 50s
+  Running TypeScript ...
+Failed to type check.
+
+./src/app/institution/(portal)/dashboard/settings/page.tsx:13:7
+Type error: Property 'planLegacy' is missing in type '{ id: string; name: string; motto: any; schoolType: any; 
+curriculum: any; county: any; subCounty: any; address: any; contactEmail: string | null; contactPhone: string | null; 
+plan: string; status: string; admins: { ...; }[]; }' but required in type '{ id: string; name: string; motto: string | 
+null; schoolType: string | null; curriculum: string | null; county: string | null; subCounty: string | null; address: 
+string | null; contactEmail: string | null; ... 4 more ...; admins: Admin[]; }'.
+
+  [90m11 |[0m   [36mreturn[0m (
+  [90m12 |[0m     <[33mSettingsClient[0m
+[31m[1m>[0m [90m13 |[0m       institution={{
+  [90m   |[0m       [31m[1m^[0m
+  [90m14 |[0m         id: membership.institution.id,
+  [90m15 |[0m         name: membership.institution.name,
+  [90m16 |[0m         motto: membership.institution.motto,
+Next.js build worker exited with code: 1 and signal: null

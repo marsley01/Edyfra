@@ -13,23 +13,29 @@ export function PushNotificationInit() {
   const [loading, setLoading] = useState(false);
 
    useEffect(() => {
-     if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
-       return;
-     }
-     setSupported(true);
-     setPermission(Notification.permission);
+     const ctrl = new AbortController();
+      if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+        return;
+      }
+      setSupported(true);
+      setPermission(Notification.permission);
 
-     navigator.serviceWorker.ready
-       .then((reg) => {
-         return reg.pushManager.getSubscription();
-       })
-       .then((sub) => {
-         setSubscribed(!!sub);
-       })
-       .catch((err) => {
-         console.error("[PushNotificationInit] Error checking subscription:", err);
-       });
-   }, []);
+      navigator.serviceWorker.ready
+        .then((reg) => {
+          if (ctrl.signal.aborted) return null;
+          return reg.pushManager.getSubscription();
+        })
+        .then((sub) => {
+          if (ctrl.signal.aborted) return;
+          setSubscribed(!!sub);
+        })
+        .catch((err) => {
+          if (ctrl.signal.aborted) return;
+          console.error("[PushNotificationInit] Error checking subscription:", err);
+        });
+
+      return () => ctrl.abort();
+    }, []);
 
   const subscribe = useCallback(async () => {
     if (!supported) return;
@@ -49,7 +55,7 @@ export function PushNotificationInit() {
 
       const reg = await navigator.serviceWorker.ready;
 
-      const keyRes = await fetch("/api/push/vapid-public-key");
+      const keyRes = await fetch("/api/push/vapid-public-key", { signal: AbortSignal.timeout(10000) });
       if (!keyRes.ok) {
         showError({
           title: "Push isn't ready yet",
@@ -86,6 +92,7 @@ export function PushNotificationInit() {
           endpoint: raw.endpoint,
           keys: raw.keys,
         }),
+        signal: AbortSignal.timeout(10000),
       });
 
       setSubscribed(true);
@@ -112,6 +119,7 @@ export function PushNotificationInit() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ endpoint: raw.endpoint }),
+          signal: AbortSignal.timeout(10000),
         });
         await sub.unsubscribe();
       }

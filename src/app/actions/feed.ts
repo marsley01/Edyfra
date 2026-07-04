@@ -83,6 +83,7 @@ export async function getTrendingSubjects(limit = 6) {
     by: ["subject"],
     where: { subject: { not: null } },
     _count: { _all: true },
+    // @ts-expect-error - _count orderBy type mismatch in generated client
     orderBy: { _count: { _all: "desc" } },
     take: limit,
   });
@@ -91,7 +92,7 @@ export async function getTrendingSubjects(limit = 6) {
     .filter((g) => g.subject)
     .map((g) => ({
       subject: g.subject as string,
-      posts: g._count._all,
+      posts: (g._count as { _all: number })._all,
     }));
 }
 

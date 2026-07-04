@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Globe, Activity, Search, ExternalLink, TrendingUp, Users, BookOpen, Zap, Loader2, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getAdminDashboardMetrics } from "@/app/actions/admin";
-import { toast } from "sonner";
 
 export default function AdminInsightsPage() {
   const [metrics, setMetrics] = useState<any>(null);

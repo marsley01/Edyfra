@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -45,17 +45,25 @@ export default function AdminChallengesPage() {
   const [scheduledDate, setScheduledDate] = useState("");
   const [showGenerator, setShowGenerator] = useState(false);
 
+  const fetchAbortRef = useRef<AbortController | null>(null);
+
   useEffect(() => {
-    fetchChallenges();
+    fetchAbortRef.current?.abort();
+    const ctrl = new AbortController();
+    fetchAbortRef.current = ctrl;
+    fetchChallenges(ctrl.signal);
+    return () => ctrl.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchChallenges = async () => {
+  const fetchChallenges = async (signal?: AbortSignal) => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/challenges");
+      const res = await fetch("/api/admin/challenges", { signal });
       const data = await res.json();
       setChallenges(data.challenges || []);
     } catch (error) {
+      if ((error as any)?.name === "AbortError") return;
       showError({
         title: "We couldn't load challenges",
         cause: "A hiccup on our side blocked the load.",
@@ -79,7 +87,8 @@ export default function AdminChallengesPage() {
           topic: topic || undefined,
           count,
           scheduledDate: scheduledDate || undefined
-        })
+        }),
+        signal: AbortSignal.timeout(30000),
       });
 
       const data = await result.json();
@@ -113,7 +122,8 @@ export default function AdminChallengesPage() {
     
     try {
       const res = await fetch(`/api/admin/challenges?id=${id}`, {
-        method: "DELETE"
+        method: "DELETE",
+        signal: AbortSignal.timeout(10000),
       });
       
       if (!res.ok) throw new Error("Failed to delete");

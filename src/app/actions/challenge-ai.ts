@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { EduLevel } from "@prisma/client";
+import { EduLevel } from "@/generated/client";
 import { generateAIResponse } from "@/utils/openrouter";
 import { SESSION_CONFIG, CHALLENGE_CONFIG } from "@/lib/config";
 import { recalibrateTier } from "./user";

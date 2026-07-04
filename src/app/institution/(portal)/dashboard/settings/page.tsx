@@ -13,18 +13,18 @@ export default async function SettingsPage() {
       institution={{
         id: membership.institution.id,
         name: membership.institution.name,
-        motto: membership.institution.motto,
-        schoolType: membership.institution.schoolType,
-        curriculum: membership.institution.curriculum,
-        county: membership.institution.county,
-        subCounty: membership.institution.subCounty,
-        address: membership.institution.address,
+        motto: null,
+        schoolType: membership.institution.type ?? null,
+        curriculum: null,
+        county: null,
+        subCounty: null,
+        address: null,
         contactEmail: membership.institution.email,
         contactPhone: membership.institution.phone,
-        plan: membership.institution.planTier,
+        plan: membership.institution.plan,
         planLegacy: membership.institution.plan,
-        status: membership.institution.status,
-        admins: overview.admins,
+        status: membership.institution.isActive ? "ACTIVE" : "PENDING",
+        admins: overview.admins as any[],
       }}
       term={
         term

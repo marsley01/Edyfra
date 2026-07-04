@@ -618,24 +618,7 @@ exports.Prisma.InstitutionScalarFieldEnum = {
   plan: 'plan',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  isActive: 'isActive',
-  status: 'status',
-  schoolType: 'schoolType',
-  curriculum: 'curriculum',
-  county: 'county',
-  subCounty: 'subCounty',
-  studentCount: 'studentCount',
-  adminName: 'adminName',
-  adminTitle: 'adminTitle',
-  adminPhone: 'adminPhone',
-  adminEmail: 'adminEmail',
-  primaryAdminUserId: 'primaryAdminUserId',
-  planTier: 'planTier',
-  currentTermId: 'currentTermId',
-  approvedAt: 'approvedAt',
-  approvedByUserId: 'approvedByUserId',
-  motto: 'motto',
-  address: 'address'
+  isActive: 'isActive'
 };
 
 exports.Prisma.InstitutionStaffScalarFieldEnum = {
@@ -684,38 +667,6 @@ exports.Prisma.InstitutionDocumentScalarFieldEnum = {
   fileType: 'fileType',
   fileSize: 'fileSize',
   uploadedBy: 'uploadedBy',
-  createdAt: 'createdAt'
-};
-
-exports.Prisma.InstitutionLimitScalarFieldEnum = {
-  id: 'id',
-  institutionId: 'institutionId',
-  maxStudents: 'maxStudents',
-  maxAssignments: 'maxAssignments',
-  maxTermsStored: 'maxTermsStored',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.CoachingAssignmentScalarFieldEnum = {
-  id: 'id',
-  institutionId: 'institutionId',
-  studentId: 'studentId',
-  tutorUserId: 'tutorUserId',
-  subject: 'subject',
-  status: 'status',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.StudentResultScalarFieldEnum = {
-  id: 'id',
-  institutionId: 'institutionId',
-  studentId: 'studentId',
-  subject: 'subject',
-  score: 'score',
-  grade: 'grade',
-  term: 'term',
-  year: 'year',
   createdAt: 'createdAt'
 };
 
@@ -1117,40 +1068,12 @@ exports.AppStatus = exports.$Enums.AppStatus = {
   REJECTED: 'REJECTED'
 };
 
-exports.InstitutionStatus = exports.$Enums.InstitutionStatus = {
-  PENDING: 'PENDING',
-  ACTIVE: 'ACTIVE',
-  SUSPENDED: 'SUSPENDED',
-  REJECTED: 'REJECTED'
-};
-
-exports.SchoolType = exports.$Enums.SchoolType = {
-  PRIMARY: 'PRIMARY',
-  SECONDARY: 'SECONDARY',
-  COLLEGE: 'COLLEGE',
-  UNIVERSITY: 'UNIVERSITY'
-};
-
-exports.Curriculum = exports.$Enums.Curriculum = {
-  CBC: 'CBC',
-  EIGHT_FOUR_FOUR: 'EIGHT_FOUR_FOUR',
-  IGCSE: 'IGCSE',
-  MIXED: 'MIXED',
-  UNIVERSITY: 'UNIVERSITY'
-};
-
 exports.AdminTitle = exports.$Enums.AdminTitle = {
   PRINCIPAL: 'PRINCIPAL',
   DEPUTY: 'DEPUTY',
   HOD: 'HOD',
   REGISTRAR: 'REGISTRAR',
   OTHER: 'OTHER'
-};
-
-exports.InstitutionPlan = exports.$Enums.InstitutionPlan = {
-  STARTER: 'STARTER',
-  GROWTH: 'GROWTH',
-  ENTERPRISE: 'ENTERPRISE'
 };
 
 exports.ResultTrend = exports.$Enums.ResultTrend = {
@@ -1260,9 +1183,6 @@ exports.Prisma.ModelName = {
   InstitutionTutor: 'InstitutionTutor',
   InstitutionMember: 'InstitutionMember',
   InstitutionDocument: 'InstitutionDocument',
-  InstitutionLimit: 'InstitutionLimit',
-  CoachingAssignment: 'CoachingAssignment',
-  StudentResult: 'StudentResult',
   ProcessingJob: 'ProcessingJob',
   InstitutionApplication: 'InstitutionApplication',
   TutorAvailability: 'TutorAvailability',

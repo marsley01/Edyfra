@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { checkAdminStatus } from "@/app/actions/admin";
@@ -10,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Star, MessageSquare, TrendingUp, Search, Loader2, Trophy, ArrowUp, ArrowDown } from "lucide-react";
-import { toast } from "sonner";
 import { motion } from "framer-motion";
 
 export default function AdminFeedbackPage() {

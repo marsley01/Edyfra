@@ -18,7 +18,6 @@ export interface NewsArticle {
   isDraft?: boolean;
 }
 
-import { RSSService, RSSItem } from "@/utils/rss-service";
 import { fetchOgImage } from "@/utils/og-scraper";
 
 const CATEGORY_IMAGES: Record<string, string> = {

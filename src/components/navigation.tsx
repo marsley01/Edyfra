@@ -25,11 +25,11 @@ const navLinks = [
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const scrolledRef = useRef(false);
+  const scrolledRef = useRef(scrolled);
   const router = useRouter();
   const pathname = usePathname();
 
-  const scrolledRef = useRef(scrolled);
+  scrolledRef.current = scrolled;
   scrolledRef.current = scrolled;
 
   useEffect(() => {

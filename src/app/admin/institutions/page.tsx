@@ -20,7 +20,7 @@ export default async function AdminInstitutionsPage() {
   }
 
   const applications = await listInstitutionApplications("ALL");
-  const pendingCount = applications.filter((a) => a.status === "PENDING").length;
+  const pendingCount = applications.filter((a) => !a.isActive).length;
 
   return (
     <InstitutionsReviewClient
@@ -28,20 +28,20 @@ export default async function AdminInstitutionsPage() {
         id: a.id,
         code: a.code,
         name: a.name,
-        schoolType: a.schoolType ?? null,
-        curriculum: a.curriculum ?? null,
-        county: a.county,
-        subCounty: a.subCounty,
-        studentCount: a.studentCount,
-        planTier: a.planTier ?? null,
-        status: a.status,
+        schoolType: (a.type ?? "SECONDARY") as any,
+        curriculum: null as any,
+        county: null,
+        subCounty: null,
+        studentCount: null,
+        planTier: (a.plan ?? "STARTER") as any,
+        status: a.isActive ? "ACTIVE" : "PENDING",
         email: a.email,
-        adminName: a.adminName,
-        adminTitle: a.adminTitle ?? null,
-        adminPhone: a.adminPhone,
-        adminEmail: a.adminEmail,
+        adminName: null,
+        adminTitle: null,
+        adminPhone: null,
+        adminEmail: a.email,
         createdAt: a.createdAt,
-        approvedAt: a.approvedAt,
+        approvedAt: null,
         membersCount: a._count.members,
         studentsCount: a._count.students,
         tutorsCount: a._count.tutors,

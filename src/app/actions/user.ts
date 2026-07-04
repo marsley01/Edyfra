@@ -124,7 +124,7 @@ export const getUserData = cache(async (): Promise<(User & { studentProfile: Stu
 
     return prismaUser;
   } catch (error) {
-    captureServerError(error, { action: "getUserData" });
+    console.error(error, { action: "getUserData" });
     return null;
   }
 });
@@ -184,7 +184,7 @@ export async function updateProfile(data: {
     revalidatePath("/tutor");
     return { success: true };
   } catch (error) {
-    captureServerError(error, { action: "updateProfile" });
+    console.error(error, { action: "updateProfile" });
     throw error;
   }
 }
@@ -257,7 +257,7 @@ export async function updateUserRole(role: "STUDENT" | "TUTOR") {
     }
     return { success: true };
   } catch (error: any) {
-    captureServerError(error, { action: "updateUserRole" });
+    console.error(error, { action: "updateUserRole" });
     return { success: false, error: error.message || "Failed to update role" };
   }
 }
@@ -311,7 +311,7 @@ export async function updateUserPreferences(prefs: {
     revalidatePath("/dashboard/settings");
     return { success: true };
   } catch (error) {
-    captureServerError(error, { action: "updateUserPreferences" });
+    console.error(error, { action: "updateUserPreferences" });
     throw error;
   }
 }
@@ -337,7 +337,7 @@ export async function updateNotificationSettings(preferences: Record<string, boo
     revalidatePath("/dashboard/settings");
     return { success: true };
   } catch (error) {
-    captureServerError(error, { action: "updateNotificationSettings" });
+    console.error(error, { action: "updateNotificationSettings" });
     throw error;
   }
 }
@@ -399,7 +399,7 @@ export async function updateTutorProfile(data: {
     revalidatePath("/tutor");
     return { success: true };
   } catch (error) {
-    captureServerError(error, { action: "updateTutorProfile" });
+    console.error(error, { action: "updateTutorProfile" });
     throw error;
   }
 }
@@ -441,7 +441,7 @@ export async function updateStudentProfile(data: {
     revalidatePath("/dashboard/settings");
     return { success: true };
   } catch (error) {
-    captureServerError(error, { action: "updateStudentProfile" });
+    console.error(error, { action: "updateStudentProfile" });
     throw error;
   }
 }
@@ -465,7 +465,7 @@ export async function updateAvatar(avatarUrl: string) {
     revalidatePath("/tutor/settings");
     return { success: true };
   } catch (error) {
-    captureServerError(error, { action: "updateAvatar" });
+    console.error(error, { action: "updateAvatar" });
     throw error;
   }
 }
@@ -487,7 +487,7 @@ export async function downloadUserData() {
 
     return { success: true, data: JSON.stringify({ ...userData, userPreferences: userPrefs, notificationSettings: notifPrefs }, null, 2) };
   } catch (error) {
-    captureServerError(error, { action: "downloadUserData" });
+    console.error(error, { action: "downloadUserData" });
     throw error;
   }
 }
@@ -513,7 +513,7 @@ export async function deleteUserAccount() {
 
     return { success: true };
   } catch (error) {
-    captureServerError(error, { action: "deleteUserAccount" });
+    console.error(error, { action: "deleteUserAccount" });
     throw error;
   }
 }
@@ -532,7 +532,7 @@ export async function changePassword(currentPassword: string, newPassword: strin
     if (error) throw new Error(error.message);
     return { success: true };
   } catch (error) {
-    captureServerError(error, { action: "changePassword" });
+    console.error(error, { action: "changePassword" });
     throw error;
   }
 }
@@ -544,7 +544,7 @@ export async function changeEmail(newEmail: string) {
     if (error) throw new Error(error.message);
     return { success: true };
   } catch (error) {
-    captureServerError(error, { action: "changeEmail" });
+    console.error(error, { action: "changeEmail" });
     throw error;
   }
 }
@@ -570,7 +570,7 @@ export const getGlobalStats = unstable_cache(
         { value: resourceCount, label: "Resources Shared" },
       ];
     } catch (error) {
-      captureServerError(error, { action: "getGlobalStats" });
+      console.error(error, { action: "getGlobalStats" });
       return [];
     }
   },
@@ -600,7 +600,7 @@ export const getLeaderboard = unstable_cache(
       });
       return leaders;
     } catch (error) {
-      captureServerError(error, { action: "getLeaderboard" });
+      console.error(error, { action: "getLeaderboard" });
       return [];
     }
   },
@@ -630,7 +630,7 @@ export const getCommunityScholars = unstable_cache(
         take: 4,
       });
     } catch (error) {
-      captureServerError(error, { action: "getCommunityScholars" });
+      console.error(error, { action: "getCommunityScholars" });
       return [];
     }
   },
@@ -651,7 +651,7 @@ export async function getUserStreak() {
 
     return row?.streakDays ?? 0;
   } catch (error) {
-    captureServerError(error, { action: "getUserStreak" });
+    console.error(error, { action: "getUserStreak" });
     return null;
   }
 }
@@ -665,7 +665,7 @@ export async function recalibrateTier(userId: string) {
       await prisma.user.update({ where: { id: userId }, data: { tier: correctTier as Tier } });
     }
   } catch (error) {
-    captureServerError(error, { action: "recalibrateTier" });
+    console.error(error, { action: "recalibrateTier" });
   }
 }
 
@@ -700,7 +700,7 @@ export async function createTestTutorAction() {
     revalidatePath('/dashboard/tutors');
     return { success: true };
   } catch (error) {
-    captureServerError(error, { action: "createTestTutorAction" });
+    console.error(error, { action: "createTestTutorAction" });
     throw error;
   }
 }

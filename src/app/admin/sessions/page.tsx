@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { toast } from "sonner";
 import { getActiveSessions, closeSession, closeSessionsBatch } from "@/app/actions/admin";
 import { 
   Zap, Clock, XCircle, Monitor, 

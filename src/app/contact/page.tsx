@@ -91,6 +91,7 @@ export default function ContactPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
+        signal: AbortSignal.timeout(15000),
       });
       const data = await res.json().catch(() => ({} as { error?: string }));
       if (!res.ok) {

@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
@@ -15,8 +14,6 @@ import { OverlayManagerProvider } from "@/lib/overlay-manager";
 import { ClickFeedback } from "@/components/click-feedback";
 import { MaintenanceGate } from "@/components/maintenance-gate";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-
 export const metadata: Metadata = {
   title: {
     default: "Edyfra — Kenya's Institutional Study Platform",
@@ -31,20 +28,20 @@ export const metadata: Metadata = {
   authors: [{ name: "Edyfra", url: "https://edyfra-v2.vercel.app" }],
   creator: "Edyfra",
   metadataBase: new URL("https://edyfra-v2.vercel.app"),
-   openGraph: {
-  type: "website",
-  locale: "en_KE",
-  url: "https://edyfra-v2.vercel.app",
-  siteName: "Edyfra",
-  title: "Edyfra — Kenya's Institutional Study Platform",
-  description: "AI-powered tutor matching, live study rooms, and institutional analytics for Kenyan scholars.",
-  images: [{
-    url: "/og-image.png",
-    width: 1200,
-    height: 630,
-    alt: "Edyfra — Kenya's Institutional Study Platform",
-  }],
-},
+  openGraph: {
+    type: "website",
+    locale: "en_KE",
+    url: "https://edyfra-v2.vercel.app",
+    siteName: "Edyfra",
+    title: "Edyfra — Kenya's Institutional Study Platform",
+    description: "AI-powered tutor matching, live study rooms, and institutional analytics for Kenyan scholars.",
+    images: [{
+      url: "/og-image.png",
+      width: 1200,
+      height: 630,
+      alt: "Edyfra — Kenya's Institutional Study Platform",
+    }],
+  },
   twitter: {
     card: "summary_large_image",
     title: "Edyfra — Kenya's Institutional Study Platform",
@@ -63,6 +60,7 @@ export const metadata: Metadata = {
     },
   },
   icons: {
+    icon: "/icon.png",
     apple: "/icons/apple-touch-icon.png",
     other: [
       { rel: "icon", url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
@@ -96,7 +94,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
+      <body className="font-sans antialiased" suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

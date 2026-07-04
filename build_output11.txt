@@ -1,0 +1,39 @@
+﻿
+> edyfra@0.1.0 build
+> next build --webpack
+
+node.exe : Warning: Custom Cache-Control headers detected for the following routes:
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Warning: Custom...llowing routes::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  - /_next/static/:path*
+
+Setting a custom Cache-Control header can break Next.js development behavior.
+Γû▓ Next.js 16.2.10 (webpack)
+- Experiments (use with caution):
+  ┬╖ optimizePackageImports
+
+ΓÜá The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: 
+https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 48s
+  Running TypeScript ...
+Failed to type check.
+
+./src/components/theme-color-manager.tsx:42:36
+Type error: Property 'settings' does not exist on type '{ name: string; id: string; email: string; phone: string | 
+null; avatar: string | null; gender: Gender | null; role: Role; educationLevel: EduLevel | null; formYear: number | 
+null; ... 21 more ...; referredBy: string | null; } & { ...; }'.
+
+  [90m40 |[0m       [36mtry[0m {
+  [90m41 |[0m         [36mconst[0m userData = [36mawait[0m getUserData();
+[31m[1m>[0m [90m42 |[0m         [36mconst[0m settings = userData?.settings [36mas[0m [33mRecord[0m<string, 
+unknown> | [36mundefined[0m;
+  [90m   |[0m                                    [31m[1m^[0m
+  [90m43 |[0m         [36mconst[0m accentColor = settings?.accentColor [36mas[0m string | [36mundefined[0m;
+  [90m44 |[0m
+  [90m45 |[0m         [36mif[0m (accentColor) {
+Next.js build worker exited with code: 1 and signal: null

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { cache, TTL } from "@/lib/cache";
-import { captureApiError } from "@/lib/sentry";
+
 
 const CACHE_KEY = "api:stats";
 
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
       headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=60" },
     });
   } catch (error) {
-    captureApiError(error, request, { context: "stats GET" });
+    console.error("stats GET error:", error);
     return NextResponse.json({ stats: [] });
   }
 }

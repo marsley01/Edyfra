@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { cache, TTL } from "@/lib/cache";
-import { captureApiError } from "@/lib/sentry";
+
+const CACHE_KEY = "api:plans";
+
 
 interface PlanFeatures {
   description?: string;
@@ -45,7 +47,7 @@ export async function GET() {
       headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=300" },
     });
   } catch (error) {
-    captureApiError(error, request, { context: "plans GET" });
+    console.error("plans GET error:", error);
     return NextResponse.json({ plans: [] });
   }
 }

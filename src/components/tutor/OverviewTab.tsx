@@ -112,7 +112,7 @@ export function OverviewTab() {
       {/* Premium Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
         <div className="space-y-2">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tightest">{(() => { const g = getTimeGreeting(tutorName); return `${g.text}${g.key === "late" ? "?" : "."} ${g.emoji}`; })()}</h1>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tightest">{(() => { const g = getTimeGreeting(profile?.user?.name ?? "Tutor"); return `${g.text}${g.key === "late" ? "?" : "."} ${g.emoji}`; })()}</h1>
           <p className="text-muted-foreground text-lg font-medium">Here is your upcoming teaching schedule.</p>
         </div>
 
