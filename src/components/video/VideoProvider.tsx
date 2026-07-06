@@ -73,22 +73,17 @@ export function VideoProvider({
     };
   }, []);
 
-  // Always render children — video is an optional enhancement
-  if (isLoading || !client || error) {
-    return (
-      <VideoContext.Provider
-        value={{ client: null, activeCall, setActiveCall, isLoading, error }}
-      >
-        {children}
-      </VideoContext.Provider>
-    );
-  }
-
+  // Always render children — when client is null or loading, IncomingCall/StartCallButton
+  // handle the null check internally. Never block the tree.
   return (
     <VideoContext.Provider
       value={{ client, activeCall, setActiveCall, isLoading, error }}
     >
-      <StreamVideo client={client}>{children}</StreamVideo>
+      {client ? (
+        <StreamVideo client={client}>{children}</StreamVideo>
+      ) : (
+        children
+      )}
     </VideoContext.Provider>
   );
 }

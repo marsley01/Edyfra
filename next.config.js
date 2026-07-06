@@ -76,7 +76,9 @@ const nextConfig = {
           "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
           "font-src 'self' fonts.gstatic.com",
           "img-src 'self' data: blob: https: http:",
-          "connect-src 'self' *.supabase.co *.vercel-insights.com wss://*.supabase.co *.stream-io-api.com wss://*.stream-io-api.com wss://chat.stream-io-api.com",
+          // stream-io-api.com covers both chat and video REST + WS endpoints.
+          // stream-io-cdn.com is used by the Video SDK for TURN relay signalling.
+          "connect-src 'self' *.supabase.co *.vercel-insights.com wss://*.supabase.co *.stream-io-api.com wss://*.stream-io-api.com wss://chat.stream-io-api.com wss://video.stream-io-api.com *.stream-io-cdn.com wss://*.stream-io-cdn.com",
           "frame-ancestors 'none'",
         ].join("; "),
       },
