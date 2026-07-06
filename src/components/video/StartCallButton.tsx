@@ -83,7 +83,6 @@ export function StartCallButton({
 
       await call.getOrCreate({
         ring: true,
-        video: true,
         data: {
           members: [
             { user_id: client.streamClient.user!.id },
