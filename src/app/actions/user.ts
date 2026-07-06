@@ -554,9 +554,19 @@ export async function changePassword(currentPassword: string, newPassword: strin
   }
 }
 
-export async function changeEmail(newEmail: string) {
+export async function changeEmail(currentPassword: string, newEmail: string) {
   try {
     const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.email) throw new Error("Unauthorized");
+    
+    // Re-authenticate before allowing email change
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword,
+    });
+    if (authError) throw new Error("Current password is incorrect");
+    
     const { error } = await supabase.auth.updateUser({ email: newEmail });
     if (error) throw new Error(error.message);
     return { success: true };
@@ -646,6 +656,13 @@ export async function recalibrateTier(userId: string) {
 
 export async function createTestTutorAction() {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Unauthorized");
+    
+    const dbUser = await prisma.user.findUnique({ where: { id: user.id }, select: { role: true } });
+    if (dbUser?.role !== "ADMIN") throw new Error("Forbidden");
+    
     const id = 'test-tutor-' + Math.random().toString(36).substring(7);
     await prisma.user.create({
       data: {

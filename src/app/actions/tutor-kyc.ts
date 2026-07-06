@@ -4,6 +4,31 @@ import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 import prisma from "@/lib/prisma";
 
+export async function uploadKycFile(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Unauthorized" as const };
+
+  const adminClient = createAdminClient();
+  const file = formData.get("file") as File | null;
+  const prefix = formData.get("prefix") as string;
+
+  if (!file) return { success: false, error: "No file provided" as const };
+
+  const ext = file.name.split(".").pop();
+  const path = `${user.id}/onboarding-${prefix}-${Date.now()}.${ext}`;
+
+  await adminClient.storage.createBucket("kyc", { public: false }).catch(() => {});
+  const { error: uploadError } = await adminClient.storage.from("kyc").upload(path, file, { upsert: true });
+  if (uploadError) {
+    console.error("KYC upload error:", uploadError);
+    return { success: false, error: uploadError.message };
+  }
+
+  const { data: signed } = await adminClient.storage.from("kyc").createSignedUrl(path, 60 * 60 * 24 * 365);
+  return { success: true as const, url: signed?.signedUrl || null };
+}
+
 export async function submitTutorApplication(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -23,14 +48,15 @@ export async function submitTutorApplication(formData: FormData) {
   let selfieUrl = null;
 
   // Ensure 'kyc' bucket exists
-  await adminClient.storage.createBucket("kyc", { public: true }).catch(() => {});
+  await adminClient.storage.createBucket("kyc", { public: false }).catch(() => {});
 
   if (idPhoto) {
     const ext = idPhoto.name.split(".").pop();
     const path = `${user.id}/id-${Date.now()}.${ext}`;
     const { error } = await adminClient.storage.from("kyc").upload(path, idPhoto, { upsert: true });
     if (!error) {
-      idPhotoUrl = adminClient.storage.from("kyc").getPublicUrl(path).data.publicUrl;
+      const { data: signedPhoto } = await adminClient.storage.from("kyc").createSignedUrl(path, 60 * 60 * 24 * 365);
+      idPhotoUrl = signedPhoto?.signedUrl || null;
     }
   }
 
@@ -39,7 +65,8 @@ export async function submitTutorApplication(formData: FormData) {
     const path = `${user.id}/selfie-${Date.now()}.${ext}`;
     const { error } = await adminClient.storage.from("kyc").upload(path, selfie, { upsert: true });
     if (!error) {
-      selfieUrl = adminClient.storage.from("kyc").getPublicUrl(path).data.publicUrl;
+      const { data: signedSelfie } = await adminClient.storage.from("kyc").createSignedUrl(path, 60 * 60 * 24 * 365);
+      selfieUrl = signedSelfie?.signedUrl || null;
     }
   }
 
@@ -62,6 +89,7 @@ export async function submitTutorApplication(formData: FormData) {
     return { success: true, application };
   } catch (error: any) {
     console.error("Tutor KYC error:", error);
-    return { success: false, error: error.message };
+    console.error("Tutor KYC error:", error);
+    return { success: false, error: "Failed to submit tutor application" };
   }
 }

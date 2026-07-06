@@ -42,8 +42,12 @@ function validateCsrf(request: NextRequest): boolean {
   const appUrl = getAppUrl();
   const allowedUrls = [appUrl, ...ALLOWED_ORIGINS];
 
-  const isValidOrigin = !!origin && allowedUrls.some(u => origin.startsWith(u));
-  const isValidReferer = !!referer && allowedUrls.some(u => referer.startsWith(u));
+  const isValidOrigin = !!origin && allowedUrls.some(u => {
+    try { return new URL(origin).origin === new URL(u).origin; } catch { return false; }
+  });
+  const isValidReferer = !!referer && allowedUrls.some(u => {
+    try { return new URL(referer).origin === new URL(u).origin; } catch { return false; }
+  });
 
   return isValidOrigin || isValidReferer;
 }
@@ -54,7 +58,7 @@ export async function middleware(request: NextRequest) {
   const origin = request.headers.get('origin')
 
   // CSRF check for mutation requests on non-API routes (server actions)
-  if (!isApiRoute && MUTATION_METHODS.has(request.method) && request.headers.get('content-type')?.includes('text/plain')) {
+  if (MUTATION_METHODS.has(request.method) && request.headers.get('content-type')?.includes('text/plain')) {
     if (!validateCsrf(request)) {
       return new NextResponse(null, { status: 204 });
     }

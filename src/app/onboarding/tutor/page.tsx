@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { completeOnboarding } from "@/app/actions/onboarding";
+import { uploadKycFile } from "@/app/actions/tutor-kyc";
 import { Loader2, BookOpen, GraduationCap, ArrowRight, CheckCircle2, Sparkles, ShieldCheck, Search } from "lucide-react";
 import { EDUCATIONAL_SUBJECTS } from "@/utils/subjects";
 import { cn } from "@/lib/utils";
@@ -20,7 +21,12 @@ export default function TutorOnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [uploadingId, setUploadingId] = useState(false);
+  const [uploadingSelfie, setUploadingSelfie] = useState(false);
+  const [uploadingSchool, setUploadingSchool] = useState(false);
+  const idInputRef = useRef<HTMLInputElement>(null);
+  const selfieInputRef = useRef<HTMLInputElement>(null);
+  const schoolInputRef = useRef<HTMLInputElement>(null);
   const [subjectSearch, setSubjectSearch] = useState("");
   const [userName, setUserName] = useState<string>("Tutor");
 
@@ -67,6 +73,18 @@ export default function TutorOnboardingPage() {
         ? prev.curriculum.filter(curr => curr !== c)
         : [...prev.curriculum, c]
     }));
+  };
+
+  const handleFileUpload = async (file: File, field: 'kycIdPhotoUrl' | 'kycSelfieUrl' | 'kycSchoolIdUrl', prefix: string) => {
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("prefix", prefix);
+    const result = await uploadKycFile(fd);
+    if (result.success && result.url) {
+      setFormData(prev => ({ ...prev, [field]: result.url! }));
+    } else {
+      console.error("Upload failed:", result.error);
+    }
   };
 
   const handleSubmit = async () => {
@@ -320,66 +338,102 @@ export default function TutorOnboardingPage() {
                         <div className="space-y-3">
                           <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">National ID / Passport Photo</Label>
                           <div className="flex items-center gap-4">
-                             <Button 
-                               variant="outline" 
-                               className="h-16 rounded-[2rem] px-8 font-bold text-sm"
-                               onClick={() => {
-                                 setUploading(true);
-                                 setTimeout(() => {
-                                   setFormData({ ...formData, kycIdPhotoUrl: "https://mock-storage.url/id-photo.jpg" });
-                                   setUploading(false);
-                                 }, 1000);
-                               }}
-                               disabled={uploading}
-                             >
-                               {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Select File"}
-                               {uploading ? "Uploading..." : formData.kycIdPhotoUrl ? "ID Uploaded" : "Upload ID Photo"}
-                             </Button>
-                             {formData.kycIdPhotoUrl && <CheckCircle2 className="h-6 w-6 text-emerald-500" />}
+                             <input
+                                ref={idInputRef}
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+                                  setUploadingId(true);
+                                  try {
+                                    await handleFileUpload(file, 'kycIdPhotoUrl', 'id');
+                                  } catch (err) {
+                                    console.error(err);
+                                  } finally {
+                                    setUploadingId(false);
+                                  }
+                                }}
+                              />
+                              <Button 
+                                variant="outline" 
+                                className="h-16 rounded-[2rem] px-8 font-bold text-sm"
+                                onClick={() => idInputRef.current?.click()}
+                                disabled={uploadingId}
+                              >
+                                {uploadingId ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : formData.kycIdPhotoUrl ? <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-500" /> : null}
+                                {uploadingId ? "Uploading..." : formData.kycIdPhotoUrl ? "Uploaded" : "Select File"}
+                              </Button>
+                              {formData.kycIdPhotoUrl && <CheckCircle2 className="h-6 w-6 text-emerald-500" />}
                           </div>
                         </div>
 
                         <div className="space-y-3">
                           <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">Selfie Photo</Label>
                           <div className="flex items-center gap-4">
-                             <Button 
-                               variant="outline" 
-                               className="h-16 rounded-[2rem] px-8 font-bold text-sm"
-                               onClick={() => {
-                                 setUploading(true);
-                                 setTimeout(() => {
-                                   setFormData({ ...formData, kycSelfieUrl: "https://mock-storage.url/selfie.jpg" });
-                                   setUploading(false);
-                                 }, 1000);
-                               }}
-                               disabled={uploading}
-                             >
-                               {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Select File"}
-                               {uploading ? "Uploading..." : formData.kycSelfieUrl ? "Selfie Uploaded" : "Upload Selfie"}
-                             </Button>
-                             {formData.kycSelfieUrl && <CheckCircle2 className="h-6 w-6 text-emerald-500" />}
+                             <input
+                                ref={selfieInputRef}
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+                                  setUploadingSelfie(true);
+                                  try {
+                                    await handleFileUpload(file, 'kycSelfieUrl', 'selfie');
+                                  } catch (err) {
+                                    console.error(err);
+                                  } finally {
+                                    setUploadingSelfie(false);
+                                  }
+                                }}
+                              />
+                              <Button 
+                                variant="outline" 
+                                className="h-16 rounded-[2rem] px-8 font-bold text-sm"
+                                onClick={() => selfieInputRef.current?.click()}
+                                disabled={uploadingSelfie}
+                              >
+                                {uploadingSelfie ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : formData.kycSelfieUrl ? <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-500" /> : null}
+                                {uploadingSelfie ? "Uploading..." : formData.kycSelfieUrl ? "Uploaded" : "Select File"}
+                              </Button>
+                              {formData.kycSelfieUrl && <CheckCircle2 className="h-6 w-6 text-emerald-500" />}
                           </div>
                         </div>
 
                         <div className="space-y-3">
                           <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">School / Institution ID</Label>
                           <div className="flex items-center gap-4">
-                             <Button 
-                               variant="outline" 
-                               className="h-16 rounded-[2rem] px-8 font-bold text-sm"
-                               onClick={() => {
-                                 setUploading(true);
-                                 setTimeout(() => {
-                                   setFormData({ ...formData, kycSchoolIdUrl: "https://mock-storage.url/school-id.jpg" });
-                                   setUploading(false);
-                                 }, 1000);
-                               }}
-                               disabled={uploading}
-                             >
-                               {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Select File"}
-                               {uploading ? "Uploading..." : formData.kycSchoolIdUrl ? "School ID Uploaded" : "Upload School ID"}
-                             </Button>
-                             {formData.kycSchoolIdUrl && <CheckCircle2 className="h-6 w-6 text-emerald-500" />}
+                             <input
+                                ref={schoolInputRef}
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+                                  setUploadingSchool(true);
+                                  try {
+                                    await handleFileUpload(file, 'kycSchoolIdUrl', 'school');
+                                  } catch (err) {
+                                    console.error(err);
+                                  } finally {
+                                    setUploadingSchool(false);
+                                  }
+                                }}
+                              />
+                              <Button 
+                                variant="outline" 
+                                className="h-16 rounded-[2rem] px-8 font-bold text-sm"
+                                onClick={() => schoolInputRef.current?.click()}
+                                disabled={uploadingSchool}
+                              >
+                                {uploadingSchool ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : formData.kycSchoolIdUrl ? <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-500" /> : null}
+                                {uploadingSchool ? "Uploading..." : formData.kycSchoolIdUrl ? "Uploaded" : "Select File"}
+                              </Button>
+                              {formData.kycSchoolIdUrl && <CheckCircle2 className="h-6 w-6 text-emerald-500" />}
                           </div>
                         </div>
                       </div>

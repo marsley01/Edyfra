@@ -8,9 +8,9 @@ import { isFounderEmail } from "@/utils/admin-guard";
 export async function GET(request: NextRequest) {
   try {
     const adminSecret = process.env.ADMIN_SECRET_KEY;
-    const providedSecret = request.headers.get("x-admin-secret") || request.nextUrl.searchParams.get("secret");
+    const providedSecret = request.headers.get("x-admin-secret");
 
-    if (adminSecret && providedSecret !== adminSecret) {
+    if (!adminSecret || providedSecret !== adminSecret) {
       return NextResponse.json(
         { error: "Forbidden: Invalid admin setup secret" },
         { status: 403 }
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Error setting up admin:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unknown error" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

@@ -49,6 +49,7 @@ export default function SettingsPage() {
   const [currentAvatar, setCurrentAvatar] = useState<string | null>(null);
   const [passwordData, setPasswordData] = useState({ current: "", newPass: "", confirm: "" });
   const [newEmail, setNewEmail] = useState("");
+  const [emailPassword, setEmailPassword] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [downloading, setDownloading] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -137,7 +138,7 @@ export default function SettingsPage() {
   const handleChangeEmail = async () => {
     if (!newEmail.includes("@")) { toast.error("Invalid email"); return; }
     try {
-      await changeEmail(newEmail);
+      await changeEmail(emailPassword, newEmail);
       toast.success("Verification email sent to " + newEmail);
     } catch (e: any) { toast.error(e.message); }
   };
@@ -533,6 +534,10 @@ export default function SettingsPage() {
                   <div className="space-y-2">
                     <Label>New Email Address</Label>
                     <Input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} className="rounded-xl border-primary/10" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Current Password</Label>
+                    <Input type="password" value={emailPassword} onChange={(e) => setEmailPassword(e.target.value)} className="rounded-xl border-primary/10" />
                   </div>
                   <Button onClick={handleChangeEmail} className="rounded-xl bg-primary"><Mail className="h-4 w-4 mr-2" /> Send Verification</Button>
                 </CardContent>

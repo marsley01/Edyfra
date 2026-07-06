@@ -75,6 +75,6 @@ export async function GET(_req: NextRequest) {
     });
   } catch (err: any) {
     console.error('[stream/video-token] Token generation failed:', err.message);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: "Token generation failed" }, { status: 500 });
   }
 }

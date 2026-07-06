@@ -62,12 +62,12 @@ export async function completeOnboarding(data: OnboardingData) {
     userEducationLevel = EduLevel.HIGH_SCHOOL;
   }
 
-  const prismaRole = isTutor ? Role.TUTOR : Role.STUDENT;
+  const prismaRole = Role.STUDENT;
 
   // 1. Update Supabase Auth Metadata
   await supabase.auth.updateUser({
     data: { 
-      role: isTutor ? "TUTOR" : "STUDENT", 
+      role: "STUDENT", 
       onboarding_completed: true,
       gender: user.user_metadata?.gender,
       avatar: user.user_metadata?.avatar,
@@ -165,14 +165,18 @@ export async function completeOnboarding(data: OnboardingData) {
         gradesUrl: kycIdPhotoUrl || "", // We use gradesUrl for primary ID document as a fallback
         subjects: subjects || [],
         status: "PENDING",
-        notes: kycNotes
+        notes: kycNotes,
+        idPhotoUrl: kycIdPhotoUrl || null,
+        selfieUrl: kycSelfieUrl || null,
       },
       update: {
         path: verificationPath === "GRADES" ? VerifPath.GRADES : VerifPath.POINTS,
         gradesUrl: kycIdPhotoUrl || "",
         subjects: subjects || [],
         status: "PENDING",
-        notes: kycNotes
+        notes: kycNotes,
+        idPhotoUrl: kycIdPhotoUrl || null,
+        selfieUrl: kycSelfieUrl || null,
       }
     });
 
@@ -221,6 +225,6 @@ export async function completeOnboarding(data: OnboardingData) {
   return { success: true };
   } catch (error: any) {
     console.error("Onboarding failed:", error);
-    return { success: false, error: error.message || "Internal server error" };
+    return { success: false, error: "Internal server error" };
   }
 }

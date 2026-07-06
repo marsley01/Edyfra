@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     const cronSecret = process.env.CRON_SECRET;
     const providedSecret = request.headers.get("x-cron-secret") || request.headers.get("authorization")?.replace("Bearer ", "");
 
-    if (cronSecret && providedSecret !== cronSecret) {
+    if (!cronSecret || providedSecret !== cronSecret) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
@@ -72,6 +72,6 @@ export async function POST(request: Request) {
 
   } catch (error: any) {
     console.error("Session Summarizer Webhook Error:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }
