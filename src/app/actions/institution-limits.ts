@@ -1,15 +1,18 @@
 import prisma from "@/lib/prisma";
+import { getPlan } from "@/lib/institution-plans";
 
 export type LimitAction = "student" | "assignment" | "term";
 
 export async function checkInstitutionLimit(institutionId: string, action: LimitAction) {
-  const limit = await prisma.institutionLimit.findUnique({
-    where: { institutionId },
+  const institution = await prisma.institution.findUnique({
+    where: { id: institutionId },
+    select: { planTier: true },
   });
 
-  const maxStudents = limit?.maxStudents ?? 200;
-  const maxAssignments = limit?.maxAssignments ?? 5;
-  const maxTermsStored = limit?.maxTermsStored ?? 3;
+  const plan = getPlan(institution?.planTier ?? null);
+  const maxStudents = plan.studentCap ?? Infinity;
+  const maxAssignments = plan.tier === "ENTERPRISE" ? Infinity : 5;
+  const maxTermsStored = plan.tier === "ENTERPRISE" ? Infinity : 3;
 
   if (action === "student") {
     const studentCount = await prisma.institutionStudent.count({
@@ -22,7 +25,7 @@ export async function checkInstitutionLimit(institutionId: string, action: Limit
 
   if (action === "assignment") {
     const assignmentCount = await prisma.coachingAssignment.count({
-      where: { institutionId, status: "active" },
+      where: { institutionId, status: "ACTIVE" },
     });
     if (assignmentCount >= maxAssignments) {
       throw new Error(`Free plan limited to ${maxAssignments} active assignments. Upgrade to add more.`);
