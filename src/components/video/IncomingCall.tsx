@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useVideoContext } from './VideoProvider';
+import { playIncomingRingtone } from '@/lib/sounds';
 import type { Call } from '@stream-io/video-react-sdk';
 
 const PERM_KEY = 'edyfra_video_perm';
@@ -112,16 +113,8 @@ export function IncomingCall({ onAccepted }: IncomingCallProps) {
   // Play ringing sound
   useEffect(() => {
     if (!ringingCall) return;
-
-    const audio = new Audio('/sounds/ringtone.mp3');
-    audio.loop = true;
-    audio.volume = 0.7;
-    audio.play().catch((err) => console.log('[IncomingCall] Audio play blocked:', err));
-
-    return () => {
-      audio.pause();
-      audio.currentTime = 0;
-    };
+    const stop = playIncomingRingtone();
+    return stop;
   }, [ringingCall]);
 
   // Auto-decline countdown
