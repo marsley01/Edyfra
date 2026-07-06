@@ -70,6 +70,7 @@ export default function TutorSettingsPage() {
   const [availableNow, setAvailableNow] = useState(false);
   const [passwordData, setPasswordData] = useState({ current: "", newPass: "", confirm: "" });
   const [newEmail, setNewEmail] = useState("");
+  const [emailPassword, setEmailPassword] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [downloading, setDownloading] = useState(false);
   const [currentAvatar, setCurrentAvatar] = useState<string | null>(null);
@@ -199,7 +200,7 @@ export default function TutorSettingsPage() {
       return;
     }
     try {
-      await changeEmail(newEmail);
+      await changeEmail(emailPassword, newEmail);
       showSuccess("Verification sent", { description: "Check your new email's inbox to confirm." });
     }
     catch (e: any) { showUnknownError(e, "Couldn't update your email"); }
@@ -775,6 +776,7 @@ export default function TutorSettingsPage() {
                   </CardHeader>
                   <CardContent className="p-6 sm:p-8 space-y-4">
                     <Input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="New email address" className="h-11 rounded-xl border-border/50 bg-secondary/30" />
+                    <Input type="password" value={emailPassword} onChange={(e) => setEmailPassword(e.target.value)} placeholder="Current password" className="h-11 rounded-xl border-border/50 bg-secondary/30" />
                     <Button onClick={handleChangeEmail} className="rounded-xl h-11 px-6"><Mail className="h-4 w-4 mr-2" /> Send Verification</Button>
                   </CardContent>
                 </Card>

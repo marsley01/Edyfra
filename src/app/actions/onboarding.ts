@@ -1,11 +1,12 @@
 "use server";
 
-import { Role, EduLevel, Tier, VerifPath, Gender } from "@prisma/client";
+import { Role, EduLevel, Tier, VerifPath, Gender } from "@/generated/client";
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { sendWelcomeEmail } from "@/lib/email";
 import { TUTOR_CONFIG } from "@/lib/config";
+import { getAdminGlobalSettings } from "@/app/actions/admin";
 
 interface OnboardingData {
   role: string;
@@ -20,6 +21,12 @@ interface OnboardingData {
   verificationPath?: string;
   hourlyRate?: string;
   mpesaNumber?: string;
+  kycName?: string;
+  kycIdNumber?: string;
+  kycInstitution?: string;
+  kycIdPhotoUrl?: string;
+  kycSelfieUrl?: string;
+  kycSchoolIdUrl?: string;
 }
 
 export async function completeOnboarding(data: OnboardingData) {
@@ -31,10 +38,17 @@ export async function completeOnboarding(data: OnboardingData) {
     throw new Error("Unauthorized");
   }
 
+  const settings = await getAdminGlobalSettings();
+  if (settings.registrationGate) {
+    throw new Error("Registration is currently closed by the administrator.");
+  }
+
   const { 
     role, educationLevel, curriculum, formYear, 
     county, subjects, weakTopics, studyStyle, 
-    bio, verificationPath, hourlyRate, mpesaNumber 
+    bio, verificationPath, hourlyRate, mpesaNumber,
+    kycName, kycIdNumber, kycInstitution, 
+    kycIdPhotoUrl, kycSelfieUrl, kycSchoolIdUrl
   } = data;
   
   const isTutor = role === "TUTOR";
@@ -48,12 +62,12 @@ export async function completeOnboarding(data: OnboardingData) {
     userEducationLevel = EduLevel.HIGH_SCHOOL;
   }
 
-  const prismaRole = isTutor ? Role.TUTOR : Role.STUDENT;
+  const prismaRole = Role.STUDENT;
 
   // 1. Update Supabase Auth Metadata
   await supabase.auth.updateUser({
     data: { 
-      role: isTutor ? "TUTOR" : "STUDENT", 
+      role: "STUDENT", 
       onboarding_completed: true,
       gender: user.user_metadata?.gender,
       avatar: user.user_metadata?.avatar,
@@ -85,6 +99,11 @@ export async function completeOnboarding(data: OnboardingData) {
     avatar: user.user_metadata?.avatar || null,
     gender: metaGender === "MALE" ? Gender.MALE : metaGender === "FEMALE" ? Gender.FEMALE : undefined,
   };
+
+  // If KYC name is provided, update the base name
+  if (kycName && kycName.trim().length > 0) {
+    baseData.name = kycName.trim();
+  }
 
   let finalUserId = user.id;
 
@@ -129,19 +148,35 @@ export async function completeOnboarding(data: OnboardingData) {
 
   // 4. If TUTOR, Create Tutor Application (PENDING - requires admin approval)
   if (isTutor) {
+    const kycNotes = JSON.stringify({
+      kycName: kycName || "",
+      kycIdNumber: kycIdNumber || "",
+      kycInstitution: kycInstitution || "",
+      kycIdPhotoUrl: kycIdPhotoUrl || "",
+      kycSelfieUrl: kycSelfieUrl || "",
+      kycSchoolIdUrl: kycSchoolIdUrl || ""
+    });
+
     await prisma.tutorApplication.upsert({
       where: { userId: finalUserId },
       create: {
         userId: finalUserId,
         path: verificationPath === "GRADES" ? VerifPath.GRADES : VerifPath.POINTS,
-        gradesUrl: "",
+        gradesUrl: kycIdPhotoUrl || "", // We use gradesUrl for primary ID document as a fallback
         subjects: subjects || [],
         status: "PENDING",
+        notes: kycNotes,
+        idPhotoUrl: kycIdPhotoUrl || null,
+        selfieUrl: kycSelfieUrl || null,
       },
       update: {
         path: verificationPath === "GRADES" ? VerifPath.GRADES : VerifPath.POINTS,
+        gradesUrl: kycIdPhotoUrl || "",
         subjects: subjects || [],
         status: "PENDING",
+        notes: kycNotes,
+        idPhotoUrl: kycIdPhotoUrl || null,
+        selfieUrl: kycSelfieUrl || null,
       }
     });
 
@@ -152,6 +187,7 @@ export async function completeOnboarding(data: OnboardingData) {
         subjects: subjects || [],
         levelsTaught: formYear ? [formYear] : [],
         verificationPath: verificationPath === "GRADES" ? VerifPath.GRADES : VerifPath.POINTS,
+        gradesProof: kycSchoolIdUrl || null,
         hourlyRate: parseInt(hourlyRate || "0") || TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH,
         bio: bio || "",
         mpesaNumber: mpesaNumber || "",
@@ -159,6 +195,7 @@ export async function completeOnboarding(data: OnboardingData) {
       },
       update: {
         subjects: subjects || [],
+        gradesProof: kycSchoolIdUrl || null,
         hourlyRate: parseInt(hourlyRate || "0") || TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH,
         bio: bio || "",
         mpesaNumber: mpesaNumber || "",
@@ -188,6 +225,6 @@ export async function completeOnboarding(data: OnboardingData) {
   return { success: true };
   } catch (error: any) {
     console.error("Onboarding failed:", error);
-    return { success: false, error: error.message || "Internal server error" };
+    return { success: false, error: "Internal server error" };
   }
 }

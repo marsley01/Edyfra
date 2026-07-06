@@ -4,10 +4,32 @@ import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { getUserData } from "./user";
-import { isFounderEmail } from "@/utils/admin-guard";
 import { notifyUser } from "./notifications";
 import { generateReferralCode } from "@/utils/referral";
+
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_WINDOW = 60_000;
+const RATE_LIMIT_MAX = 10;
+
+function checkRateLimit(key: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(key);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+  if (entry.count >= RATE_LIMIT_MAX) return false;
+  entry.count++;
+  return true;
+}
+
 export async function login(formData: FormData) {
+  const headers = await (await import('next/headers')).headers();
+  const ip = headers.get('x-forwarded-for') || 'unknown';
+  if (!checkRateLimit(`login:${ip}`)) {
+    return { error: "Too many login attempts. Please try again later." };
+  }
+
   const supabase = await createClient();
 
   const email = formData.get("email") as string;
@@ -26,9 +48,7 @@ export async function login(formData: FormData) {
   // FORCE SYNC: Ensure Prisma has this user record immediately on login
   const prismaUser = await getUserData();
   
-  // Prisma is the source of truth for role.
-  // Fallback: check founder email when DB is unreachable so admin can still log in.
-  const role = prismaUser?.role || (isFounderEmail(email) ? "ADMIN" : "STUDENT");
+  const role = prismaUser?.role || "STUDENT";
   
   // Keep Supabase metadata aligned with Prisma so middleware/layout routing doesn't mis-route users.
   try {
@@ -77,10 +97,26 @@ export async function login(formData: FormData) {
 // generateReferralCode is now imported from @/utils/referral
 
 export async function signup(formData: FormData) {
+  const headers = await (await import('next/headers')).headers();
+  const ip = headers.get('x-forwarded-for') || 'unknown';
+  if (!checkRateLimit(`signup:${ip}`)) {
+    return { error: "Too many signup attempts. Please try again later." };
+  }
+
   const supabase = await createClient();
 
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+
+  if (password.length < 8) {
+    return { error: "Password must be at least 8 characters long." };
+  }
+  if (!/[A-Z]/.test(password)) {
+    return { error: "Password must contain at least one uppercase letter." };
+  }
+  if (!/[0-9]/.test(password)) {
+    return { error: "Password must contain at least one number." };
+  }
   const name = formData.get("name") as string;
   const gender = formData.get("gender") as string;
   const customAvatarUrl = formData.get("avatarUrl") as string;

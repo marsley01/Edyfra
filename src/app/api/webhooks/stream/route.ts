@@ -25,12 +25,15 @@ export async function POST(request: Request) {
 
     // Verify webhook signature if a secret is configured.
     // (Stream uses HMAC-SHA256 over the raw body, keyed by your app secret.)
-    if (STREAM_SECRET && signature) {
-      const isValid = CheckSignature(rawBody, STREAM_SECRET, signature);
-      if (!isValid) {
-        console.warn("[StreamWebhook] Invalid signature");
-        return NextResponse.json({ success: false, error: "Invalid signature" }, { status: 401 });
-      }
+    if (!STREAM_SECRET || !signature) {
+      console.warn("[StreamWebhook] Missing secret or signature");
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
+    const isValid = CheckSignature(rawBody, STREAM_SECRET, signature);
+    if (!isValid) {
+      console.warn("[StreamWebhook] Invalid signature");
+      return NextResponse.json({ success: false, error: "Invalid signature" }, { status: 401 });
     }
 
     const payload = JSON.parse(rawBody);
@@ -120,6 +123,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error("[StreamWebhook] Error:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }

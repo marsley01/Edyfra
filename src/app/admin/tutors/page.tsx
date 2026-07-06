@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { showError, showSuccess } from "@/lib/toast";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 import { getTutorApplicationsWithDetails, getAllTutorsWithDetails, approveTutorApplicationEnhanced, rejectTutorApplication } from "@/app/actions/admin-tutor";
 
 export default function AdminTutorsPage() {
@@ -23,6 +24,8 @@ export default function AdminTutorsPage() {
     path: string;
     notes: string;
     userId: string;
+    idPhotoUrl?: string | null;
+    selfieUrl?: string | null;
     user?: {
       name: string;
       educationLevel?: string;
@@ -129,8 +132,8 @@ export default function AdminTutorsPage() {
       <div className="space-y-10 animate-in fade-in duration-500">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <h1 className="text-5xl font-black tracking-tighter">Verification Desk</h1>
-            <p className="text-muted-foreground text-sm font-bold tracking-widest uppercase italic">Audit and authorize educational experts for the community.</p>
+            <h1 className="text-5xl font-black tracking-tighter">Tutor Applications</h1>
+            <p className="text-muted-foreground text-sm font-bold tracking-widest uppercase italic">Review and approve educational experts for the community.</p>
           </div>
         </div>
         <Card className="border-red-500/20 bg-red-500/5">
@@ -158,9 +161,9 @@ export default function AdminTutorsPage() {
     <div className="space-y-10 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-5xl font-black tracking-tighter">Tutor Management</h1>
+          <h1 className="text-5xl font-black tracking-tighter">Tutor Applications</h1>
           <p className="text-muted-foreground text-sm font-bold tracking-widest uppercase italic">
-            {showAllTutors ? "View all registered tutors" : "Audit and authorize educational experts"}
+            {showAllTutors ? "View all registered tutors" : "Review and approve educational experts"}
           </p>
         </div>
         <div className="flex gap-4">
@@ -187,7 +190,7 @@ export default function AdminTutorsPage() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            <p className="text-xs font-black tracking-widest uppercase text-muted-foreground">Syncing Applications...</p>
+            <p className="text-xs font-black tracking-widest uppercase text-muted-foreground">Loading Applications...</p>
           </div>
         ) : filteredApps.length === 0 ? (
           <div className="text-center py-24 bg-white/[0.02] border border-dashed border-white/10 rounded-[2rem]">
@@ -253,9 +256,33 @@ export default function AdminTutorsPage() {
                         {app.path}
                       </Badge>
                     </div>
-                    <div className="hidden md:block">
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Applicant Notes</p>
-                      <p className="text-xs text-muted-foreground italic line-clamp-2">&quot;{app.notes || "No additional notes provided."}&quot;</p>
+                    <div className="col-span-2 md:col-span-3">
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">KYC Documents</p>
+                      
+                      <div className="flex flex-wrap gap-4 mt-2">
+                        {app.idPhotoUrl && (
+                          <a href={app.idPhotoUrl} target="_blank" rel="noopener noreferrer" className="relative group block overflow-hidden rounded-xl border border-white/10 w-24 h-24 hover:border-primary/50 transition-colors">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <Image src={app.idPhotoUrl} alt="ID Photo" width={96} height={96} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                            <div className="absolute inset-x-0 bottom-0 bg-black/60 p-1 text-center backdrop-blur-sm">
+                              <span className="text-[8px] font-black text-white tracking-widest uppercase">ID Photo</span>
+                            </div>
+                          </a>
+                        )}
+                        {app.selfieUrl && (
+                          <a href={app.selfieUrl} target="_blank" rel="noopener noreferrer" className="relative group block overflow-hidden rounded-xl border border-white/10 w-24 h-24 hover:border-primary/50 transition-colors">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <Image src={app.selfieUrl} alt="Selfie" width={96} height={96} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                            <div className="absolute inset-x-0 bottom-0 bg-black/60 p-1 text-center backdrop-blur-sm">
+                              <span className="text-[8px] font-black text-white tracking-widest uppercase">Selfie</span>
+                            </div>
+                          </a>
+                        )}
+                        
+                        {!app.idPhotoUrl && !app.selfieUrl && (
+                          <p className="text-xs text-muted-foreground italic">&quot;No KYC documents uploaded.&quot;</p>
+                        )}
+                      </div>
                     </div>
                   </div>
 

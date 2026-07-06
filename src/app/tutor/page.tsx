@@ -164,7 +164,7 @@ export default function TutorDashboard() {
 
   const handleJoinMatch = (sessionId: string) => {
     setMatchBanner(null);
-    router.push(`/study-room/${sessionId}`);
+    window.open(`/study-room/${sessionId}`, '_blank');
   };
 
   useEffect(() => {
@@ -243,7 +243,7 @@ export default function TutorDashboard() {
         // Remove from local list
         setMatchRequests((prev) => prev.filter((r) => r.id !== requestId));
         setSearchingStudents((prev) => Math.max(0, prev - 1));
-        router.push(`/study-room/${result.sessionId}`);
+        window.open(`/study-room/${result.sessionId}`, '_blank');
       } else {
         showError({
           title: "Couldn't accept that match",
@@ -306,7 +306,7 @@ export default function TutorDashboard() {
 
   const handleJoinRoom = (roomId: string) => {
     showInfo("Joining the room", { description: "Setting up your camera and mic." });
-    router.push(`/study-room/${roomId}`);
+    window.open(`/study-room/${roomId}`, '_blank');
   };
 
   if (loading) {

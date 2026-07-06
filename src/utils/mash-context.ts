@@ -1,11 +1,12 @@
 import prisma from "@/lib/prisma";
+import { Prisma } from "@/generated/client";
 
 export interface MashContextData {
   subjectsStruggled: string[];
   topicsCovered: string[];
   lastSessionSummary: string | null;
-  weakAreas: Record<string, any>;
-  strongAreas: Record<string, any>;
+  weakAreas: Prisma.InputJsonValue;
+  strongAreas: Prisma.InputJsonValue;
 }
 
 /**
@@ -27,8 +28,8 @@ export async function getMashContext(userId: string): Promise<MashContextData> {
       subjectsStruggled: context.subjectsStruggled || [],
       topicsCovered: context.topicsCovered || [],
       lastSessionSummary: context.lastSessionSummary,
-      weakAreas: (context.weakAreas as Record<string, any>) || {},
-      strongAreas: (context.strongAreas as Record<string, any>) || {},
+      weakAreas: (context.weakAreas as Prisma.InputJsonValue) || {},
+      strongAreas: (context.strongAreas as Prisma.InputJsonValue) || {},
     };
   } catch (error) {
     console.error("Error getting Mash context:", error);
@@ -60,16 +61,16 @@ export async function updateMashContext(
           topicsCovered: { push: data.topicsCovered },
         }),
         ...(data.lastSessionSummary && { lastSessionSummary: data.lastSessionSummary }),
-        ...(data.weakAreas && { weakAreas: data.weakAreas }),
-        ...(data.strongAreas && { strongAreas: data.strongAreas }),
+        ...(data.weakAreas && { weakAreas: data.weakAreas as Prisma.InputJsonValue }),
+        ...(data.strongAreas && { strongAreas: data.strongAreas as Prisma.InputJsonValue }),
       },
       create: {
         userId,
         subjectsStruggled: data.subjectsStruggled || [],
         topicsCovered: data.topicsCovered || [],
         lastSessionSummary: data.lastSessionSummary,
-        weakAreas: data.weakAreas || {},
-        strongAreas: data.strongAreas || {},
+        weakAreas: (data.weakAreas || {}) as Prisma.InputJsonValue,
+        strongAreas: (data.strongAreas || {}) as Prisma.InputJsonValue,
       },
     });
   } catch (error) {

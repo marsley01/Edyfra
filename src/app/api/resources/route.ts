@@ -121,6 +121,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, resource });
   } catch (error: any) {
     console.error("[Resources API POST] Error:", error);
-    return NextResponse.json({ error: error?.message || "Failed to create resource" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to create resource" }, { status: 500 });
   }
 }

@@ -2,7 +2,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { Role, VerifPath, TutorApplication, User, TutorProfile } from "@prisma/client";
+import { Role, VerifPath, TutorApplication, User, TutorProfile } from "@/generated/client";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { getUserData } from "./user";
@@ -73,7 +73,9 @@ export async function getAllTutorsWithDetails(): Promise<any[]> {
            name: tutor.name,
            educationLevel: tutor.educationLevel,
            email: tutor.email
-         }
+         },
+         idPhotoUrl: latestApp?.idPhotoUrl || tutor.tutorProfile?.idPhotoUrl || null,
+         selfieUrl: latestApp?.selfieUrl || tutor.tutorProfile?.selfieUrl || null
        };
      });
   } catch (error) {
@@ -115,7 +117,9 @@ export async function approveTutorApplicationEnhanced(applicationId: string) {
         bio: app.notes || "Expert tutor ready to help students succeed.",
         isVerified: true,
         verifiedAt: new Date(),
-        availability: { isOnline: true }
+        availability: { isOnline: true },
+        idPhotoUrl: app.idPhotoUrl,
+        selfieUrl: app.selfieUrl
       },
       update: {
         isVerified: true,

@@ -95,7 +95,7 @@ export class AIService {
             ],
             temperature: 0.7,
           },
-          { signal: controller.signal as any }
+          { signal: controller.signal }
         );
         return completion.choices[0]?.message?.content || "";
       } finally {
@@ -105,13 +105,13 @@ export class AIService {
 
     try {
       return await doCall(model, 15000);
-    } catch (firstErr: any) {
-      console.warn("[AIService] First attempt failed, retrying with fallback model:", firstErr?.message);
+    } catch (firstErr) {
+      const firstMessage = firstErr instanceof Error ? firstErr.message : String(firstErr);
+      console.warn("[AIService] First attempt failed, retrying with fallback model:", firstMessage);
       try {
-        // Retry once with the same model and a longer timeout
         return await doCall(model, 20000);
-      } catch (retryErr: any) {
-        console.error("[AIService] Retry also failed:", retryErr?.message);
+      } catch {
+        console.error("[AIService] Retry also failed");
         return `I'm having a bit of trouble thinking right now. Let's try again in a moment.`;
       }
     }
@@ -119,9 +119,9 @@ export class AIService {
 
   static async generateJSON(
     prompt: string,
-    schema?: any,
+    schema?: Record<string, unknown>,
     model: string = DEFAULT_MODEL
-  ): Promise<any> {
+  ): Promise<Record<string, unknown>> {
     const systemPrompt = "You are a specialized assistant that returns ONLY valid JSON. No markdown, no commentary.";
 
     try {

@@ -90,7 +90,7 @@ export default function AdminAISettingsPage() {
             <Sparkles className="h-3.5 w-3.5" />
             AI Engine
           </div>
-          <h1 className="text-5xl font-black tracking-tighter">Neural Engine Controls</h1>
+          <h1 className="text-5xl font-black tracking-tighter">AI Provider Settings</h1>
           <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
             Manage the provider, key, and core automation behavior behind Mash AI.
           </p>

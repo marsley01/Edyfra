@@ -8,16 +8,16 @@ export const CALL_SETTINGS = {
   audio: {
     mic_default_on: true,
     default_device: "speaker",
-    noise_cancellation: { mode: "auto" },
+    noise_cancellation: { mode: "auto-on" },
   },
   video: {
     camera_default_on: true,
-    camera_facing: "user",
+    camera_facing: "front",
     target_resolution: { width: 1920, height: 1080 },
     enabled_for_caller: true,
   },
   broadcasting: { enabled: false },
-  recording: { enabled: false },
+  recording: { mode: "disabled" },
 } as const;
 
 export const HIGH_QUALITY_OVERRIDE = {

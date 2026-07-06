@@ -58,19 +58,19 @@ ALTER TABLE "analytics_events" ENABLE ROW LEVEL SECURITY;
 -- Referrals: users can see their own referrals
 CREATE POLICY "Users can view own referrals"
   ON "referrals" FOR SELECT
-  USING (referrer_id = auth::uuid() OR referred_id = auth::uuid());
+  USING (referrer_id = auth.uid() OR referred_id = auth.uid());
 
 -- Mash context: users can read/update their own
 CREATE POLICY "Users can manage own mash context"
   ON "mash_context" FOR ALL
-  USING (user_id = auth::uuid())
-  WITH CHECK (user_id = auth::uuid());
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
 
 -- Analytics: insert only for all authenticated, select for admins
 CREATE POLICY "Authenticated can insert events"
   ON "analytics_events" FOR INSERT
-  WITH CHECK (auth::uuid() IS NOT NULL);
+  WITH CHECK (auth.uid() IS NOT NULL);
 
 CREATE POLICY "Admins can view analytics"
   ON "analytics_events" FOR SELECT
-  USING (auth::uuid() IN (SELECT id FROM "User" WHERE role = 'ADMIN'));
+  USING (auth.uid() IN (SELECT id FROM "User" WHERE role = 'ADMIN'));
