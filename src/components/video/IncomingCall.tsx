@@ -227,29 +227,29 @@ export function IncomingCall({ onAccepted }: IncomingCallProps) {
           <div className="absolute w-56 h-56 border border-primary/20 rounded-full animate-ping [animation-duration:3s]"></div>
         </div>
 
-        <div className="relative z-10 w-24 h-24 rounded-full bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center text-white text-4xl font-black shadow-lg shadow-primary/20">
+        <div className="relative z-10 w-24 h-24 rounded-full bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center text-white text-4xl font-semibold shadow-lg shadow-primary/20">
           {callerName.charAt(0).toUpperCase() || '?'}
         </div>
 
         <div className="space-y-1 relative z-10">
-          <p className="text-2xl font-black tracking-tight">{callerName}</p>
-          <p className="text-sm font-medium text-muted-foreground">Incoming video call</p>
+          <p className="text-2xl font-semibold">{callerName}</p>
+          <p className="text-sm text-muted-foreground">Incoming video call</p>
         </div>
 
         {actionError && (
-          <p className="text-xs font-medium text-red-500 bg-red-500/10 px-3 py-2 rounded-xl relative z-10 w-full">
-            ⚠️ {actionError}
+          <p className="text-xs text-red-500 bg-red-500/10 px-3 py-2 rounded-xl relative z-10 w-full">
+            {actionError}
           </p>
         )}
 
         {!isAccepting && !isDeclining && (
-          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 relative z-10">
+          <p className="text-xs text-muted-foreground/60 relative z-10">
             Auto-declining in {timeLeft}s
           </p>
         )}
 
         {(isAccepting || isDeclining) && (
-          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 relative z-10">
+          <p className="text-xs text-muted-foreground/60 relative z-10">
             {isAccepting ? 'Connecting...' : 'Declining...'}
           </p>
         )}
@@ -258,16 +258,16 @@ export function IncomingCall({ onAccepted }: IncomingCallProps) {
           <button
             onClick={handleDecline}
             disabled={isAccepting || isDeclining}
-            className="flex-1 h-14 rounded-2xl bg-red-500/10 hover:bg-red-500/20 text-red-500 font-black text-[10px] tracking-widest uppercase transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 h-14 rounded-2xl bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            ✕ Decline
+            Decline
           </button>
           <button
             onClick={handleAccept}
             disabled={isAccepting || isDeclining}
-            className="flex-1 h-14 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[10px] tracking-widest uppercase shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 h-14 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isAccepting ? '⟳ Joining...' : '✓ Accept'}
+            {isAccepting ? 'Joining...' : 'Accept'}
           </button>
         </div>
       </div>

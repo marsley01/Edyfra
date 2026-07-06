@@ -4,8 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
-import { Badge } from "@/components/ui/badge";
-import { Loader2, Sparkles, ShieldCheck, ChevronLeft, Users, LogOut, BookOpen, Clock, GraduationCap } from "lucide-react";
+import { Loader2, ChevronLeft, Clock, GraduationCap, ShieldCheck } from "lucide-react";
 import { showError, showSuccess } from "@/lib/toast";
 import dynamic from "next/dynamic";
 import SessionReviewModal from "@/components/sessions/SessionReviewModal";
@@ -16,7 +15,6 @@ import { StartCallButton } from "@/components/video/StartCallButton";
 import { IncomingCall } from "@/components/video/IncomingCall";
 import { ActiveCall } from "@/components/video/ActiveCall";
 import type { Call } from "@stream-io/video-react-sdk";
-import { StudyRoomSidePanel } from "@/components/stream/StudyRoomSidePanel";
 
 const StreamChatRoom = dynamic(
   () => import("@/components/stream/StreamChatRoom"),
@@ -24,7 +22,7 @@ const StreamChatRoom = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground/40" />
       </div>
     ),
   },
@@ -61,7 +59,6 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
   const currentUser = initialData.currentUser;
   const sessionId = initialData.sessionId;
 
-  // Track session duration
   useEffect(() => {
     const start = Date.now();
     const interval = setInterval(() => {
@@ -107,9 +104,9 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
       }
     } catch {
       showError({
-        title: "Session didn't refresh",
-        cause: "We lost track of the room for a second.",
-        fix: "Try again — your study session is still safe.",
+        title: "Couldn't refresh the room",
+        cause: "There was a hiccup.",
+        fix: "Try again — everything is still saved.",
       });
     }
   }, [sessionId]);
@@ -132,41 +129,15 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
     }
   }, [session?.partnerId, fetchSession]);
 
-  const handleConvertToMashAI = async () => {
-    setConverting(true);
-    try {
-      const { convertBookingToMashAI } = await import("@/app/actions/bookings");
-      const result = await convertBookingToMashAI(sessionId);
-      if (result.success && result.sessionId) {
-        showSuccess("Connected to Mash AI", { description: "Your study buddy is ready when you are." });
-        router.push(`/study-room/${result.sessionId}`);
-      } else {
-        showError({
-          title: "Couldn't start the session",
-          cause: "The room conversion didn't complete.",
-          fix: "Try again, or refresh the page.",
-        });
-      }
-    } catch {
-      showError({
-        title: "Something went sideways",
-        cause: "An unexpected hiccup stopped that.",
-        fix: "Try again in a moment.",
-      });
-    } finally {
-      setConverting(false);
-    }
-  };
-
   const handleEndSession = async () => {
     if (!session) return;
     const { completeSession } = await import("@/app/actions/match");
     const result = await completeSession(sessionId);
 
     if (result?.pointsAwarded) {
-      showSuccess(`+${result.pointsAwarded} points earned!`, { description: "Nice work — that session is logged." });
+      showSuccess(`+${result.pointsAwarded} points`, { description: "Session logged." });
     } else {
-      showSuccess("Session finished", { description: "No points this time — sessions under 2 minutes don't count." });
+      showSuccess("Session finished", { description: "Sessions under 2 minutes don't earn points." });
     }
 
     if (session.tier === "TUTOR" && session.studentId === currentUser?.id) {
@@ -183,10 +154,9 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
 
   const participants = [
     { ...session.student, isCurrentUser: session.studentId === currentUser.id, role: session.tier === "TUTOR" ? "Student" : "You" },
-    ...(session.partner ? [{ ...session.partner, isCurrentUser: session.partnerId === currentUser.id, role: session.tier === "TUTOR" ? "Tutor" : "Study Buddy" }] : []),
+    ...(session.partner ? [{ ...session.partner, isCurrentUser: session.partnerId === currentUser.id, role: session.tier === "TUTOR" ? "Tutor" : "Buddy" }] : []),
   ];
 
-  // If a video call is active, show it full-screen
   if (activeCall) {
     return (
       <ActiveCall
@@ -198,58 +168,30 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
   }
 
   return (
-    <div className="h-[100dvh] bg-background text-foreground flex flex-col overflow-hidden font-sans">
-      <header
-        className="h-16 md:h-20 border-b border-border/30 px-4 md:px-8 flex items-center justify-between bg-gradient-to-r from-background/90 via-background/80 to-background/90 backdrop-blur-2xl pt-[env(safe-area-inset-top,0px)] shrink-0"
-        style={{ zIndex: Z.STICKY }}
-      >
-        <div className="flex items-center gap-3 md:gap-5 min-w-0">
+    <div className="h-[100dvh] bg-background text-foreground flex flex-col overflow-hidden">
+      <header className="h-14 md:h-16 border-b border-border/20 px-4 md:px-6 flex items-center justify-between bg-background/80 backdrop-blur-xl pt-[env(safe-area-inset-top,0px)] shrink-0" style={{ zIndex: Z.STICKY }}>
+        <div className="flex items-center gap-3 min-w-0">
           <button
             onClick={() => setShowLeaveConfirm(true)}
-            className="p-2 -ml-1 text-foreground hover:bg-primary/5 rounded-xl transition-colors shrink-0"
+            className="w-8 h-8 flex items-center justify-center rounded-xl text-muted-foreground hover:bg-secondary/60 active:scale-95 transition-all shrink-0"
             aria-label="Leave room"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center text-white shadow-lg shadow-primary/20 shrink-0">
-              <GraduationCap className="h-4 w-4 md:h-5 md:w-5" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h1 className="text-sm font-black uppercase tracking-widest truncate">{session.subject}</h1>
-                <Badge className="hidden sm:inline-flex bg-primary/10 text-primary border-primary/20 text-[8px] font-black tracking-widest uppercase px-2 py-0">
-                  Classroom
-                </Badge>
-              </div>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest truncate">
-                {session.topic || "Study Session"}
-              </p>
-            </div>
-          </div>
-          <div className="hidden sm:flex items-center gap-2">
-            <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-[9px] font-black tracking-widest uppercase">
-              {session.status === "ACTIVE" ? "Live" : session.status}
-            </Badge>
+          <div className="min-w-0">
+            <h1 className="text-[15px] font-semibold truncate">{session.subject}</h1>
+            <p className="text-[12px] text-muted-foreground truncate">
+              {session.topic || "Study Room"}
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 md:gap-4 shrink-0">
-          {showNoShowPrompt && (
-            <Button
-              onClick={handleConvertToMashAI}
-              disabled={converting}
-              variant="outline"
-              className="hidden md:flex h-10 px-4 rounded-xl border-yellow-500/50 text-yellow-500 font-black text-[10px] tracking-widest uppercase hover:bg-yellow-500/10"
-            >
-              {converting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Tutor Unavailable? Use AI"}
-            </Button>
-          )}
-          <div className="hidden md:flex items-center gap-1.5 text-[10px] font-black text-muted-foreground bg-secondary/60 px-3 py-1.5 rounded-full">
-            <Clock className="h-3 w-3" />
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground/60 tabular-nums">
+            <Clock className="h-3.5 w-3.5" />
             {formatDuration(sessionDuration)}
           </div>
-          <div className="hidden md:flex -space-x-3">
+          <div className="hidden sm:flex -space-2">
             <AvatarPremium seed={session.student?.name} size="sm" className="border-2 border-background" />
             {session.partner && (
               <AvatarPremium seed={session.partner.name} size="sm" className="border-2 border-background" />
@@ -258,116 +200,77 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
           <Button
             onClick={() => setShowLeaveConfirm(true)}
             variant="ghost"
-            className="h-9 md:h-10 px-4 md:px-6 rounded-xl border border-border/50 font-black text-[10px] tracking-widest uppercase hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/30 transition-all"
+            className="h-8 px-3 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-all"
           >
-            <LogOut className="h-3.5 w-3.5 mr-2" />
-            <span className="hidden sm:inline">Leave</span>
+            Leave
           </Button>
         </div>
       </header>
 
       <main className="flex-1 flex overflow-hidden min-h-0">
-        <aside className="w-72 xl:w-80 border-r border-border/30 bg-gradient-to-b from-secondary/15 to-secondary/5 hidden lg:flex flex-col gap-6 p-6 overflow-y-auto">
-          {/* Classroom notice board header */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/5 to-violet-500/5 border border-primary/10 p-4">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-primary/10 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none" />
-            <div className="relative z-10 flex items-center gap-3">
-              <GraduationCap className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Classroom</p>
-                <p className="text-xs font-bold text-foreground">{session.subject}</p>
-              </div>
+        <aside className="w-72 border-r border-border/20 hidden lg:flex flex-col gap-5 p-5 overflow-y-auto bg-background">
+          <div className="flex items-center gap-3 px-1">
+            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <GraduationCap className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-[13px] font-medium">{session.subject}</p>
+              <p className="text-[11px] text-muted-foreground">{session.topic || "Study Room"}</p>
             </div>
           </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Users className="h-3.5 w-3.5 text-muted-foreground" />
-              <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-                Participants ({participants.length})
-              </p>
-            </div>
-            <div className="space-y-2">
+          <div className="space-y-2">
+            <p className="text-[11px] font-medium text-muted-foreground/60 px-1">Participants</p>
+            <div className="space-y-1">
               {participants.map((p, i) => (
                 <motion.div
                   key={i}
-                  initial={{ opacity: 0, x: -10 }}
+                  initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${
-                    p.isCurrentUser
-                      ? "bg-primary/5 border-primary/20"
-                      : "bg-background border-border/40"
+                  transition={{ delay: i * 0.08 }}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${
+                    p.isCurrentUser ? "bg-primary/5" : "hover:bg-secondary/40"
                   }`}
                 >
                   <div className="relative shrink-0">
                     <AvatarPremium seed={p.name} size="sm" />
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-background" />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-background" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-black truncate">
+                    <p className="text-[13px] font-medium truncate">
                       {p.name}{p.isCurrentUser ? " (you)" : ""}
                     </p>
-                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{p.role}</p>
+                    <p className="text-[11px] text-muted-foreground">{p.role}</p>
                   </div>
                 </motion.div>
               ))}
               {!session.partner && (
-                <div className="flex items-center gap-3 p-3 rounded-2xl border border-dashed border-border/40 bg-secondary/30">
-                  <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-dashed border-border/30">
+                  <div className="w-8 h-8 rounded-full bg-secondary/50 flex items-center justify-center shrink-0">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground/40" />
                   </div>
                   <div>
-                    <p className="text-xs font-black text-muted-foreground">Finding someone…</p>
-                    <p className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-widest">Usually under 30s</p>
+                    <p className="text-[13px] font-medium text-muted-foreground">Waiting for someone</p>
+                    <p className="text-[11px] text-muted-foreground/60">Shouldn't take long</p>
                   </div>
                 </div>
               )}
             </div>
           </div>
 
-          <div className="space-y-3">
-            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Session Details</p>
-            <div className="p-4 rounded-2xl bg-background border border-border/40 space-y-3">
-              <div className="flex items-center gap-2">
-                <BookOpen className="h-3.5 w-3.5 text-primary" />
-                <div>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Subject</p>
-                  <p className="text-xs font-bold">{session.subject}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-3.5 w-3.5 text-violet-500" />
-                <div>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Working on</p>
-                  <p className="text-xs font-bold">{session.topic || "General study"}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-3.5 w-3.5 text-amber-500" />
-                <div>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Duration</p>
-                  <p className="text-xs font-bold font-mono">{formatDuration(sessionDuration)}</p>
-                </div>
-              </div>
+          <div className="mt-auto p-4 rounded-2xl border border-border/20 bg-secondary/20">
+            <div className="flex items-center gap-2 text-[12px] text-muted-foreground mb-1.5">
+              <ShieldCheck className="h-3.5 w-3.5" /> Private session
             </div>
-          </div>
-
-          <div className="mt-auto p-4 rounded-2xl bg-gradient-to-br from-emerald-500/[0.06] to-emerald-500/[0.02] border border-emerald-500/15 space-y-1.5">
-            <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
-              <ShieldCheck className="h-3 w-3" /> End-to-end private
-            </div>
-            <p className="text-[10px] font-medium text-muted-foreground leading-snug">
-              Your session is completely private — only visible to you and your partner.
+            <p className="text-[12px] text-muted-foreground/60 leading-relaxed">
+              Only you and your partner can see this room.
             </p>
           </div>
         </aside>
 
         <section className="flex-1 flex flex-col bg-background relative min-w-0 min-h-0">
-          {/* Incoming call listener — visible inside the study room */}
           <IncomingCall onAccepted={(call) => setActiveCall(call)} />
 
-          {/* Video call button in the top toolbar area */}
           {session.partnerId && (
             <div className="px-4 pt-3 pb-1 flex justify-end shrink-0">
               <StartCallButton
@@ -383,7 +286,7 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
           )}
 
           <div className="flex flex-1 overflow-hidden min-h-0">
-            <div className="flex-1 flex flex-col min-w-0 border-r border-border/50">
+            <div className="flex-1 flex flex-col min-w-0 border-r border-border/20">
               <StreamChatRoom
                 channelId={sessionId}
                 userId={currentUser.id}
@@ -397,14 +300,7 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
                   topic: session.topic,
                 }}
               />
-              <div className="py-1.5 text-center border-t border-border/30 shrink-0 bg-background/50 backdrop-blur">
-                <span className="text-[9px] font-medium text-muted-foreground/40">
-                  🔒 This session is private and secure
-                </span>
-              </div>
             </div>
-            
-            <StudyRoomSidePanel subject={session.subject} topic={session.topic} />
           </div>
         </section>
       </main>
@@ -425,30 +321,27 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
               exit={{ y: 40, opacity: 0, scale: 0.96 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-sm bg-card border border-border rounded-[2.5rem] p-8 space-y-6 shadow-2xl"
+              className="w-full max-w-sm bg-card border border-border rounded-3xl p-7 space-y-6 shadow-2xl"
             >
               <div className="text-center space-y-2">
-                <div className="w-14 h-14 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center mx-auto">
-                  <LogOut className="h-7 w-7" />
-                </div>
-                <h2 className="text-xl font-black tracking-tightest">Leave this room?</h2>
-                <p className="text-sm text-muted-foreground font-medium leading-relaxed">
-                  Leaving will end the session and your progress will be saved. You can always start a new one.
+                <h2 className="text-xl font-semibold">Leave this room?</h2>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Your progress will be saved. You can start a new session anytime.
                 </p>
               </div>
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2.5">
                 <Button
                   onClick={handleEndSession}
-                  className="w-full h-14 rounded-2xl bg-red-500 hover:bg-red-600 text-white font-black text-[10px] tracking-widest uppercase shadow-lg shadow-red-500/20 transition-all"
+                  className="w-full h-12 rounded-xl bg-red-500 hover:bg-red-600 text-white text-[15px] font-medium transition-all"
                 >
-                  Yes, end this session
+                  End session
                 </Button>
                 <Button
                   variant="ghost"
                   onClick={() => setShowLeaveConfirm(false)}
-                  className="w-full h-12 rounded-2xl font-black text-[10px] tracking-widest uppercase"
+                  className="w-full h-12 rounded-xl text-[15px] font-medium text-foreground"
                 >
-                  Stay — keep learning
+                  Cancel
                 </Button>
               </div>
             </motion.div>
@@ -467,7 +360,6 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
   );
 }
 
-// Wrap with VideoProvider so the call SDK is available inside the study room
 export default function StudyRoomClient({ initialData }: { initialData: StudyRoomInitialData }) {
   return (
     <VideoProvider>
