@@ -70,7 +70,7 @@ export function StartCallButton({
     try {
       // Unique call ID per attempt so it rings every time
       const callId = `room-${roomId}-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
-      const call = client.call('default', callId);
+      const call = client.call('development', callId);
       outgoingCallRef.current = call;
 
       console.log('[StartCallButton] Creating ring call:', callId, '→ ringing:', otherUserId);
