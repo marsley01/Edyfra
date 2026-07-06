@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import prisma from "@/lib/prisma";
-import { Role } from "@prisma/client";
+import { Role } from "@/generated/client";
 import { isFounderEmail } from "@/utils/admin-guard";
 
 export async function GET(request: NextRequest) {

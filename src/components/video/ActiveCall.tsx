@@ -32,17 +32,17 @@ function VideoGrid() {
   const { useParticipants } = useCallStateHooks();
   const participants = useParticipants();
 
+  const cols = participants.length === 1 ? 'grid-cols-1'
+    : participants.length === 2 ? 'grid-cols-1 sm:grid-cols-2'
+    : participants.length <= 4 ? 'grid-cols-2'
+    : 'grid-cols-2 md:grid-cols-3';
+
   return (
-    <div className={`flex-1 min-h-0 min-w-0 p-2 sm:p-4 grid gap-2 sm:gap-3 place-content-center w-full h-full ${
-      participants.length === 1 ? 'grid-cols-1' :
-      participants.length === 2 ? 'grid-cols-1 sm:grid-cols-2' :
-      participants.length <= 4 ? 'grid-cols-2' :
-      'grid-cols-2 md:grid-cols-3'
-    }`}>
+    <div className={`absolute inset-0 p-2 sm:p-4 grid gap-2 sm:gap-3 ${cols} place-items-stretch auto-rows-fr`}>
       {participants.map((p) => (
         <div
           key={p.sessionId}
-          className={`relative overflow-hidden bg-card rounded-3xl shadow-lg ring-1 transition-all ${
+          className={`relative min-h-0 rounded-3xl overflow-hidden bg-card ring-1 transition-all ${
             p.isSpeaking
               ? 'ring-primary/40 ring-2 shadow-primary/10'
               : 'ring-border/30'
@@ -51,7 +51,7 @@ function VideoGrid() {
           {p.publishedTracks.includes(SfuModels.TrackType.VIDEO) ? (
             <ParticipantView
               participant={p}
-              className="w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover"
             />
           ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-card to-secondary/30">
@@ -217,7 +217,7 @@ export function ActiveCall({
   return (
     <StreamCall call={call}>
       <div className="fixed inset-0 z-[100] flex flex-col bg-neutral-950 overflow-hidden">
-        <div className="flex-1 flex flex-col min-h-0 min-w-0 relative">
+        <div className="relative flex-1 min-h-0">
           <VideoGrid />
 
           <div className="absolute top-6 left-0 right-0 flex items-center justify-center pointer-events-none">
