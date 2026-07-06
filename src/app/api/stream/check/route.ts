@@ -5,13 +5,14 @@ import { NextResponse } from 'next/server';
 // 2. Select your app
 // 3. Go to Video & Audio section
 // 4. Make sure "default" call type exists
-// 5. Enable the following permissions on the "default" call type:
+// 5. Disable "Backstage mode" (under settings) unless you explicitly use it.
+// 6. Enable the following permissions on the "default" call type:
 //    - Send audio: all participants
 //    - Send video: all participants
 //    - Create call: all participants
 //    - Join call: all participants
 //    - End call: all participants
-// 6. Save the configuration
+// 7. Save the configuration
 
 export async function GET() {
   const checks = {
