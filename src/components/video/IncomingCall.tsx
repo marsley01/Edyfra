@@ -60,7 +60,7 @@ export function IncomingCall({ onAccepted }: IncomingCallProps) {
         return;
       }
 
-      const callType = event.call?.type || 'development';
+      const callType = event.call?.type || 'default';
       const callId = event.call?.id;
 
       if (!callId) {
