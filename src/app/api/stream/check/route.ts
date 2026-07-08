@@ -15,17 +15,12 @@ import { NextResponse } from 'next/server';
 // 7. Save the configuration
 
 export async function GET() {
-  const checks = {
-    hasApiKey: !!process.env.NEXT_PUBLIC_STREAM_KEY,
-    hasSecret: !!process.env.STREAM_SECRET,
-    apiKeyLength: process.env.NEXT_PUBLIC_STREAM_KEY?.length,
-    secretLength: process.env.STREAM_SECRET?.length,
-  };
-
-  const allPresent = checks.hasApiKey && checks.hasSecret;
+  const hasApiKey = !!process.env.NEXT_PUBLIC_STREAM_KEY;
+  const hasSecret = !!process.env.STREAM_SECRET;
+  const allPresent = hasApiKey && hasSecret;
 
   return NextResponse.json({
-    status: allPresent ? 'ok' : 'missing_keys',
-    checks,
+    status: allPresent ? "ok" : "missing_keys",
+    configured: allPresent,
   });
 }
