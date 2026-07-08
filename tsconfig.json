@@ -20,7 +20,11 @@
     "plugins": [{ "name": "next" }],
     "paths": {
       "@/*": ["./src/*"],
-      "@generated/*": ["./src/generated/*"]
+      "@generated/*": ["./src/generated/*"],
+      "@agent-preflight/types": ["./src/lib/preflight/types/index.ts"],
+      "@agent-preflight/utils": ["./src/lib/preflight/utils/index.ts"],
+      "@agent-preflight/providers": ["./src/lib/preflight/providers/index.ts"],
+      "@agent-preflight/memory": ["./src/lib/preflight/memory/index.ts"]
     }
   },
   "include": [
