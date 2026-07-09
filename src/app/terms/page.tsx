@@ -1,7 +1,17 @@
-"use client";
+import type { Metadata } from "next";
+import { Scale, UserCheck, AlertTriangle } from "lucide-react";
 
-import { motion } from "framer-motion";
-import { FileText, Scale, UserCheck, AlertTriangle } from "lucide-react";
+export const metadata: Metadata = {
+  title: "Terms of Service",
+  description:
+    "Edyfra's terms of service — the rules that keep our study platform safe, fair, and useful for every student and tutor in Kenya.",
+  robots: { index: true, follow: true },
+  openGraph: {
+    title: "Terms of Service — Edyfra",
+    description:
+      "The rules that keep Edyfra safe, fair, and useful for every student. Read our code of conduct, your responsibilities, and service terms.",
+  },
+};
 
 export default function TermsPage() {
   return (

@@ -1,7 +1,17 @@
-"use client";
+import type { Metadata } from "next";
+import { ShieldCheck, Lock, Eye } from "lucide-react";
 
-import { motion } from "framer-motion";
-import { ShieldCheck, Lock, Eye, FileText } from "lucide-react";
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description:
+    "Edyfra takes your privacy seriously. Learn how we collect, use, and protect your personal data as a student or tutor on our platform.",
+  robots: { index: true, follow: true },
+  openGraph: {
+    title: "Privacy Policy — Edyfra",
+    description:
+      "How Edyfra collects, uses, and protects your personal data. No ads, no trackers, no data brokers.",
+  },
+};
 
 export default function PrivacyPage() {
   return (

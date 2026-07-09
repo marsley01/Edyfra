@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
 import LoginForm from "./login-form";
+
+export const metadata: Metadata = {
+  title: "Sign In",
+  robots: { index: false },
+};
 
 export default function LoginPage() {
   return (

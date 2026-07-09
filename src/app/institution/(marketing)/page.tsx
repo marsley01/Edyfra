@@ -149,12 +149,12 @@ function HeroVideo() {
             </div>
 
             {/* Headline */}
-            <h2 className="text-4xl sm:text-5xl md:text-7xl lg:text-7xl font-black tracking-tight leading-[0.95] text-white">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-7xl font-black tracking-tight leading-[0.95] text-white">
               Bring your school into the{" "}
               <span className="bg-gradient-to-r from-[#818cf8] via-[#6366f1] to-[#3730A3] bg-clip-text text-transparent">
                 future of learning.
               </span>
-            </h2>
+            </h1>
 
             {/* Subtitle */}
             <p className="text-base sm:text-lg md:text-xl text-white/60 font-medium max-w-2xl mx-auto leading-relaxed">

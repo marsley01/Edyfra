@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getApprovedReviews } from "@/app/actions/reviews";
 import { getGlobalStats } from "@/app/actions/user";
 import { unstable_cache } from "next/cache";
@@ -13,6 +14,17 @@ import { MashSpotlight } from "@/components/home/mash-spotlight";
 import { SubjectCoverage } from "@/components/home/subject-coverage";
 import { HomeNewsletter } from "@/components/home/newsletter";
 import { AbstractAnimation } from "@/components/home/abstract-animation";
+
+export const metadata: Metadata = {
+  title: "Kenya's Institutional Study Platform",
+  description:
+    "Connect with verified tutors and elite peers across Kenya. AI-powered matching, live study rooms, and institutional analytics — built for the modern scholar.",
+  openGraph: {
+    title: "Edyfra — Kenya's Institutional Study Platform",
+    description:
+      "AI-powered tutor matching, live study rooms, and institutional analytics for Kenyan scholars. Find your study partner today.",
+  },
+};
 
 // Cache the home page data for 60s — global counters and approved reviews
 // only need to refresh every so often. This drops 4 Prisma count() calls

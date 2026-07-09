@@ -14,6 +14,7 @@ import EddyChatWrapper from "@/components/chat/EddyChatWrapper";
 import { OverlayManagerProvider } from "@/lib/overlay-manager";
 import { ClickFeedback } from "@/components/click-feedback";
 import { MaintenanceGate } from "@/components/maintenance-gate";
+import { JsonLd } from "@/components/json-ld";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -76,6 +77,7 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
   },
   other: {
+    "google-site-verification": "fh14-vbUDl1VxGmLpFqi38BKlZtrWPkw70ir-BYBWRo",
     "geo.region": "KE",
     "geo.placename": "Nairobi",
     "geo.position": "-1.286389;36.817223",
@@ -89,6 +91,42 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
 };
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://edyfra-v2.vercel.app';
+
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Edyfra",
+  url: siteUrl,
+  logo: `${siteUrl}/logo.png`,
+  description:
+    "Kenya's institutional study platform connecting students with verified tutors, AI-powered matching, live study rooms, and institutional analytics.",
+  foundingDate: "2025",
+  areaServed: "KE",
+  contactPoint: {
+    "@type": "ContactPoint",
+    contactType: "support",
+    email: "help@edyfra.com",
+  },
+};
+
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Edyfra",
+  url: siteUrl,
+  description:
+    "Connect with verified tutors and elite peers across Kenya. AI-powered matching, live study rooms, and institutional analytics.",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: {
+      "@type": "EntryPoint",
+      urlTemplate: `${siteUrl}/dashboard/search?q={search_term_string}`,
+    },
+    "query-input": "required name=search_term_string",
+  },
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -97,6 +135,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
+        <JsonLd data={organizationJsonLd} />
+        <JsonLd data={websiteJsonLd} />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
