@@ -280,7 +280,11 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
                     ? session.partnerId
                     : session.studentId
                 }
-                otherUserName={session.partner?.name || "Partner"}
+                otherUserName={
+                  session.studentId === currentUser.id
+                    ? session.partner?.name || "Partner"
+                    : session.student?.name || "Student"
+                }
               />
             </div>
           )}
@@ -292,7 +296,11 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
                 userId={currentUser.id}
                 userName={currentUser.name || "User"}
                 userImage={currentUser.avatar}
-                memberIds={session.partnerId ? [session.partnerId] : []}
+                memberIds={
+                  session.studentId === currentUser.id
+                    ? session.partnerId ? [session.partnerId] : []
+                    : [session.studentId]
+                }
                 channelName={`${session.subject} - ${session.topic || "Study Session"}`}
                 mashAI={{
                   tier: session.tier,

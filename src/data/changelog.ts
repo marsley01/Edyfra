@@ -9,6 +9,17 @@ export type ChangelogEntry = {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: "1.1.1",
+    date: "July 20, 2026",
+    title: "Video Room Fixes",
+    description:
+      "Important updates to the study room to ensure a seamless experience for both students and tutors.",
+    fixes: [
+      "Fixed an issue where tutors could not properly join the chat channel alongside students",
+      "Corrected the display name on the 'Video Call' button for tutors",
+    ],
+  },
+  {
     version: "1.1.0",
     date: "June 24, 2026",
     title: "Admin Overhaul & Tutor KYC",
