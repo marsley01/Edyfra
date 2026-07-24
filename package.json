@@ -42,7 +42,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
-    "dompurify": "^3.4.11",
+    "dompurify": "^3.4.12",
     "framer-motion": "^12.38.0",
     "isomorphic-dompurify": "^3.18.0",
     "lottie-react": "^2.4.1",
