@@ -43,9 +43,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           router.push("/dashboard");
           return;
         }
-        const { checkAdminStatus } = await import("@/app/actions/admin");
-        const isAdmin = await checkAdminStatus();
-        if (!isAdmin) {
+        const role = user.user_metadata?.role;
+        if (role?.toUpperCase() !== "ADMIN") {
           router.push("/dashboard");
           return;
         }
