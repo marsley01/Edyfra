@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/client";
@@ -30,7 +30,8 @@ type AdminSidebarContentProps = {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const supabase = createClient();
+  const supabaseRef = useRef(createClient());
+  const supabase = supabaseRef.current;
   const [adminUser, setAdminUser] = useState<User | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -42,7 +43,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       }
       setAdminUser(user);
     });
-  }, [supabase, router]);
+  }, [router]);
 
   const navItems: NavItem[] = [
     { href: "/admin", label: "Overview", icon: LayoutDashboard },

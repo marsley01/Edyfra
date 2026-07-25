@@ -129,69 +129,74 @@ export async function signup(formData: FormData) {
   }
 
   if (data.user) {
-    const generatedCode = generateReferralCode(name);
     let referredBy: string | null = null;
 
-    if (referralCode) {
-      const referrer = await prisma.user.findUnique({
-        where: { referralCode: referralCode.toUpperCase() },
-      });
-      if (referrer) {
-        referredBy = referrer.id;
+    try {
+      const generatedCode = generateReferralCode(name);
+
+      if (referralCode) {
+        const referrer = await prisma.user.findUnique({
+          where: { referralCode: referralCode.toUpperCase() },
+        });
+        if (referrer) {
+          referredBy = referrer.id;
+        }
       }
-    }
 
-    const allowedGenders = ["MALE", "FEMALE"] as const;
-    const validatedGender = allowedGenders.includes(gender as typeof allowedGenders[number])
-      ? (gender as "MALE" | "FEMALE")
-      : undefined;
+      const allowedGenders = ["MALE", "FEMALE"] as const;
+      const validatedGender = allowedGenders.includes(gender as typeof allowedGenders[number])
+        ? (gender as "MALE" | "FEMALE")
+        : undefined;
 
-    await prisma.user.upsert({
-      where: { id: data.user.id },
-      update: {
-        referralCode: generatedCode,
-        referredBy,
-        name,
-        email,
-        gender: validatedGender,
-        avatar: avatarUrl,
-      },
-      create: {
-        id: data.user.id,
-        email,
-        name,
-        role: "STUDENT",
-        gender: validatedGender,
-        county: "Nairobi",
-        educationLevel: "HIGH_SCHOOL",
-        referralCode: generatedCode,
-        referredBy,
-        avatar: avatarUrl,
-        points: 0,
-        lastActiveAt: new Date(),
-      },
-    });
-
-    if (referredBy) {
-      await prisma.referral.create({
-        data: {
-          referrerId: referredBy,
-          referredId: data.user.id,
-          codeUsed: referralCode!.toUpperCase(),
+      await prisma.user.upsert({
+        where: { id: data.user.id },
+        update: {
+          referralCode: generatedCode,
+          referredBy,
+          name,
+          email,
+          gender: validatedGender,
+          avatar: avatarUrl,
+        },
+        create: {
+          id: data.user.id,
+          email,
+          name,
+          role: "STUDENT",
+          gender: validatedGender,
+          county: "Nairobi",
+          educationLevel: "HIGH_SCHOOL",
+          referralCode: generatedCode,
+          referredBy,
+          avatar: avatarUrl,
+          points: 0,
+          lastActiveAt: new Date(),
         },
       });
 
-      await prisma.user.update({
-        where: { id: data.user.id },
-        data: { points: { increment: 50 } },
-      });
+      if (referredBy) {
+        await prisma.referral.create({
+          data: {
+            referrerId: referredBy,
+            referredId: data.user.id,
+            codeUsed: referralCode!.toUpperCase(),
+          },
+        });
 
-      await notifyUser(data.user.id, {
-        type: "REFERRAL_BONUS",
-        title: "Welcome! You got 50 bonus XP!",
-        body: "You were referred by a friend! Enjoy 50 bonus XP to get started.",
-        actionUrl: "/dashboard",
-      });
+        await prisma.user.update({
+          where: { id: data.user.id },
+          data: { points: { increment: 50 } },
+        });
+
+        await notifyUser(data.user.id, {
+          type: "REFERRAL_BONUS",
+          title: "Welcome! You got 50 bonus XP!",
+          body: "You were referred by a friend! Enjoy 50 bonus XP to get started.",
+          actionUrl: "/dashboard",
+        });
+      }
+    } catch (dbErr) {
+      log("error", "Failed to create user profile in database", { error: dbErr instanceof Error ? dbErr.message : String(dbErr) });
     }
 
     try {
