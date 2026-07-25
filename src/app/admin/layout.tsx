@@ -21,7 +21,7 @@ type NavItem = {
 type AdminSidebarContentProps = {
   pathname: string;
   navItems: NavItem[];
-  adminUser: User;
+  adminUser: User | null;
   supabase: ReturnType<typeof createClient>;
   router: ReturnType<typeof useRouter>;
   onClose?: () => void;
@@ -31,55 +31,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const pathname = usePathname();
   const supabase = createClient();
-  const [loading, setLoading] = useState(true);
   const [adminUser, setAdminUser] = useState<User | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const checkAdmin = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          router.push("/dashboard");
-          return;
-        }
-        const role = user.user_metadata?.role;
-        if (role?.toUpperCase() !== "ADMIN") {
-          router.push("/dashboard");
-          return;
-        }
-        setAdminUser(user);
-      } catch {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user || user.user_metadata?.role?.toUpperCase() !== "ADMIN") {
         router.push("/dashboard");
-      } finally {
-        setLoading(false);
+        return;
       }
-    };
-    checkAdmin();
+      setAdminUser(user);
+    });
   }, [supabase, router]);
-
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [pathname]);
-
-  useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => { document.body.style.overflow = "unset"; };
-  }, [isMobileMenuOpen]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (!adminUser) return null;
 
   const navItems: NavItem[] = [
     { href: "/admin", label: "Overview", icon: LayoutDashboard },
