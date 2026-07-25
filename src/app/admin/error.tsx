@@ -1,55 +1,27 @@
 "use client";
 
-import { useEffect } from "react";
-
-export default function AdminError({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string }
-  reset: () => void
-}) {
-  useEffect(() => {
-    console.error("[Admin Dashboard Error]", error);
-  }, [error]);
-
+export default function AdminError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center p-6">
-      <div className="max-w-md w-full space-y-6 text-center">
-        <div className="w-20 h-20 rounded-full bg-destructive/10 border border-destructive/20 flex items-center justify-center mx-auto">
-          <svg className="w-10 h-10 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
+    <div className="min-h-screen bg-[#050505] flex items-center justify-center p-8">
+      <div className="max-w-lg w-full space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
+          <span className="text-[10px] font-black text-red-400 uppercase tracking-[0.3em]">Admin Panel Error</span>
         </div>
-        <div className="space-y-2">
-          <h2 className="text-2xl font-black tracking-tighter text-white">System Malfunction</h2>
-          <p className="text-muted-foreground text-sm font-medium">
-            An unexpected error occurred in the Admin Dashboard.
-          </p>
-          {process.env.NODE_ENV === "development" && (
-            <pre className="mt-4 p-4 bg-white/5 rounded-xl text-left text-xs text-muted-foreground overflow-auto border border-white/5 max-h-48">
-              {error.message}
-              {error.digest && `\n\nDigest: ${error.digest}`}
-            </pre>
-          )}
-        </div>
-        <button
-          onClick={() => reset()}
-          className="w-full h-12 rounded-2xl bg-primary text-white font-bold tracking-widest uppercase text-xs shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
-        >
-          Reinitialize System
-        </button>
-        <a
-          href="/dashboard"
-          className="block w-full h-12 rounded-2xl bg-white/5 text-white/60 hover:text-white font-bold tracking-widest uppercase text-xs border border-white/5 hover:border-white/10 transition-all flex items-center justify-center"
-        >
-          Go to Dashboard
-        </a>
-        <p className="text-[10px] text-muted-foreground/60 font-black uppercase tracking-widest">
-          If the problem persists, check server logs or database connectivity.
+        <h1 className="text-3xl font-black text-white tracking-tight">Something broke</h1>
+        <p className="text-sm text-white/40 font-mono break-all leading-relaxed">
+          {error.message || "An unexpected error occurred while rendering the admin dashboard."}
         </p>
+        {error.digest && (
+          <p className="text-[10px] text-white/20 font-mono">Error ID: {error.digest}</p>
+        )}
+        <button
+          onClick={reset}
+          className="px-6 py-3 bg-white/10 hover:bg-white/15 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-colors"
+        >
+          Try Again
+        </button>
       </div>
     </div>
   );
 }
-
