@@ -50,8 +50,6 @@ export async function updateSession(request: NextRequest) {
   const isInstitutionPortalRoute =
     request.nextUrl.pathname === '/institution/dashboard' ||
     request.nextUrl.pathname.startsWith('/institution/dashboard/') ||
-    request.nextUrl.pathname === '/institution/login' ||
-    request.nextUrl.pathname === '/institution/signup' ||
     request.nextUrl.pathname === '/institution/accept' ||
     request.nextUrl.pathname === '/institution/pending' ||
     request.nextUrl.pathname.startsWith('/institution/accept/') ||
