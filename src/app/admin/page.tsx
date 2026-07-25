@@ -16,17 +16,44 @@ export default async function AdminDashboard() {
   }
 
   const isFounder = isFounderEmail(user.email);
+
+  if (!user.email) {
+    redirect("/login");
+  }
+
   let prismaUser: { role: string } | null = null;
+  let isDbAdmin = false;
+
   try {
     prismaUser = await prisma.user.findUnique({
       where: { id: user.id },
       select: { role: true },
     });
+    if (prismaUser) {
+      isDbAdmin = prismaUser.role === Role.ADMIN;
+    }
   } catch (err) {
     console.error("[Admin] Failed to fetch user role:", err);
   }
 
-  const isDbAdmin = prismaUser?.role === Role.ADMIN;
+  // If authenticated in Auth but missing from Prisma, create the record
+  if (!prismaUser) {
+    try {
+      await prisma.user.create({
+        data: {
+          id: user.id,
+          email: user.email,
+          name: user.user_metadata?.name || user.email.split("@")[0] || "Admin User",
+          role: Role.ADMIN,
+          county: "Nairobi",
+        },
+      });
+      isDbAdmin = true;
+    } catch (createErr) {
+      console.error("[Admin] Failed to create admin user:", createErr);
+      redirect("/dashboard");
+    }
+  }
 
   if (!isFounder && !isDbAdmin) {
     redirect("/dashboard");

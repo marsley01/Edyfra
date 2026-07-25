@@ -26,6 +26,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid auth key" }, { status: 400 });
     }
 
+    // Ensure the user exists in Prisma before upserting
+    const existingUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { id: true },
+    });
+
+    if (!existingUser) {
+      // User is authenticated in Supabase Auth but has no Prisma record yet.
+      // Create a minimal one to prevent foreign key violations.
+      await prisma.user.create({
+        data: {
+          id: user.id,
+          email: user.email || "unknown@edyfra.app",
+          name: user.user_metadata?.name || user.email?.split("@")[0] || "User",
+          role: "STUDENT",
+          county: "Nairobi",
+        },
+      });
+    }
+
     await prisma.pushSubscription.upsert({
       where: { endpoint },
       create: {
@@ -44,6 +64,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Push subscribe error:", error);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    // Return 200 even on failure — push subscriptions are best-effort
+    return NextResponse.json({ error: "Internal error" }, { status: 200 });
   }
 }
