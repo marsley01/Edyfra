@@ -11,10 +11,10 @@ import SessionReviewModal from "@/components/sessions/SessionReviewModal";
 import { Z } from "@/lib/layers";
 import { motion, AnimatePresence } from "framer-motion";
 import { VideoProvider } from "@/components/video/VideoProvider";
+import { useVideoContext } from "@/components/video/VideoProvider";
 import { StartCallButton } from "@/components/video/StartCallButton";
 import { IncomingCall } from "@/components/video/IncomingCall";
 import { ActiveCall } from "@/components/video/ActiveCall";
-import type { Call } from "@stream-io/video-react-sdk";
 
 const StreamChatRoom = dynamic(
   () => import("@/components/stream/StreamChatRoom"),
@@ -48,6 +48,10 @@ export interface StudyRoomInitialData {
 
 function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) {
   const router = useRouter();
+  // Use the shared VideoContext activeCall so that when StartCallButton calls
+  // setActiveCall (via the context) after the receiver accepts, the caller
+  // also transitions into the ActiveCall view.
+  const { activeCall, setActiveCall } = useVideoContext();
 
   const [session, setSession] = useState<StudyRoomSession>(initialData.session);
   const [showReview, setShowReview] = useState(false);
@@ -55,7 +59,6 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
   const [converting, setConverting] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [sessionDuration, setSessionDuration] = useState(0);
-  const [activeCall, setActiveCall] = useState<Call | null>(null);
   const currentUser = initialData.currentUser;
   const sessionId = initialData.sessionId;
 
