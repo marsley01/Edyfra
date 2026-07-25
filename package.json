@@ -86,6 +86,7 @@
     "@types/web-push": "^3.6.4",
     "eslint": "^9",
     "eslint-config-next": "^16.2.10",
+    "pg": "^8.22.0",
     "prettier": "^3.4.2",
     "prisma": "^6.19.3",
     "tailwindcss": "^4",

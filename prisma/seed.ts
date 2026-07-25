@@ -1,4 +1,4 @@
-import { PrismaClient, Role, EduLevel, Tier, VerifPath, MatchTier, SessionStatus, PayStatus, AppStatus } from '@prisma/client';
+import { PrismaClient, Role, EduLevel, Tier, VerifPath, MatchTier, SessionStatus, PayStatus, AppStatus } from '../src/generated/client';
 
 const prisma = new PrismaClient();
 
