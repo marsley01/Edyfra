@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowRight, Loader2, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Loader2, AlertCircle, Eye, EyeOff, Chrome } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
@@ -77,6 +77,9 @@ export default function LoginForm() {
     if (authError) setError(describeLoginError(authError));
   }, [searchParams]);
 
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [firebaseLoading, setFirebaseLoading] = useState(false);
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
@@ -90,12 +93,60 @@ export default function LoginForm() {
         setLoading(false);
         return;
       }
-      // Login succeeded — hard-navigate so the server picks up the fresh
-      // auth cookie immediately (router.push would keep the stale page).
       window.location.href = result?.redirectTo || "/dashboard";
     } catch (err: any) {
       setError(describeLoginError(err?.message || ""));
       setLoading(false);
+    }
+  }
+
+  async function handleGoogleSignIn() {
+    setGoogleLoading(true);
+    setError(null);
+    try {
+      const { signInWithPopup, GoogleAuthProvider } = await import("firebase/auth");
+      const { getFirebaseAuth } = await import("@/lib/firebase");
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
+      const result = await signInWithPopup(getFirebaseAuth(), provider);
+      const idToken = await result.user.getIdToken();
+
+      const resp = await fetch("/api/firebase/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "login", idToken }),
+      });
+      const data = await resp.json();
+      if (data.success) {
+        window.location.href = "/onboarding";
+      } else {
+        setError(describeLoginError(data.error || "Google sign-in failed"));
+      }
+    } catch (err: any) {
+      if (err.code !== "auth/popup-closed-by-user") {
+        setError(describeLoginError(err.message || "Google sign-in failed"));
+      }
+    } finally {
+      setGoogleLoading(false);
+    }
+  }
+
+  async function handleFirebaseReset() {
+    setFirebaseLoading(true);
+    try {
+      const { sendPasswordResetEmail } = await import("firebase/auth");
+      const { getFirebaseAuth } = await import("@/lib/firebase");
+      const email = (document.querySelector('input[name="email"]') as HTMLInputElement)?.value;
+      if (!email) {
+        setError({ title: "Enter your email first", cause: "We need your email to send the reset link.", fix: "Type your email above, then try again." });
+        return;
+      }
+      await sendPasswordResetEmail(getFirebaseAuth(), email);
+      alert("Password reset link sent to " + email);
+    } catch (err: any) {
+      setError(describeLoginError(err.message || "Failed to send reset email"));
+    } finally {
+      setFirebaseLoading(false);
     }
   }
 
@@ -176,10 +227,18 @@ export default function LoginForm() {
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex items-center justify-between">
             <Link href="/forgot-password" className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors">
               Forgot password?
             </Link>
+            <button
+              type="button"
+              onClick={handleFirebaseReset}
+              disabled={firebaseLoading}
+              className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors"
+            >
+              {firebaseLoading ? "Sending..." : "Reset via Firebase"}
+            </button>
           </div>
 
           <Button
@@ -192,6 +251,29 @@ export default function LoginForm() {
             )}
           </Button>
         </form>
+
+        {/* Divider */}
+        <div className="flex items-center gap-4">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">or</span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+
+        {/* Google Sign-In */}
+        <Button
+          type="button"
+          onClick={handleGoogleSignIn}
+          disabled={googleLoading}
+          variant="outline"
+          className="w-full h-14 rounded-full border-2 font-black text-xs tracking-widest uppercase flex items-center justify-center gap-3"
+        >
+          {googleLoading ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <Chrome className="h-5 w-5" />
+          )}
+          {googleLoading ? "Signing in..." : "Continue with Google"}
+        </Button>
 
         {/* Footer */}
         <p className="text-center text-sm font-medium text-muted-foreground">

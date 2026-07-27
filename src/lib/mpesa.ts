@@ -1,3 +1,4 @@
+import "server-only";
 import axios, { AxiosError } from "axios";
 
 function getMpesaConfig() {

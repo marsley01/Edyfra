@@ -14,7 +14,7 @@ import Link from "next/link";
 export default function AuthCallbackHandle() {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") || "/dashboard";
+  const next = params.get("next") || "/onboarding";
   const [status, setStatus] = useState<"working" | "error">("working");
   const [errorMsg, setErrorMsg] = useState("");
 
