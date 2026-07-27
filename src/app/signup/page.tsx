@@ -66,26 +66,35 @@ async function signupWithFirebase(data: {
   email: string; password: string; name: string; gender?: string;
   avatar?: string; avatarUrl?: string; referral_code?: string;
 }): Promise<{ success: boolean; error?: string; redirectTo?: string }> {
-  const { createUserWithEmailAndPassword } = await import("firebase/auth");
-  const { getFirebaseAuth } = await import("@/lib/firebase");
-  const cred = await createUserWithEmailAndPassword(getFirebaseAuth(), data.email, data.password);
-  const idToken = await cred.user.getIdToken();
+  try {
+    const { createUserWithEmailAndPassword } = await import("firebase/auth");
+    const { getFirebaseAuth } = await import("@/lib/firebase");
+    const cred = await createUserWithEmailAndPassword(getFirebaseAuth(), data.email, data.password);
+    const idToken = await cred.user.getIdToken();
 
-  const resp = await fetch("/api/firebase/auth", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      action: "signup",
-      idToken,
-      name: data.name,
-      gender: data.gender,
-      avatar: data.avatar || data.avatarUrl,
-      referral_code: data.referral_code,
-    }),
-  });
-  const result = await resp.json();
-  if (result.success) return { success: true, redirectTo: "/onboarding" };
-  return { success: false, error: result.error || "Signup failed" };
+    const resp = await fetch("/api/firebase/auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "signup",
+        idToken,
+        name: data.name,
+        gender: data.gender,
+        avatar: data.avatar || data.avatarUrl,
+        referral_code: data.referral_code,
+      }),
+    });
+
+    const text = await resp.text();
+    let result: any;
+    try { result = JSON.parse(text); } catch { return { success: false, error: "Our server had a hiccup. Please try again." }; }
+    if (!resp.ok) return { success: false, error: result.error || "Signup failed" };
+    if (result.success) return { success: true, redirectTo: "/onboarding" };
+    return { success: false, error: result.error || "Signup failed" };
+  } catch (err: any) {
+    if (err?.code === "auth/email-already-in-use") return { success: false, error: "email-already-in-use" };
+    return { success: false, error: err?.message || "Something went wrong. Please try again." };
+  }
 }
 
 export default function SignupPage() {

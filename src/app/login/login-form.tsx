@@ -75,14 +75,22 @@ function describeLoginError(raw: string): FriendlyError {
 }
 
 async function exchangeFirebaseToken(idToken: string): Promise<{ success: boolean; error?: string; redirectTo?: string }> {
-  const resp = await fetch("/api/firebase/auth", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "login", idToken }),
-  });
-  const data = await resp.json();
-  if (data.success) return { success: true, redirectTo: data.isNew ? "/onboarding" : "/dashboard" };
-  return { success: false, error: data.error || "Firebase auth failed" };
+  try {
+    const resp = await fetch("/api/firebase/auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "login", idToken }),
+    });
+
+    const text = await resp.text();
+    let data: any;
+    try { data = JSON.parse(text); } catch { return { success: false, error: "Our server had a hiccup. Please try again." }; }
+    if (!resp.ok) return { success: false, error: data.error || "Login failed" };
+    if (data.success) return { success: true, redirectTo: data.isNew ? "/onboarding" : "/dashboard" };
+    return { success: false, error: data.error || "Login failed" };
+  } catch {
+    return { success: false, error: "Something went wrong. Please try again." };
+  }
 }
 
 export default function LoginForm() {

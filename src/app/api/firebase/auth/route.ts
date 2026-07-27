@@ -161,9 +161,12 @@ export async function POST(req: NextRequest) {
         const existingPrismaUser = await prisma.user.findUnique({ where: { email } });
 
         if (existingPrismaUser) {
+          if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+            return NextResponse.json({ error: "Server config error: missing service role key" }, { status: 500 });
+          }
           const sbAdmin = createAdminClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY,
             { auth: { autoRefreshToken: false, persistSession: false } }
           );
           const { error: updateError } = await sbAdmin.auth.admin.updateUserById(
@@ -228,9 +231,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (error: any) {
     console.error("[Firebase Auth] Error:", error);
-    return NextResponse.json(
-      { error: error.message || "Firebase auth failed" },
-      { status: 500 },
-    );
+    const message = typeof error?.message === "string" ? error.message : "An unexpected error occurred. Please try again.";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
