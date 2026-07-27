@@ -51,11 +51,32 @@ function describeLoginError(raw: string): FriendlyError {
       fix: "Check the spelling, or create a new account.",
     };
   }
-  if (lower.includes("network") || lower.includes("failed to fetch")) {
+  if (lower.includes("network") || lower.includes("failed to fetch") || lower.includes("network_error")) {
     return {
       title: "We couldn't reach our servers",
       cause: "Your connection dropped or our auth service is busy.",
       fix: "Check your internet and try again in a moment.",
+    };
+  }
+  if (lower.includes("auth/internal-error") || lower.includes("internal-error")) {
+    return {
+      title: "Firebase sign-in isn't ready yet",
+      cause: "Google sign-in is not fully configured for this domain.",
+      fix: "Use email & password above, or contact support to enable Google sign-in.",
+    };
+  }
+  if (lower.includes("auth/popup-blocked") || lower.includes("popup")) {
+    return {
+      title: "Popup was blocked",
+      cause: "Your browser blocked the Google sign-in popup.",
+      fix: "Allow popups for this site or try a different browser.",
+    };
+  }
+  if (lower.includes("auth/unauthorized-domain") || lower.includes("unauthorized")) {
+    return {
+      title: "This domain isn't authorized",
+      cause: "Google sign-in isn't allowed on this domain yet.",
+      fix: "Use email & password, or ask the admin to add this domain in Firebase.",
     };
   }
   return {
@@ -124,7 +145,7 @@ export default function LoginForm() {
       }
     } catch (err: any) {
       if (err.code !== "auth/popup-closed-by-user") {
-        setError(describeLoginError(err.message || "Google sign-in failed"));
+        setError(describeLoginError(err.code || err.message || "Google sign-in failed"));
       }
     } finally {
       setGoogleLoading(false);
@@ -144,7 +165,7 @@ export default function LoginForm() {
       await sendPasswordResetEmail(getFirebaseAuth(), email);
       alert("Password reset link sent to " + email);
     } catch (err: any) {
-      setError(describeLoginError(err.message || "Failed to send reset email"));
+      setError(describeLoginError(err.code || err.message || "Failed to send reset email"));
     } finally {
       setFirebaseLoading(false);
     }

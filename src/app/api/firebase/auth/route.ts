@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { getFirebaseAuth } from "@/lib/firebase";
 import { verifyFirebaseToken } from "@/lib/firebase-admin";
 import { createClient } from "@/utils/supabase/server";
 import prisma from "@/lib/prisma";
@@ -9,21 +7,7 @@ import { generateReferralCode } from "@/utils/referral";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { action, email, password, displayName, idToken } = body;
-
-    if (action === "signup") {
-      const firebaseAuth = getFirebaseAuth();
-      const cred = await createUserWithEmailAndPassword(firebaseAuth, email, password);
-      const supabase = await createClient();
-      const { data: sbUser, error: sbError } = await supabase.auth.signUp({
-        email, password,
-        options: {
-          data: { name: displayName || email.split("@")[0], role: "STUDENT", firebaseUid: cred.user.uid },
-        },
-      });
-      if (sbError) throw sbError;
-      return NextResponse.json({ success: true, firebaseUid: cred.user.uid, userId: sbUser.user?.id });
-    }
+    const { action, idToken } = body;
 
     if (action === "login" && idToken) {
       const decoded = await verifyFirebaseToken(idToken);
@@ -32,28 +16,33 @@ export async function POST(req: NextRequest) {
       }
 
       const supabase = await createClient();
-
       const { data: { user: sbUser } } = await supabase.auth.getUser();
+
       if (!sbUser) {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: decoded.email!,
-          password: idToken.slice(-20),
+        const { data, error } = await supabase.auth.signInWithIdToken({
+          provider: "firebase",
+          token: idToken,
         });
-        if (error) {
-          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+
+        if (error || !data.user) {
+          const { data: pwData, error: pwError } = await supabase.auth.signUp({
             email: decoded.email!,
             password: idToken.slice(-20),
             options: {
-              data: { name: decoded.name || decoded.email!.split("@")[0], role: "STUDENT", firebaseUid: decoded.uid },
+              data: {
+                name: decoded.name || decoded.email!.split("@")[0],
+                role: "STUDENT",
+                firebaseUid: decoded.uid,
+              },
             },
           });
-          if (signUpError) throw signUpError;
+          if (pwError) throw pwError;
 
           await prisma.user.upsert({
-            where: { id: signUpData.user!.id },
+            where: { id: pwData.user!.id },
             update: {},
             create: {
-              id: signUpData.user!.id,
+              id: pwData.user!.id,
               email: decoded.email!,
               name: decoded.name || decoded.email!.split("@")[0],
               role: "STUDENT",
@@ -63,26 +52,18 @@ export async function POST(req: NextRequest) {
             },
           });
 
-          return NextResponse.json({ success: true, user: signUpData.user, session: signUpData.session, isNew: true });
+          return NextResponse.json({
+            success: true,
+            user: pwData.user,
+            session: pwData.session,
+            isNew: true,
+          });
         }
+
         return NextResponse.json({ success: true, user: data.user, session: data.session });
       }
 
       return NextResponse.json({ success: true });
-    }
-
-    if (action === "login" && email && password) {
-      const firebaseAuth = getFirebaseAuth();
-      const cred = await signInWithEmailAndPassword(firebaseAuth, email, password);
-      const token = await cred.user.getIdToken();
-      const supabase = await createClient();
-      const { data, error } = await supabase.auth.signInWithIdToken({ provider: "firebase", token });
-      if (error) {
-        const { data: pwData, error: pwError } = await supabase.auth.signInWithPassword({ email, password });
-        if (pwError) throw pwError;
-        return NextResponse.json({ success: true, user: pwData.user, session: pwData.session });
-      }
-      return NextResponse.json({ success: true, user: data.user, session: data.session });
     }
 
     return NextResponse.json({ error: "Invalid action or missing fields" }, { status: 400 });
