@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyFirebaseToken } from "@/lib/firebase-admin";
 import { createClient } from "@/utils/supabase/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 import prisma from "@/lib/prisma";
 import { generateReferralCode } from "@/utils/referral";
 import { log } from "@/lib/logger";
@@ -157,6 +158,28 @@ export async function POST(req: NextRequest) {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
       if (error) {
+        const existingPrismaUser = await prisma.user.findUnique({ where: { email } });
+
+        if (existingPrismaUser) {
+          const sbAdmin = createAdminClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!,
+            { auth: { autoRefreshToken: false, persistSession: false } }
+          );
+          const { error: updateError } = await sbAdmin.auth.admin.updateUserById(
+            existingPrismaUser.id,
+            { password }
+          );
+          if (updateError) throw updateError;
+
+          const { data: pwData, error: pwError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+          if (pwError) throw pwError;
+          return NextResponse.json({ success: true, session: pwData.session });
+        }
+
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,

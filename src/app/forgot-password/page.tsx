@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,7 +17,6 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [emailError, setEmailError] = useState("");
-  const supabase = createClient();
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,28 +33,25 @@ export default function ForgotPasswordPage() {
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
-      });
-
-      if (error) throw error;
+      const { sendPasswordResetEmail } = await import("firebase/auth");
+      const { getFirebaseAuth } = await import("@/lib/firebase");
+      await sendPasswordResetEmail(getFirebaseAuth(), email.trim());
       setSubmitted(true);
       showSuccess("Reset link sent", {
         description: "Open it from your inbox within the next 60 minutes.",
       });
     } catch (err: any) {
+      const code = err?.code || "";
       const msg = (err?.message || "").toLowerCase();
-      if (msg.includes("rate") || msg.includes("too many")) {
+      if (code === "auth/user-not-found") {
+        setSubmitted(true);
+      } else if (msg.includes("rate") || msg.includes("too many")) {
         showError({
           title: "Whoa — too many requests",
           cause: "You've asked for several reset links in a row.",
           fix: "Wait about a minute and try again — and check spam if you haven't got the previous email.",
           raw: err,
         });
-      } else if (msg.includes("not found") || msg.includes("no user")) {
-        // Supabase intentionally hides "no user" to avoid leaking account existence —
-        // but show the user the same friendly note either way.
-        setSubmitted(true);
       } else {
         showError({
           title: "We couldn't send the reset link",
