@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import Image from "next/image";
-import { signup } from "@/app/actions/auth";
 
 import { showSuccess } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -21,21 +20,21 @@ interface FriendlyError {
 
 function describeSignupError(raw: string): FriendlyError {
   const lower = raw.toLowerCase();
-  if (lower.includes("already registered") || lower.includes("already exists") || lower.includes("duplicate")) {
+  if (lower.includes("email-already-in-use") || lower.includes("already registered") || lower.includes("already exists")) {
     return {
       title: "You already have an account",
       cause: "That email is already signed up with Edyfra.",
       fix: "Head to Login and use that email, or reset your password if you've forgotten it.",
     };
   }
-  if (lower.includes("password") && (lower.includes("weak") || lower.includes("short") || lower.includes("characters"))) {
+  if (lower.includes("weak-password") || (lower.includes("password") && (lower.includes("short") || lower.includes("characters")))) {
     return {
       title: "Your password needs more muscle",
       cause: "It's too short or too easy to guess.",
-      fix: "Use at least 8 characters with a mix of letters and numbers.",
+      fix: "Use at least 6 characters with a mix of letters and numbers.",
     };
   }
-  if (lower.includes("invalid") && lower.includes("email")) {
+  if (lower.includes("invalid-email")) {
     return {
       title: "That email doesn't look right",
       cause: "We can't tell where to send your confirmation link.",
@@ -49,7 +48,7 @@ function describeSignupError(raw: string): FriendlyError {
       fix: "Check your internet and try again in a moment.",
     };
   }
-  if (lower.includes("rate") || lower.includes("too many")) {
+  if (lower.includes("rate") || lower.includes("too-many-requests")) {
     return {
       title: "A few too many tries",
       cause: "You've made several signup attempts in a short window.",
@@ -61,6 +60,32 @@ function describeSignupError(raw: string): FriendlyError {
     cause: raw || "Something went wrong on our side.",
     fix: "Give it another go. If it keeps failing, ping us via the Contact page.",
   };
+}
+
+async function signupWithFirebase(data: {
+  email: string; password: string; name: string; gender?: string;
+  avatar?: string; avatarUrl?: string; referral_code?: string;
+}): Promise<{ success: boolean; error?: string; redirectTo?: string }> {
+  const { createUserWithEmailAndPassword } = await import("firebase/auth");
+  const { getFirebaseAuth } = await import("@/lib/firebase");
+  const cred = await createUserWithEmailAndPassword(getFirebaseAuth(), data.email, data.password);
+  const idToken = await cred.user.getIdToken();
+
+  const resp = await fetch("/api/firebase/auth", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "signup",
+      idToken,
+      name: data.name,
+      gender: data.gender,
+      avatar: data.avatar || data.avatarUrl,
+      referral_code: data.referral_code,
+    }),
+  });
+  const result = await resp.json();
+  if (result.success) return { success: true, redirectTo: "/onboarding" };
+  return { success: false, error: result.error || "Signup failed" };
 }
 
 export default function SignupPage() {
@@ -142,44 +167,33 @@ export default function SignupPage() {
 
   async function handleSubmit(e?: React.FormEvent, skipAvatar = false) {
     if (e) e.preventDefault();
-    if (step < 3) return; // Prevent premature submission
+    if (step < 3) return;
 
     setLoading(true);
     setError(null);
 
-    const formData = new FormData();
-    formData.set("name", name);
-    formData.set("email", email);
-    formData.set("password", password);
-    formData.set("gender", gender);
-    if (referralCode) formData.set("referral_code", referralCode);
-    
-    // Only append avatar data if not skipped and selected
-    if (!skipAvatar && avatarStyle) {
-      formData.set("avatar", avatarStyle);
-      if (avatarUrl) formData.set("avatarUrl", avatarUrl);
-    }
-
     try {
-      const result = await signup(formData);
+      const result = await signupWithFirebase({
+        email,
+        password,
+        name,
+        gender,
+        avatar: skipAvatar ? undefined : (avatarStyle || undefined),
+        avatarUrl: skipAvatar ? undefined : (avatarUrl || undefined),
+        referral_code: referralCode || undefined,
+      });
 
-      if (result?.error) {
+      if (result.error) {
         setError(describeSignupError(result.error));
         setLoading(false);
-      } else if (result?.success && result.message) {
-        showSuccess("Account created!", {
-          description: result.message,
-        });
-        setLoading(false);
-      } else if (result?.redirectTo) {
-        // Auto-confirm path: Supabase returned a session, navigate now.
-        window.location.href = result.redirectTo;
       } else {
-        // Fallback: account created, send them through onboarding.
-        window.location.href = "/onboarding";
+        showSuccess("Account created!", {
+          description: "Welcome to Edyfra!",
+        });
+        window.location.href = result.redirectTo || "/onboarding";
       }
     } catch (err: any) {
-      setError(describeSignupError(err?.message || ""));
+      setError(describeSignupError(err.code || err.message || ""));
       setLoading(false);
     }
   }

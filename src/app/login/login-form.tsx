@@ -3,12 +3,11 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowRight, Loader2, AlertCircle, Eye, EyeOff, Chrome } from "lucide-react";
+import { ArrowRight, Loader2, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import Image from "next/image";
-import { login } from "@/app/actions/auth";
 
 interface FriendlyError {
   title: string;
@@ -16,39 +15,28 @@ interface FriendlyError {
   fix: string;
 }
 
-/**
- * Translate Supabase / generic login errors into the
- * { title, cause, fix } shape we show on the page.
- */
 function describeLoginError(raw: string): FriendlyError {
   const lower = raw.toLowerCase();
 
-  if (lower.includes("invalid login credentials") || lower.includes("invalid_credentials")) {
+  if (lower.includes("invalid-credential") || lower.includes("wrong-password") || lower.includes("user-not-found")) {
     return {
       title: "That login didn't work",
       cause: "The email and password don't match what we have on file.",
       fix: "Double-check the spelling, or reset your password if you've forgotten it.",
     };
   }
-  if (lower.includes("email not confirmed") || lower.includes("not confirmed")) {
-    return {
-      title: "Confirm your email first",
-      cause: "We sent a confirmation link to your inbox right after signup.",
-      fix: "Open that email and tap the link, then come back here to sign in.",
-    };
-  }
-  if (lower.includes("too many requests") || lower.includes("rate limit")) {
+  if (lower.includes("too-many-requests") || lower.includes("rate limit")) {
     return {
       title: "Too many attempts in a row",
       cause: "You've tried to sign in many times in a short window.",
       fix: "Wait about a minute, then try again.",
     };
   }
-  if (lower.includes("user not found") || lower.includes("no user")) {
+  if (lower.includes("invalid-email")) {
     return {
-      title: "We don't have that account",
-      cause: "No Edyfra account is registered with that email.",
-      fix: "Check the spelling, or create a new account.",
+      title: "That email doesn't look right",
+      cause: "The email format isn't valid.",
+      fix: "Double-check for typos and try again.",
     };
   }
   if (lower.includes("network") || lower.includes("failed to fetch") || lower.includes("network_error")) {
@@ -58,21 +46,21 @@ function describeLoginError(raw: string): FriendlyError {
       fix: "Check your internet and try again in a moment.",
     };
   }
-  if (lower.includes("auth/internal-error") || lower.includes("internal-error")) {
+  if (lower.includes("internal-error") || lower.includes("auth/internal-error")) {
     return {
       title: "Firebase sign-in isn't ready yet",
       cause: "Google sign-in is not fully configured for this domain.",
       fix: "Use email & password above, or contact support to enable Google sign-in.",
     };
   }
-  if (lower.includes("auth/popup-blocked") || lower.includes("popup")) {
+  if (lower.includes("popup")) {
     return {
       title: "Popup was blocked",
       cause: "Your browser blocked the Google sign-in popup.",
       fix: "Allow popups for this site or try a different browser.",
     };
   }
-  if (lower.includes("auth/unauthorized-domain") || lower.includes("unauthorized")) {
+  if (lower.includes("unauthorized") || lower.includes("unauthorized-domain")) {
     return {
       title: "This domain isn't authorized",
       cause: "Google sign-in isn't allowed on this domain yet.",
@@ -86,20 +74,29 @@ function describeLoginError(raw: string): FriendlyError {
   };
 }
 
+async function exchangeFirebaseToken(idToken: string): Promise<{ success: boolean; error?: string; redirectTo?: string }> {
+  const resp = await fetch("/api/firebase/auth", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "login", idToken }),
+  });
+  const data = await resp.json();
+  if (data.success) return { success: true, redirectTo: data.isNew ? "/onboarding" : "/dashboard" };
+  return { success: false, error: data.error || "Firebase auth failed" };
+}
+
 export default function LoginForm() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<FriendlyError | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Surface ?auth_error= from the auth/callback redirect.
   useEffect(() => {
     const authError = searchParams.get("auth_error");
     if (authError) setError(describeLoginError(authError));
   }, [searchParams]);
 
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [firebaseLoading, setFirebaseLoading] = useState(false);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -107,23 +104,31 @@ export default function LoginForm() {
     setError(null);
 
     const formData = new FormData(event.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
     try {
-      const result = await login(formData);
-      if (result?.error) {
+      const { signInWithEmailAndPassword } = await import("firebase/auth");
+      const { getFirebaseAuth } = await import("@/lib/firebase");
+      const cred = await signInWithEmailAndPassword(getFirebaseAuth(), email, password);
+      const idToken = await cred.user.getIdToken();
+
+      const result = await exchangeFirebaseToken(idToken);
+      if (result.error) {
         setError(describeLoginError(result.error));
         setLoading(false);
         return;
       }
-      window.location.href = result?.redirectTo || "/dashboard";
+      window.location.href = result.redirectTo || "/dashboard";
     } catch (err: any) {
-      setError(describeLoginError(err?.message || ""));
+      setError(describeLoginError(err.code || err.message || ""));
       setLoading(false);
     }
   }
 
   async function handleGoogleSignIn() {
-    setGoogleLoading(true);
     setError(null);
+    setGoogleLoading(true);
     try {
       const { signInWithPopup, GoogleAuthProvider } = await import("firebase/auth");
       const { getFirebaseAuth } = await import("@/lib/firebase");
@@ -131,43 +136,17 @@ export default function LoginForm() {
       provider.setCustomParameters({ prompt: "select_account" });
       const result = await signInWithPopup(getFirebaseAuth(), provider);
       const idToken = await result.user.getIdToken();
-
-      const resp = await fetch("/api/firebase/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "login", idToken }),
-      });
-      const data = await resp.json();
-      if (data.success) {
-        window.location.href = "/onboarding";
-      } else {
-        setError(describeLoginError(data.error || "Google sign-in failed"));
-      }
-    } catch (err: any) {
-      if (err.code !== "auth/popup-closed-by-user") {
-        setError(describeLoginError(err.code || err.message || "Google sign-in failed"));
-      }
-    } finally {
+      const resp = await exchangeFirebaseToken(idToken);
       setGoogleLoading(false);
-    }
-  }
-
-  async function handleFirebaseReset() {
-    setFirebaseLoading(true);
-    try {
-      const { sendPasswordResetEmail } = await import("firebase/auth");
-      const { getFirebaseAuth } = await import("@/lib/firebase");
-      const email = (document.querySelector('input[name="email"]') as HTMLInputElement)?.value;
-      if (!email) {
-        setError({ title: "Enter your email first", cause: "We need your email to send the reset link.", fix: "Type your email above, then try again." });
-        return;
+      if (resp.error) {
+        setError(describeLoginError(resp.error));
+      } else {
+        window.location.href = resp.redirectTo || "/dashboard";
       }
-      await sendPasswordResetEmail(getFirebaseAuth(), email);
-      alert("Password reset link sent to " + email);
     } catch (err: any) {
-      setError(describeLoginError(err.code || err.message || "Failed to send reset email"));
-    } finally {
-      setFirebaseLoading(false);
+      setGoogleLoading(false);
+      if (err?.code === "auth/popup-closed-by-user") return;
+      setError(describeLoginError(err?.code || err?.message || ""));
     }
   }
 
@@ -248,18 +227,10 @@ export default function LoginForm() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center">
             <Link href="/forgot-password" className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors">
               Forgot password?
             </Link>
-            <button
-              type="button"
-              onClick={handleFirebaseReset}
-              disabled={firebaseLoading}
-              className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors"
-            >
-              {firebaseLoading ? "Sending..." : "Reset via Firebase"}
-            </button>
           </div>
 
           <Button
@@ -291,7 +262,12 @@ export default function LoginForm() {
           {googleLoading ? (
             <Loader2 className="h-5 w-5 animate-spin" />
           ) : (
-            <Chrome className="h-5 w-5" />
+            <svg viewBox="0 0 24 24" className="h-5 w-5" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
           )}
           {googleLoading ? "Signing in..." : "Continue with Google"}
         </Button>

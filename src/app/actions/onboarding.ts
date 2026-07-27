@@ -62,12 +62,12 @@ export async function completeOnboarding(data: OnboardingData) {
     userEducationLevel = EduLevel.HIGH_SCHOOL;
   }
 
-  const prismaRole = Role.STUDENT;
+  const prismaRole = role === "TUTOR" ? Role.TUTOR : Role.STUDENT;
 
   // 1. Update Supabase Auth Metadata
   await supabase.auth.updateUser({
     data: { 
-      role: "STUDENT", 
+      role: role,
       onboarding_completed: true,
       gender: user.user_metadata?.gender,
       avatar: user.user_metadata?.avatar,
