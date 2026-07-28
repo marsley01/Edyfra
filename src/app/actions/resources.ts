@@ -191,7 +191,7 @@ export async function getResourceDownloadUrl(
       console.warn("[getResourceDownloadUrl] counter increment failed:", err);
     }
 
-    return { url: data.signedUrl, filename: resource.title };
+    return { url, filename: resource.title };
   } catch (err: any) {
     console.error("[getResourceDownloadUrl] unexpected:", err);
     return { error: err?.message || "Unexpected error generating download link." };
