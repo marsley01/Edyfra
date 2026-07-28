@@ -144,37 +144,37 @@ export default function LoginForm() {
   async function handleGoogleSignIn() {
     setError(null);
     setGoogleLoading(true);
-    const { signInWithRedirect, GoogleAuthProvider } = await import("firebase/auth");
-    const { getFirebaseAuth } = await import("@/lib/firebase");
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: "select_account" });
-    await signInWithRedirect(getFirebaseAuth(), provider);
+    try {
+      const { signInWithPopup, GoogleAuthProvider } = await import("firebase/auth");
+      const { getFirebaseAuth } = await import("@/lib/firebase");
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
+      const result = await signInWithPopup(getFirebaseAuth(), provider);
+      
+      const idToken = await result.user.getIdToken();
+      const resp = await exchangeFirebaseToken(idToken);
+      
+      if (resp.error) {
+        setError(describeLoginError(resp.error));
+        setGoogleLoading(false);
+      } else {
+        window.location.href = resp.redirectTo || "/dashboard";
+      }
+    } catch (err: any) {
+      setGoogleLoading(false);
+      if (err.code !== "auth/popup-closed-by-user") {
+        console.error("Google sign-in error:", err);
+        setError(describeLoginError(err.code || err.message || ""));
+      }
+    }
   }
 
+  // No need for getRedirectResult in useEffect since we are using popup now.
   useEffect(() => {
-    (async () => {
-      try {
-        const { getRedirectResult } = await import("firebase/auth");
-        const { getFirebaseAuth } = await import("@/lib/firebase");
-        const auth = getFirebaseAuth();
-        const result = await getRedirectResult(auth);
-        if (result) {
-          setGoogleLoading(true);
-          const idToken = await result.user.getIdToken();
-          const resp = await exchangeFirebaseToken(idToken);
-          setGoogleLoading(false);
-          if (resp.error) {
-            setError(describeLoginError(resp.error));
-          } else {
-            window.location.href = resp.redirectTo || "/dashboard";
-          }
-        }
-      } catch (err: any) {
-        setGoogleLoading(false);
-        console.error("getRedirectResult error:", err);
-      }
-    })();
-  }, []);
+    // Keeping empty useEffect or auth_error query check
+    const authError = searchParams.get("auth_error");
+    if (authError) setError(describeLoginError(authError));
+  }, [searchParams]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 pt-0 font-sans">
