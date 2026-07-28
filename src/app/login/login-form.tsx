@@ -86,7 +86,14 @@ async function exchangeFirebaseToken(idToken: string): Promise<{ success: boolea
     let data: any;
     try { data = JSON.parse(text); } catch { return { success: false, error: "Our server had a hiccup. Please try again." }; }
     if (!resp.ok) return { success: false, error: data.error || "Login failed" };
-    if (data.success) return { success: true, redirectTo: data.isNew ? "/onboarding" : "/dashboard" };
+    if (data.success) {
+      if (data.session) {
+        const { createClient } = await import("@/utils/supabase/client");
+        const supabase = createClient();
+        await supabase.auth.setSession(data.session);
+      }
+      return { success: true, redirectTo: data.isNew ? "/onboarding" : "/dashboard" };
+}
     return { success: false, error: data.error || "Login failed" };
   } catch {
     return { success: false, error: "Something went wrong. Please try again." };

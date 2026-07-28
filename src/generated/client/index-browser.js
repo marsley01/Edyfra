@@ -153,7 +153,9 @@ exports.Prisma.UserScalarFieldEnum = {
   planExpiresAt: 'planExpiresAt',
   planBillingCycle: 'planBillingCycle',
   referralCode: 'referralCode',
-  referredBy: 'referredBy'
+  referredBy: 'referredBy',
+  firebaseUid: 'firebaseUid',
+  fcmTokens: 'fcmTokens'
 };
 
 exports.Prisma.StudentProfileScalarFieldEnum = {

@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { sendPushNotification } from "@/lib/push";
+import { sendFCMNotification } from "@/lib/notifications/fcm-sender";
 import { createClient } from "@/utils/supabase/server";
 
 export async function sendNotificationPush(
@@ -9,48 +9,27 @@ export async function sendNotificationPush(
   payload: { title: string; body: string; url?: string }
 ) {
   try {
-    const subs = await prisma.pushSubscription.findMany({
-      where: { userId },
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { fcmTokens: true },
     });
 
-    if (subs.length === 0) return { success: true, sent: 0 };
-
-    const results = await Promise.allSettled(
-      subs.map((sub) =>
-        sendPushNotification(
-          { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-          { ...payload, id: Date.now().toString() }
-        )
-      )
-    );
-
-    const expiredEndpoints: string[] = [];
-    let sentCount = 0;
-    let errorCount = 0;
-
-    results.forEach((result, i) => {
-      if (result.status === "rejected") {
-        errorCount++;
-        console.error("[sendNotificationPush] subscription %s rejected:", i, result.reason);
-        return;
-      }
-      const value = result.value;
-      if (value === "expired") {
-        expiredEndpoints.push(subs[i].endpoint);
-      } else if (value === "error") {
-        errorCount++;
-      } else if (value === "sent") {
-        sentCount++;
-      }
-    });
-
-    if (expiredEndpoints.length > 0) {
-      await prisma.pushSubscription.deleteMany({
-        where: { endpoint: { in: expiredEndpoints } },
-      });
+    if (!user || !user.fcmTokens || user.fcmTokens.length === 0) {
+      return { success: true, sent: 0 };
     }
 
-    return { success: errorCount === 0, sent: sentCount, expired: expiredEndpoints.length, errors: errorCount };
+    const results = await sendFCMNotification(user.fcmTokens, {
+      title: payload.title,
+      body: payload.body,
+      clickAction: payload.url,
+    });
+
+    return { 
+      success: results.failure === 0, 
+      sent: results.success, 
+      expired: 0, 
+      errors: results.failure 
+    };
   } catch (error) {
     console.error("Error sending push notification:", error);
     return { success: false, error: "Failed to send push notification" };
@@ -62,8 +41,10 @@ export async function getUserPushSubscriptions() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
-  return prisma.pushSubscription.findMany({
-    where: { userId: user.id },
-    select: { endpoint: true, createdAt: true },
+  const dbUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { fcmTokens: true },
   });
+
+  return dbUser?.fcmTokens || [];
 }

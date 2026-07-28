@@ -89,7 +89,14 @@ async function signupWithFirebase(data: {
     let result: any;
     try { result = JSON.parse(text); } catch { return { success: false, error: "Our server had a hiccup. Please try again." }; }
     if (!resp.ok) return { success: false, error: result.error || "Signup failed" };
-    if (result.success) return { success: true, redirectTo: "/onboarding" };
+    if (result.success) {
+      if (result.session) {
+        const { createClient } = await import("@/utils/supabase/client");
+        const supabase = createClient();
+        await supabase.auth.setSession(result.session);
+      }
+      return { success: true, redirectTo: "/onboarding" };
+    }
     return { success: false, error: result.error || "Signup failed" };
   } catch (err: any) {
     if (err?.code === "auth/email-already-in-use") return { success: false, error: "email-already-in-use" };

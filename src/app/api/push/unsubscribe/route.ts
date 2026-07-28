@@ -10,14 +10,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { endpoint } = await req.json();
-    if (!endpoint) {
-      return NextResponse.json({ error: "Missing endpoint" }, { status: 400 });
+    const { endpoint: token } = await req.json();
+    if (!token || typeof token !== "string") {
+      return NextResponse.json({ error: "Missing token" }, { status: 400 });
     }
 
-    await prisma.pushSubscription.deleteMany({
-      where: { endpoint, userId: user.id },
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { fcmTokens: true },
     });
+
+    if (dbUser && dbUser.fcmTokens.includes(token)) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          fcmTokens: {
+            set: dbUser.fcmTokens.filter(t => t !== token),
+          },
+        },
+      });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

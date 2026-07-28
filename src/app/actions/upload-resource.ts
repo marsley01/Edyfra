@@ -1,7 +1,8 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { createAdminClient } from "@/utils/supabase/admin";
+import { getAdminApp } from "@/lib/firebase-admin";
+import { getStorage } from "firebase-admin/storage";
 import prisma from "@/lib/prisma";
 
 export async function uploadResource(formData: FormData) {
@@ -47,32 +48,27 @@ export async function uploadResource(formData: FormData) {
   const sanitizedExt = fileExt?.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() || "bin";
   const fileName = `${user.id}/${Date.now()}.${sanitizedExt}`;
 
-  // Try uploading to storage using the user's authenticated session
-  let { error: uploadError } = await supabaseClient.storage
-    .from("resources")
-    .upload(fileName, file, { cacheControl: "3600", upsert: false });
-
-  if (uploadError) {
-    if (uploadError.message?.includes("bucket") || uploadError.message?.includes("not found")) {
-      const adminClient = createAdminClient();
-      const { error: bucketError } = await adminClient.storage.createBucket("resources", {
-        public: true,
-      });
-      if (bucketError) {
-        return { error: `Storage unavailable: ${bucketError.message}` };
+  // Try uploading to Firebase storage
+  let storagePath = "";
+  try {
+    const app = getAdminApp();
+    const bucket = getStorage(app).bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    
+    storagePath = `resources/${fileName}`;
+    const fileRef = bucket.file(storagePath);
+    
+    await fileRef.save(buffer, {
+      metadata: {
+        contentType: file.type || "application/octet-stream",
+        cacheControl: "public, max-age=3600",
       }
-      const { error: retryError } = await supabaseClient.storage
-        .from("resources")
-        .upload(fileName, file, { cacheControl: "3600", upsert: false });
-      if (retryError) {
-        return { error: retryError.message };
-      }
-    } else {
-      return { error: uploadError.message };
-    }
+    });
+  } catch (uploadError: any) {
+    console.error("Firebase Storage upload error:", uploadError);
+    return { error: uploadError.message || "Failed to upload file" };
   }
-
-  const { data: { publicUrl } } = supabaseClient.storage.from("resources").getPublicUrl(fileName);
 
   try {
     await prisma.resource.create({
@@ -85,7 +81,7 @@ export async function uploadResource(formData: FormData) {
         topic: topic || null,
         description: description || null,
         price,
-        filePath: publicUrl,
+        filePath: storagePath,
         status: "pending",
       },
     });

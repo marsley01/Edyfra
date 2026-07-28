@@ -3,6 +3,7 @@ import { getAnalytics, type Analytics, isSupported } from "firebase/analytics";
 import { getAuth, type Auth, connectAuthEmulator } from "firebase/auth";
 import { getStorage, type FirebaseStorage, connectStorageEmulator } from "firebase/storage";
 import { getFirestore, type Firestore, connectFirestoreEmulator } from "firebase/firestore";
+import { getMessaging, type Messaging } from "firebase/messaging";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -69,4 +70,19 @@ export function getFirebaseFirestore(): Firestore {
     }
   }
   return firestore;
+}
+
+let messaging: Messaging | undefined;
+
+export function getFirebaseMessaging(): Messaging | null {
+  if (typeof window === "undefined") return null;
+  
+  if (!messaging) {
+    try {
+      messaging = getMessaging(getFirebaseApp());
+    } catch (error) {
+      console.warn("Failed to initialize Firebase Messaging", error);
+    }
+  }
+  return messaging || null;
 }

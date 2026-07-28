@@ -1,3 +1,27 @@
+/**
+ * changelog.ts
+ *
+ * The source of truth for changelog entries shown on /changelog.
+ *
+ * AUTOMATION: Run `npm run changelog:generate` to pull in commits from git
+ * history into `changelog-generated.json`. That file is auto-merged here so
+ * the page stays up to date without manual edits after every release.
+ *
+ * Manual entries below always take priority over the auto-generated ones.
+ */
+
+// Try to import the auto-generated sidecar (created by scripts/generate-changelog.mjs).
+// If it doesn't exist yet (first run / no script run) we fall back to [] silently.
+let generated: ChangelogEntry[] = [];
+try {
+  // Dynamic require so the build doesn't fail if the file is absent.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const raw = require("./changelog-generated.json");
+  generated = Array.isArray(raw) ? raw : [];
+} catch {
+  // File doesn't exist yet — that's fine.
+}
+
 export type ChangelogEntry = {
   version: string;
   date: string;
@@ -7,7 +31,8 @@ export type ChangelogEntry = {
   fixes?: string[];
 };
 
-export const changelog: ChangelogEntry[] = [
+/** Manually curated entries — these always appear first and win deduplication. */
+const manual: ChangelogEntry[] = [
   {
     version: "1.1.1",
     date: "July 20, 2026",
@@ -71,3 +96,13 @@ export const changelog: ChangelogEntry[] = [
     ],
   },
 ];
+
+// Deduplicate: manual versions win. Generated extras are appended.
+const manualVersions = new Set(manual.map((e) => e.version));
+const extras = generated.filter((e) => !manualVersions.has(e.version));
+
+/**
+ * Full changelog — sorted newest first.
+ * Manual entries come first, then any auto-generated ones not already present.
+ */
+export const changelog: ChangelogEntry[] = [...manual, ...extras];

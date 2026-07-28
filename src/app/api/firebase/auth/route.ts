@@ -14,6 +14,42 @@ function getRedirectUrl(): string {
   );
 }
 
+function getAdminClient() {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error("Server config error: missing service role key");
+  }
+  return createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+}
+
+async function createUserWithConfirmedEmail(
+  adminClient: ReturnType<typeof createAdminClient>,
+  email: string,
+  password: string,
+  name: string,
+  firebaseUid: string,
+  gender?: string,
+  avatar?: string
+) {
+  const { data, error } = await adminClient.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: {
+      name,
+      role: "STUDENT",
+      firebaseUid,
+      ...(gender && { gender }),
+      ...(avatar && { avatar }),
+    },
+  });
+  if (error) throw error;
+  return data.user;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -35,24 +71,30 @@ export async function POST(req: NextRequest) {
     const supabase = await createClient();
 
     if (action === "signup") {
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      let adminClient: ReturnType<typeof createAdminClient>;
+      try {
+        adminClient = getAdminClient() as ReturnType<typeof createAdminClient>;
+      } catch {
+        return NextResponse.json({ error: "Server config error: missing service role key" }, { status: 500 });
+      }
+
+      const user = await createUserWithConfirmedEmail(
+        adminClient,
         email,
         password,
-        options: {
-          data: {
-            name,
-            role: "STUDENT",
-            firebaseUid: decoded.uid,
-            ...(body.gender && { gender: body.gender }),
-            ...(body.avatar && { avatar: body.avatar }),
-          },
-          emailRedirectTo: `${getRedirectUrl()}/auth/callback`,
-        },
+        name,
+        decoded.uid,
+        body.gender,
+        body.avatar
+      );
+
+      const { data: sessionData, error: sessionError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
+      if (sessionError) throw sessionError;
 
-      if (signUpError) throw signUpError;
-
-      if (signUpData.user) {
+      if (user) {
         const gender = body.gender as string | undefined;
         const avatarUrl = body.avatar as string | undefined;
         const referralCode = body.referral_code as string | undefined;
@@ -78,7 +120,7 @@ export async function POST(req: NextRequest) {
             : undefined;
 
           await prisma.user.upsert({
-            where: { id: signUpData.user.id },
+            where: { id: user.id },
             update: {
               referralCode: generatedCode,
               referredBy,
@@ -86,9 +128,10 @@ export async function POST(req: NextRequest) {
               email,
               gender: validatedGender,
               avatar: defaultAvatarUrl,
+              firebaseUid: decoded.uid,
             },
             create: {
-              id: signUpData.user.id,
+              id: user.id,
               email,
               name,
               role: "STUDENT",
@@ -98,6 +141,7 @@ export async function POST(req: NextRequest) {
               referralCode: generatedCode,
               referredBy,
               avatar: defaultAvatarUrl,
+              firebaseUid: decoded.uid,
               points: 0,
               lastActiveAt: new Date(),
             },
@@ -107,18 +151,18 @@ export async function POST(req: NextRequest) {
             await prisma.referral.create({
               data: {
                 referrerId: referredBy,
-                referredId: signUpData.user.id,
+                referredId: user.id,
                 codeUsed: referralCode!.toUpperCase(),
               },
             });
 
             await prisma.user.update({
-              where: { id: signUpData.user.id },
+              where: { id: user.id },
               data: { points: { increment: 50 } },
             });
 
             const { notifyUser } = await import("@/app/actions/notifications");
-            await notifyUser(signUpData.user.id, {
+            await notifyUser(user.id, {
               type: "REFERRAL_BONUS",
               title: "Welcome! You got 50 bonus XP!",
               body: "You were referred by a friend! Enjoy 50 bonus XP to get started.",
@@ -133,32 +177,26 @@ export async function POST(req: NextRequest) {
 
         try {
           const { trackAnalyticsEvent } = await import("@/app/actions/analytics");
-          await trackAnalyticsEvent(signUpData.user.id, "signup", {
+          await trackAnalyticsEvent(user.id, "signup", {
             referral_code: referralCode || null,
             referred: referredBy !== null,
           });
         } catch {
-          log("warn", "Failed to track signup analytics", { userId: signUpData.user.id });
+          log("warn", "Failed to track signup analytics", { userId: user.id });
         }
       }
 
-      if (!signUpData.session) {
-        const { data: pwData, error: pwError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (pwError) throw pwError;
-        return NextResponse.json({ success: true, session: pwData.session, isNew: true });
-      }
-
-      return NextResponse.json({ success: true, session: signUpData.session, isNew: true });
+      return NextResponse.json({ success: true, session: sessionData.session, isNew: true });
     }
 
     if (action === "login") {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
       if (error) {
-        const existingPrismaUser = await prisma.user.findUnique({ where: { email } });
+        const existingPrismaUser = await prisma.user.findUnique({
+          where: { email },
+          include: { studentProfile: true, tutorProfile: true }
+        });
 
         if (existingPrismaUser) {
           if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -175,12 +213,19 @@ export async function POST(req: NextRequest) {
           );
           if (updateError) throw updateError;
 
+          // Sync role to Supabase metadata
+          await sbAdmin.auth.admin.updateUserById(existingPrismaUser.id, {
+            user_metadata: { role: existingPrismaUser.role }
+          });
+
           const { data: pwData, error: pwError } = await supabase.auth.signInWithPassword({
             email,
             password,
           });
           if (pwError) throw pwError;
-          return NextResponse.json({ success: true, session: pwData.session });
+
+          const needsOnboarding = !existingPrismaUser.studentProfile && !existingPrismaUser.tutorProfile && existingPrismaUser.role === "STUDENT";
+          return NextResponse.json({ success: true, session: pwData.session, isNew: needsOnboarding });
         }
 
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -193,19 +238,52 @@ export async function POST(req: NextRequest) {
         });
         if (signUpError) throw signUpError;
 
-        if (signUpData.user) {
+        let user = signUpData.user;
+        let sessionData = signUpData.session;
+
+        if (!sessionData && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+          const { createClient: createAdminClient } = await import("@supabase/supabase-js");
+          const adminClient = createAdminClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY,
+            { auth: { autoRefreshToken: false, persistSession: false } }
+          );
+          const { data: adminData, error: adminError } = await adminClient.auth.admin.createUser({
+            email,
+            password,
+            email_confirm: true,
+            user_metadata: { name, role: "STUDENT", firebaseUid: decoded.uid },
+          });
+          if (!adminError && adminData.user) {
+            user = adminData.user;
+            const { data: pwData, error: pwError } = await supabase.auth.signInWithPassword({ email, password });
+            if (!pwError) sessionData = pwData.session;
+          }
+        }
+
+        if (!sessionData) {
+          const { data: pwData, error: pwError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+          if (pwError) throw pwError;
+          sessionData = pwData.session;
+        }
+
+        if (user) {
           try {
             await prisma.user.upsert({
-              where: { id: signUpData.user.id },
-              update: { name, email },
+              where: { id: user.id },
+              update: { name, email, firebaseUid: decoded.uid },
               create: {
-                id: signUpData.user.id,
+                id: user.id,
                 email,
                 name,
                 role: "STUDENT",
                 county: "Nairobi",
                 educationLevel: "HIGH_SCHOOL",
                 referralCode: generateReferralCode(name),
+                firebaseUid: decoded.uid,
                 points: 0,
                 lastActiveAt: new Date(),
               },
@@ -217,15 +295,30 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        const { data: pwData, error: pwError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (pwError) throw pwError;
-        return NextResponse.json({ success: true, session: pwData.session, isNew: true });
+        return NextResponse.json({ success: true, session: sessionData, isNew: true });
       }
 
-      return NextResponse.json({ success: true, session: data.session });
+      // User exists in Supabase - check if they need onboarding
+      const prismaUser = await prisma.user.findUnique({
+        where: { email },
+        include: { studentProfile: true, tutorProfile: true }
+      });
+      const needsOnboarding = prismaUser && !prismaUser.studentProfile && !prismaUser.tutorProfile && prismaUser.role === "STUDENT";
+
+      // Sync role to Supabase metadata for middleware routing
+      if (prismaUser && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        const { createClient: createAdminClient } = await import("@supabase/supabase-js");
+        const adminClient = createAdminClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY,
+          { auth: { autoRefreshToken: false, persistSession: false } }
+        );
+        await adminClient.auth.admin.updateUserById(prismaUser.id, {
+          user_metadata: { role: prismaUser.role }
+        });
+      }
+
+      return NextResponse.json({ success: true, session: data.session, isNew: needsOnboarding });
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });

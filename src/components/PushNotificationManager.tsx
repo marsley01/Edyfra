@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { showError, showSuccess, showUnknownError } from "@/lib/toast";
-import { urlBase64ToUint8Array } from "@/lib/utils";
+import { getFirebaseMessaging } from "@/lib/firebase";
+import { getToken } from "firebase/messaging";
 
 type SupportState = "loading" | "unsupported" | "ready";
 
@@ -67,51 +68,44 @@ export function PushNotificationManager() {
         return;
       }
 
-      const reg = await navigator.serviceWorker.ready;
-
-      const keyRes = await fetch("/api/push/vapid-public-key");
-      if (!keyRes.ok) {
+      // Use Firebase Messaging to get FCM token
+      const messaging = getFirebaseMessaging();
+      if (!messaging) {
         showError({
           title: "Push isn't set up yet",
-          cause: "The server hasn't enabled browser push.",
-          fix: "We'll turn it on soon — try again later.",
-        });
-        return;
-      }
-      const { publicKey } = await keyRes.json();
-      if (!publicKey) {
-        showError({
-          title: "Push isn't set up yet",
-          cause: "The server didn't hand us a key to register with.",
+          cause: "Firebase messaging is not initialized.",
           fix: "We'll be back online with push soon.",
         });
         return;
       }
 
-      const existing = await reg.pushManager.getSubscription();
-      if (existing) {
-        await existing.unsubscribe();
+      // We need the VAPID key from env
+      const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      if (!vapidKey) {
+        console.warn("Missing VAPID key in env");
       }
 
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey),
-      });
+      const token = await getToken(messaging, { vapidKey });
+      
+      if (!token) {
+        showError({
+          title: "Registration failed",
+          cause: "Could not generate a push token for your device.",
+          fix: "Please try again or contact support.",
+        });
+        return;
+      }
 
-      const raw = sub.toJSON();
       const saveRes = await fetch("/api/push/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          endpoint: raw.endpoint,
-          keys: raw.keys,
-        }),
+        body: JSON.stringify({ token }),
       });
 
       if (!saveRes.ok) {
         showError({
           title: "Almost there",
-          cause: "We saved your subscription but the server didn't accept it.",
+          cause: "We generated your push token but the server didn't accept it.",
           fix: "Try again — if it keeps happening, contact support.",
         });
         return;

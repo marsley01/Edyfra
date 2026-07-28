@@ -20,6 +20,7 @@
     "db:migrate:15": "node scripts/run-migration.mjs supabase/migrations/15_institution_v2_system.sql",
     "changelog": "powershell -File scripts/changelog.ps1",
     "changelog:new": "powershell -File scripts/changelog.ps1 -Message",
+    "changelog:generate": "node scripts/generate-changelog.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"

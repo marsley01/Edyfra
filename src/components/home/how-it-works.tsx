@@ -1,6 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { LottieAnimation } from "@/components/lottie-animation";
+import studySpinner from "@/../public/animations/study-spinner.json";
 
 const steps = [
   {
@@ -41,6 +43,14 @@ export function HowItWorks() {
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="space-y-4 text-center"
         >
+          {/* Lottie accent above heading */}
+          <div className="flex justify-center mb-2">
+            <LottieAnimation
+              animationData={studySpinner}
+              className="w-14 h-14"
+              ariaLabel="Study spinner animation"
+            />
+          </div>
           <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">
             How It Works
           </p>

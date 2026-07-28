@@ -4,7 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import { Bell, BellOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { showError, showSuccess } from "@/lib/toast";
-import { urlBase64ToUint8Array } from "@/lib/utils";
+import { getFirebaseMessaging } from "@/lib/firebase";
+import { getToken } from "firebase/messaging";
 
 export function PushNotificationInit() {
   const [supported, setSupported] = useState(false);
@@ -12,24 +13,24 @@ export function PushNotificationInit() {
   const [subscribed, setSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
 
-   useEffect(() => {
-     if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
-       return;
-     }
-     setSupported(true);
-     setPermission(Notification.permission);
+  useEffect(() => {
+    if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+      return;
+    }
+    setSupported(true);
+    setPermission(Notification.permission);
 
-     navigator.serviceWorker.ready
-       .then((reg) => {
-         return reg.pushManager.getSubscription();
-       })
-       .then((sub) => {
-         setSubscribed(!!sub);
-       })
-       .catch((err) => {
-         console.error("[PushNotificationInit] Error checking subscription:", err);
-       });
-   }, []);
+    navigator.serviceWorker.ready
+      .then((reg) => {
+        return reg.pushManager.getSubscription();
+      })
+      .then((sub) => {
+        setSubscribed(!!sub);
+      })
+      .catch((err) => {
+        console.error("[PushNotificationInit] Error checking subscription:", err);
+      });
+  }, []);
 
   const subscribe = useCallback(async () => {
     if (!supported) return;
@@ -47,46 +48,45 @@ export function PushNotificationInit() {
         return;
       }
 
-      const reg = await navigator.serviceWorker.ready;
-
-      const keyRes = await fetch("/api/push/vapid-public-key");
-      if (!keyRes.ok) {
+      // Use Firebase Messaging to get FCM token
+      const messaging = getFirebaseMessaging();
+      if (!messaging) {
         showError({
           title: "Push isn't ready yet",
-          cause: "Browser push isn't configured on the server.",
-          fix: "We'll let you know once it's live.",
-        });
-        return;
-      }
-      const { publicKey } = await keyRes.json();
-      if (!publicKey) {
-        showError({
-          title: "Push isn't ready yet",
-          cause: "Browser push isn't configured on the server.",
+          cause: "Firebase messaging is not initialized.",
           fix: "We'll let you know once it's live.",
         });
         return;
       }
 
-      const existing = await reg.pushManager.getSubscription();
-      if (existing) {
-        await existing.unsubscribe();
+      // We need the VAPID key from env
+      const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      
+      const token = await getToken(messaging, { vapidKey });
+      
+      if (!token) {
+        showError({
+          title: "Registration failed",
+          cause: "Could not generate a push token for your device.",
+          fix: "Please try again or contact support.",
+        });
+        return;
       }
 
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey),
-      });
-
-      const raw = sub.toJSON();
-      await fetch("/api/push/subscribe", {
+      const saveRes = await fetch("/api/push/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          endpoint: raw.endpoint,
-          keys: raw.keys,
-        }),
+        body: JSON.stringify({ token }),
       });
+
+      if (!saveRes.ok) {
+        showError({
+          title: "Couldn't save subscription",
+          cause: "We got the token, but the server rejected it.",
+          fix: "Try refreshing and trying again.",
+        });
+        return;
+      }
 
       setSubscribed(true);
       showSuccess("Push is on", { description: "We'll ping your browser when something new lands." });

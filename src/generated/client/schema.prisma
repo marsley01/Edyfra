@@ -72,6 +72,8 @@ model User {
   analyticsEvents          AnalyticsEvent[]
   feedback                 Feedback[]
   aiChatMessages           AiChatMessage[]
+  firebaseUid              String?                    @unique @map("firebase_uid")
+  fcmTokens                String[]                   @map("fcm_tokens")
   communityTopics          CommunityTopic[]           @relation("CommunityTopicAuthor")
   communityPosts           CommunityPost[]            @relation("CommunityPostAuthor")
   communityReactions       CommunityReaction[]

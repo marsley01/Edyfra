@@ -58,9 +58,8 @@ export class InAppNotificationChannel implements NotificationChannel {
 export class PushNotificationChannel implements NotificationChannel {
   async send(payload: NotificationPayload): Promise<void> {
     try {
-      const { sendPushNotification } = await import("@/lib/push");
-      const subscription = { endpoint: "", keys: { p256dh: "", auth: "" } };
-      await sendPushNotification(subscription, {
+      const { sendNotificationPush } = await import("@/app/actions/push");
+      await sendNotificationPush(payload.userId, {
         title: payload.title,
         body: payload.body,
         url: payload.actionUrl,

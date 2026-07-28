@@ -1,7 +1,8 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { createAdminClient } from "@/utils/supabase/admin";
+import { getAdminApp } from "@/lib/firebase-admin";
+import { getStorage } from "firebase-admin/storage";
 import prisma from "@/lib/prisma";
 
 export async function uploadKycFile(formData: FormData) {
@@ -9,24 +10,39 @@ export async function uploadKycFile(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Unauthorized" as const };
 
-  const adminClient = createAdminClient();
   const file = formData.get("file") as File | null;
   const prefix = formData.get("prefix") as string;
 
   if (!file) return { success: false, error: "No file provided" as const };
 
   const ext = file.name.split(".").pop();
-  const path = `${user.id}/onboarding-${prefix}-${Date.now()}.${ext}`;
+  const path = `kyc/${user.id}/onboarding-${prefix}-${Date.now()}.${ext}`;
 
-  await adminClient.storage.createBucket("kyc", { public: false }).catch(() => {});
-  const { error: uploadError } = await adminClient.storage.from("kyc").upload(path, file, { upsert: true });
-  if (uploadError) {
+  try {
+    const app = getAdminApp();
+    const bucket = getStorage(app).bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    
+    const fileRef = bucket.file(path);
+    await fileRef.save(buffer, {
+      metadata: {
+        contentType: file.type || "application/octet-stream",
+        cacheControl: "private, max-age=31536000",
+      }
+    });
+
+    const [url] = await fileRef.getSignedUrl({
+      version: 'v4',
+      action: 'read',
+      expires: Date.now() + 1000 * 60 * 60 * 24 * 365, // 1 year
+    });
+
+    return { success: true as const, url };
+  } catch (uploadError: any) {
     console.error("KYC upload error:", uploadError);
     return { success: false, error: uploadError.message };
   }
-
-  const { data: signed } = await adminClient.storage.from("kyc").createSignedUrl(path, 60 * 60 * 24 * 365);
-  return { success: true as const, url: signed?.signedUrl || null };
 }
 
 export async function submitTutorApplication(formData: FormData) {
@@ -37,8 +53,6 @@ export async function submitTutorApplication(formData: FormData) {
     return { success: false, error: "Unauthorized" };
   }
 
-  const adminClient = createAdminClient();
-
   const idPhoto = formData.get("idPhoto") as File | null;
   const selfie = formData.get("selfie") as File | null;
   const subjectsStr = formData.get("subjects") as string;
@@ -47,30 +61,46 @@ export async function submitTutorApplication(formData: FormData) {
   let idPhotoUrl = null;
   let selfieUrl = null;
 
-  // Ensure 'kyc' bucket exists
-  await adminClient.storage.createBucket("kyc", { public: false }).catch(() => {});
-
-  if (idPhoto) {
-    const ext = idPhoto.name.split(".").pop();
-    const path = `${user.id}/id-${Date.now()}.${ext}`;
-    const { error } = await adminClient.storage.from("kyc").upload(path, idPhoto, { upsert: true });
-    if (!error) {
-      const { data: signedPhoto } = await adminClient.storage.from("kyc").createSignedUrl(path, 60 * 60 * 24 * 365);
-      idPhotoUrl = signedPhoto?.signedUrl || null;
-    }
-  }
-
-  if (selfie) {
-    const ext = selfie.name.split(".").pop();
-    const path = `${user.id}/selfie-${Date.now()}.${ext}`;
-    const { error } = await adminClient.storage.from("kyc").upload(path, selfie, { upsert: true });
-    if (!error) {
-      const { data: signedSelfie } = await adminClient.storage.from("kyc").createSignedUrl(path, 60 * 60 * 24 * 365);
-      selfieUrl = signedSelfie?.signedUrl || null;
-    }
-  }
-
   try {
+    const app = getAdminApp();
+    const bucket = getStorage(app).bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
+
+    if (idPhoto) {
+      const ext = idPhoto.name.split(".").pop();
+      const path = `kyc/${user.id}/id-${Date.now()}.${ext}`;
+      const arrayBuffer = await idPhoto.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const fileRef = bucket.file(path);
+      
+      await fileRef.save(buffer, {
+        metadata: { contentType: idPhoto.type || "application/octet-stream" }
+      });
+      const [url] = await fileRef.getSignedUrl({
+        version: 'v4',
+        action: 'read',
+        expires: Date.now() + 1000 * 60 * 60 * 24 * 365,
+      });
+      idPhotoUrl = url;
+    }
+
+    if (selfie) {
+      const ext = selfie.name.split(".").pop();
+      const path = `kyc/${user.id}/selfie-${Date.now()}.${ext}`;
+      const arrayBuffer = await selfie.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const fileRef = bucket.file(path);
+      
+      await fileRef.save(buffer, {
+        metadata: { contentType: selfie.type || "application/octet-stream" }
+      });
+      const [url] = await fileRef.getSignedUrl({
+        version: 'v4',
+        action: 'read',
+        expires: Date.now() + 1000 * 60 * 60 * 24 * 365,
+      });
+      selfieUrl = url;
+    }
+
     const application = await prisma.tutorApplication.create({
       data: {
         userId: user.id,
@@ -88,7 +118,6 @@ export async function submitTutorApplication(formData: FormData) {
 
     return { success: true, application };
   } catch (error: any) {
-    console.error("Tutor KYC error:", error);
     console.error("Tutor KYC error:", error);
     return { success: false, error: "Failed to submit tutor application" };
   }

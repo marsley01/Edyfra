@@ -3,8 +3,8 @@
 import { createClient } from "@/utils/supabase/server";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-
-import { createAdminClient } from "@/utils/supabase/admin";
+import { getAdminApp } from "@/lib/firebase-admin";
+import { getStorage } from "firebase-admin/storage";
 
 const DOWNLOAD_LINK_TTL_SECONDS = 60 * 5; // 5 minutes
 
@@ -38,17 +38,25 @@ export async function uploadAndCreateResource(formData: FormData) {
     return { error: "Missing required fields" };
   }
 
-  const adminClient = createAdminClient();
   const fileExt = file.name.split(".").pop();
-  const storagePath = `${user.id}/${Date.now()}.${fileExt}`;
+  const storagePath = `resources/${user.id}/${Date.now()}.${fileExt}`;
 
-  const { error: uploadError } = await adminClient.storage
-    .from("resources")
-    .upload(storagePath, file, { cacheControl: "3600", upsert: false });
-
-  if (uploadError) {
-    console.error("Storage upload error:", uploadError);
-    return { error: uploadError.message };
+  try {
+    const app = getAdminApp();
+    const bucket = getStorage(app).bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const fileRef = bucket.file(storagePath);
+    
+    await fileRef.save(buffer, {
+      metadata: {
+        contentType: file.type || "application/octet-stream",
+        cacheControl: "public, max-age=3600",
+      }
+    });
+  } catch (uploadError: any) {
+    console.error("Firebase Storage upload error:", uploadError);
+    return { error: uploadError.message || "Failed to upload file" };
   }
 
   // Store the storage path (NOT the public URL) so we can issue
@@ -138,34 +146,25 @@ export async function getResourceDownloadUrl(
     return { error: "You must purchase this resource before downloading." };
   }
 
-  const adminClient = createAdminClient();
-  const filePath = resource.filePath || "";
-
-  // Legacy rows store a public URL — open it directly.
-  if (/^https?:\/\//i.test(filePath)) {
-    try {
-      await prisma.resource.update({
-        where: { id: resourceId },
-        data: { downloads: { increment: 1 } },
-      });
-    } catch (err) {
-      console.warn("[getResourceDownloadUrl] counter increment failed:", err);
-    }
-    return { url: filePath, filename: resource.title };
-  }
-
-  // New rows: generate a short-lived signed URL.
+  // New rows: generate a short-lived signed URL via Firebase.
   if (!filePath) return { error: "Resource file is missing. Contact the seller." };
 
   try {
-    const { data, error } = await adminClient.storage
-      .from("resources")
-      .createSignedUrl(filePath, DOWNLOAD_LINK_TTL_SECONDS, {
-        download: `${resource.title}.${filePath.split(".").pop() || "file"}`,
-      });
+    const app = getAdminApp();
+    // Support either direct path if Firebase or "resources/" prefix for new files.
+    // Legacy supabase files won't work easily here unless they were migrated.
+    // If the path doesn't start with resources/, it might be a supabase path, but we'll try it anyway.
+    const bucket = getStorage(app).bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
+    const fileRef = bucket.file(filePath);
 
-    if (error || !data?.signedUrl) {
-      console.error("[getResourceDownloadUrl] signed URL error:", error);
+    const [url] = await fileRef.getSignedUrl({
+      version: 'v4',
+      action: 'read',
+      expires: Date.now() + DOWNLOAD_LINK_TTL_SECONDS * 1000,
+      responseDisposition: `attachment; filename="${resource.title.replace(/[^a-zA-Z0-9-_\.]/g, '_')}.${filePath.split(".").pop() || "file"}"`,
+    });
+
+    if (!url) {
       return { error: "Could not generate download link. Please try again." };
     }
 

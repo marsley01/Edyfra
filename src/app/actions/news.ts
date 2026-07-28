@@ -19,14 +19,9 @@ export interface NewsArticle {
 import { RSSService, RSSItem } from "@/utils/rss-service";
 import { fetchOgImage } from "@/utils/og-scraper";
 
-const CATEGORY_IMAGES: Record<string, string> = {
-  Tech: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop",
-  Education: "https://images.unsplash.com/photo-1523050854058-8df90110c7f1?q=80&w=2071&auto=format&fit=crop",
-  "Student Life": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070&auto=format&fit=crop",
-  Announcements: "https://images.unsplash.com/photo-1504711434969-e33886168d6c?q=80&w=2070&auto=format&fit=crop",
-};
-
-const GENERIC_FALLBACK = "https://images.unsplash.com/photo-1546410531-bb4caa1b4247?q=80&w=2070&auto=format&fit=crop";
+// Single branded fallback thumbnail — used whenever an article has no real cover image.
+// This keeps the news cards visually consistent instead of scattering random Unsplash photos.
+const GENERIC_FALLBACK = "/og-image.png";
 
 // Sources and title keywords that indicate Kenyan content
 const KE_SOURCES = new Set([
@@ -43,11 +38,8 @@ const KE_KEYWORDS = [
   "nairobi", "mombasa", "kisumu", "eldoret", "nakuru",
 ];
 
-function getFallbackImage(category: string, title: string = "", source: string = ""): string {
-  if (title && source && isKenyanArticle(source, title)) {
-    return "/kenya-news-placeholder.jpg";
-  }
-  return CATEGORY_IMAGES[category] || GENERIC_FALLBACK;
+function getFallbackImage(_category?: string, _title?: string, _source?: string): string {
+  return GENERIC_FALLBACK;
 }
 
 function isKenyanArticle(source: string, title: string): boolean {
@@ -112,8 +104,8 @@ export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
           const og = await fetchOgImage(item.link);
           if (og) {
             finalImageUrl = og;
-          } else if (isKenyanArticle(item.source, item.title)) {
-            finalImageUrl = "/kenya-news-placeholder.jpg";
+          } else {
+            finalImageUrl = GENERIC_FALLBACK;
           }
         }
 
