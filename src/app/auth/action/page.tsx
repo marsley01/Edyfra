@@ -101,8 +101,8 @@ function AuthActionContent() {
           <h2 className="text-2xl font-bold tracking-tight">Oops! Something went wrong</h2>
           <p className="text-muted-foreground max-w-sm">{error}</p>
         </div>
-        <Button asChild className="w-full sm:w-auto mt-4 rounded-full">
-          <Link href="/forgot-password">Request New Link</Link>
+        <Button onClick={() => router.push("/forgot-password")} className="w-full sm:w-auto mt-4 rounded-full">
+          Request New Link
         </Button>
       </motion.div>
     );
@@ -124,11 +124,9 @@ function AuthActionContent() {
             Your password has been successfully updated. You can now log in using your new credentials.
           </p>
         </div>
-        <Button asChild className="w-full sm:w-auto mt-4 rounded-full group">
-          <Link href="/login">
-            Go to Login
-            <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Link>
+        <Button onClick={() => router.push("/login")} className="w-full sm:w-auto mt-4 rounded-full group">
+          Go to Login
+          <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
         </Button>
       </motion.div>
     );
