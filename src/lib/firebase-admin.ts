@@ -3,7 +3,7 @@ import { getAuth, type Auth } from "firebase-admin/auth";
 import { getStorage, type Storage } from "firebase-admin/storage";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 
-function getAdminApp(): App {
+export function getAdminApp(): App {
   if (getApps().length > 0) return getApps()[0];
 
   const serviceAccountBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;

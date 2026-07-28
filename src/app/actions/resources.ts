@@ -145,6 +145,20 @@ export async function getResourceDownloadUrl(
   if (isPaid && !isOwner && !hasPurchased && !isAdmin) {
     return { error: "You must purchase this resource before downloading." };
   }
+  const filePath = resource.filePath || "";
+
+  // Legacy rows store a public URL — open it directly.
+  if (/^https?:\/\//i.test(filePath)) {
+    try {
+      await prisma.resource.update({
+        where: { id: resourceId },
+        data: { downloads: { increment: 1 } },
+      });
+    } catch (err) {
+      console.warn("[getResourceDownloadUrl] counter increment failed:", err);
+    }
+    return { url: filePath, filename: resource.title };
+  }
 
   // New rows: generate a short-lived signed URL via Firebase.
   if (!filePath) return { error: "Resource file is missing. Contact the seller." };
