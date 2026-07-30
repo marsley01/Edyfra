@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { updateSession } from '@/utils/supabase/middleware'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { rateLimit, getRateLimitKey, getConfig } from '@/lib/rate-limit'
 
 const ALLOWED_ORIGINS = [
@@ -104,14 +104,44 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  const response = await updateSession(request)
+  let supabaseResponse = NextResponse.next({ request })
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          request.cookies.set({ name, value, ...options })
+          supabaseResponse = NextResponse.next({ request })
+          supabaseResponse.cookies.set({ name, value, ...options })
+        },
+        remove(name: string, options: CookieOptions) {
+          request.cookies.set({ name, value: '', ...options })
+          supabaseResponse = NextResponse.next({ request })
+          supabaseResponse.cookies.set({ name, value: '', ...options })
+        },
+      },
+    }
+  )
+
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user && (request.nextUrl.pathname.startsWith('/dashboard') || request.nextUrl.pathname.startsWith('/institution/dashboard'))) {
+    const redirectUrl = request.nextUrl.clone()
+    redirectUrl.pathname = '/auth/login'
+    return NextResponse.redirect(redirectUrl)
+  }
 
   // Add security headers to all responses
   if (isApiRoute) {
-    return setCorsHeaders(response, origin)
+    return setCorsHeaders(supabaseResponse, origin)
   }
 
-  return response
+  return supabaseResponse
 }
 
 export const config = {

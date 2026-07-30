@@ -1,6 +1,5 @@
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
 import { getAnalytics, type Analytics, isSupported } from "firebase/analytics";
-import { getAuth, type Auth, connectAuthEmulator } from "firebase/auth";
 import { getStorage, type FirebaseStorage, connectStorageEmulator } from "firebase/storage";
 import { getFirestore, type Firestore, connectFirestoreEmulator } from "firebase/firestore";
 import { getMessaging, type Messaging } from "firebase/messaging";
@@ -17,7 +16,6 @@ const firebaseConfig = {
 
 let app: FirebaseApp | undefined;
 let analytics: Analytics | undefined;
-let auth: Auth | undefined;
 let storage: FirebaseStorage | undefined;
 let firestore: Firestore | undefined;
 
@@ -42,15 +40,7 @@ export async function getFirebaseAnalytics(): Promise<Analytics | null> {
   return analytics ?? null;
 }
 
-export function getFirebaseAuth(): Auth {
-  if (!auth) {
-    auth = getAuth(getFirebaseApp());
-    if (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === "true") {
-      connectAuthEmulator(auth, "http://127.0.0.1:9099");
-    }
-  }
-  return auth;
-}
+
 
 export function getFirebaseStorage(): FirebaseStorage {
   if (!storage) {

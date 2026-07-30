@@ -9,6 +9,7 @@ import {
   LogOut,
   School,
   Settings,
+  Upload,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -37,6 +38,7 @@ const NAV: { section: string; items: { href: string; label: string; icon: Lucide
       { href: "/institution/dashboard/results", label: "Results & Analysis", icon: BarChart3 },
       { href: "/institution/dashboard/coaching", label: "Holiday Coaching", icon: Calendar },
       { href: "/institution/dashboard/reports", label: "Reports", icon: BookOpen },
+      { href: "/institution/dashboard/csv-upload", label: "CSV Upload", icon: Upload },
     ],
   },
   {

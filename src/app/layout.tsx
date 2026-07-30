@@ -15,7 +15,6 @@ import { OverlayManagerProvider } from "@/lib/overlay-manager";
 import { ClickFeedback } from "@/components/click-feedback";
 import { MaintenanceGate } from "@/components/maintenance-gate";
 import { JsonLd } from "@/components/json-ld";
-import { FirebaseAuthProvider } from "@/components/providers/firebase-auth-provider";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -147,11 +146,9 @@ export default function RootLayout({
           <OverlayManagerProvider>
             <ThemeColorManager />
             <ClickFeedback />
-            <FirebaseAuthProvider>
             <MaintenanceGate>
               <ConditionalShell>{children}</ConditionalShell>
             </MaintenanceGate>
-            </FirebaseAuthProvider>
             <ServiceWorkerRegister />
             <PushSubscriptionManager />
             <EddyChatWrapper />

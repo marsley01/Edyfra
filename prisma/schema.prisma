@@ -826,6 +826,7 @@ enum ActivityType {
 
 model Institution {
   id             String   @id @default(cuid())
+  supabaseId     String?  @unique
   name           String
   type           String   @default("HIGH_SCHOOL")
   code           String?  @unique
@@ -873,6 +874,7 @@ model Institution {
   activity      InstitutionActivity[]
   teacherAssignments TeacherSubjectAssignment[]
   invitations   InstitutionInvitation[]
+  csvUploads    CsvUpload[]
 }
 
 model InstitutionStaff {
@@ -1239,22 +1241,26 @@ model AcademicTerm {
 model StudentResult {
   id              String   @id @default(cuid())
   institutionId   String
-  studentUserId   String
-  admissionNumber String
+  studentUserId   String?
+  admissionNumber String?
   studentName     String
   subject         String
   marks           Float
   grade           String?
   term            Int
   year            Int
-  form            String
-  uploadedById    String
+  form            String?
+  uploadedById    String?
   createdAt       DateTime @default(now())
+  csvUploadId     String?
+  studentEmail    String?
+  score           Float?
 
   institution Institution           @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-  student     User                  @relation("StudentResults", fields: [studentUserId], references: [id], onDelete: Cascade)
-  uploader    User                  @relation("ResultUploader", fields: [uploadedById], references: [id], onDelete: Cascade)
+  student     User?                 @relation("StudentResults", fields: [studentUserId], references: [id], onDelete: Cascade)
+  uploader    User?                 @relation("ResultUploader", fields: [uploadedById], references: [id], onDelete: Cascade)
   analysis    StudentResultsAnalysis?
+  csvUpload   CsvUpload?            @relation(fields: [csvUploadId], references: [id])
 
   @@index([institutionId, term, year])
   @@index([studentUserId, term, year])
@@ -1393,4 +1399,15 @@ enum GroupMatchStatus {
   forming
   matched
   expired
+}
+
+model CsvUpload {
+  id            String          @id @default(cuid())
+  institutionId String
+  institution   Institution     @relation(fields: [institutionId], references: [id])
+  fileName      String
+  status        String          @default("COMPLETED")
+  totalRows     Int
+  createdAt     DateTime        @default(now())
+  results       StudentResult[]
 }

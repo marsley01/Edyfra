@@ -149,7 +149,7 @@ export async function getFlaggedStudents(
   return rows.map((r) => ({
     studentUserId: r.studentUserId,
     studentName: r.result.studentName,
-    form: r.result.form,
+    form: r.result.form ?? '',
     subject: r.subject,
     marks: r.marks,
     flag: r.flag,

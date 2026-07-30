@@ -606,6 +606,7 @@ exports.Prisma.Newsletter_subscribersScalarFieldEnum = {
 
 exports.Prisma.InstitutionScalarFieldEnum = {
   id: 'id',
+  supabaseId: 'supabaseId',
   name: 'name',
   type: 'type',
   code: 'code',
@@ -882,7 +883,10 @@ exports.Prisma.StudentResultScalarFieldEnum = {
   year: 'year',
   form: 'form',
   uploadedById: 'uploadedById',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  csvUploadId: 'csvUploadId',
+  studentEmail: 'studentEmail',
+  score: 'score'
 };
 
 exports.Prisma.StudentResultsAnalysisScalarFieldEnum = {
@@ -967,6 +971,15 @@ exports.Prisma.GroupMatchRequestScalarFieldEnum = {
   roomId: 'roomId',
   createdAt: 'createdAt',
   expiresAt: 'expiresAt'
+};
+
+exports.Prisma.CsvUploadScalarFieldEnum = {
+  id: 'id',
+  institutionId: 'institutionId',
+  fileName: 'fileName',
+  status: 'status',
+  totalRows: 'totalRows',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -1226,7 +1239,8 @@ exports.Prisma.ModelName = {
   InstitutionActivity: 'InstitutionActivity',
   TeacherSubjectAssignment: 'TeacherSubjectAssignment',
   InstitutionInvitation: 'InstitutionInvitation',
-  GroupMatchRequest: 'GroupMatchRequest'
+  GroupMatchRequest: 'GroupMatchRequest',
+  CsvUpload: 'CsvUpload'
 };
 
 /**

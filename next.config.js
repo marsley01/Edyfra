@@ -1,8 +1,3 @@
-/** @type {import("next").NextConfig} */
-const withBundleAnalyzer = require("@next/bundle-analyzer")({
-  enabled: process.env.ANALYZE === "true",
-});
-
 const nextConfig = {
   turbopack: {
     root: __dirname,
@@ -72,7 +67,9 @@ const nextConfig = {
         key: "Content-Security-Policy",
         value: [
           "default-src 'self'",
-          "script-src 'self' 'unsafe-inline' *.vercel-scripts.com",
+          process.env.NODE_ENV === "development"
+            ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.vercel-scripts.com"
+            : "script-src 'self' 'unsafe-inline' *.vercel-scripts.com",
           "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
           "font-src 'self' fonts.gstatic.com",
           "img-src 'self' data: blob: https: http:",
@@ -80,7 +77,7 @@ const nextConfig = {
           // stream-io-cdn.com is used by the Video SDK for TURN relay signalling.
           // hint.stream-io-video.com is used by the Video SDK for SFU edge discovery.
           // stream-io-video.com is for SFU WebSocket media connections.
-           "connect-src 'self' *.supabase.co *.vercel-insights.com wss://*.supabase.co *.stream-io-api.com wss://*.stream-io-api.com wss://chat.stream-io-api.com wss://video.stream-io-api.com *.stream-io-cdn.com wss://*.stream-io-cdn.com *.stream-io-video.com wss://*.stream-io-video.com identitytoolkit.googleapis.com securetoken.googleapis.com firebasestorage.googleapis.com *.firebaseio.com",
+          "connect-src 'self' *.supabase.co *.vercel-insights.com wss://*.supabase.co *.stream-io-api.com wss://*.stream-io-api.com wss://chat.stream-io-api.com wss://video.stream-io-api.com *.stream-io-cdn.com wss://*.stream-io-cdn.com *.stream-io-video.com wss://*.stream-io-video.com identitytoolkit.googleapis.com securetoken.googleapis.com firebasestorage.googleapis.com *.firebaseio.com",
           "frame-ancestors 'none'",
         ].join("; "),
       },
@@ -122,4 +119,4 @@ const nextConfig = {
   },
 };
 
-module.exports = withBundleAnalyzer(nextConfig);
+module.exports = nextConfig;
