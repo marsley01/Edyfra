@@ -17,8 +17,9 @@ import {
   Settings, User, Bell, Palette, Shield, CreditCard,
   Moon, Sun, Monitor, Check, Loader2, Palette as PaletteIcon,
   BookOpen, Clock, MessageSquare, Trash2, Download, Lock, Mail,
-  Eye, EyeOff, Languages, Bot, Search, AlertTriangle, Smartphone
+  Eye, EyeOff, Languages, Bot, Search, AlertTriangle, Smartphone, X
 } from "lucide-react";
+import { getSubjectsByLevel } from "@/lib/subjects";
 import { useTheme } from "next-themes";
 import { getUserData, updateProfile, updateUserPreferences, updateNotificationSettings, updateStudentProfile, changePassword, changeEmail, downloadUserData, deleteUserAccount, updateAvatar } from "@/app/actions/user";
 import { toast } from "sonner";
@@ -45,7 +46,7 @@ export default function SettingsPage() {
   const [userData, setUserData] = useState<any>(null);
   const [prefs, setPrefs] = useState<any>({});
   const [notifPrefs, setNotifPrefs] = useState<Record<string, boolean>>({});
-  const [formData, setFormData] = useState({ name: "", bio: "", educationLevel: "", subjects: "", studyHours: "" });
+  const [formData, setFormData] = useState({ name: "", bio: "", educationLevel: "", subjects: [] as string[], studyHours: "" });
   const [currentAvatar, setCurrentAvatar] = useState<string | null>(null);
   const [passwordData, setPasswordData] = useState({ current: "", newPass: "", confirm: "" });
   const [newEmail, setNewEmail] = useState("");
@@ -70,7 +71,7 @@ export default function SettingsPage() {
         name: data.name || "",
         bio: data.bio || "",
         educationLevel: data.educationLevel || "HIGH_SCHOOL",
-        subjects: data.studentProfile?.subjects?.join(", ") || "",
+        subjects: data.studentProfile?.subjects || [],
         studyHours: preferences.studyHoursPerWeek?.toString() || "",
       });
     }
@@ -92,7 +93,7 @@ export default function SettingsPage() {
         name: formData.name,
         bio: formData.bio,
         educationLevel: formData.educationLevel,
-        subjects: formData.subjects.split(",").map(s => s.trim()).filter(Boolean),
+        subjects: formData.subjects,
         studyHoursPerWeek: parseInt(formData.studyHours) || 0,
       });
       toast.success("Profile updated");
@@ -279,10 +280,34 @@ export default function SettingsPage() {
                         <Input type="number" value={formData.studyHours} onChange={(e) => setFormData({ ...formData, studyHours: e.target.value })} className="rounded-xl border-primary/10" />
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label>Subjects of Interest</Label>
-                      <Input value={formData.subjects} onChange={(e) => setFormData({ ...formData, subjects: e.target.value })} placeholder="e.g., Mathematics, Physics, Chemistry" className="rounded-xl border-primary/10" />
-                      <p className="text-xs text-muted-foreground">Comma separated</p>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label>Your Subjects</Label>
+                        <span className="text-xs text-muted-foreground">{formData.subjects.length} selected</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-1">
+                        {getSubjectsByLevel(formData.educationLevel).map((s) => {
+                          const selected = formData.subjects.includes(s)
+                          return (
+                            <button
+                              key={s}
+                              type="button"
+                              onClick={() => setFormData({
+                                ...formData,
+                                subjects: selected ? formData.subjects.filter((x: string) => x !== s) : [...formData.subjects, s]
+                              })}
+                              className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${
+                                selected
+                                  ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                                  : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                              }`}
+                            >
+                              {selected && <X className="h-3 w-3" />}
+                              {s}
+                            </button>
+                          )
+                        })}
+                      </div>
                     </div>
                   </div>
                 </CardContent>

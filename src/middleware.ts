@@ -6,6 +6,7 @@ const ALLOWED_ORIGINS = [
   'https://edyfra-v2.vercel.app',
   'https://edyfra.com',
   ...(process.env.NODE_ENV === 'development' ? ['http://localhost:3000'] : []),
+  ...(process.env.EXTERNAL_ALLOWED_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean) || []),
 ]
 
 const SERVER_ACTION_LIMIT = { interval: 60_000, maxRequests: 20 };

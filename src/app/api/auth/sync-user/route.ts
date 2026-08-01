@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { createAdminClient } from '@/utils/supabase/admin'
 
 export async function POST(request: Request) {
   try {
@@ -26,6 +27,14 @@ export async function POST(request: Request) {
         county: 'Nairobi',
       }
     })
+
+    // Auto-confirm email so users don't need to click a confirmation link
+    try {
+      const admin = createAdminClient()
+      await admin.auth.admin.updateUserById(id, { email_confirm: true })
+    } catch (confirmError) {
+      console.error('Error auto-confirming email:', confirmError)
+    }
 
     return NextResponse.json({ success: true, user })
   } catch (error) {

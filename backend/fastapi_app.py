@@ -7,6 +7,7 @@ and AI agent inference. Called by Next.js via the /api/python/* proxy.
 
 import os
 from contextlib import asynccontextmanager
+from dataclasses import dataclass
 from typing import Any
 
 from dotenv import load_dotenv

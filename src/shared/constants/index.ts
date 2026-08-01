@@ -55,14 +55,17 @@ export const BREAKPOINTS = {
 
 export const ROUTES = {
   HOME: "/",
-  LOGIN: "/login",
-  SIGNUP: "/signup",
+  LOGIN: "/auth/login",
+  SIGNUP: "/auth/register",
   DASHBOARD: "/dashboard",
   TUTOR: "/tutor",
   ADMIN: "/admin",
   INSTITUTION: "/institution/dashboard",
+  INSTITUTION_LOGIN: "/auth/institution-login",
+  INSTITUTION_APPLY: "/institution/apply",
   ONBOARDING: "/onboarding",
   FORGOT_PASSWORD: "/forgot-password",
+  UPDATE_PASSWORD: "/update-password",
   STUDY_ROOM: "/study-room",
 } as const;
 

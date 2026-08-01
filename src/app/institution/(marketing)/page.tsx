@@ -164,7 +164,7 @@ function HeroVideo() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Link href="/institution/signup">
+              <Link href="/institution/apply">
                 <Button className="group h-14 px-10 rounded-xl bg-white text-slate-900 hover:bg-white/90 font-bold text-sm transition-all active:scale-95 shadow-2xl flex items-center gap-2">
                   Apply for Your School
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -379,7 +379,7 @@ export default function InstitutionLanding() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/institution/signup" className="mt-8">
+                <Link href="/institution/apply" className="mt-8">
                   <Button
                     className={`cta-btn w-full h-12 rounded-xl ${
                       plan.featured
@@ -443,7 +443,7 @@ export default function InstitutionLanding() {
             Apply in under three minutes. We&apos;ll get back to you within one school day.
           </p>
           <div className="mt-10 flex justify-center">
-            <Link href="/institution/signup">
+            <Link href="/institution/apply">
               <Button
                 size="lg"
                 className="cta-btn h-14 rounded-2xl bg-white px-10 text-base font-bold text-[#3730A3] hover:bg-white/90"

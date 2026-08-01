@@ -13,6 +13,7 @@ datasource db {
 model User {
   id                       String                  @id @default(cuid())
   email                    String                  @unique
+  username                 String?                 @unique
   phone                    String?                 @unique
   name                     String
   avatar                   String?
@@ -64,6 +65,7 @@ model User {
   matchRequests            MatchRequest[]
   newsArticles             NewsArticle[]
   userCredits              UserCredits?
+  tokenVersion             Int        @default(0) @map("token_version")
   referralCode             String?    @unique @map("referral_code")
   referredBy               String?    @map("referred_by")
   referredUsers            Referral[] @relation("Referrer")
@@ -96,6 +98,7 @@ model User {
   sentInvitations          InstitutionInvitation[] @relation("InvitedBy")
   resultAnalyses           StudentResultsAnalysis[] @relation("ResultAnalysisStudent")
   pushSubscriptions        PushSubscription[]
+  apiKeys                  ApiKey[]
   tutorAvailabilities      TutorAvailability[]     @relation("TutorAvailability")
   studentBookings          Booking[]               @relation("StudentBookings")
   tutorBookings            Booking[]               @relation("TutorBookings")
@@ -467,6 +470,24 @@ model PushSubscription {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model ApiKey {
+  id          String    @id @default(cuid())
+  name        String
+  keyHash     String    @unique
+  keyPrefix   String
+  platform    String
+  scopes      String[]  @default(["resources", "tutors", "stats"])
+  enabled     Boolean   @default(true)
+  rateLimit   Int       @default(1000)
+  lastUsedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime?
+  createdBy   String
+  user        User      @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([platform])
 }
 
 model UserPreferences {

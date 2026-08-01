@@ -12,12 +12,19 @@ const APP_ROUTES = [
   "/tutor",
   "/institution/dashboard",
   "/institution/login",
+  "/institution/apply",
   "/institutions/login",
   "/institutions/signup",
   "/study-room",
   "/onboarding",
   "/login",
   "/signup",
+  "/auth/login",
+  "/auth/register",
+  "/auth/institution-login",
+  "/auth/callback",
+  "/forgot-password",
+  "/update-password",
 ];
 
 export function ConditionalShell({ children }: { children: React.ReactNode }) {

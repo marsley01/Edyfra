@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cache } from "react";
 import { z } from "zod";
 import { Prisma } from "@/generated/client";
 import prisma from "@/lib/prisma";
@@ -18,7 +19,7 @@ export interface OverviewStats {
   admins: { id: string; name: string; email: string; role: string; title: string | null }[];
 }
 
-export async function getInstitutionOverview(institutionId: string): Promise<OverviewStats> {
+export const getInstitutionOverview = cache(async (institutionId: string): Promise<OverviewStats> => {
   const [students, teachers, activeCoaching, recentResults] = await Promise.all([
     prisma.institutionMember.count({
       where: { institutionId, role: "INSTITUTION_STUDENT", status: "ACTIVE" },
@@ -67,7 +68,7 @@ export async function getInstitutionOverview(institutionId: string): Promise<Ove
       title: titleByUser.get(m.user.id) ?? null,
     })),
   };
-}
+});
 
 export interface SubjectTrendPoint {
   term: string; // "Term 1 2026"
@@ -77,9 +78,9 @@ export interface SubjectTrendPoint {
   average: number;
 }
 
-export async function getInstitutionPerformanceTrend(
+export const getInstitutionPerformanceTrend = cache(async (
   institutionId: string,
-): Promise<SubjectTrendPoint[]> {
+): Promise<SubjectTrendPoint[]> => {
   const rows = await prisma.studentResultsAnalysis.findMany({
     where: { institutionId },
     select: { subject: true, term: true, year: true, marks: true },
@@ -116,7 +117,7 @@ export async function getInstitutionPerformanceTrend(
     a.year !== b.year ? a.year - b.year : a.termNum !== b.termNum ? a.termNum - b.termNum : a.subject.localeCompare(b.subject),
   );
   return out;
-}
+});
 
 export interface FlaggedStudent {
   studentUserId: string;
@@ -128,11 +129,11 @@ export interface FlaggedStudent {
   admissionNumber?: string | null;
 }
 
-export async function getFlaggedStudents(
+export const getFlaggedStudents = cache(async (
   institutionId: string,
   currentTerm: number,
   currentYear: number,
-): Promise<FlaggedStudent[]> {
+): Promise<FlaggedStudent[]> => {
   const rows = await prisma.studentResultsAnalysis.findMany({
     where: {
       institutionId,
@@ -155,7 +156,7 @@ export async function getFlaggedStudents(
     flag: r.flag,
     admissionNumber: r.result.admissionNumber,
   }));
-}
+});
 
 export interface ActivityItem {
   id: string;
@@ -166,7 +167,7 @@ export interface ActivityItem {
   actorName?: string | null;
 }
 
-export async function getRecentActivity(institutionId: string): Promise<ActivityItem[]> {
+export const getRecentActivity = cache(async (institutionId: string): Promise<ActivityItem[]> => {
   const rows = await prisma.institutionActivity.findMany({
     where: { institutionId },
     orderBy: { createdAt: "desc" },
@@ -181,7 +182,7 @@ export async function getRecentActivity(institutionId: string): Promise<Activity
     createdAt: r.createdAt,
     actorName: r.actor?.name ?? null,
   }));
-}
+});
 
 // ─── Students ────────────────────────────────────────────────────────────
 
@@ -198,10 +199,10 @@ export interface StudentRow {
   averageMarks: number | null;
 }
 
-export async function getInstitutionStudentsList(
+export const getInstitutionStudentsList = cache(async (
   institutionId: string,
   opts?: { search?: string; form?: string; performance?: "GREEN" | "YELLOW" | "RED" },
-): Promise<StudentRow[]> {
+): Promise<StudentRow[]> => {
   const members = await prisma.institutionMember.findMany({
     where: {
       institutionId,
@@ -281,7 +282,7 @@ export async function getInstitutionStudentsList(
     .filter((s) => (opts?.performance ? s.performance === opts.performance : true));
 
   return result;
-}
+});
 
 function formatForm(level: string | null | undefined, year: number | null | undefined): string {
   if (level === "UNIVERSITY") return `Year ${year ?? 1}`;
@@ -391,7 +392,7 @@ export interface TeacherRow {
   status: "ACTIVE" | "INVITED" | "REMOVED";
 }
 
-export async function getInstitutionTeachersList(institutionId: string): Promise<TeacherRow[]> {
+export const getInstitutionTeachersList = cache(async (institutionId: string): Promise<TeacherRow[]> => {
   const [members, invitations] = await Promise.all([
     prisma.institutionMember.findMany({
       where: { institutionId, role: "INSTITUTION_TEACHER" },
@@ -465,7 +466,7 @@ export async function getInstitutionTeachersList(institutionId: string): Promise
   }
 
   return rows;
-}
+});
 
 const InviteTeacherSchema = z.object({
   name: z.string().min(2).max(120),
@@ -734,11 +735,11 @@ export async function upsertAcademicTerm(input: z.infer<typeof TermSchema>) {
   return { ok: true as const };
 }
 
-export async function getCurrentTerm(institutionId: string) {
+export const getCurrentTerm = cache(async (institutionId: string) => {
   return prisma.academicTerm.findFirst({
     where: { institutionId, isCurrent: true },
   });
-}
+});
 
 // ─── Activity helper (internal) ──────────────────────────────────────────
 

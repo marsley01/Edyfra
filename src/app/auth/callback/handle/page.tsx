@@ -80,7 +80,7 @@ export default function AuthCallbackHandle() {
           </div>
           <div className="flex items-center justify-center gap-3">
             <Link
-              href="/login"
+              href="/auth/login"
               className="h-11 inline-flex items-center px-5 rounded-full bg-foreground text-background text-xs font-black tracking-widest uppercase"
             >
               Go to login

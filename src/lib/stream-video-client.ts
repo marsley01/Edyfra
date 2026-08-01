@@ -17,6 +17,9 @@ async function fetchVideoToken(): Promise<VideoTokenData> {
   });
   if (!res.ok) {
     const body = await res.text().catch(() => '');
+    if (res.status === 503 && body.includes('not configured')) {
+      throw new Error('STREAM_NOT_CONFIGURED');
+    }
     throw new Error(`Failed to get video token (${res.status}): ${body}`);
   }
   return res.json();
@@ -32,7 +35,11 @@ export async function getStreamVideoClient(): Promise<StreamVideoClient | null> 
       tokenData = await fetchVideoToken();
       console.log('[stream-video-client] Token fetched for user:', tokenData.userId);
     } catch (err) {
-      console.error('[stream-video-client] Failed to get video token:', err);
+      if (err instanceof Error && err.message === 'STREAM_NOT_CONFIGURED') {
+        console.log('[stream-video-client] Video not available — Stream API keys not configured');
+      } else {
+        console.error('[stream-video-client] Failed to get video token:', err);
+      }
       pendingPromise = null;
       return null;
     }

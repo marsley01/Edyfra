@@ -3,6 +3,43 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ── Global button feedback ──────────────────────────────────────────────────
+   Tailwind v4 preflight sets buttons to cursor:default. Restore pointer and
+   add instant press feedback (brightness) + smooth hover transitions to ALL
+   buttons, links styled as buttons, and clickable inputs. Uses filter instead
+   of transform so component-level transforms (translate-y-px, scale) coexist. */
+@layer base {
+  button,
+  [role="button"],
+  input[type="submit"],
+  input[type="button"],
+  input[type="reset"],
+  summary,
+  a.button,
+  .primary-btn,
+  .cta-btn {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button:disabled,
+  [role="button"][aria-disabled="true"],
+  input[type="submit"]:disabled,
+  input[type="button"]:disabled {
+    cursor: not-allowed;
+  }
+
+  button:not(:disabled):active,
+  [role="button"]:not([aria-disabled="true"]):active,
+  input[type="submit"]:not(:disabled):active,
+  input[type="button"]:not(:disabled):active,
+  a.button:not([aria-disabled="true"]):active,
+  .primary-btn:not([aria-disabled="true"]):active,
+  .cta-btn:not([aria-disabled="true"]):active {
+    filter: brightness(0.9) saturate(1.05);
+  }
+}
+
 /* ── iOS Safari green screen fix ── */
 /* backdrop-filter triggers a WebKit GPU compositing bug that renders the page
    as a solid green screen. This forces a root compositing layer to prevent it. */

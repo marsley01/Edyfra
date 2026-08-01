@@ -17,6 +17,7 @@ import { logout } from "@/app/actions/auth";
 import { requireInstitutionAdmin } from "@/app/actions/institution-guard";
 import { getPlan } from "@/lib/institution-plans";
 import { cn } from "@/lib/utils";
+import { DashboardPrefetcher } from "@/components/institution/prefetcher";
 
 const NAV: { section: string; items: { href: string; label: string; icon: LucideIcon; exact?: boolean }[] }[] = [
   {
@@ -58,6 +59,7 @@ export default async function PortalLayout({ children }: { children: React.React
   // For simplicity we just render a flat sidebar; the page provides its own title.
   return (
     <div className="min-h-screen bg-[#f8f9fc]">
+      <DashboardPrefetcher />
       <Sidebar
         schoolName={inst.name}
         schoolCode={inst.code ?? "—"}

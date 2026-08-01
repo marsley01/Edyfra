@@ -18,7 +18,10 @@ export default function RoleChoicePage() {
     (async () => {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        window.location.href = "/auth/login";
+        return;
+      }
 
       const { getUserData } = await import("@/app/actions/user");
       const profile = await getUserData();

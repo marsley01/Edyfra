@@ -124,6 +124,7 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   email: 'email',
+  username: 'username',
   phone: 'phone',
   name: 'name',
   avatar: 'avatar',
@@ -152,6 +153,7 @@ exports.Prisma.UserScalarFieldEnum = {
   planStartedAt: 'planStartedAt',
   planExpiresAt: 'planExpiresAt',
   planBillingCycle: 'planBillingCycle',
+  tokenVersion: 'tokenVersion',
   referralCode: 'referralCode',
   referredBy: 'referredBy',
   firebaseUid: 'firebaseUid',
@@ -456,6 +458,21 @@ exports.Prisma.PushSubscriptionScalarFieldEnum = {
   p256dh: 'p256dh',
   auth: 'auth',
   createdAt: 'createdAt'
+};
+
+exports.Prisma.ApiKeyScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  keyHash: 'keyHash',
+  keyPrefix: 'keyPrefix',
+  platform: 'platform',
+  scopes: 'scopes',
+  enabled: 'enabled',
+  rateLimit: 'rateLimit',
+  lastUsedAt: 'lastUsedAt',
+  createdAt: 'createdAt',
+  expiresAt: 'expiresAt',
+  createdBy: 'createdBy'
 };
 
 exports.Prisma.UserPreferencesScalarFieldEnum = {
@@ -1198,6 +1215,7 @@ exports.Prisma.ModelName = {
   Testimonial: 'Testimonial',
   NotificationSettings: 'NotificationSettings',
   PushSubscription: 'PushSubscription',
+  ApiKey: 'ApiKey',
   UserPreferences: 'UserPreferences',
   Challenge: 'Challenge',
   ChallengeCompletion: 'ChallengeCompletion',

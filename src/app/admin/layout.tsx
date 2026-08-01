@@ -36,14 +36,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }: { data: { user: User | null } }) => {
-      if (!user || user.user_metadata?.role?.toUpperCase() !== "ADMIN") {
-        router.push("/dashboard");
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push("/login");
         return;
       }
-      setAdminUser(user);
-    });
-  }, [router]);
+
+      // Authoritative check: Prisma role (founder emails auto-promote).
+      // Also syncs user_metadata so future requests are fast.
+      try {
+        const { checkAdminAccess } = await import("@/app/actions/admin-auth");
+        const { allowed } = await checkAdminAccess();
+        if (allowed) {
+          setAdminUser(user);
+          return;
+        }
+      } catch {
+        // fall through to redirect
+      }
+
+      router.push("/dashboard");
+    })();
+  }, [router, supabase]);
 
   const navItems: NavItem[] = [
     { href: "/admin", label: "Overview", icon: LayoutDashboard },

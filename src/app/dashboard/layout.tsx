@@ -20,8 +20,13 @@ export default async function DashboardLayout({
 
   const dbUser = await prisma.user.findUnique({
     where: { id: user.id },
-    include: { institutionMembers: true },
+    include: { institutionMembers: true, studentProfile: true, tutorProfile: true },
   });
+
+  const hasOnboarded = dbUser?.studentProfile || dbUser?.tutorProfile || dbUser?.role === "ADMIN" || dbUser?.role === "FOUNDER";
+  if (!hasOnboarded) {
+    redirect("/onboarding/choice");
+  }
 
   const isInstitutionStaff = dbUser?.institutionMembers?.some(
     (m) =>
