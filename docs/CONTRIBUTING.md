@@ -1,18 +1,13 @@
 # Contributing
 
+This is a private repository. Contributions are by invitation only.
+
 ## Development Workflow
 
-1. **Fork** the repository
-2. **Create a feature branch** from `main`
-3. **Make changes** following the style guide
-4. **Run checks**:
-   ```bash
-   npm run lint
-   npm run typecheck
-   npm run format:check
-   ```
-5. **Write tests** for new functionality
-6. **Submit a pull request** against `main`
+1. Create a feature branch from `main`
+2. Make changes following internal style guidelines
+3. Run checks before submitting
+4. Submit for review
 
 ## Branch Naming
 
@@ -25,42 +20,36 @@ refactor/what-changed
 
 ## Commit Messages
 
-Follow conventional commits:
-
+Follow conventional commit format:
 ```
-feat: add tutor scheduling availability
-fix: resolve session timeout calculation
-docs: add deployment guide
-refactor: extract auth helper
-test: add login validation tests
+feat: add new feature
+fix: resolve issue
+docs: update documentation
+refactor: improve code structure
 ```
 
 ## Code Style
 
 - TypeScript strict mode
-- No `any` types (use `unknown` and type guards)
-- No `console.log` (use `src/lib/logger.ts`)
-- Named exports preferred over default exports
-- Server Actions return `{ error?: string }` or `{ success: true, data?: T }`
-- API Routes return typed JSON responses
+- No `any` types
+- Server-side logic for data access
+- Validate all user inputs
+- Keep components focused and reusable
 
 ## PR Checklist
 
-- [ ] Code follows style guide
-- [ ] Tests pass
-- [ ] Lint passes (`npm run lint`)
-- [ ] TypeScript compiles (`npm run typecheck`)
-- [ ] No new `console.log` statements
-- [ ] No new `any` types
-- [ ] Environment variables documented in `.env.example`
-- [ ] Changes are backward-compatible
+- Code follows style guide
+- Tests pass
+- Lint passes
+- TypeScript compiles
+- No hardcoded secrets
+- Changes are backward-compatible
 
 ## Code Review
 
-All PRs require at least one review. Reviewers should check for:
+All changes require review for:
 - Correctness
 - Type safety
 - Error handling
-- Performance implications
 - Security implications
 - Accessibility

@@ -1,9 +1,8 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { getAdminApp } from "@/lib/firebase-admin";
-import { getStorage } from "firebase-admin/storage";
 import prisma from "@/lib/prisma";
+import { STORAGE_BUCKETS, uploadFileToBucket } from "@/lib/supabase-storage";
 
 export async function uploadResource(formData: FormData) {
   const supabase = await createClient();
@@ -48,25 +47,13 @@ export async function uploadResource(formData: FormData) {
   const sanitizedExt = fileExt?.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() || "bin";
   const fileName = `${user.id}/${Date.now()}.${sanitizedExt}`;
 
-  // Try uploading to Firebase storage
+  // Try uploading to Supabase Storage
   let storagePath = "";
   try {
-    const app = getAdminApp();
-    const bucket = getStorage(app).bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    
     storagePath = `resources/${fileName}`;
-    const fileRef = bucket.file(storagePath);
-    
-    await fileRef.save(buffer, {
-      metadata: {
-        contentType: file.type || "application/octet-stream",
-        cacheControl: "public, max-age=3600",
-      }
-    });
+    await uploadFileToBucket(STORAGE_BUCKETS.resources, storagePath, file, file.type);
   } catch (uploadError: any) {
-    console.error("Firebase Storage upload error:", uploadError);
+    console.error("Supabase Storage upload error:", uploadError);
     return { error: uploadError.message || "Failed to upload file" };
   }
 

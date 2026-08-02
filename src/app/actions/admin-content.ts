@@ -5,6 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { isFounderEmail } from "@/utils/admin-guard";
+import { STORAGE_BUCKETS, createSignedUrl, isHttpUrl } from "@/lib/supabase-storage";
 
 async function guard() {
   const supabase = await createClient();
@@ -243,20 +244,18 @@ export async function uploadCurriculumContent(formData: FormData) {
   const fileName = `curriculum/${user.id}/${Date.now()}_${safeName}`;
 
   let { error: uploadError } = await adminClient.storage
-    .from("resources")
+    .from(STORAGE_BUCKETS.resources)
     .upload(fileName, file, { cacheControl: "3600", upsert: false });
 
   if (uploadError?.message?.includes("bucket") || uploadError?.message?.includes("not found")) {
-    await adminClient.storage.createBucket("resources", { public: true });
-    const retry = await adminClient.storage.from("resources").upload(fileName, file, { cacheControl: "3600", upsert: false });
+    await adminClient.storage.createBucket(STORAGE_BUCKETS.resources, { public: true });
+    const retry = await adminClient.storage.from(STORAGE_BUCKETS.resources).upload(fileName, file, { cacheControl: "3600", upsert: false });
     uploadError = retry.error;
   }
 
   if (uploadError) {
     return { success: false, error: uploadError.message };
   }
-
-  const { data: { publicUrl } } = adminClient.storage.from("resources").getPublicUrl(fileName);
 
   return createCurriculumResource({
     title: `${curriculumType ? `[${curriculumType}] ` : ""}${title}`,
@@ -266,7 +265,7 @@ export async function uploadCurriculumContent(formData: FormData) {
     topic,
     description,
     price,
-    filePath: publicUrl,
+    filePath: fileName,
   });
 }
 
@@ -330,12 +329,19 @@ export async function deleteResource(resourceId: string) {
     if (resource.filePath) {
       try {
         const adminClient = createAdminClient();
-        const url = new URL(resource.filePath);
-        const marker = "/storage/v1/object/public/resources/";
-        const idx = url.pathname.indexOf(marker);
-        if (idx !== -1) {
-          const storagePath = decodeURIComponent(url.pathname.slice(idx + marker.length));
-          await adminClient.storage.from("resources").remove([storagePath]);
+        let storagePath = resource.filePath;
+        if (isHttpUrl(storagePath)) {
+          const url = new URL(storagePath);
+          const marker = "/storage/v1/object/";
+          const idx = url.pathname.indexOf(marker);
+          if (idx !== -1) {
+            storagePath = decodeURIComponent(url.pathname.slice(idx + marker.length));
+          } else {
+            storagePath = "";
+          }
+        }
+        if (storagePath) {
+          await adminClient.storage.from(STORAGE_BUCKETS.resources).remove([storagePath]);
         }
       } catch (storageErr) {
         console.warn("deleteResource: storage cleanup skipped:", storageErr);

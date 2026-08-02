@@ -2,66 +2,35 @@
 
 ## Platform
 
-Edyfra is designed for **Vercel** deployment with the following configuration:
-
-```json
-// vercel.json
-{ "regions": ["lhr1"] }  // London region for Kenya latency
-```
+Edyfra is deployed on a modern serverless platform with edge functions.
 
 ## Prerequisites
 
-1. **Vercel account** with team/project configured
-2. **Supabase project** (Database + Auth + Storage)
-3. **Stream** application for chat/video
-4. **Upstash** Redis database for rate limiting
-5. **Resend** API key for email
-6. **OpenRouter** or **Google AI** API key for AI features
-7. **M-Pesa** developer credentials (optional)
+- Hosting platform account
+- Managed PostgreSQL database
+- Authentication provider
+- Real-time services (chat/video)
+- Email service
+- AI provider API access
+- Payment gateway credentials (optional)
 
 ## Environment Variables
 
-Copy `.env.example` and configure all variables. See [Environment Variables](#environment-variables) section in README.
+All configuration is handled through environment variables. See `.env.example` for required variables.
 
 ## Deploy Steps
 
-### 1. Database Setup
-
-```bash
-# Push Prisma schema to Supabase PostgreSQL
-npx prisma db push
-
-# Or create a migration
-npx prisma migrate dev --name init
-
-# Run Supabase migrations
-node scripts/run-migration.mjs supabase/migrations/<file>.sql
-```
-
-### 2. Build & Deploy
-
-```bash
-# Vercel CLI
-vercel --prod
-
-# Or connect GitHub repo to Vercel for auto-deploy
-```
-
-### 3. Post-Deployment
-
-- Verify health endpoint: `GET /api/health`
-- Test authentication flow
-- Configure custom domain in Vercel dashboard
-- Set up monitoring (Vercel Analytics + Speed Insights are built-in)
+1. Set up the managed database and run migrations
+2. Configure environment variables in the hosting platform
+3. Deploy the application
+4. Verify the health endpoint
+5. Test authentication and core flows
+6. Configure custom domain and monitoring
 
 ## CI/CD
 
-GitHub Actions workflows are in `.github/workflows/`:
-
-- **`ci.yml`** — Lint, typecheck, and build on every PR
-- **`test.yml`** — Run test suite
-- **`codeql.yml`** — CodeQL security analysis
+Automated pipelines run linting, type checking, and builds on every change.
 
 ## Production Checklist
 
-See `DEPLOYMENT_CHECKLIST.md` for a detailed production readiness checklist.
+See internal checklist for production readiness.

@@ -3,8 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { getAdminApp } from "@/lib/firebase-admin";
-import { getStorage } from "firebase-admin/storage";
+import { STORAGE_BUCKETS, createSignedUrl, isHttpUrl, uploadFileToBucket } from "@/lib/supabase-storage";
 
 const DOWNLOAD_LINK_TTL_SECONDS = 60 * 5; // 5 minutes
 
@@ -42,20 +41,9 @@ export async function uploadAndCreateResource(formData: FormData) {
   const storagePath = `resources/${user.id}/${Date.now()}.${fileExt}`;
 
   try {
-    const app = getAdminApp();
-    const bucket = getStorage(app).bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const fileRef = bucket.file(storagePath);
-    
-    await fileRef.save(buffer, {
-      metadata: {
-        contentType: file.type || "application/octet-stream",
-        cacheControl: "public, max-age=3600",
-      }
-    });
+    await uploadFileToBucket(STORAGE_BUCKETS.resources, storagePath, file, file.type);
   } catch (uploadError: any) {
-    console.error("Firebase Storage upload error:", uploadError);
+    console.error("Supabase Storage upload error:", uploadError);
     return { error: uploadError.message || "Failed to upload file" };
   }
 
@@ -148,7 +136,7 @@ export async function getResourceDownloadUrl(
   const filePath = resource.filePath || "";
 
   // Legacy rows store a public URL — open it directly.
-  if (/^https?:\/\//i.test(filePath)) {
+  if (isHttpUrl(filePath)) {
     try {
       await prisma.resource.update({
         where: { id: resourceId },
@@ -160,23 +148,12 @@ export async function getResourceDownloadUrl(
     return { url: filePath, filename: resource.title };
   }
 
-  // New rows: generate a short-lived signed URL via Firebase.
+  // New rows: generate a short-lived signed URL via Supabase Storage.
   if (!filePath) return { error: "Resource file is missing. Contact the seller." };
 
   try {
-    const app = getAdminApp();
-    // Support either direct path if Firebase or "resources/" prefix for new files.
-    // Legacy supabase files won't work easily here unless they were migrated.
-    // If the path doesn't start with resources/, it might be a supabase path, but we'll try it anyway.
-    const bucket = getStorage(app).bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
-    const fileRef = bucket.file(filePath);
-
-    const [url] = await fileRef.getSignedUrl({
-      version: 'v4',
-      action: 'read',
-      expires: Date.now() + DOWNLOAD_LINK_TTL_SECONDS * 1000,
-      responseDisposition: `attachment; filename="${resource.title.replace(/[^a-zA-Z0-9-_\.]/g, '_')}.${filePath.split(".").pop() || "file"}"`,
-    });
+    const filename = `${resource.title.replace(/[^a-zA-Z0-9-_\.]/g, '_')}.${filePath.split(".").pop() || "file"}`;
+    const url = await createSignedUrl(STORAGE_BUCKETS.resources, filePath, DOWNLOAD_LINK_TTL_SECONDS, filename);
 
     if (!url) {
       return { error: "Could not generate download link. Please try again." };

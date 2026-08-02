@@ -126,11 +126,9 @@ export default function UploadResourcePage() {
         return;
       }
 
-      const { data: { publicUrl } } = supabase.storage
-        .from("resources")
-        .getPublicUrl(fileName);
-
-      // 2. Create resource via API (uses Prisma — no RLS)
+      // 2. Create resource via API (uses Prisma — no RLS).
+      //    We store the storage path (not a public URL) so downloads
+      //    are served through short-lived signed URLs.
       const res = await fetch("/api/resources", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -142,7 +140,7 @@ export default function UploadResourcePage() {
           topic: topic || undefined,
           description: description || undefined,
           price: price || 0,
-          file_path: publicUrl,
+          file_path: fileName,
         }),
         signal: AbortSignal.timeout(15000),
       });

@@ -80,8 +80,8 @@ export default function TutorOnboardingPage() {
     fd.append("file", file);
     fd.append("prefix", prefix);
     const result = await uploadKycFile(fd);
-    if (result.success && result.url) {
-      setFormData(prev => ({ ...prev, [field]: result.url! }));
+    if (result.success && (result.url || result.path)) {
+      setFormData(prev => ({ ...prev, [field]: result.path || result.url! }));
     } else {
       console.error("Upload failed:", result.error);
     }
