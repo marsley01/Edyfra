@@ -47,6 +47,7 @@ interface UpcomingBooking {
   durationMinutes: number;
   status: string;
   tutor: { name: string, avatar: string | null };
+  meetingUrl?: string | null;
 }
 
 export default function DashboardPageContent() {
