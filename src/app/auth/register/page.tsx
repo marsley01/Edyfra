@@ -18,6 +18,7 @@ function isValidUsername(v: string) {
 }
 
 type UsernameStatus = 'idle' | 'checking' | 'available' | 'taken' | 'invalid'
+type EmailStatus = 'idle' | 'checking' | 'available' | 'taken' | 'invalid'
 
 const STEPS = [
   { title: 'Your name', subtitle: 'What should we call you?', icon: Sparkles },
@@ -36,6 +37,7 @@ export default function RegisterPage() {
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [emailStatus, setEmailStatus] = useState<EmailStatus>('idle')
   const [username, setUsername] = useState('')
   const [usernameStatus, setUsernameStatus] = useState<UsernameStatus>('idle')
   const [password, setPassword] = useState('')
@@ -69,6 +71,23 @@ export default function RegisterPage() {
     }, 500)
   }, [])
 
+  const checkEmail = useCallback((val: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (!val) { setEmailStatus('idle'); return }
+    if (!isValidEmail(val)) { setEmailStatus('invalid'); return }
+    setEmailStatus('checking')
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/auth/check-email?q=${encodeURIComponent(val)}`)
+        if (!res.ok) throw new Error('check-failed')
+        const data = await res.json()
+        setEmailStatus(data.available ? 'available' : 'taken')
+      } catch {
+        setEmailStatus('idle')
+      }
+    }, 500)
+  }, [])
+
   // Validate current step; returns true if valid
   const validateStep = (s: number): string | null => {
     if (s === 0) {
@@ -77,6 +96,8 @@ export default function RegisterPage() {
     if (s === 1) {
       if (!email.trim()) return 'Enter your email address'
       if (!isValidEmail(email)) return "That doesn't look like a valid email"
+      if (emailStatus === 'checking') return 'Still checking that email...'
+      if (emailStatus === 'taken') return 'An account with this email already exists. Try signing in instead.'
     }
     if (s === 2) {
       if (usernameStatus === 'checking') return 'Still checking that username...'
@@ -167,6 +188,23 @@ export default function RegisterPage() {
   }
 
   const progress = ((step + 1) / STEPS.length) * 100
+  const emailHelpText = () => {
+    switch (emailStatus) {
+      case 'available': return 'Available — nice pick!'
+      case 'taken': return 'An account with this email already exists'
+      case 'invalid': return 'That doesn\'t look like a valid email'
+      case 'checking': return 'Checking...'
+      default: return ''
+    }
+  }
+  const emailTextColor = () => {
+    switch (emailStatus) {
+      case 'available': return 'text-green-500'
+      case 'taken': return 'text-red-500'
+      case 'invalid': return 'text-amber-500'
+      default: return ''
+    }
+  }
   const usernameHelpText = () => {
     switch (usernameStatus) {
       case 'available': return 'Available — nice pick!'
@@ -282,14 +320,26 @@ export default function RegisterPage() {
                   <input
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => { setEmail(e.target.value); checkEmail(e.target.value) }}
                     onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); goNext() } }}
                     required
                     autoComplete="email"
                     placeholder="you@example.com"
                     autoFocus
-                    className="h-14 w-full rounded-2xl px-6 border border-border bg-secondary font-medium text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-4 focus:ring-primary/20 transition-all"
+                    className={cn(
+                      "h-14 w-full rounded-2xl px-6 border bg-secondary font-medium text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-4 focus:ring-primary/20 transition-all",
+                      emailStatus === 'taken' || emailStatus === 'invalid' ? 'border-red-500/40' : emailStatus === 'available' ? 'border-green-500/40' : 'border-border'
+                    )}
                   />
+                  <div className="flex items-center gap-1.5 ml-4">
+                    {emailStatus === 'checking' && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+                    {emailStatus === 'available' && <Check className="h-3 w-3 text-green-500" />}
+                    {emailStatus === 'taken' && <AlertCircle className="h-3 w-3 text-red-500" />}
+                    {emailStatus === 'invalid' && <AlertCircle className="h-3 w-3 text-amber-500" />}
+                    <p className={cn("text-xs font-medium", emailTextColor() || 'text-muted-foreground')}>
+                      {emailHelpText()}
+                    </p>
+                  </div>
                 </div>
               )}
 

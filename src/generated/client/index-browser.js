@@ -1027,6 +1027,26 @@ exports.Prisma.CsvUploadScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.CalendarConnectionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  provider: 'provider',
+  accessToken: 'accessToken',
+  refreshToken: 'refreshToken',
+  expiresAt: 'expiresAt',
+  scope: 'scope',
+  calendarId: 'calendarId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CalendarOAuthStateScalarFieldEnum = {
+  id: 'id',
+  state: 'state',
+  userId: 'userId',
+  expiresAt: 'expiresAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1288,7 +1308,9 @@ exports.Prisma.ModelName = {
   TeacherSubjectAssignment: 'TeacherSubjectAssignment',
   InstitutionInvitation: 'InstitutionInvitation',
   GroupMatchRequest: 'GroupMatchRequest',
-  CsvUpload: 'CsvUpload'
+  CsvUpload: 'CsvUpload',
+  CalendarConnection: 'CalendarConnection',
+  CalendarOAuthState: 'CalendarOAuthState'
 };
 
 /**

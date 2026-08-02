@@ -5,7 +5,8 @@ import { rateLimit, getRateLimitKey, getConfig } from '@/lib/rate-limit'
 const ALLOWED_ORIGINS = [
   'https://edyfra-v2.vercel.app',
   'https://edyfra.com',
-  ...(process.env.NODE_ENV === 'development' ? ['http://localhost:3000'] : []),
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
   ...(process.env.EXTERNAL_ALLOWED_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean) || []),
 ]
 

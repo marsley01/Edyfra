@@ -17,6 +17,7 @@ import {
   pythonExpireBookings,
   pythonCreateBookingReminders,
 } from "@/lib/booking-client";
+import { createCalendarEvent } from "@/lib/calendar/google-calendar";
 
 function formatDay(date: Date): string {
   return date.toLocaleDateString("en-KE", { weekday: "short", day: "numeric", month: "short" });
@@ -112,6 +113,38 @@ export async function updateBookingStatus(bookingId: string, status: string, rea
         }
         if (rows.length > 0) {
           await pythonCreateBookingReminders(bookingId, rows);
+        }
+
+        // Create Google Calendar events for both student and tutor
+        try {
+          const startDate = new Date(sessionDate);
+          const endDate = new Date(startDate.getTime() + (booking.durationMinutes || 60) * 60 * 1000);
+
+          const eventTitle = `${booking.subject} Session${booking.topic ? `: ${booking.topic}` : ""}`;
+          const eventDescription = `Edyfra study session with ${booking.tutorName || "your tutor"}. Join at: /study-room/${bookingId}`;
+
+          await Promise.all([
+            createCalendarEvent({
+              userId: booking.studentId,
+              summary: eventTitle,
+              description: eventDescription,
+              start: startDate,
+              end: endDate,
+              location: "https://edyfra-v2.vercel.app/study-room/" + bookingId,
+            }),
+            booking.tutorId
+              ? createCalendarEvent({
+                  userId: booking.tutorId,
+                  summary: eventTitle,
+                  description: eventDescription,
+                  start: startDate,
+                  end: endDate,
+                  location: "https://edyfra-v2.vercel.app/study-room/" + bookingId,
+                })
+              : Promise.resolve(null),
+          ]);
+        } catch (e) {
+          console.error("Failed to create calendar events:", e);
         }
       } catch (e) {
         console.error("Failed to schedule booking reminders:", e);

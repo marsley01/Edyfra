@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Zap, BookOpen, Users, ArrowRight, GraduationCap, Clock, CheckCircle2, Loader2, Sparkles } from "lucide-react";
+import { Zap, BookOpen, Users, ArrowRight, GraduationCap, Clock, CheckCircle2, Loader2, Sparkles, Download } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useSafeUserData, useSessionCounter } from "@/hooks/useAntigravityFixes";
@@ -219,7 +219,7 @@ export default function DashboardPageContent() {
   return (
     <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-6 md:space-y-10 animate-in fade-in duration-1000 font-sans">
       {/* Personalized Greeting */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6 pb-6 md:pb-8 border-b border-border">
+      <div data-tour="tour-greeting" className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6 pb-6 md:pb-8 border-b border-border">
          <div className="space-y-2 sm:space-y-3">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tightest leading-none">
               <span className="text-primary">{greetingText}, {firstName}</span> {emoji}
@@ -229,7 +229,7 @@ export default function DashboardPageContent() {
             </p>
          </div>
          <Link href="/dashboard/study" target="_blank" rel="noopener noreferrer" className="shrink-0">
-           <Button className="w-full sm:w-auto bg-foreground text-background hover:bg-foreground/90 font-black text-xs tracking-widest px-8 h-12 sm:h-14 rounded-full uppercase shadow-xl transition-all active:scale-95 gap-3">
+           <Button data-tour="tour-start-session" className="w-full sm:w-auto bg-foreground text-background hover:bg-foreground/90 font-black text-xs tracking-widest px-8 h-12 sm:h-14 rounded-full uppercase shadow-xl transition-all active:scale-95 gap-3">
              <Zap className="h-4 w-4 fill-current text-primary" />
              Start Session
            </Button>
@@ -242,7 +242,7 @@ export default function DashboardPageContent() {
       {/* Main Grid Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 md:gap-6">
         {/* Activity Log */}
-        <div className="lg:col-span-2 p-5 sm:p-7 md:p-10 rounded-2xl sm:rounded-3xl bg-secondary border border-border/50 space-y-4 sm:space-y-6 relative overflow-hidden">
+        <div data-tour="tour-activity" className="lg:col-span-2 p-5 sm:p-7 md:p-10 rounded-2xl sm:rounded-3xl bg-secondary border border-border/50 space-y-4 sm:space-y-6 relative overflow-hidden">
            <div className="relative z-10 space-y-1">
               <h3 className="text-xl sm:text-2xl font-black tracking-tight">Your Activity</h3>
               <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{recentSessions.length > 0 ? `${recentSessions.length} recent sessions` : "Your recent activity will show up here"}</p>
@@ -267,16 +267,21 @@ export default function DashboardPageContent() {
                            With {booking.tutor.name} · {new Date(booking.date).toLocaleDateString()} {booking.startTime}
                          </p>
                        </div>
-                       <div className="flex flex-col items-end gap-1.5 shrink-0">
-                         <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-full ${booking.status === 'confirmed' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-yellow-500/10 text-yellow-500'}`}>
-                           {booking.status}
-                         </span>
-                         {booking.status === 'confirmed' && (
-                           <Button onClick={() => window.open(`/study-room/${booking.id}`, '_blank')} className="bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-full h-7 px-3">
-                             Join
-                           </Button>
-                         )}
-                       </div>
+                        <div className="flex flex-col items-end gap-1.5 shrink-0">
+                          <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-full ${booking.status === 'confirmed' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-yellow-500/10 text-yellow-500'}`}>
+                            {booking.status}
+                          </span>
+                          {booking.status === 'confirmed' && (
+                            <div className="flex items-center gap-1.5">
+                              <Button onClick={() => window.open(`/study-room/${booking.id}`, '_blank')} className="bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-full h-7 px-3">
+                                Join
+                              </Button>
+                              <a href={`/api/calendar/${booking.id}`} download title="Add to Calendar" className="inline-flex items-center justify-center rounded-full h-7 w-7 border border-primary/20 hover:bg-primary/5 text-primary">
+                                <Download className="h-3.5 w-3.5" />
+                              </a>
+                            </div>
+                          )}
+                        </div>
                      </div>
                    ))}
                  </div>
@@ -326,14 +331,16 @@ export default function DashboardPageContent() {
         </div>
 
         {/* Daily Challenge Card — lazy loaded */}
-        <DailyChallengeCard
-          userId={userData.id}
-          educationLevel={userData.educationLevel as string}
-        />
+        <div data-tour="tour-daily-challenge">
+          <DailyChallengeCard
+            userId={userData.id}
+            educationLevel={userData.educationLevel as string}
+          />
+        </div>
       </div>
 
-       {/* Referral Card */}
-       <div className="p-5 sm:p-7 md:p-10 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-purple-500/5 to-pink-500/5 border border-purple-500/20 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 group hover:shadow-xl transition-all duration-500">
+        {/* Referral Card */}
+        <div data-tour="tour-referral" className="p-5 sm:p-7 md:p-10 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-purple-500/5 to-pink-500/5 border border-purple-500/20 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 group hover:shadow-xl transition-all duration-500">
           <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500 border border-purple-500/20 group-hover:scale-110 group-hover:bg-purple-500 group-hover:text-white transition-all duration-300 flex-shrink-0">
              <Users className="h-6 w-6" />
           </div>
@@ -370,8 +377,8 @@ export default function DashboardPageContent() {
           </button>
        </div>
 
-       {/* Expert Network Highlight */}
-       <div className="p-5 sm:p-7 md:p-10 rounded-2xl sm:rounded-3xl bg-background border border-border shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 group hover:shadow-xl transition-all duration-500">
+        {/* Expert Network Highlight */}
+        <div data-tour="tour-find-tutor" className="p-5 sm:p-7 md:p-10 rounded-2xl sm:rounded-3xl bg-background border border-border shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 group hover:shadow-xl transition-all duration-500">
           <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-secondary flex items-center justify-center text-primary border border-border group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-300 flex-shrink-0">
              <Users className="h-6 w-6" />
           </div>

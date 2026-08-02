@@ -1,8 +1,8 @@
 "use server";
 
-import { createClient } from "@/utils/supabase/server";
 import { RSSService, RSSItem } from "@/utils/rss-service";
 import { getCached, TTL } from "@/lib/cache";
+import prisma from "@/lib/prisma";
 
 export interface NewsArticle {
   id: string;
@@ -55,31 +55,33 @@ function kenyanBoost(item: { source: string; title: string }): number {
 
 export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
   return getCached(`news:latest:${limit}`, TTL.KNOWLEDGE_FEED, async () => {
-  const supabase = await createClient();
-
   // Fetch extra articles to allow room for Kenyan prioritization
   const fetchLimit = Math.max(limit, 50);
 
-  const { data, error } = await supabase
-    .from("news_articles")
-    .select("*")
-    .eq("status", "published")
-    .order("published_at", { ascending: false })
-    .limit(fetchLimit);
+  let articles: Awaited<ReturnType<typeof prisma.newsArticle.findMany>> = [];
+  try {
+    articles = await prisma.newsArticle.findMany({
+      where: { status: "published" },
+      orderBy: [{ publishedAt: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }],
+      take: fetchLimit,
+    });
+  } catch (error) {
+    console.error("News DB query failed:", error);
+  }
 
   // If we have local database news, apply fallback images and return it
-  if (data && data.length > 0) {
-    return data.map((a: Record<string, any>): NewsArticle => ({
+  if (articles.length > 0) {
+    return articles.map((a) => ({
       id: a.id,
       title: a.title,
       slug: a.slug,
       excerpt: a.summary || "",
-      content: a.body || a.content || "",
-      cover_image: a.coverImage || a.cover_image || getFallbackImage(a.category, a.title, a.authorId ? "Author" : "Edyfra Desk"),
+      content: a.body || "",
+      cover_image: a.coverImage || getFallbackImage(a.category, a.title, a.authorId ? "Author" : "Edyfra Desk"),
       category: a.category,
       author: a.authorId ? "Author" : "Edyfra Desk",
-      published_at: a.publishedAt || a.createdAt,
-      reading_time: a.reading_time || undefined,
+      published_at: (a.publishedAt ?? a.createdAt).toISOString(),
+      reading_time: undefined,
     })).slice(0, limit);
   }
 
@@ -146,19 +148,15 @@ function slugify(text: string) {
 }
 
 export async function getNewsBySlug(slug: string): Promise<NewsArticle | null> {
-  const supabase = await createClient();
-  
   if (slug.startsWith("rss-")) {
     const news = await getLatestNews();
     const article = news.find(a => a.slug === slug);
     
     if (article && article.content.startsWith("http")) {
       // 1. Check if we already generated and cached this article
-      const { data: existing } = await supabase
-        .from("news_articles")
-        .select("*")
-        .eq("title", article.title)
-        .single();
+      const existing = await prisma.newsArticle.findFirst({
+        where: { title: article.title },
+      });
 
       if (existing) {
         return {
@@ -170,7 +168,7 @@ export async function getNewsBySlug(slug: string): Promise<NewsArticle | null> {
           cover_image: existing.coverImage || article.cover_image,
           category: existing.category,
           author: "Edyfra AI",
-          published_at: existing.publishedAt || article.published_at,
+          published_at: (existing.publishedAt ?? existing.createdAt).toISOString(),
           reading_time: "2m"
         };
       }
@@ -189,15 +187,18 @@ Keep it under 3 paragraphs (max 200 words). Focus on why it matters to students,
         article.author = "Edyfra AI";
 
         // 3. Cache it in the database to save tokens on future views
-        await supabase.from("news_articles").insert({
-          title: article.title,
-          slug: slugify(article.title) + "-" + Math.floor(Math.random() * 1000),
-          category: article.category,
-          body: aiContent,
-          summary: article.excerpt,
-          status: "published",
-          coverImage: article.cover_image,
-          publishedAt: new Date().toISOString()
+        await prisma.newsArticle.create({
+          data: {
+            title: article.title,
+            slug: slugify(article.title) + "-" + Math.floor(Math.random() * 1000),
+            category: article.category,
+            body: aiContent,
+            summary: article.excerpt,
+            status: "published",
+            isDraft: false,
+            coverImage: article.cover_image,
+            publishedAt: new Date(),
+          },
         });
       } catch (err) {
         console.error("AI News Generation failed:", err);
@@ -208,22 +209,18 @@ Keep it under 3 paragraphs (max 200 words). Focus on why it matters to students,
     return article || null;
   }
 
-  const { data, error } = await supabase
-    .from("news_articles")
-    .select("*")
-    .eq("slug", slug)
-    .single();
+  const data = await prisma.newsArticle.findUnique({ where: { slug } });
 
-  if (error || !data) return null;
+  if (!data) return null;
   return {
     id: data.id,
     title: data.title,
     slug: data.slug,
     excerpt: data.summary || "",
     content: data.body,
-    cover_image: data.coverImage || data.cover_image || getFallbackImage(data.category, data.title, data.authorId ? "Author" : "Edyfra Desk"),
+    cover_image: data.coverImage || getFallbackImage(data.category, data.title, data.authorId ? "Author" : "Edyfra Desk"),
     category: data.category,
     author: data.authorId ? "Author" : "Edyfra Desk",
-    published_at: data.publishedAt || data.createdAt
+    published_at: (data.publishedAt ?? data.createdAt).toISOString()
   };
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, CalendarDays, Settings, Clock, ChevronRight } from "lucide-react";
+import { Loader2, CalendarDays, Settings, Clock, ChevronRight, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { getUpcomingBookings, getIncomingBookingRequests, getTutorAvailability } from "@/app/actions/bookings";
@@ -169,6 +169,9 @@ export default function TutorSchedulePage() {
                         <Clock className="h-3.5 w-3.5" />
                         {formatTime(b.startTime, b.endTime)}
                       </div>
+                      <a href={`/api/calendar/${b.id}`} download title="Add to Calendar" className="inline-flex items-center justify-center h-8 w-8 rounded-lg hover:bg-primary/5 shrink-0 text-primary">
+                        <Download className="h-3.5 w-3.5" />
+                      </a>
                     </div>
                   ))}
                 </div>

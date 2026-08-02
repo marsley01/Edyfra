@@ -2,8 +2,9 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, CheckCircle2 } from "lucide-react";
+import { Star } from "lucide-react";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
+import VerifiedBadge from "@/components/ui/verified-badge";
 import type { TutorWithProfile } from "./types";
 import { BookingDialog } from "./BookingDialog";
 
@@ -36,11 +37,9 @@ export function TutorCard({ tutor }: TutorCardProps) {
               )}
             </div>
             <div>
-              <h3 className="text-xl font-black tracking-tightest flex items-center gap-2">
+              <h3 className="text-xl font-black tracking-tightest flex flex-wrap items-center gap-2">
                 {tutor.name}
-                {profile?.isVerified && (
-                  <CheckCircle2 className="h-4 w-4 text-primary" />
-                )}
+                {profile?.isVerified && <VerifiedBadge showText={false} className="h-5 w-5 rounded-full p-0 border-0 bg-transparent text-primary" />}
               </h3>
               <div className="flex items-center gap-1 text-yellow-500 mt-1">
                 <Star className="h-3 w-3 fill-current" />
@@ -56,6 +55,12 @@ export function TutorCard({ tutor }: TutorCardProps) {
             </Badge>
           )}
         </div>
+
+        {profile?.isVerified && (
+          <div className="flex items-center gap-2">
+            <VerifiedBadge />
+          </div>
+        )}
 
         <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed flex-1">
           {profile?.bio || "No bio provided."}

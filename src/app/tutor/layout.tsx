@@ -4,6 +4,53 @@ import { TutorSidebar } from "@/components/dashboard/TutorSidebar";
 import { TutorMobileNav } from "@/components/dashboard/TutorMobileNav";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { TutorVideoShell } from "./TutorVideoShell";
+import TourGuide from "@/components/tour/TourGuide";
+import TourTrigger from "@/components/tour/TourTrigger";
+
+const TUTOR_DASHBOARD_STEPS = [
+  {
+    target: "tour-greeting",
+    title: "Welcome, Tutor",
+    description: "This is your tutor dashboard. You can see your schedule, earnings, and student requests here.",
+    placement: "bottom" as const,
+  },
+  {
+    target: "tour-status-toggle",
+    title: "Go online",
+    description: "Toggle this switch to let students know you are available for sessions. When offline, you won't receive new match requests.",
+    placement: "bottom" as const,
+  },
+  {
+    target: "tour-match-requests",
+    title: "Student requests",
+    description: "See real-time requests from students who need help with your subjects. Accept and join a room instantly.",
+    placement: "top" as const,
+  },
+  {
+    target: "tour-stats",
+    title: "Your stats",
+    description: "Track your active sessions, completed sessions, response rate, and rating all at a glance.",
+    placement: "bottom" as const,
+  },
+  {
+    target: "tour-schedule",
+    title: "Your schedule",
+    description: "View upcoming booked sessions with students. You can join rooms directly from here when it's time.",
+    placement: "top" as const,
+  },
+  {
+    target: "tour-availability",
+    title: "Manage availability",
+    description: "Set your bookable time slots so students know when you are free. Update this whenever your schedule changes.",
+    placement: "left" as const,
+  },
+  {
+    target: "tour-sidebar",
+    title: "Navigation hub",
+    description: "Access all tutor features from here — schedule, requests, sessions, community, and settings.",
+    placement: "right" as const,
+  },
+];
 
 export default async function TutorLayout({
   children,
@@ -41,6 +88,9 @@ export default async function TutorLayout({
 
           <div className="p-2 lg:p-6 max-w-6xl mx-auto w-full">{children}</div>
         </main>
+
+        <TourGuide tourId="tutor-dashboard" steps={TUTOR_DASHBOARD_STEPS} />
+        <TourTrigger tourId="tutor-dashboard" />
       </div>
     </TutorVideoShell>
   );

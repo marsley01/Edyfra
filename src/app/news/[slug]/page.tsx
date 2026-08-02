@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { createClient } from "@/utils/supabase/server";
+import prisma from "@/lib/prisma";
 import { JsonLd } from "@/components/json-ld";
 import NewsArticleClient from "./NewsArticleClient";
 
@@ -12,12 +12,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
 
-  const supabase = await createClient();
-  const { data: article } = await supabase
-    .from("news_articles")
-    .select("title, summary, slug, cover_image, published_at, category")
-    .eq("slug", slug)
-    .single();
+  const article = await prisma.newsArticle.findUnique({ where: { slug } });
 
   if (!article) {
     return { title: "Article Not Found", robots: { index: false } };
@@ -31,26 +26,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: article.summary || undefined,
       type: "article",
       url: `${siteUrl}/news/${article.slug}`,
-      images: article.cover_image ? [{ url: article.cover_image }] : undefined,
-      publishedTime: article.published_at,
+      images: article.coverImage ? [{ url: article.coverImage }] : undefined,
+      publishedTime: article.publishedAt?.toISOString() || undefined,
       tags: [article.category],
     },
     twitter: {
       card: "summary_large_image",
       title: article.title,
       description: article.summary || undefined,
-      images: article.cover_image ? [article.cover_image] : undefined,
+      images: article.coverImage ? [article.coverImage] : undefined,
     },
   };
 }
 
 async function getArticleJsonLd(slug: string) {
-  const supabase = await createClient();
-  const { data: article } = await supabase
-    .from("news_articles")
-    .select("title, summary, slug, cover_image, published_at, category, author, body")
-    .eq("slug", slug)
-    .single();
+  const article = await prisma.newsArticle.findUnique({ where: { slug } });
 
   if (!article) return null;
 
@@ -59,11 +49,11 @@ async function getArticleJsonLd(slug: string) {
     "@type": "NewsArticle",
     headline: article.title,
     description: article.summary || undefined,
-    image: article.cover_image || undefined,
-    datePublished: article.published_at,
+    image: article.coverImage || undefined,
+    datePublished: article.publishedAt?.toISOString() || undefined,
     author: {
       "@type": "Person",
-      name: article.author || "Edyfra",
+      name: "Edyfra",
     },
     publisher: {
       "@type": "Organization",

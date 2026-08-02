@@ -108,6 +108,7 @@ model User {
   sessionFlags             SessionFlag[]              @relation("TutorSessionFlags")
   favorites                FavoriteUser[]             @relation("UserFavorites")
   favoritedBy              FavoriteUser[]             @relation("FavoritedBy")
+  calendarConnections      CalendarConnection[]
 
   @@index([role])
 }
@@ -1474,4 +1475,31 @@ model CsvUpload {
   totalRows     Int
   createdAt     DateTime        @default(now())
   results       StudentResult[]
+}
+
+model CalendarConnection {
+  id           String    @id @default(cuid())
+  userId       String    @unique
+  provider     String    @default("google")
+  accessToken  String
+  refreshToken String?
+  expiresAt    DateTime?
+  scope        String?
+  calendarId   String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model CalendarOAuthState {
+  id        String   @id @default(cuid())
+  state     String   @unique
+  userId    String
+  expiresAt DateTime
+
+  @@index([state])
+  @@index([userId])
 }

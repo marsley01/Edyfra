@@ -356,13 +356,13 @@ export default function TutorDashboard() {
       </AnimatePresence>
 
       {/* Premium Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div data-tour="tour-greeting" className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tightest">{(() => { const g = getTimeGreeting(tutorName); return `${g.text}${g.key === "late" ? "?" : "."} ${g.emoji}`; })()}</h1>
           <p className="text-muted-foreground text-sm sm:text-base font-medium">Here is your upcoming teaching schedule.</p>
         </div>
 
-        <div className={`flex items-center gap-4 px-5 py-3 rounded-2xl border-2 transition-all duration-500 shadow-lg self-start sm:self-auto ${isOnline ? "border-primary bg-primary/5 shadow-primary/5" : "border-border bg-secondary"}`}>
+        <div data-tour="tour-status-toggle" className={`flex items-center gap-4 px-5 py-3 rounded-2xl border-2 transition-all duration-500 shadow-lg self-start sm:self-auto ${isOnline ? "border-primary bg-primary/5 shadow-primary/5" : "border-border bg-secondary"}`}>
           <div className="flex items-center gap-3">
             <div className={`w-2.5 h-2.5 rounded-full ${isOnline ? "bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-muted-foreground"}`} />
             <div className="flex flex-col">
@@ -405,7 +405,7 @@ export default function TutorDashboard() {
       {/* Inline Match Requests — instant-help feed right on the dashboard.
           Tutor can accept from here without navigating to /tutor/requests. */}
       {isOnline && (
-        <div className="space-y-4">
+        <div data-tour="tour-match-requests" className="space-y-4">
           <div className="flex items-center justify-between px-2">
             <div className="space-y-1">
               <h2 className="text-2xl font-black tracking-tightest flex items-center gap-2">
@@ -484,7 +484,7 @@ export default function TutorDashboard() {
       )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div data-tour="tour-stats" className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
           { label: "Active Sessions", value: profile?.currentActiveSessions || 0, icon: Activity, color: "text-blue-500", bg: "bg-blue-500/10" },
           { label: "Completed", value: profile?.totalSessions || 0, icon: Sparkles, color: "text-emerald-500", bg: "bg-emerald-500/10" },
@@ -511,7 +511,7 @@ export default function TutorDashboard() {
 
           <div className="flex items-center justify-between px-2">
             <div className="space-y-1">
-              <h2 className="text-3xl font-black tracking-tightest">Your Schedule</h2>
+              <h2 data-tour="tour-schedule" className="text-3xl font-black tracking-tightest">Your Schedule</h2>
               <p className="text-muted-foreground font-medium">Upcoming booked sessions with students.</p>
             </div>
             <Button onClick={loadBookings} variant="ghost" className="rounded-full text-xs font-black uppercase tracking-widest text-primary hover:bg-primary/5">
@@ -632,7 +632,7 @@ export default function TutorDashboard() {
         </div>
 
         <div className="space-y-8">
-           <Card className="border-none bg-primary text-white rounded-[3rem] overflow-hidden shadow-2xl shadow-primary/20">
+           <Card data-tour="tour-availability" className="border-none bg-primary text-white rounded-[3rem] overflow-hidden shadow-2xl shadow-primary/20">
               <CardHeader className="p-10 pb-4">
                  <h3 className="text-2xl font-black tracking-tightest flex items-center gap-3">
                     <Clock className="h-6 w-6" /> Availability
