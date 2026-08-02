@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,10 +14,15 @@ export default function AdminInsightsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getAdminDashboardMetrics().then((m) => {
-      setMetrics(m);
-      setLoading(false);
-    });
+    getAdminDashboardMetrics()
+      .then((m) => {
+        setMetrics(m);
+        setLoading(false);
+      })
+      .catch(() => {
+        toast.error("Failed to load metrics");
+        setLoading(false);
+      });
   }, []);
 
   if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;

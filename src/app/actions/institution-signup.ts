@@ -167,20 +167,9 @@ export async function submitInstitutionApplication(
         data: {
           name: data.schoolName,
           type: data.schoolType,
-          schoolType: data.schoolType as SchoolType,
-          curriculum: data.curriculum as Curriculum,
-          county: data.county,
-          subCounty: data.subCounty,
-          studentCount: data.studentCount,
-          adminName: data.adminName,
-          adminTitle: data.adminTitle as AdminTitle,
-          adminPhone: data.adminPhone,
-          adminEmail: data.adminEmail,
-          primaryAdminUserId: userId,
-          planTier: data.plan as InstitutionPlan,
-          status: "PENDING" as InstitutionStatus,
           code,
           email: data.adminEmail,
+          isActive: false,
         },
       });
 
@@ -225,7 +214,7 @@ export async function submitInstitutionApplication(
 
     revalidatePath("/institution");
     revalidatePath("/admin/institutions");
-    return { ok: true, institutionId: institution.id, status: institution.status };
+    return { ok: true, institutionId: institution.id, status: institution.isActive ? "ACTIVE" : "PENDING" };
   } catch (err) {
     console.error("[submitInstitutionApplication] failed:", err);
     if (err instanceof Prisma.PrismaClientKnownRequestError) {

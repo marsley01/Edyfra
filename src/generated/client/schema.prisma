@@ -31,6 +31,7 @@ model User {
   createdAt                DateTime                   @default(now())
   bio                      String?
   settings                 Json                       @default("{\"theme\": \"system\", \"fontSize\": \"medium\", \"accentColor\": \"#8b5cf6\"}")
+  preferences              UserPreferences?
   curriculum               String?                    @default("8-4-4")
   dailyMessageCount        Int                        @default(0)
   dailySearchCount         Int                        @default(0)
@@ -56,6 +57,7 @@ model User {
   studentProfile           StudentProfile?
   tutorApplication         TutorApplication?
   tutorProfile             TutorProfile?
+  reviewedApplications     InstitutionApplication[]
   payments                 Payment[]
   resourcePurchases        ResourcePurchase[]
   resources                Resource[]
@@ -507,6 +509,8 @@ model UserPreferences {
   allowTutorRequests Boolean  @default(true)
   enableMashFallback Boolean  @default(true)
   updatedAt          DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 model Challenge {
@@ -883,19 +887,21 @@ model Institution {
   motto              String?
   address            String?
 
-  staff               InstitutionStaff[]
-  students            InstitutionStudent[]
-  tutors              InstitutionTutor[]
-  members             InstitutionMember[]
-  documents           InstitutionDocument[]
-  adminAccounts       InstitutionAdmin[]
-  academicTerms       AcademicTerm[]
-  results             StudentResult[]
-  coachingAssignments CoachingAssignment[]
-  activity            InstitutionActivity[]
-  teacherAssignments  TeacherSubjectAssignment[]
-  invitations         InstitutionInvitation[]
-  csvUploads          CsvUpload[]
+  staff                InstitutionStaff[]
+  students             InstitutionStudent[]
+  tutors               InstitutionTutor[]
+  members              InstitutionMember[]
+  documents            InstitutionDocument[]
+  adminAccounts        InstitutionAdmin[]
+  academicTerms        AcademicTerm[]
+  results              StudentResult[]
+  coachingAssignments  CoachingAssignment[]
+  activity             InstitutionActivity[]
+  teacherAssignments   TeacherSubjectAssignment[]
+  invitations          InstitutionInvitation[]
+  reviewedApplications InstitutionApplication[]
+  processingJobs       ProcessingJob[]
+  csvUploads           CsvUpload[]
 }
 
 model InstitutionStaff {
@@ -1035,6 +1041,43 @@ model SessionFlag {
   booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@map("session_flags")
+}
+
+model ProcessingJob {
+  id            String    @id @default(cuid())
+  institutionId String
+  filePath      String
+  status        String    @default("pending")
+  error         String?
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  @@map("processing_jobs")
+}
+
+model InstitutionApplication {
+  id              String    @id @default(cuid())
+  name            String
+  email           String
+  institutionName String    @map("institution_name")
+  phone           String?
+  message         String?
+  status          AppStatus @default(PENDING)
+  adminNotes      String?   @map("admin_notes")
+  reviewedById    String?   @map("reviewed_by_id")
+  reviewedAt      DateTime? @map("reviewed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  institutionId String?
+  institution   Institution? @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  reviewedBy    User?        @relation(fields: [reviewedById], references: [id])
+
+  @@map("institution_applications")
 }
 
 model Referral {

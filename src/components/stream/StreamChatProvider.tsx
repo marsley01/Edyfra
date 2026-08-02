@@ -51,7 +51,13 @@ export function StreamChatProvider({ children }: { children: ReactNode }) {
   const clientRef = useRef<StreamChat | null>(null);
   const initRef = useRef(false);
 
+  const abortRef = useRef<AbortController | null>(null);
+
   const connect = useCallback(async () => {
+    abortRef.current?.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+
     const supabase = createClient();
     const {
       data: { user },
@@ -68,7 +74,7 @@ export function StreamChatProvider({ children }: { children: ReactNode }) {
         token = await getStreamToken(user.id);
       } catch (actionErr) {
         console.warn("[StreamProvider] Server action failed, trying HTTP:", actionErr);
-        const res = await fetch("/api/stream/token", { method: "POST" });
+        const res = await fetch("/api/stream/token", { method: "POST", signal: ctrl.signal });
         if (!res.ok) throw new Error("Stream token fetch failed");
         const data = await res.json();
         token = data.token;
@@ -111,6 +117,7 @@ export function StreamChatProvider({ children }: { children: ReactNode }) {
     connect();
 
     return () => {
+      abortRef.current?.abort();
       // Use ref to avoid stale closure — client state may not be set yet
       const activeClient = clientRef.current;
       if (activeClient && activeClient.userID) {

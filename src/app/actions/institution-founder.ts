@@ -13,7 +13,7 @@ import { createAdminClient } from "@/utils/supabase/admin";
 export async function listInstitutionApplications(filter?: "PENDING" | "ACTIVE" | "ALL") {
   const isAdmin = await checkAdminStatus();
   if (!isAdmin) return [];
-  const where = filter && filter !== "ALL" ? { status: filter } : undefined;
+  const where = filter && filter !== "ALL" ? { isActive: filter === "ACTIVE" } : undefined;
   return prisma.institution.findMany({
     where,
     orderBy: { createdAt: "desc" },
@@ -50,9 +50,7 @@ export async function decideInstitutionApplication(input: z.infer<typeof Decisio
       await tx.institution.update({
         where: { id: institutionId },
         data: {
-          status: "ACTIVE",
-          approvedAt: new Date(),
-          approvedByUserId: approverUserId,
+          isActive: true,
         },
       });
       // Activate pending members
@@ -75,13 +73,13 @@ export async function decideInstitutionApplication(input: z.infer<typeof Decisio
     try {
       const { getResend } = await import("@/lib/email");
       const resend = getResend();
-      if (inst.adminEmail) {
+      if (inst.email) {
         await resend.emails.send({
           from: "Edyfra Institutions <institutions@edyfra.com>",
-          to: inst.adminEmail,
+          to: inst.email,
           subject: `Welcome to Edyfra — ${inst.name} is approved`,
           html: `
-            <h2>Welcome, ${inst.adminName ?? "Admin"}</h2>
+            <h2>Welcome, Admin</h2>
             <p>Your school <strong>${inst.name}</strong> is now active on Edyfra Institutions.</p>
             <p>Sign in to your dashboard to start adding teachers and students.</p>
             <p><a href="${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/institution/login">Open the dashboard</a></p>
@@ -94,7 +92,7 @@ export async function decideInstitutionApplication(input: z.infer<typeof Decisio
   } else {
     await prisma.institution.update({
       where: { id: institutionId },
-      data: { status: "REJECTED" },
+      data: { isActive: false },
     });
     await prisma.institutionMember.updateMany({
       where: { institutionId, status: "PENDING" },
@@ -113,22 +111,10 @@ export async function deleteInstitution(institutionId: string) {
   try {
     const inst = await prisma.institution.findUnique({
       where: { id: institutionId },
-      select: { id: true, primaryAdminUserId: true }
+      select: { id: true }
     });
 
     if (!inst) return { ok: false as const, error: "Institution not found" };
-
-    if (inst.primaryAdminUserId) {
-      const supabaseAdmin = createAdminClient();
-      const { error: supaErr } = await supabaseAdmin.auth.admin.deleteUser(inst.primaryAdminUserId);
-      if (supaErr) {
-        console.warn("[deleteInstitution] failed to delete from Supabase:", supaErr);
-      }
-
-      await prisma.user.delete({
-        where: { id: inst.primaryAdminUserId }
-      }).catch(e => console.warn("[deleteInstitution] failed to delete admin user in Prisma:", e));
-    }
 
     await prisma.institution.delete({
       where: { id: institutionId },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { 
   Search, 
   Filter, 
@@ -52,7 +52,13 @@ export default function MarketplacePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
+  const fetchAbortRef = useRef<AbortController | null>(null);
+
   const fetchPurchases = async () => {
+    fetchAbortRef.current?.abort();
+    const ctrl = new AbortController();
+    fetchAbortRef.current = ctrl;
+
     setLoading(true);
     try {
       const supabase = createClient();
@@ -75,6 +81,7 @@ export default function MarketplacePage() {
       if (error) throw error;
       if (data) setPurchases(data);
     } catch (err) {
+      if ((err as any)?.name === "AbortError") return;
       showError({
         title: "Couldn't load your purchases",
         cause: "We hit an issue talking to the marketplace database.",
@@ -87,6 +94,10 @@ export default function MarketplacePage() {
   };
 
   const fetchResources = useCallback(async () => {
+    fetchAbortRef.current?.abort();
+    const ctrl = new AbortController();
+    fetchAbortRef.current = ctrl;
+
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -96,7 +107,7 @@ export default function MarketplacePage() {
       if (selectedType !== "All") params.set("type", selectedType);
       if (search) params.set("search", search);
 
-      const res = await fetch(`/api/resources?${params.toString()}`);
+      const res = await fetch(`/api/resources?${params.toString()}`, { signal: ctrl.signal });
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}`);
       }
@@ -105,6 +116,7 @@ export default function MarketplacePage() {
         setResources(data.resources);
       }
     } catch (err) {
+      if ((err as any)?.name === "AbortError") return;
       showError({
         title: "Couldn't load the marketplace",
         cause: "Our resources service didn't respond.",

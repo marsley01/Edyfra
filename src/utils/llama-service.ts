@@ -19,7 +19,8 @@ export class LlamaService {
           model: this.model,
           prompt: fullPrompt,
           stream: false
-        })
+        }),
+        signal: AbortSignal.timeout(30000),
       });
 
       if (!response.ok) {

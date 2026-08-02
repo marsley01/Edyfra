@@ -5,7 +5,7 @@
   "scripts": {
     "postinstall": "prisma generate",
     "dev": "next dev --webpack",
-    "build": "next build",
+    "build": "next build --webpack",
     "vercel-build": "next build",
     "start": "next start",
     "dev:python": "uvicorn backend.fastapi_app:app --reload --port 8000",
@@ -81,6 +81,10 @@
     }
   },
   "devDependencies": {
+    "@babel/core": "^8.0.1",
+    "@babel/preset-env": "^8.0.2",
+    "@babel/preset-react": "^8.0.1",
+    "@babel/preset-typescript": "^8.0.1",
     "@eslint/eslintrc": "^3",
     "@next/bundle-analyzer": "^16.2.9",
     "@tailwindcss/postcss": "^4",
@@ -90,6 +94,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/web-push": "^3.6.4",
+    "babel-plugin-macros": "^3.1.0",
     "eslint": "^9",
     "eslint-config-next": "^16.2.10",
     "pg": "^8.22.0",

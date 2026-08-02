@@ -756,6 +756,34 @@ exports.Prisma.SessionFlagScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.ProcessingJobScalarFieldEnum = {
+  id: 'id',
+  institutionId: 'institutionId',
+  filePath: 'filePath',
+  status: 'status',
+  error: 'error',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.InstitutionApplicationScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  institutionName: 'institutionName',
+  phone: 'phone',
+  message: 'message',
+  status: 'status',
+  adminNotes: 'adminNotes',
+  reviewedById: 'reviewedById',
+  reviewedAt: 'reviewedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  institutionId: 'institutionId'
+};
+
 exports.Prisma.ReferralScalarFieldEnum = {
   id: 'id',
   referrerId: 'referrerId',
@@ -1238,6 +1266,8 @@ exports.Prisma.ModelName = {
   Booking: 'Booking',
   BookingReminder: 'BookingReminder',
   SessionFlag: 'SessionFlag',
+  ProcessingJob: 'ProcessingJob',
+  InstitutionApplication: 'InstitutionApplication',
   Referral: 'Referral',
   MashContext: 'MashContext',
   AnalyticsEvent: 'AnalyticsEvent',

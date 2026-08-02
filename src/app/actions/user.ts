@@ -4,7 +4,7 @@ import { cache } from "react";
 import { Role, EduLevel, Tier, VerifPath, Prisma, User, StudentProfile, TutorProfile, Gender } from "@/generated/client";
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 import { SESSION_CONFIG, TUTOR_CONFIG, TIER_CONFIG } from "@/lib/config";
 import { generateReferralCode } from "@/utils/referral";
 
@@ -43,7 +43,8 @@ export const getUserData = cache(async (): Promise<(User & { studentProfile: Stu
       },
       include: {
         studentProfile: true,
-        tutorProfile: true
+        tutorProfile: true,
+        preferences: true
       }
     });
 
@@ -66,7 +67,8 @@ export const getUserData = cache(async (): Promise<(User & { studentProfile: Stu
         },
         include: {
           studentProfile: true,
-          tutorProfile: true
+          tutorProfile: true,
+          preferences: true
         }
       });
     } else {
@@ -122,7 +124,7 @@ export const getUserData = cache(async (): Promise<(User & { studentProfile: Stu
 
     return prismaUser;
   } catch (error) {
-    console.error("Error in getUserData:", error);
+    console.error(error, { action: "getUserData" });
     return null;
   }
 });
@@ -182,7 +184,7 @@ export async function updateProfile(data: {
     revalidatePath("/tutor");
     return { success: true };
   } catch (error) {
-    console.error("Error in updateProfile:", error);
+    console.error(error, { action: "updateProfile" });
     throw error;
   }
 }
@@ -255,27 +257,8 @@ export async function updateUserRole(role: "STUDENT" | "TUTOR") {
     }
     return { success: true };
   } catch (error: any) {
-    console.error("Error in updateUserRole:", error);
+    console.error(error, { action: "updateUserRole" });
     return { success: false, error: error.message || "Failed to update role" };
-  }
-}
-
-export async function updateUserSettings(settings: Prisma.InputJsonValue) {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Unauthorized");
-
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { settings }
-    });
-
-    revalidatePath("/dashboard/settings");
-    return { success: true };
-  } catch (error) {
-    console.error("Error in updateUserSettings:", error);
-    throw error;
   }
 }
 
@@ -292,6 +275,7 @@ export async function updateUserPreferences(prefs: {
   showOnlineStatus?: boolean;
   allowTutorRequests?: boolean;
   enableMashFallback?: boolean;
+  studyHoursPerWeek?: number;
 }) {
   try {
     const supabase = await createClient();
@@ -302,6 +286,7 @@ export async function updateUserPreferences(prefs: {
       "theme", "accentColor", "layout", "fontSize", "preferredLanguage",
       "studyTime", "sessionLength", "sessionTypePref", "showProfile",
       "showOnlineStatus", "allowTutorRequests", "enableMashFallback",
+      "studyHoursPerWeek"
     ];
     const cleanPrefs = Object.fromEntries(
       Object.entries(prefs).filter(([k]) => allowed.includes(k) && prefs[k as keyof typeof prefs] !== undefined)
@@ -326,7 +311,7 @@ export async function updateUserPreferences(prefs: {
     revalidatePath("/dashboard/settings");
     return { success: true };
   } catch (error) {
-    console.error("Error in updateUserPreferences:", error);
+    console.error(error, { action: "updateUserPreferences" });
     throw error;
   }
 }
@@ -352,7 +337,7 @@ export async function updateNotificationSettings(preferences: Record<string, boo
     revalidatePath("/dashboard/settings");
     return { success: true };
   } catch (error) {
-    console.error("Error in updateNotificationSettings:", error);
+    console.error(error, { action: "updateNotificationSettings" });
     throw error;
   }
 }
@@ -414,7 +399,7 @@ export async function updateTutorProfile(data: {
     revalidatePath("/tutor");
     return { success: true };
   } catch (error) {
-    console.error("Error in updateTutorProfile:", error);
+    console.error(error, { action: "updateTutorProfile" });
     throw error;
   }
 }
@@ -450,15 +435,13 @@ export async function updateStudentProfile(data: {
     }
 
     if (data.studyHoursPerWeek !== undefined) {
-      const existingSettings = await prisma.user.findUnique({ where: { id: user.id }, select: { settings: true } });
-      const settings = { ...((existingSettings?.settings as any) || {}), studyHoursPerWeek: data.studyHoursPerWeek };
-      await prisma.user.update({ where: { id: user.id }, data: { settings } });
+      await updateUserPreferences({ studyHoursPerWeek: data.studyHoursPerWeek });
     }
 
     revalidatePath("/dashboard/settings");
     return { success: true };
   } catch (error) {
-    console.error("Error in updateStudentProfile:", error);
+    console.error(error, { action: "updateStudentProfile" });
     throw error;
   }
 }
@@ -482,7 +465,7 @@ export async function updateAvatar(avatarUrl: string) {
     revalidatePath("/tutor/settings");
     return { success: true };
   } catch (error) {
-    console.error("Error in updateAvatar:", error);
+    console.error(error, { action: "updateAvatar" });
     throw error;
   }
 }
@@ -504,7 +487,7 @@ export async function downloadUserData() {
 
     return { success: true, data: JSON.stringify({ ...userData, userPreferences: userPrefs, notificationSettings: notifPrefs }, null, 2) };
   } catch (error) {
-    console.error("Error in downloadUserData:", error);
+    console.error(error, { action: "downloadUserData" });
     throw error;
   }
 }
@@ -530,7 +513,7 @@ export async function deleteUserAccount() {
 
     return { success: true };
   } catch (error) {
-    console.error("Error in deleteUserAccount:", error);
+    console.error(error, { action: "deleteUserAccount" });
     throw error;
   }
 }
@@ -549,7 +532,7 @@ export async function changePassword(currentPassword: string, newPassword: strin
     if (error) throw new Error(error.message);
     return { success: true };
   } catch (error) {
-    console.error("Error in changePassword:", error);
+    console.error(error, { action: "changePassword" });
     throw error;
   }
 }
@@ -571,73 +554,115 @@ export async function changeEmail(currentPassword: string, newEmail: string) {
     if (error) throw new Error(error.message);
     return { success: true };
   } catch (error) {
-    console.error("Error in changeEmail:", error);
+    console.error(error, { action: "changeEmail" });
     throw error;
   }
 }
 
-export async function getGlobalStats() {
+/**
+ * Cached via Next.js data cache — refreshes every 5 minutes.
+ * Call `revalidateTag('global-stats')` to bust early (e.g. after admin actions).
+ */
+export const getGlobalStats = unstable_cache(
+  async () => {
+    try {
+      const [studentCount, tutorCount, sessionCount, resourceCount] = await Promise.all([
+        prisma.user.count({ where: { role: Role.STUDENT } }),
+        prisma.tutorProfile.count({ where: { isVerified: true } }),
+        prisma.session.count({ where: { status: "COMPLETED" } }),
+        prisma.resource.count({ where: { status: "approved" } }),
+      ]);
+
+      return [
+        { value: studentCount, label: "Students Joined" },
+        { value: tutorCount, label: "Verified Tutors" },
+        { value: sessionCount, label: "Sessions Completed" },
+        { value: resourceCount, label: "Resources Shared" },
+      ];
+    } catch (error) {
+      console.error(error, { action: "getGlobalStats" });
+      return [];
+    }
+  },
+  ["global-stats"],
+  { revalidate: 300, tags: ["global-stats"] },
+);
+
+/**
+ * Cached per education-level bucket — refreshes every 2 minutes.
+ * Call `revalidateTag('leaderboard')` to bust early.
+ */
+export const getLeaderboard = unstable_cache(
+  async (educationLevel: EduLevel) => {
+    try {
+      const leaders = await prisma.user.findMany({
+        where: { educationLevel },
+        select: {
+          id: true,
+          name: true,
+          avatar: true,
+          points: true,
+          educationLevel: true,
+          tier: true,
+        },
+        orderBy: { points: "desc" },
+        take: 20,
+      });
+      return leaders;
+    } catch (error) {
+      console.error(error, { action: "getLeaderboard" });
+      return [];
+    }
+  },
+  ["leaderboard"],
+  { revalidate: 120, tags: ["leaderboard"] },
+);
+
+/**
+ * Cached — refreshes every 5 minutes.
+ * Call `revalidateTag('community-scholars')` to bust early.
+ */
+export const getCommunityScholars = unstable_cache(
+  async () => {
+    try {
+      const legends = await prisma.user.findMany({
+        where: { role: Role.STUDENT, tier: Tier.LEGEND },
+        select: { id: true, name: true, county: true, points: true, tier: true },
+        orderBy: { points: "desc" },
+        take: 3,
+      });
+      if (legends.length > 0) return legends;
+
+      return prisma.user.findMany({
+        where: { role: Role.STUDENT },
+        select: { id: true, name: true, county: true, points: true, tier: true },
+        orderBy: { points: "desc" },
+        take: 4,
+      });
+    } catch (error) {
+      console.error(error, { action: "getCommunityScholars" });
+      return [];
+    }
+  },
+  ["community-scholars"],
+  { revalidate: 300, tags: ["community-scholars"] },
+);
+
+export async function getUserStreak() {
   try {
-    const [studentCount, tutorCount, sessionCount, resourceCount] = await Promise.all([
-      prisma.user.count({ where: { role: Role.STUDENT } }),
-      prisma.tutorProfile.count({ where: { isVerified: true } }),
-      prisma.session.count({ where: { status: "COMPLETED" } }),
-      prisma.resource.count({ where: { status: "approved" } }),
-    ]);
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
 
-    return [
-      { value: studentCount, label: "Students Joined" },
-      { value: tutorCount, label: "Verified Tutors" },
-      { value: sessionCount, label: "Sessions Completed" },
-      { value: resourceCount, label: "Resources Shared" },
-    ];
-  } catch (error) {
-    console.error("Error in getGlobalStats:", error);
-    return [];
-  }
-}
-
-export async function getLeaderboard(educationLevel: EduLevel) {
-  try {
-    const leaders = await prisma.user.findMany({
-      where: { educationLevel },
-      select: {
-        id: true,
-        name: true,
-        avatar: true,
-        points: true,
-        educationLevel: true,
-        tier: true,
-      },
-      orderBy: { points: "desc" },
-      take: 20,
+    const row = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { streakDays: true },
     });
-    return leaders;
-  } catch (error) {
-    console.error("Error in getLeaderboard:", error);
-    return [];
-  }
-}
 
-export async function getCommunityScholars() {
-  try {
-    const legends = await prisma.user.findMany({
-      where: { role: Role.STUDENT, tier: Tier.LEGEND },
-      select: { id: true, name: true, county: true, points: true, tier: true },
-      orderBy: { points: "desc" },
-      take: 3,
-    });
-    if (legends.length > 0) return legends;
-
-    return prisma.user.findMany({
-      where: { role: Role.STUDENT },
-      select: { id: true, name: true, county: true, points: true, tier: true },
-      orderBy: { points: "desc" },
-      take: 4,
-    });
+    return row?.streakDays ?? 0;
   } catch (error) {
-    console.error("Error in getCommunityScholars:", error);
-    return [];
+    console.error(error, { action: "getUserStreak" });
+    return null;
   }
 }
 
@@ -650,7 +675,7 @@ export async function recalibrateTier(userId: string) {
       await prisma.user.update({ where: { id: userId }, data: { tier: correctTier as Tier } });
     }
   } catch (error) {
-    console.error("Error recalibrating tier:", error);
+    console.error(error, { action: "recalibrateTier" });
   }
 }
 
@@ -692,7 +717,7 @@ export async function createTestTutorAction() {
     revalidatePath('/dashboard/tutors');
     return { success: true };
   } catch (error) {
-    console.error('Error creating test tutor:', error);
+    console.error(error, { action: "createTestTutorAction" });
     throw error;
   }
 }

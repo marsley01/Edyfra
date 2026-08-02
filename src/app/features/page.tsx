@@ -52,9 +52,10 @@ export default function FeaturesPage() {
   const [stats, setStats] = useState<{ value: number; label: string }[]>([]);
 
   useEffect(() => {
+    const ctrl = new AbortController();
     const fetchStats = async () => {
       try {
-        const res = await fetch("/api/stats");
+        const res = await fetch("/api/stats", { signal: ctrl.signal });
         const data = await res.json();
         if (data.stats) setStats(data.stats);
       } catch {
@@ -62,6 +63,7 @@ export default function FeaturesPage() {
       }
     };
     fetchStats();
+    return () => ctrl.abort();
   }, []);
 
   return (
