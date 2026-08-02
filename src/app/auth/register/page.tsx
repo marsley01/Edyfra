@@ -2,9 +2,12 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
+import { ArrowRight, Loader2, AlertCircle, ShieldCheck, Eye, EyeOff, Check, Venus, Mars } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { Eye, EyeOff, Loader2, AlertCircle, Check } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { AvatarPicker, type AvatarStyle } from '@/components/ui/avatar-picker'
 
 function isValidEmail(v: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
@@ -16,17 +19,17 @@ function isValidUsername(v: string) {
 
 type UsernameStatus = 'idle' | 'checking' | 'available' | 'taken' | 'invalid'
 
-const steps = ['Details', 'Account'] as const
-
 export default function RegisterPage() {
-  const [step, setStep] = useState(0)
   const [name, setName] = useState('')
   const [username, setUsername] = useState('')
   const [usernameStatus, setUsernameStatus] = useState<UsernameStatus>('idle')
   const [role, setRole] = useState<'STUDENT' | 'TUTOR'>('STUDENT')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [showPw, setShowPw] = useState(false)
+  const [gender, setGender] = useState<'MALE' | 'FEMALE' | ''>('')
+  const [avatarStyle, setAvatarStyle] = useState<AvatarStyle | null>(null)
+  const [avatarUrl, setAvatarUrl] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -53,25 +56,23 @@ export default function RegisterPage() {
     }, 400)
   }, [])
 
-  const canContinue = () => {
-    if (step === 0) return name.trim().length > 1 && usernameStatus === 'available'
-    if (step === 1) return isValidEmail(email) && password.length >= 6
-    return false
-  }
+  const canSubmit = () =>
+    name.trim().length > 1 &&
+    usernameStatus === 'available' &&
+    isValidEmail(email) &&
+    password.length >= 6
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (step < 1) {
-      if (canContinue()) setStep(1)
-      return
-    }
-    if (!canContinue()) return
-    setLoading(true)
     setError(null)
+    if (!canSubmit()) return
+    if (!gender) { setError('Please select your gender'); return }
+    if (!avatarStyle) { setError('Please select an avatar'); return }
+    setLoading(true)
 
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email, password,
-      options: { data: { name, role, username } },
+      options: { data: { name, role, username, gender, avatar: avatarUrl } },
     })
 
     if (authError) {
@@ -96,6 +97,8 @@ export default function RegisterPage() {
           name: authData.user.user_metadata?.name,
           username: authData.user.user_metadata?.username,
           role: authData.user.user_metadata?.role,
+          gender: authData.user.user_metadata?.gender,
+          avatar: authData.user.user_metadata?.avatar,
         }),
       })
 
@@ -136,206 +139,199 @@ export default function RegisterPage() {
   }
   const usernameTextColor = () => {
     switch (usernameStatus) {
-      case 'available': return 'text-green-600'
+      case 'available': return 'text-green-500'
       case 'taken': return 'text-red-500'
-      case 'invalid': return 'text-amber-600'
+      case 'invalid': return 'text-amber-500'
       default: return ''
     }
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#f6f5f1] p-4">
-      <div className="w-full max-w-sm">
-        <div className="mb-10 text-center">
-          <p className="text-xs font-semibold tracking-[0.15em] text-gray-400">EDYFRA</p>
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 pt-0 font-sans">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-[440px] space-y-8"
+      >
+        {/* Logo */}
+        <div className="flex flex-col items-center gap-4 text-center">
+          <Link href="/" className="flex items-center gap-3 group mb-4">
+            <img src="/image.png" alt="Edyfra Logo" className="w-9 h-9 rounded-xl shadow-lg object-cover" />
+            <span className="text-3xl font-black text-foreground tracking-tighter">Edyfra</span>
+          </Link>
+          <h1 className="text-4xl font-black tracking-tightest">Let&apos;s get you started.</h1>
+          <p className="text-muted-foreground font-medium text-lg">Create your account and join a community that&apos;s here to help you succeed.</p>
         </div>
 
-        <div className="rounded-xl border border-gray-200/80 bg-white p-7 shadow-[0_1px_3px_0_rgb(0,0,0,0.04)]">
-          <h1 className="text-lg font-semibold text-gray-900">Create your account</h1>
-          <p className="mt-1 text-sm text-gray-500">Join Kenya&apos;s study community.</p>
-
-          {/* Step indicator */}
-          <div className="mt-6 flex items-center gap-2">
-            {steps.map((label, i) => (
-              <div key={label} className="flex items-center gap-2">
-                <span
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${
-                    i <= step ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-400'
-                  }`}
-                >
-                  {i < step ? <Check className="h-3 w-3" /> : i + 1}
-                </span>
-                <span className={`text-xs font-medium ${i <= step ? 'text-gray-700' : 'text-gray-400'}`}>
-                  {label}
-                </span>
-                {i < steps.length - 1 && (
-                  <div className={`mx-1 h-px w-6 ${i < step ? 'bg-indigo-400' : 'bg-gray-200'}`} />
-                )}
-              </div>
-            ))}
-          </div>
-
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-5">
           {error && (
-            <div className="mt-5 flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
-              <span>{error}</span>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 text-red-500 text-sm font-bold"
+            >
+              <AlertCircle className="h-5 w-5" />
+              {error}
+            </motion.div>
           )}
 
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-            {step === 0 && (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Full name</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="John Kamau"
-                    className="mt-1.5 block w-full rounded-lg border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-500/20"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    autoFocus
-                  />
-                </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-muted-foreground">Full Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              autoComplete="name"
+              placeholder="Your Name"
+              className="h-14 w-full rounded-2xl px-6 border border-border bg-secondary font-medium text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-4 focus:ring-primary/20 transition-all"
+            />
+          </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Username</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="johndoe"
-                    className={`mt-1.5 block w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-500/20 ${
-                      usernameStatus === 'taken' || usernameStatus === 'invalid'
-                        ? 'border-red-300'
-                        : usernameStatus === 'available'
-                          ? 'border-green-300'
-                          : 'border-gray-200'
-                    }`}
-                    value={username}
-                    onChange={(e) => { setUsername(e.target.value); checkUsername(e.target.value) }}
-                  />
-                  <div className="mt-1 flex items-center gap-1.5">
-                    {usernameStatus === 'checking' && <Loader2 className="h-3 w-3 animate-spin text-gray-400" />}
-                    {usernameStatus === 'available' && <Check className="h-3 w-3 text-green-500" />}
-                    <p className={`text-xs ${usernameTextColor() || 'text-gray-400'}`}>
-                      {usernameHelpText() || 'Choose a unique username'}
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">I am a...</label>
-                  <div className="mt-1.5 grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setRole('STUDENT')}
-                      className={`rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${
-                        role === 'STUDENT'
-                          ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      Student
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setRole('TUTOR')}
-                      className={`rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${
-                        role === 'TUTOR'
-                          ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      Tutor
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {step === 1 && (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Email</label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="you@example.com"
-                    className="mt-1.5 block w-full rounded-lg border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-500/20"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    autoFocus
-                  />
-                  {email.length > 0 && !isValidEmail(email) && (
-                    <p className="mt-1 text-xs text-red-500">Enter a valid email address</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Password</label>
-                  <div className="relative mt-1.5">
-                    <input
-                      type={showPw ? 'text' : 'password'}
-                      required
-                      minLength={6}
-                      placeholder="At least 6 characters"
-                      className="block w-full rounded-lg border border-gray-200 bg-white px-3.5 py-2.5 pr-10 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-500/20"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPw(!showPw)}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
-                      tabIndex={-1}
-                      aria-label={showPw ? 'Hide password' : 'Show password'}
-                    >
-                      {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  {password.length > 0 && password.length < 6 && (
-                    <p className="mt-1 text-xs text-red-500">Must be at least 6 characters</p>
-                  )}
-                </div>
-              </>
-            )}
-
-            <div className="flex gap-2 pt-1">
-              {step > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setStep(0)}
-                  className="flex h-10 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  Back
-                </button>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-muted-foreground">Username</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => { setUsername(e.target.value); checkUsername(e.target.value) }}
+              required
+              autoComplete="username"
+              placeholder="johndoe"
+              className={cn(
+                "h-14 w-full rounded-2xl px-6 border bg-secondary font-medium text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-4 focus:ring-primary/20 transition-all",
+                usernameStatus === 'taken' || usernameStatus === 'invalid' ? 'border-red-500/40' : usernameStatus === 'available' ? 'border-green-500/40' : 'border-border'
               )}
+            />
+            <div className="flex items-center gap-1.5 ml-4">
+              {usernameStatus === 'checking' && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+              {usernameStatus === 'available' && <Check className="h-3 w-3 text-green-500" />}
+              <p className={cn("text-xs font-medium", usernameTextColor() || 'text-muted-foreground')}>
+                {usernameHelpText() || 'Choose a unique username'}
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-muted-foreground">I am a...</label>
+            <div className="grid grid-cols-2 gap-3">
+              {(['STUDENT', 'TUTOR'] as const).map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => setRole(r)}
+                  className={cn(
+                    "h-14 rounded-2xl border-2 font-black text-xs uppercase tracking-widest transition-all",
+                    role === r
+                      ? "border-primary bg-primary/5 text-primary"
+                      : "border-border bg-secondary text-muted-foreground hover:border-primary/40"
+                  )}
+                >
+                  {r === 'STUDENT' ? 'Student' : 'Tutor'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-muted-foreground">Email Address</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+              placeholder="you@example.com"
+              className="h-14 w-full rounded-2xl px-6 border-border bg-secondary font-medium text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-4 focus:ring-primary/20 transition-all"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-muted-foreground">Create Password</label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="new-password"
+                placeholder="••••••••"
+                className="h-14 w-full rounded-2xl px-6 pr-14 border-border bg-secondary font-medium text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-4 focus:ring-primary/20 transition-all"
+              />
               <button
-                type="submit"
-                disabled={loading || !canContinue()}
-                className={`flex h-10 items-center justify-center rounded-lg bg-indigo-600 text-sm font-semibold text-white transition-colors hover:bg-indigo-500 disabled:opacity-50 ${
-                  step === 0 ? 'w-full' : 'flex-1'
-                }`}
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                {loading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : step < 1 ? (
-                  'Continue'
-                ) : (
-                  'Create account'
-                )}
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
-          </form>
-        </div>
+          </div>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-muted-foreground">I am</label>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { value: 'MALE', label: 'Male', icon: Mars },
+                { value: 'FEMALE', label: 'Female', icon: Venus },
+              ].map(({ value, label, icon: Icon }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setGender(value as 'MALE' | 'FEMALE')}
+                  className={cn(
+                    "flex items-center justify-center gap-3 h-14 rounded-2xl border-2 font-black text-xs uppercase tracking-widest transition-all",
+                    gender === value
+                      ? "border-primary bg-primary/5 text-primary"
+                      : "border-border bg-secondary text-muted-foreground hover:border-primary/40"
+                  )}
+                >
+                  <Icon className="h-5 w-5" />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-muted-foreground">Choose your avatar</label>
+            <AvatarPicker
+              selected={avatarStyle}
+              onSelect={setAvatarStyle}
+              onSelectUrl={setAvatarUrl}
+              seed={name || 'user'}
+              gender={gender}
+            />
+          </div>
+
+          <div className="flex items-start gap-3 p-4 bg-secondary/50 rounded-2xl border border-border/50">
+            <ShieldCheck className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+            <p className="text-[10px] font-medium leading-relaxed text-muted-foreground">
+              By creating an account, you agree to our <Link href="/terms" className="text-primary font-bold">Terms</Link> and <Link href="/privacy" className="text-primary font-bold">Privacy Policy</Link>.
+            </p>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading || !canSubmit()}
+            className="w-full h-16 rounded-full bg-foreground text-background font-black text-xs tracking-widest uppercase shadow-2xl transition-all active:scale-95 disabled:opacity-50 hover:bg-primary hover:text-white"
+          >
+            {loading
+              ? <Loader2 className="h-5 w-5 animate-spin mx-auto" />
+              : <span className="flex items-center justify-center">Create Account <ArrowRight className="ml-2 h-4 w-4" /></span>}
+          </button>
+        </form>
+
+        {/* Footer */}
+        <p className="text-center text-sm font-medium text-muted-foreground">
           Already have an account?{' '}
-          <Link href="/auth/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-            Sign in
+          <Link href="/auth/login" className="text-primary font-black uppercase text-xs tracking-widest hover:underline decoration-2 underline-offset-4">
+            Log in
           </Link>
         </p>
-      </div>
+      </motion.div>
     </div>
   )
 }

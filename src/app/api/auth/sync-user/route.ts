@@ -5,7 +5,7 @@ import { createAdminClient } from '@/utils/supabase/admin'
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { id, email, name, role } = body
+    const { id, email, name, role, username, gender, avatar } = body
 
     if (!id || !email) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -18,6 +18,9 @@ export async function POST(request: Request) {
         email,
         name: name || 'Student',
         role: role || 'STUDENT',
+        ...(username ? { username } : {}),
+        ...(gender ? { gender } : {}),
+        ...(avatar ? { avatar } : {}),
       },
       create: {
         id,
@@ -25,6 +28,9 @@ export async function POST(request: Request) {
         name: name || 'Student',
         role: role || 'STUDENT',
         county: 'Nairobi',
+        ...(username ? { username } : {}),
+        ...(gender ? { gender } : {}),
+        ...(avatar ? { avatar } : {}),
       }
     })
 

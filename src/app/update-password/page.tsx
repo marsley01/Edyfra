@@ -2,11 +2,14 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2, AlertCircle, Check } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Loader2, AlertCircle, Check, ArrowRight, Eye, EyeOff } from 'lucide-react'
+import Link from 'next/link'
 
 export default function UpdatePasswordPage() {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState(false)
@@ -55,83 +58,120 @@ export default function UpdatePasswordPage() {
 
   if (done) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#f6f5f1] p-4">
-        <div className="w-full max-w-sm">
-          <div className="mb-10 text-center">
-            <p className="text-xs font-semibold tracking-[0.15em] text-gray-400">EDYFRA</p>
-          </div>
-
-          <div className="rounded-xl border border-gray-200/80 bg-white p-7 shadow-[0_1px_3px_0_rgb(0,0,0,0.04)] text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-50">
-              <Check className="h-5 w-5 text-green-600" />
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 pt-0 font-sans">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full max-w-[440px] space-y-8 text-center"
+        >
+          <div className="flex flex-col items-center gap-4 text-center">
+            <Link href="/" className="flex items-center gap-3 group mb-4">
+              <img src="/image.png" alt="Edyfra Logo" className="w-9 h-9 rounded-xl shadow-lg object-cover" />
+              <span className="text-3xl font-black text-foreground tracking-tighter">Edyfra</span>
+            </Link>
+            <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/10">
+              <Check className="h-7 w-7 text-emerald-500" />
             </div>
-            <h1 className="text-lg font-semibold text-gray-900">Password updated</h1>
-            <p className="mt-2 text-sm text-gray-500">Redirecting you to sign in...</p>
+            <h1 className="text-4xl font-black tracking-tightest">Password updated</h1>
+            <p className="text-muted-foreground font-medium text-lg">Redirecting you to sign in...</p>
           </div>
-        </div>
+        </motion.div>
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#f6f5f1] p-4">
-      <div className="w-full max-w-sm">
-        <div className="mb-10 text-center">
-          <p className="text-xs font-semibold tracking-[0.15em] text-gray-400">EDYFRA</p>
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 pt-0 font-sans">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-[440px] space-y-10"
+      >
+        {/* Logo */}
+        <div className="flex flex-col items-center gap-4 text-center">
+          <Link href="/" className="flex items-center gap-3 group mb-4">
+            <img src="/image.png" alt="Edyfra Logo" className="w-9 h-9 rounded-xl shadow-lg object-cover" />
+            <span className="text-3xl font-black text-foreground tracking-tighter">Edyfra</span>
+          </Link>
+          <h1 className="text-4xl font-black tracking-tightest">Set a new password.</h1>
+          <p className="text-muted-foreground font-medium text-lg">Choose something you&apos;ll remember.</p>
         </div>
 
-        <div className="rounded-xl border border-gray-200/80 bg-white p-7 shadow-[0_1px_3px_0_rgb(0,0,0,0.04)]">
-          <h1 className="text-lg font-semibold text-gray-900">Set new password</h1>
-          <p className="mt-1 text-sm text-gray-500">Choose something you&apos;ll remember.</p>
-
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-5">
           {error && (
-            <div className="mt-5 flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
-              <span>{error}</span>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 text-red-500 text-sm font-bold"
+            >
+              <AlertCircle className="h-5 w-5" />
+              {error}
+            </motion.div>
           )}
 
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">New password</label>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-muted-foreground">New password</label>
+            <div className="relative">
               <input
-                type="password"
-                required
-                minLength={6}
-                placeholder="At least 6 characters"
-                className="mt-1.5 block w-full rounded-lg border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-500/20"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                autoFocus
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Confirm password</label>
-              <input
-                type="password"
                 required
                 minLength={6}
-                placeholder="Re-enter your password"
-                className="mt-1.5 block w-full rounded-lg border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-500/20"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
+                autoComplete="new-password"
+                placeholder="At least 6 characters"
+                className="h-14 w-full rounded-2xl px-6 pr-14 border border-border bg-secondary font-medium text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-4 focus:ring-primary/20 transition-all"
+                autoFocus
               />
-              {confirm.length > 0 && password !== confirm && (
-                <p className="mt-1 text-xs text-red-500">Passwords don&apos;t match</p>
-              )}
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
             </div>
+          </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex h-10 w-full items-center justify-center rounded-lg bg-indigo-600 text-sm font-semibold text-white transition-colors hover:bg-indigo-500 disabled:opacity-50"
-            >
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Update password'}
-            </button>
-          </form>
-        </div>
-      </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-muted-foreground">Confirm password</label>
+            <input
+              type="password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              required
+              minLength={6}
+              autoComplete="new-password"
+              placeholder="Re-enter your password"
+              className="h-14 w-full rounded-2xl px-6 border border-border bg-secondary font-medium text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-4 focus:ring-primary/20 transition-all"
+            />
+            {confirm.length > 0 && password !== confirm && (
+              <p className="ml-4 text-xs font-medium text-red-500">Passwords don&apos;t match</p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full h-16 rounded-full bg-foreground text-background font-black text-xs tracking-widest uppercase shadow-2xl transition-all active:scale-95 disabled:opacity-50 hover:bg-primary hover:text-white"
+          >
+            {loading
+              ? <Loader2 className="h-5 w-5 animate-spin mx-auto" />
+              : <span className="flex items-center justify-center">Update Password <ArrowRight className="ml-2 h-4 w-4" /></span>}
+          </button>
+        </form>
+
+        {/* Footer */}
+        <p className="text-center text-sm font-medium text-muted-foreground">
+          <Link href="/auth/login" className="text-xs font-black uppercase tracking-widest hover:text-primary transition-colors">
+            Back to sign in
+          </Link>
+        </p>
+      </motion.div>
     </div>
   )
 }

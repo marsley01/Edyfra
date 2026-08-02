@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
+import { ArrowRight, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react'
 
 const supabaseErrors: Record<string, string> = {
   'Invalid login credentials': 'Wrong email or password. Double-check and try again, or reset your password below.',
@@ -36,30 +37,17 @@ function looksLikeEmail(v: string) {
 export default function LoginPage() {
   const [input, setInput] = useState('')
   const [password, setPassword] = useState('')
-  const [showPw, setShowPw] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [fieldErrors, setFieldErrors] = useState<{ input?: string; password?: string }>({})
   const router = useRouter()
   const supabase = createClient()
 
   const isEmail = input.includes('@')
 
-  const validate = () => {
-    const errors: { input?: string; password?: string } = {}
-    if (!input.trim()) errors.input = 'Enter your email or username'
-    else if (isEmail && !looksLikeEmail(input)) errors.input = 'That doesn\'t look like a valid email'
-    else if (!isEmail && input.length < 3) errors.input = 'Usernames are at least 3 characters'
-    if (!password) errors.password = 'Enter your password'
-    setFieldErrors(errors)
-    return Object.keys(errors).length === 0
-  }
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault()
     setError(null)
-    if (!validate()) return
-
     setLoading(true)
 
     let email = input
@@ -110,98 +98,97 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#f6f5f1] p-4">
-      <div className="w-full max-w-sm">
-        {/* Simple wordmark */}
-        <div className="mb-10 text-center">
-          <p className="text-xs font-semibold tracking-[0.15em] text-gray-400">EDYFRA</p>
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 pt-0 font-sans">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-[440px] space-y-12"
+      >
+        {/* Logo */}
+        <div className="flex flex-col items-center gap-4 text-center">
+          <Link href="/" className="flex items-center gap-3 group mb-4">
+            <img src="/image.png" alt="Edyfra Logo" className="w-9 h-9 rounded-xl shadow-lg object-cover" />
+            <span className="text-3xl font-black text-foreground tracking-tighter">Edyfra</span>
+          </Link>
+          <h1 className="text-4xl font-black tracking-tightest">Welcome back.</h1>
+          <p className="text-muted-foreground font-medium text-lg">We&apos;re glad you&apos;re here. Sign in to pick up where you left off.</p>
         </div>
 
-        <div className="rounded-xl border border-gray-200/80 bg-white p-7 shadow-[0_1px_3px_0_rgb(0,0,0,0.04)]">
-          <h1 className="text-lg font-semibold text-gray-900">Sign in</h1>
-          <p className="mt-1 text-sm text-gray-500">Welcome back — let&apos;s get started.</p>
-
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="mt-5 flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
-              <span>{error}</span>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 text-red-500 text-sm font-bold"
+            >
+              <AlertCircle className="h-5 w-5" />
+              {error}
+            </motion.div>
           )}
 
-          <form onSubmit={handleLogin} className="mt-6 space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Email or username</label>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-muted-foreground">Email Address</label>
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              autoComplete="username"
+              required
+              placeholder="you@example.com"
+              className="h-14 w-full rounded-2xl px-6 border border-border bg-secondary font-medium text-foreground outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-muted-foreground">Password</label>
+            <div className="relative">
               <input
-                type="text"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
                 required
-                autoComplete="username"
-                placeholder="you@school.ac.ke"
-                className={`mt-1.5 block w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-500/20 ${
-                  fieldErrors.input ? 'border-red-300' : 'border-gray-200'
-                }`}
-                value={input}
-                onChange={(e) => { setInput(e.target.value); setFieldErrors((f) => ({ ...f, input: undefined })) }}
-                autoFocus
+                placeholder="••••••••"
+                className="h-14 w-full rounded-2xl px-6 pr-12 border border-border bg-secondary font-medium text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-4 focus:ring-primary/20 transition-all"
               />
-              {fieldErrors.input && (
-                <p className="mt-1 text-xs text-red-500">{fieldErrors.input}</p>
-              )}
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
             </div>
+          </div>
 
-            <div>
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">Password</label>
-                <Link
-                  href="/forgot-password"
-                  className="text-xs font-medium text-indigo-600 hover:text-indigo-500"
-                >
-                  Forgot?
-                </Link>
-              </div>
-              <div className="relative mt-1.5">
-                <input
-                  type={showPw ? 'text' : 'password'}
-                  required
-                  autoComplete="current-password"
-                  placeholder="Enter your password"
-                  className={`block w-full rounded-lg border bg-white px-3.5 py-2.5 pr-10 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-500/20 ${
-                    fieldErrors.password ? 'border-red-300' : 'border-gray-200'
-                  }`}
-                  value={password}
-                  onChange={(e) => { setPassword(e.target.value); setFieldErrors((f) => ({ ...f, password: undefined })) }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPw(!showPw)}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
-                  tabIndex={-1}
-                  aria-label={showPw ? 'Hide password' : 'Show password'}
-                >
-                  {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              {fieldErrors.password && (
-                <p className="mt-1 text-xs text-red-500">{fieldErrors.password}</p>
-              )}
-            </div>
+          <div className="flex justify-end">
+            <Link href="/forgot-password" className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors">
+              Forgot password?
+            </Link>
+          </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex h-10 w-full items-center justify-center rounded-lg bg-indigo-600 text-sm font-semibold text-white transition-colors hover:bg-indigo-500 disabled:opacity-50"
-            >
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Sign in'}
-            </button>
-          </form>
-        </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full h-16 rounded-full bg-foreground text-background font-black text-xs tracking-widest uppercase shadow-2xl transition-all active:scale-95 disabled:opacity-50 hover:bg-primary hover:text-white"
+          >
+            {loading ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : (
+              <span className="flex items-center justify-center">Sign In <ArrowRight className="ml-2 h-4 w-4" /></span>
+            )}
+          </button>
+        </form>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
-          Don&apos;t have an account?{' '}
-          <Link href="/auth/register" className="font-medium text-indigo-600 hover:text-indigo-500">
-            Sign up
+        {/* Footer */}
+        <p className="text-center text-sm font-medium text-muted-foreground">
+          New here?{' '}
+          <Link href="/auth/register" className="text-primary font-black uppercase text-xs tracking-widest hover:underline decoration-2 underline-offset-4">
+            Create account
           </Link>
         </p>
-      </div>
+      </motion.div>
     </div>
   )
 }

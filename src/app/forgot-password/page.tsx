@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Loader2, AlertCircle, ArrowLeft, Mail } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Loader2, AlertCircle, ArrowLeft, Mail, ArrowRight } from 'lucide-react'
 
 function isValidEmail(v: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
@@ -53,81 +54,101 @@ export default function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#f6f5f1] p-4">
-        <div className="w-full max-w-sm">
-          <div className="mb-10 text-center">
-            <p className="text-xs font-semibold tracking-[0.15em] text-gray-400">EDYFRA</p>
-          </div>
-
-          <div className="rounded-xl border border-gray-200/80 bg-white p-7 shadow-[0_1px_3px_0_rgb(0,0,0,0.04)] text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-50">
-              <Mail className="h-5 w-5 text-green-600" />
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 pt-0 font-sans">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full max-w-[440px] space-y-8 text-center"
+        >
+          <div className="flex flex-col items-center gap-4 text-center">
+            <Link href="/" className="flex items-center gap-3 group mb-4">
+              <img src="/image.png" alt="Edyfra Logo" className="w-9 h-9 rounded-xl shadow-lg object-cover" />
+              <span className="text-3xl font-black text-foreground tracking-tighter">Edyfra</span>
+            </Link>
+            <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
+              <Mail className="h-7 w-7 text-primary" />
             </div>
-            <h1 className="text-lg font-semibold text-gray-900">Check your email</h1>
-            <p className="mt-2 text-sm text-gray-500 leading-relaxed">
-              If an account exists for <span className="font-medium text-gray-700">{email}</span>, you&apos;ll receive a reset link shortly.
+            <h1 className="text-4xl font-black tracking-tightest">Check your email</h1>
+            <p className="text-muted-foreground font-medium text-lg leading-relaxed">
+              If an account exists for <span className="font-bold text-foreground">{email}</span>, you&apos;ll receive a reset link shortly.
             </p>
             <Link
               href="/auth/login"
-              className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-500"
+              className="mt-6 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
               Back to sign in
             </Link>
           </div>
-        </div>
+        </motion.div>
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#f6f5f1] p-4">
-      <div className="w-full max-w-sm">
-        <div className="mb-10 text-center">
-          <p className="text-xs font-semibold tracking-[0.15em] text-gray-400">EDYFRA</p>
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 pt-0 font-sans">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-[440px] space-y-10"
+      >
+        {/* Logo */}
+        <div className="flex flex-col items-center gap-4 text-center">
+          <Link href="/" className="flex items-center gap-3 group mb-4">
+            <img src="/image.png" alt="Edyfra Logo" className="w-9 h-9 rounded-xl shadow-lg object-cover" />
+            <span className="text-3xl font-black text-foreground tracking-tighter">Edyfra</span>
+          </Link>
+          <h1 className="text-4xl font-black tracking-tightest">Reset your password.</h1>
+          <p className="text-muted-foreground font-medium text-lg">Enter your email and we&apos;ll send you a reset link.</p>
         </div>
 
-        <div className="rounded-xl border border-gray-200/80 bg-white p-7 shadow-[0_1px_3px_0_rgb(0,0,0,0.04)]">
-          <h1 className="text-lg font-semibold text-gray-900">Reset your password</h1>
-          <p className="mt-1 text-sm text-gray-500">Enter your email and we&apos;ll send a reset link.</p>
-
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="mt-5 flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
-              <span>{error}</span>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 text-red-500 text-sm font-bold"
+            >
+              <AlertCircle className="h-5 w-5" />
+              {error}
+            </motion.div>
           )}
 
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Email</label>
-              <input
-                type="email"
-                required
-                placeholder="you@example.com"
-                className="mt-1.5 block w-full rounded-lg border border-gray-200 bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-500/20"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoFocus
-              />
-            </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-muted-foreground">Email Address</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+              placeholder="you@example.com"
+              className="h-14 w-full rounded-2xl px-6 border border-border bg-secondary font-medium text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-4 focus:ring-primary/20 transition-all"
+              autoFocus
+            />
+          </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex h-10 w-full items-center justify-center rounded-lg bg-indigo-600 text-sm font-semibold text-white transition-colors hover:bg-indigo-500 disabled:opacity-50"
-            >
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send reset link'}
-            </button>
-          </form>
-        </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full h-16 rounded-full bg-foreground text-background font-black text-xs tracking-widest uppercase shadow-2xl transition-all active:scale-95 disabled:opacity-50 hover:bg-primary hover:text-white"
+          >
+            {loading
+              ? <Loader2 className="h-5 w-5 animate-spin mx-auto" />
+              : <span className="flex items-center justify-center">Send Reset Link <ArrowRight className="ml-2 h-4 w-4" /></span>}
+          </button>
+        </form>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
-          <Link href="/auth/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-            Back to sign in
+        {/* Footer */}
+        <p className="text-center text-sm font-medium text-muted-foreground">
+          <Link href="/auth/login" className="text-xs font-black uppercase tracking-widest hover:text-primary transition-colors">
+            <span className="flex items-center justify-center gap-1.5"><ArrowLeft className="h-4 w-4" /> Back to sign in</span>
           </Link>
         </p>
-      </div>
+      </motion.div>
     </div>
   )
 }
