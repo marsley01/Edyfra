@@ -609,7 +609,14 @@ export default function TutorDashboard() {
                       </div>
 
                       <Button 
-                        onClick={() => handleJoinRoom(booking.id)}
+                        onClick={() => {
+                          const bookingRow = upcomingBookings.find((b) => b.id === booking.id);
+                          if (bookingRow?.meetingUrl) {
+                            window.open(bookingRow.meetingUrl, "_blank");
+                          } else {
+                            handleJoinRoom(booking.id);
+                          }
+                        }}
                         disabled={!canJoin}
                         className={`w-full sm:w-auto h-12 px-6 rounded-2xl font-black text-xs tracking-widest uppercase shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 ${
                           canJoin
@@ -620,7 +627,7 @@ export default function TutorDashboard() {
                         }`}
                       >
                         <Video className="h-4 w-4" />
-                        {minutesUntilSession > 5 ? "Join in 5 min" : canJoin ? "Join Session" : "Expired"}
+                        {booking.meetingUrl ? "Join Meet" : minutesUntilSession > 5 ? "Join in 5 min" : canJoin ? "Join Session" : "Expired"}
                       </Button>
                     </CardContent>
                   </Card>

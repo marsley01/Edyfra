@@ -121,6 +121,7 @@ async def get_incoming_requests(tutor_id: str) -> list[dict[str, Any]]:
             "amount": r.get("amount", 0),
             "paystackReference": r.get("paystack_reference"),
             "declineReason": r.get("decline_reason"),
+            "meetingUrl": r.get("meeting_url"),
             "createdAt": str(r["created_at"]) if r.get("created_at") else None,
             "updatedAt": str(r["updated_at"]) if r.get("updated_at") else None,
             "student": {
@@ -159,6 +160,7 @@ async def get_upcoming_tutor_bookings(tutor_id: str) -> list[dict[str, Any]]:
             "endTime": r["end_time"],
             "durationMinutes": r["duration_minutes"],
             "status": r["status"],
+            "meetingUrl": r.get("meeting_url"),
             "student": {
                 "id": r["student_id"],
                 "name": r.get("student_name", "Student"),
@@ -195,6 +197,7 @@ async def get_upcoming_student_bookings(student_id: str) -> list[dict[str, Any]]
             "endTime": r["end_time"],
             "durationMinutes": r["duration_minutes"],
             "status": r["status"],
+            "meetingUrl": r.get("meeting_url"),
             "tutor": {
                 "id": r["tutor_id"],
                 "name": r.get("tutor_name", "Tutor"),
@@ -286,6 +289,13 @@ async def update_booking_status(booking_id: str, new_status: str, reason: str | 
     return await get_booking_by_id(booking_id)
 
 
+async def update_booking_meeting_url(booking_id: str, meeting_url: str | None) -> None:
+    await execute(
+        "UPDATE bookings SET meeting_url = $1, updated_at = NOW() WHERE id = $2",
+        meeting_url, booking_id,
+    )
+
+
 async def get_booking_session_data(booking_id: str) -> dict[str, Any] | None:
     row = await query_one(
         """
@@ -320,6 +330,7 @@ async def get_booking_session_data(booking_id: str) -> dict[str, Any] | None:
         "partner": {"name": row.get("tutor_name"), "avatar": row.get("tutor_avatar")},
         "roomId": row["id"],
         "startTimeEAT": start_time_eat,
+        "meetingUrl": row.get("meeting_url"),
     }
 
 

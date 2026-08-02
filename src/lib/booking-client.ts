@@ -46,6 +46,7 @@ export interface Booking {
   amount?: number;
   paystackReference?: string | null;
   declineReason?: string | null;
+  meetingUrl?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
   student?: { id: string; name: string; avatar?: string };
@@ -120,6 +121,18 @@ export async function pythonUpdateBookingStatus(
   return callPython<{ success: boolean; booking: any }>(`/bookings/${bookingId}/status`, {
     method: "PUT",
     body: { status, reason },
+    userId,
+  });
+}
+
+export async function pythonUpdateBookingMeetingUrl(
+  bookingId: string,
+  meetingUrl: string | null,
+  userId: string,
+) {
+  return callPython<{ success: boolean }>(`/bookings/${bookingId}/meeting-url`, {
+    method: "PUT",
+    body: { meetingUrl },
     userId,
   });
 }

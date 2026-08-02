@@ -256,11 +256,18 @@ export function OverviewTab() {
                         <span className="text-sm font-black text-foreground">Confirmed</span>
                       </div>
                       <Button 
-                        onClick={() => handleJoinRoom(booking.id)}
+                        onClick={() => {
+                          const bookingRow = upcomingBookings.find((b) => b.id === booking.id);
+                          if (bookingRow?.meetingUrl) {
+                            window.open(bookingRow.meetingUrl, "_blank");
+                          } else {
+                            handleJoinRoom(booking.id);
+                          }
+                        }}
                         className={`w-full sm:w-auto h-16 px-10 rounded-[1.8rem] font-black text-xs tracking-[0.2em] uppercase shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3 bg-primary hover:bg-primary/90 text-white`}
                       >
                         <Video className="h-5 w-5" />
-                        Join Room
+                        {booking.meetingUrl ? "Join Meet" : "Join Room"}
                       </Button>
                     </div>
                   </CardContent>

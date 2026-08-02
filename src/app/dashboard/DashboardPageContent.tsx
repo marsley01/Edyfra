@@ -271,16 +271,22 @@ export default function DashboardPageContent() {
                           <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-full ${booking.status === 'confirmed' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-yellow-500/10 text-yellow-500'}`}>
                             {booking.status}
                           </span>
-                          {booking.status === 'confirmed' && (
-                            <div className="flex items-center gap-1.5">
-                              <Button onClick={() => window.open(`/study-room/${booking.id}`, '_blank')} className="bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-full h-7 px-3">
-                                Join
-                              </Button>
-                              <a href={`/api/calendar/${booking.id}`} download title="Add to Calendar" className="inline-flex items-center justify-center rounded-full h-7 w-7 border border-primary/20 hover:bg-primary/5 text-primary">
-                                <Download className="h-3.5 w-3.5" />
-                              </a>
-                            </div>
-                          )}
+                           {booking.status === 'confirmed' && (
+                             <div className="flex items-center gap-1.5">
+                               {booking.meetingUrl ? (
+                                 <Button onClick={() => window.open(booking.meetingUrl!, '_blank')} className="bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest rounded-full h-7 px-3">
+                                   Join Meet
+                                 </Button>
+                               ) : (
+                                 <Button onClick={() => window.open(`/study-room/${booking.id}`, '_blank')} className="bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-full h-7 px-3">
+                                   Join
+                                 </Button>
+                               )}
+                               <a href={`/api/calendar/${booking.id}`} download title="Add to Calendar" className="inline-flex items-center justify-center rounded-full h-7 w-7 border border-primary/20 hover:bg-primary/5 text-primary">
+                                 <Download className="h-3.5 w-3.5" />
+                               </a>
+                             </div>
+                           )}
                         </div>
                      </div>
                    ))}

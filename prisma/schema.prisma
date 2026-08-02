@@ -1005,6 +1005,7 @@ model Booking {
   amount            Int       @default(0)
   paystackReference String?   @map("paystack_reference")
   declineReason     String?   @map("decline_reason")
+  meetingUrl        String?   @map("meeting_url")
   createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt         DateTime  @updatedAt @map("updated_at")
 

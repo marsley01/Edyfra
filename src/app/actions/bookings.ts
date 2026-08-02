@@ -16,6 +16,7 @@ import {
   pythonConvertBookingToMashAI,
   pythonExpireBookings,
   pythonCreateBookingReminders,
+  pythonUpdateBookingMeetingUrl,
 } from "@/lib/booking-client";
 import { createCalendarEvent } from "@/lib/calendar/google-calendar";
 
@@ -131,6 +132,13 @@ export async function updateBookingStatus(bookingId: string, status: string, rea
               start: startDate,
               end: endDate,
               location: "https://edyfra-v2.vercel.app/study-room/" + bookingId,
+              attendees: booking.studentEmail && booking.tutorEmail
+                ? [
+                    { email: booking.studentEmail, displayName: booking.studentName },
+                    { email: booking.tutorEmail, displayName: booking.tutorName },
+                  ]
+                : undefined,
+              createMeetingLink: true,
             }),
             booking.tutorId
               ? createCalendarEvent({
@@ -140,9 +148,43 @@ export async function updateBookingStatus(bookingId: string, status: string, rea
                   start: startDate,
                   end: endDate,
                   location: "https://edyfra-v2.vercel.app/study-room/" + bookingId,
+                  attendees: booking.studentEmail && booking.tutorEmail
+                    ? [
+                        { email: booking.studentEmail, displayName: booking.studentName },
+                        { email: booking.tutorEmail, displayName: booking.tutorName },
+                      ]
+                    : undefined,
+                  createMeetingLink: true,
                 })
               : Promise.resolve(null),
           ]);
+
+          const meetingLinks = [booking.studentId, booking.tutorId].filter(Boolean).map((uid) =>
+            createCalendarEvent({
+              userId: uid as string,
+              summary: eventTitle,
+              description: eventDescription,
+              start: startDate,
+              end: endDate,
+              location: "https://edyfra-v2.vercel.app/study-room/" + bookingId,
+              attendees: booking.studentEmail && booking.tutorEmail
+                ? [
+                    { email: booking.studentEmail, displayName: booking.studentName },
+                    { email: booking.tutorEmail, displayName: booking.tutorName },
+                  ]
+                : undefined,
+              createMeetingLink: true,
+            }).then((res) => res?.meetingLink || res?.hangoutLink || null),
+          );
+
+          const [studentLink, tutorLink] = await Promise.all(meetingLinks);
+          const meetLink = studentLink || tutorLink || null;
+
+          if (meetLink) {
+            await pythonUpdateBookingMeetingUrl(bookingId, meetLink, user.id).catch((e) => {
+              console.error("Failed to save meeting URL:", e);
+            });
+          }
         } catch (e) {
           console.error("Failed to create calendar events:", e);
         }

@@ -8,6 +8,7 @@ export interface CalendarEventInput {
   end: Date;
   location?: string;
   attendees?: { email: string; displayName?: string }[];
+  createMeetingLink?: boolean;
 }
 
 export async function createCalendarEvent(input: CalendarEventInput) {
@@ -42,7 +43,7 @@ export async function createCalendarEvent(input: CalendarEventInput) {
     }
   }
 
-  const event = {
+  const event: Record<string, unknown> = {
     summary: input.summary,
     description: input.description,
     location: input.location,
@@ -58,7 +59,22 @@ export async function createCalendarEvent(input: CalendarEventInput) {
     },
   };
 
-  const res = await fetch("https://www.googleapis.com/calendar/v3/calendars/primary/events", {
+  if (input.createMeetingLink) {
+    event.conferenceData = {
+      createRequest: {
+        requestId: `meet-${Date.now()}`,
+        conferenceSolutionKey: { type: "hangoutsMeet" },
+      },
+    };
+  }
+
+  const url = new URL("https://www.googleapis.com/calendar/v3/calendars/primary/events");
+  url.searchParams.set("sendUpdates", "all");
+  if (input.createMeetingLink) {
+    url.searchParams.set("conferenceDataVersion", "1");
+  }
+
+  const res = await fetch(url.toString(), {
     method: "POST",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -72,7 +88,14 @@ export async function createCalendarEvent(input: CalendarEventInput) {
     return null;
   }
 
-  return await res.json();
+  const data = (await res.json()) as {
+    hangoutLink?: string;
+    conferenceData?: { entryPoints?: { entryPointType?: string; uri?: string }[] };
+  };
+  return {
+    ...data,
+    meetingLink: data.hangoutLink || data.conferenceData?.entryPoints?.find((e) => e.entryPointType === "video")?.uri || null,
+  };
 }
 
 async function refreshAccessToken(refreshToken: string) {

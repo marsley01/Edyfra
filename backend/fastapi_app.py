@@ -52,6 +52,7 @@ from bookings import (
     get_tutor_stats,
     get_booking_by_id,
     get_booking_for_status_update,
+    update_booking_meeting_url,
 )
 
 load_dotenv()
@@ -371,6 +372,26 @@ async def api_update_status(booking_id: str, payload: UpdateStatusPayload, reque
 
     updated = await update_booking_status(booking_id, payload.status, payload.reason)
     return {"success": True, "booking": updated}
+
+
+class UpdateMeetingUrlPayload(BaseModel):
+    meetingUrl: str | None = None
+
+
+@app.put("/bookings/{booking_id}/meeting-url")
+async def api_update_meeting_url(booking_id: str, payload: UpdateMeetingUrlPayload, request: Request):
+    ctx = get_user_context(request)
+    if not ctx.user_id:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    booking = await get_booking_for_status_update(booking_id)
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    if booking["student_id"] != ctx.user_id and booking["tutor_id"] != ctx.user_id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    await update_booking_meeting_url(booking_id, payload.meetingUrl)
+    return {"success": True}
 
 
 @app.get("/bookings/{booking_id}/session-data")
