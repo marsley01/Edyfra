@@ -106,9 +106,11 @@ export function StartCallButton({
         setStep('error');
       }, RING_TIMEOUT_MS);
 
+      /* eslint-disable prefer-const */
       let unsubscribeAccepted: (() => void) | undefined;
       let unsubscribeRejected: (() => void) | undefined;
       let unsubscribeEnded: (() => void) | undefined;
+      /* eslint-enable prefer-const */
 
       const cleanup = () => {
         unsubscribeAccepted?.();

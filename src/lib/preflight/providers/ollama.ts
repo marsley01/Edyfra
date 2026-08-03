@@ -130,7 +130,7 @@ export class OllamaProvider extends ModelProvider {
     const input = typeof request.input === "string" ? [request.input] : request.input;
 
     const embeddings: number[][] = [];
-    let totalInputTokens = 0;
+    const totalInputTokens = 0;
 
     for (const text of input) {
       const response = await this.fetch("/api/embeddings", {

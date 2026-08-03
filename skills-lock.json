@@ -1,11 +1,53 @@
 {
   "version": 1,
   "skills": {
+    "cookie-policy-page-generator": {
+      "source": "kostja94/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/pages/legal/cookie-policy/SKILL.md",
+      "computedHash": "81d1124fcff1f750190f6372077510862d41a57d3c32406acfd39c3dc85d1034"
+    },
+    "legal-page-generator": {
+      "source": "kostja94/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/pages/legal/legal/SKILL.md",
+      "computedHash": "8992f0416468003ba98909da04e8badd8575e1658c838cbe1280c61cc1208953"
+    },
+    "privacy-page-generator": {
+      "source": "kostja94/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/pages/legal/privacy/SKILL.md",
+      "computedHash": "ee77c9d982f9d583bc1596e76f2ebb5faa6eff19004948d26186692881001dfd"
+    },
+    "refund-page-generator": {
+      "source": "kostja94/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/pages/legal/refund/SKILL.md",
+      "computedHash": "2c55682d5e851546ff28197476df296f5e5089f2a203476dd483a649b2924c9e"
+    },
+    "shipping-page-generator": {
+      "source": "kostja94/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/pages/legal/shipping/SKILL.md",
+      "computedHash": "c3883ecf349be1b8a31b7b62796b88ba1a0641578e17299591f92ebb964e4106"
+    },
     "stream": {
       "source": "GetStream/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/stream/SKILL.md",
       "computedHash": "fa375cec02f67229bb14d37a841825d2455eea62bf81f0a1b913bcdfbc78482e"
+    },
+    "systematic-debugging": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "skillPath": "skills/systematic-debugging/SKILL.md",
+      "computedHash": "a2750dfbaed1690da73b120254892c4f926b4576cb82eb16fc877783941fe39b"
+    },
+    "terms-page-generator": {
+      "source": "kostja94/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/pages/legal/terms/SKILL.md",
+      "computedHash": "8f26a906bf2725f3aad822e00a714b693820cb5cfda10926f8362af306fc8c45"
     }
   }
 }

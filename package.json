@@ -86,7 +86,7 @@
     "@babel/preset-env": "^8.0.2",
     "@babel/preset-react": "^8.0.1",
     "@babel/preset-typescript": "^8.0.1",
-    "@eslint/eslintrc": "^3",
+    "@eslint/eslintrc": "^3.3.6",
     "@next/bundle-analyzer": "^16.2.9",
     "@tailwindcss/postcss": "^4",
     "@types/dompurify": "^3.0.5",
