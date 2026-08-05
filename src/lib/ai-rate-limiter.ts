@@ -31,14 +31,21 @@ export class AIRateLimitError extends Error {
   }
 }
 
-const openai = new OpenAI({
-  baseURL: "https://openrouter.ai/api/v1",
-  apiKey: process.env.OPENROUTER_API_KEY || "",
-  defaultHeaders: {
-    "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "https://edyfra.com",
-    "X-Title": "Edyfra",
+let openaiClient: OpenAI | null = null;
+
+function getOpenAIClient(): OpenAI {
+  if (!openaiClient) {
+    openaiClient = new OpenAI({
+      baseURL: "https://openrouter.ai/api/v1",
+      apiKey: process.env.OPENROUTER_API_KEY || "dummy-key-for-build",
+      defaultHeaders: {
+        "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "https://edyfra.com",
+        "X-Title": "Edyfra",
+      },
+    });
   }
-});
+  return openaiClient;
+}
 
 /** In-memory sliding window keyed by user id. Serverless-safe; multiple
  *  instances share the DB-backed daily counter for the global budget. */
@@ -140,7 +147,7 @@ export async function generateWithAI(options: CallOptions): Promise<string> {
       }
       messages.push({ role: "user", content: options.prompt });
 
-      const response = await openai.chat.completions.create({
+      const response = await getOpenAIClient().chat.completions.create({
         model: usedModel,
         messages,
         temperature: options.temperature ?? 0.7,
@@ -196,7 +203,7 @@ export async function* streamWithAI(options: CallOptions): AsyncGenerator<string
       }
       messages.push({ role: "user", content: options.prompt });
 
-      const stream = await openai.chat.completions.create({
+      const stream = await getOpenAIClient().chat.completions.create({
         model: usedModel,
         messages,
         temperature: options.temperature ?? 0.7,
