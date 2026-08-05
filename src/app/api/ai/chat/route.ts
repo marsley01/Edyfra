@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import {
-  streamWithGemini,
-  generateWithGemini,
-  GeminiRateLimitError,
-} from "@/lib/gemini-rate-limiter";
+  streamWithAI,
+  generateWithAI,
+  AIRateLimitError,
+} from "@/lib/ai-rate-limiter";
 import { createClient } from "@/utils/supabase/server";
 
 export const runtime = "nodejs";
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
         async start(controller) {
           let text = "";
           try {
-            for await (const chunk of streamWithGemini(options)) {
+            for await (const chunk of streamWithAI(options)) {
               text += chunk;
               controller.enqueue(
                 encoder.encode(`data: ${JSON.stringify({ t: chunk })}\n\n`)
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
             }
           } catch (err) {
             const message =
-              err instanceof GeminiRateLimitError
+              err instanceof AIRateLimitError
                 ? err.message
                 : "AI responded with an error. Please try again.";
             controller.enqueue(
@@ -97,10 +97,10 @@ export async function POST(request: Request) {
       });
     }
 
-    const text = await generateWithGemini(options);
+    const text = await generateWithAI(options);
     return NextResponse.json({ reply: text });
   } catch (err) {
-    if (err instanceof GeminiRateLimitError) {
+    if (err instanceof AIRateLimitError) {
       return NextResponse.json(
         { error: err.message },
         { status: 429 }

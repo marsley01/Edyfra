@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
-import { Loader2, ChevronLeft, Clock, GraduationCap, ShieldCheck } from "lucide-react";
+import { Loader2, ChevronLeft, Clock, GraduationCap, ShieldCheck, LogOut } from "lucide-react";
 import { showError, showSuccess } from "@/lib/toast";
 import dynamic from "next/dynamic";
 import SessionReviewModal from "@/components/sessions/SessionReviewModal";
@@ -58,6 +58,7 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
   const [showNoShowPrompt, setShowNoShowPrompt] = useState(false);
   const [converting, setConverting] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [isEnding, setIsEnding] = useState(false);
   const [sessionDuration, setSessionDuration] = useState(0);
   const currentUser = initialData.currentUser;
   const sessionId = initialData.sessionId;
@@ -133,20 +134,30 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
   }, [session?.partnerId, fetchSession]);
 
   const handleEndSession = async () => {
-    if (!session) return;
-    const { completeSession } = await import("@/app/actions/match");
-    const result = await completeSession(sessionId);
+    if (!session || isEnding) return;
+    setIsEnding(true);
+    setShowLeaveConfirm(false);
+    try {
+      const { completeSession } = await import("@/app/actions/match");
+      const result = await completeSession(sessionId);
 
-    if (result?.pointsAwarded) {
-      showSuccess(`+${result.pointsAwarded} points`, { description: "Session logged." });
-    } else {
-      showSuccess("Session finished", { description: "Sessions under 2 minutes don't earn points." });
-    }
+      if (result?.pointsAwarded) {
+        showSuccess(`+${result.pointsAwarded} points`, { description: "Session logged." });
+      } else {
+        showSuccess("Session finished", { description: "Sessions under 2 minutes don't earn points." });
+      }
 
-    if (session.tier === "TUTOR" && session.studentId === currentUser?.id) {
-      setShowReview(true);
-    } else {
+      if (session.tier === "TUTOR" && session.studentId === currentUser?.id) {
+        setShowReview(true);
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (err) {
+      console.error("[StudyRoom] handleEndSession error:", err);
+      showError({ title: "Couldn't end session", cause: "Something went wrong.", fix: "You've been redirected out." });
       router.push("/dashboard");
+    } finally {
+      setIsEnding(false);
     }
   };
 
@@ -172,6 +183,21 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
 
   return (
     <div className="h-[100dvh] bg-background text-foreground flex flex-col overflow-hidden">
+      {/* Full-screen ending overlay */}
+      <AnimatePresence>
+        {isEnding && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] bg-background/90 backdrop-blur-sm flex flex-col items-center justify-center gap-4"
+          >
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            <p className="text-sm font-medium text-muted-foreground">Ending session…</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <header className="h-14 md:h-16 border-b border-border/20 px-4 md:px-6 flex items-center justify-between bg-background/80 backdrop-blur-xl pt-[env(safe-area-inset-top,0px)] shrink-0" style={{ zIndex: Z.STICKY }}>
         <div className="flex items-center gap-3 min-w-0">
           <button
@@ -274,7 +300,7 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
         <section className="flex-1 flex flex-col bg-background relative min-w-0 min-h-0">
           <IncomingCall onAccepted={(call) => setActiveCall(call)} />
 
-          {session.partnerId && (
+          {session.partnerId && session.partnerId !== "mash-ai" && (
             <div className="px-4 pt-3 pb-1 flex justify-end shrink-0">
               <StartCallButton
                 roomId={sessionId}
@@ -285,8 +311,8 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
                 }
                 otherUserName={
                   session.studentId === currentUser.id
-                    ? session.partner?.name || "Partner"
-                    : session.student?.name || "Student"
+                    ? session.partner?.name || "Buddy"
+                    : session.student?.name || "Buddy"
                 }
               />
             </div>
@@ -343,14 +369,26 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
               <div className="flex flex-col gap-2.5">
                 <Button
                   onClick={handleEndSession}
-                  className="w-full h-12 rounded-xl bg-red-500 hover:bg-red-600 text-white text-[15px] font-medium transition-all"
+                  disabled={isEnding}
+                  className="w-full h-12 rounded-xl bg-red-500 hover:bg-red-600 text-white text-[15px] font-medium transition-all disabled:opacity-60"
                 >
-                  End session
+                  {isEnding ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Ending…
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <LogOut className="h-4 w-4" />
+                      End session
+                    </span>
+                  )}
                 </Button>
                 <Button
                   variant="ghost"
                   onClick={() => setShowLeaveConfirm(false)}
-                  className="w-full h-12 rounded-xl text-[15px] font-medium text-foreground"
+                  disabled={isEnding}
+                  className="w-full h-12 rounded-xl text-[15px] font-medium text-foreground disabled:opacity-40"
                 >
                   Cancel
                 </Button>

@@ -3,9 +3,9 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import {
-  generateWithGemini,
-  GeminiRateLimitError,
-} from "@/lib/gemini-rate-limiter";
+  generateWithAI,
+  AIRateLimitError,
+} from "@/lib/ai-rate-limiter";
 import { getActiveInstitutionMembership } from "@/app/actions/institution-guard";
 
 export const runtime = "nodejs";
@@ -79,7 +79,7 @@ Write a 3-sentence insight about this student's academic performance, their stro
 
   let insight: string;
   try {
-    insight = await generateWithGemini({
+    insight = await generateWithAI({
       prompt,
       systemPrompt:
         "You are an experienced Kenyan secondary school academic advisor. Be specific, kind, and actionable.",
@@ -89,7 +89,7 @@ Write a 3-sentence insight about this student's academic performance, their stro
       maxOutputTokens: 300,
     });
   } catch (err) {
-    if (err instanceof GeminiRateLimitError) {
+    if (err instanceof AIRateLimitError) {
       return NextResponse.json(
         { ok: false, error: err.message },
         { status: 429 }

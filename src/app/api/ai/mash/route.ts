@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import {
-  generateWithGemini,
-  GeminiRateLimitError,
-} from "@/lib/gemini-rate-limiter";
+  generateWithAI,
+  AIRateLimitError,
+} from "@/lib/ai-rate-limiter";
 import { createClient } from "@/utils/supabase/server";
 import {
   getServerStreamClient,
@@ -97,7 +97,7 @@ export async function POST(request: Request) {
 
   let aiResponse: string;
   try {
-    aiResponse = await generateWithGemini({
+    aiResponse = await generateWithAI({
       prompt: actualPrompt,
       systemPrompt,
       userId: user.id,
@@ -109,7 +109,7 @@ export async function POST(request: Request) {
       aiResponse = `Hey! 👋 I'm here to help with ${sessionSubject}. Could you tell me what specific topic or question you're working on?`;
     }
   } catch (err) {
-    if (err instanceof GeminiRateLimitError) {
+    if (err instanceof AIRateLimitError) {
       aiResponse = `Hey, I hit my limit for the day. Try again in a few minutes! 🕒`;
     } else {
       console.error("[api/ai/mash] AI generation failed:", err);

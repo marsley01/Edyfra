@@ -1,6 +1,6 @@
 'use client';
 
-import { StreamVideo } from '@stream-io/video-react-sdk';
+import { StreamVideo, StreamTheme } from '@stream-io/video-react-sdk';
 import '@stream-io/video-react-sdk/dist/css/styles.css';
 import {
   useEffect,
@@ -80,7 +80,11 @@ export function VideoProvider({
       value={{ client, activeCall, setActiveCall, isLoading, error }}
     >
       {client ? (
-        <StreamVideo client={client}>{children}</StreamVideo>
+        <StreamVideo client={client}>
+          <StreamTheme className="h-full w-full">
+            {children}
+          </StreamTheme>
+        </StreamVideo>
       ) : (
         children
       )}

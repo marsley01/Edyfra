@@ -120,7 +120,7 @@ export default function AdminAISettingsPage() {
           <CardContent className="space-y-8 p-10">
             <div className="space-y-4 rounded-[2rem] border border-primary/20 bg-primary/5 p-6">
               <div className="flex items-center justify-between">
-                <Label className="text-sm font-black uppercase tracking-widest text-primary">Google Gemini API Key</Label>
+                <Label className="text-sm font-black uppercase tracking-widest text-primary">OpenRouter API Key</Label>
                 <Button
                   type="button"
                   variant="ghost"
@@ -139,7 +139,7 @@ export default function AdminAISettingsPage() {
                 className="h-12 rounded-xl border-border/10 bg-background/40 font-mono text-xs tracking-widest"
               />
               <p className="text-xs text-muted-foreground">
-                This key is used for Edyfra AI experiences that rely on the configured Gemini pipeline.
+                This key is used for Edyfra AI experiences that rely on the configured OpenRouter pipeline.
               </p>
             </div>
 

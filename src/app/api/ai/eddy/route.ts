@@ -1,4 +1,4 @@
-import { streamWithGemini, GeminiRateLimitError } from "@/lib/gemini-rate-limiter";
+import { streamWithAI, AIRateLimitError } from "@/lib/ai-rate-limiter";
 import { createClient } from "@/utils/supabase/server";
 import { buildEddySystemPrompt } from "@/utils/eddy-context";
 import { saveAiChatMessage } from "@/app/actions/feedback";
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
     async start(controller) {
       let reply = "";
       try {
-        for await (const chunk of streamWithGemini({
+        for await (const chunk of streamWithAI({
           prompt: message,
           systemPrompt,
           userId: user?.id ?? null,
@@ -82,12 +82,12 @@ export async function POST(request: Request) {
         }
       } catch (err) {
         const errorMessage =
-          err instanceof GeminiRateLimitError
+          err instanceof AIRateLimitError
             ? err.message
             : "Sorry, something went wrong on my end. Please try again!";
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: errorMessage })}\n\n`));
 
-        if (err instanceof GeminiRateLimitError) {
+        if (err instanceof AIRateLimitError) {
           controller.enqueue(encoder.encode("data: [DONE]\n\n"));
           try { controller.close(); } catch { /* noop */ }
           return;

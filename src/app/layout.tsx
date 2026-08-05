@@ -10,7 +10,7 @@ import { ThemeColorManager } from "@/components/theme-color-manager";
 import { ConditionalShell } from "@/components/conditional-shell";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { PushSubscriptionManager } from "@/components/push-subscription-manager";
-import EddyChatWrapper from "@/components/chat/EddyChatWrapper";
+
 import { OverlayManagerProvider } from "@/lib/overlay-manager";
 import { ClickFeedback } from "@/components/click-feedback";
 import { MaintenanceGate } from "@/components/maintenance-gate";
@@ -151,7 +151,7 @@ export default function RootLayout({
             </MaintenanceGate>
             <ServiceWorkerRegister />
             <PushSubscriptionManager />
-            <EddyChatWrapper />
+
             <Toaster richColors position="top-right" />
             <Analytics />
             <SpeedInsights />

@@ -1,7 +1,7 @@
 import {
-  generateWithGemini,
-  GeminiRateLimitError,
-} from "@/lib/gemini-rate-limiter";
+  generateWithAI,
+  AIRateLimitError,
+} from "@/lib/ai-rate-limiter";
 
 interface JsonCallOptions {
   prompt: string;
@@ -13,18 +13,18 @@ interface JsonCallOptions {
 }
 
 /**
- * Run a Gemini completion that must produce strict JSON.
- * Returns the parsed value. On a rate-limit hit it throws GeminiRateLimitError
+ * Run an AI completion that must produce strict JSON.
+ * Returns the parsed value. On a rate-limit hit it throws AIRateLimitError
  * so the caller can surface the graceful "AI limit reached" message.
  */
-export async function generateJSONWithGemini(
+export async function generateJSONWithAI(
   options: JsonCallOptions
 ): Promise<unknown> {
   const systemPrompt =
     options.systemPrompt ??
     "You are a specialized assistant that returns ONLY valid JSON. No markdown, no commentary.";
 
-  const text = await generateWithGemini({
+  const text = await generateWithAI({
     prompt: options.prompt,
     systemPrompt,
     userId: options.userId,
@@ -55,4 +55,9 @@ export function parseJSONFromText(text: string): unknown {
   return JSON.parse(snippet);
 }
 
-export { GeminiRateLimitError };
+// Re-export for callers that catch rate-limit errors
+export { AIRateLimitError };
+
+// Legacy aliases for backward compatibility
+export const generateJSONWithGemini = generateJSONWithAI;
+export const GeminiRateLimitError = AIRateLimitError;
