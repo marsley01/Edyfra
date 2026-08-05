@@ -7,6 +7,7 @@ import MobileNav from "@/components/dashboard/MobileNav";
 import DashboardProviders from "./DashboardProviders";
 import TourGuide from "@/components/tour/TourGuide";
 import TourTrigger from "@/components/tour/TourTrigger";
+import { AgentWidget } from "@/components/ai/AgentWidget";
 
 const STUDENT_DASHBOARD_STEPS = [
   {
@@ -96,6 +97,7 @@ export default async function DashboardLayout({
         <MatchNotification />
         <TourGuide tourId="student-dashboard" steps={STUDENT_DASHBOARD_STEPS} />
         <TourTrigger tourId="student-dashboard" />
+        <AgentWidget agentId="eddy" />
       </div>
     </DashboardProviders>
   );

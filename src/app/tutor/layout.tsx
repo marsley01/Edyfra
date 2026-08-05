@@ -6,6 +6,8 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { TutorVideoShell } from "./TutorVideoShell";
 import TourGuide from "@/components/tour/TourGuide";
 import TourTrigger from "@/components/tour/TourTrigger";
+import prisma from "@/lib/prisma";
+import { AgentWidget } from "@/components/ai/AgentWidget";
 
 const TUTOR_DASHBOARD_STEPS = [
   {
@@ -64,7 +66,13 @@ export default async function TutorLayout({
     redirect("/login");
   }
 
-  const role = (user.user_metadata?.role || "").toUpperCase();
+  // Use Prisma as the source of truth for role — user_metadata can lag behind
+  // after a role change (JWT is only refreshed on next sign-in).
+  const dbUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { role: true },
+  });
+  const role = dbUser?.role?.toUpperCase() || (user.user_metadata?.role || "").toUpperCase();
   if (role !== "TUTOR" && role !== "ADMIN") {
     redirect("/dashboard");
   }
@@ -91,6 +99,7 @@ export default async function TutorLayout({
 
         <TourGuide tourId="tutor-dashboard" steps={TUTOR_DASHBOARD_STEPS} />
         <TourTrigger tourId="tutor-dashboard" />
+        <AgentWidget agentId="mash" />
       </div>
     </TutorVideoShell>
   );

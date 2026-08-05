@@ -34,30 +34,45 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const supabase = supabaseRef.current;
   const [adminUser, setAdminUser] = useState<User | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  // Prevents premature redirect while the async auth check is in-flight.
+  // Without this, any latency causes adminUser===null → immediate /dashboard redirect.
+  const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push("/login");
-        return;
-      }
-
-      // Authoritative check: Prisma role (founder emails auto-promote).
-      // Also syncs user_metadata so future requests are fast.
       try {
-        const { checkAdminAccess } = await import("@/app/actions/admin-auth");
-        const { allowed } = await checkAdminAccess();
-        if (allowed) {
-          setAdminUser(user);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          if (!cancelled) router.push("/login");
           return;
         }
-      } catch {
-        // fall through to redirect
-      }
 
-      router.push("/dashboard");
+        // Authoritative check: Prisma role (founder emails auto-promote).
+        // Also syncs user_metadata so future requests are fast.
+        try {
+          const { checkAdminAccess } = await import("@/app/actions/admin-auth");
+          const { allowed } = await checkAdminAccess();
+          if (cancelled) return;
+          if (allowed) {
+            setAdminUser(user);
+            return;
+          }
+        } catch (err) {
+          console.error("[AdminLayout] checkAdminAccess failed:", err);
+          // If the check itself throws (network error, cold start), do NOT
+          // redirect — show an error state instead so admins aren't locked out.
+          if (!cancelled) setAdminUser(null);
+          return;
+        }
+
+        // Check definitively returned false — not an admin.
+        if (!cancelled) router.push("/dashboard");
+      } finally {
+        if (!cancelled) setIsChecking(false);
+      }
     })();
+    return () => { cancelled = true; };
   }, [router, supabase]);
 
   const navItems: NavItem[] = [
@@ -80,6 +95,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin/institutions", label: "Institution Applications", icon: Building2 },
     { href: "/admin/ai-settings", label: "AI Settings", icon: Cpu },
   ];
+
+  // While the async auth check is in-flight, show a minimal loading state.
+  // This prevents the race condition where adminUser===null causes a flash redirect.
+  if (isChecking) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-2xl shadow-primary/40 animate-pulse">
+            <Terminal className="text-white h-6 w-6" />
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Verifying access...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground selection:bg-primary/30">
