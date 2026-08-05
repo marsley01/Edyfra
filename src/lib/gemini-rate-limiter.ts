@@ -234,8 +234,9 @@ export async function* streamWithGemini(options: CallOptions): AsyncGenerator<st
         }
       }
 
+      const response = await streamResult.response;
       const tokensUsed =
-        streamResult.response?.usageMetadata?.totalTokenCount ??
+        response?.usageMetadata?.totalTokenCount ??
         estimateTokens(streamedText);
 
       await logGeminiUsage({
