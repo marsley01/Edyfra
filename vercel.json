@@ -1,3 +1,9 @@
 {
-  "regions": ["lhr1"]
+  "regions": ["lhr1"],
+  "crons": [
+    {
+      "path": "/api/health",
+      "schedule": "0 */12 * * *"
+    }
+  ]
 }

@@ -1,0 +1,40 @@
+name: Keep Database Active
+
+on:
+  schedule:
+    # Runs at 03:00 UTC daily
+    - cron: '0 3 * * *'
+  workflow_dispatch: # Allows manual trigger from the GitHub Actions UI
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Health Endpoint
+        run: |
+          # Use user-configured secret if available, otherwise fallback to the default production URLs
+          URL="${{ secrets.APP_URL }}"
+          if [ -z "$URL" ]; then
+            URLS=("https://edyfra-v2.vercel.app" "https://edyfra.com")
+          else
+            URLS=("$URL")
+          fi
+          
+          for BASE_URL in "${URLS[@]}"; do
+            HEALTH_URL="${BASE_URL%/}/api/health"
+            echo "Pinging health endpoint at: $HEALTH_URL"
+            
+            # Make the request and output response headers and body
+            RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" "$HEALTH_URL")
+            BODY=$(echo "$RESPONSE" | sed '$d')
+            STATUS=$(echo "$RESPONSE" | tail -n1 | cut -d':' -f2)
+            
+            echo "Status Code: $STATUS"
+            echo "Response Body: $BODY"
+            
+            if [ "$STATUS" -ne 200 ]; then
+              echo "Warning: Pinging $HEALTH_URL returned status code $STATUS"
+            else
+              echo "Successfully kept database awake via $HEALTH_URL"
+            fi
+          done
