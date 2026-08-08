@@ -78,12 +78,12 @@ export function Navigation() {
     <>
       <nav
       className={cn(
-        "fixed top-0 w-full z-50 transition-all duration-300 border-b border-transparent",
-        scrolled ? "bg-background/80 backdrop-blur-md h-14 sm:h-16 border-border shadow-sm" : "h-16 sm:h-20"
+        "fixed top-0 w-full z-50 transition-all duration-300 border-b border-transparent pt-[env(safe-area-inset-top,0px)]",
+        scrolled ? "bg-background/80 backdrop-blur-md border-border shadow-sm" : ""
       )}
       aria-label="Main navigation"
     >
-      <div className="container mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
+      <div className={cn("container mx-auto px-4 sm:px-6 flex items-center justify-between", scrolled ? "h-14 sm:h-16" : "h-16 sm:h-20")}>
         {/* Logo — icon + text */}
         <Link href="/" className="flex items-center gap-2.5 group" aria-label="Edyfra Home">
           <Image src="/image.png" alt="Edyfra Logo" width={36} height={36} className="w-9 h-9 rounded-xl shadow-lg group-hover:scale-105 transition-transform object-cover" />
@@ -180,7 +180,7 @@ export function Navigation() {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
-            className="absolute inset-y-0 right-0 w-80 bg-background p-8 flex flex-col border-l border-border shadow-2xl z-[110]"
+            className="absolute inset-y-0 right-0 w-80 bg-background px-8 pt-[calc(2rem+env(safe-area-inset-top,0px))] pb-[calc(2rem+env(safe-area-inset-bottom,0px))] flex flex-col border-l border-border shadow-2xl z-[110]"
           >
             <div className="flex items-center justify-between mb-12">
               <Link href="/" onClick={() => setIsOpen(false)} className="flex items-center gap-2.5">

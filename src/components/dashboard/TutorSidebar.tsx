@@ -89,7 +89,9 @@ export function TutorSidebar({ user, onClose }: { user: User; onClose?: () => vo
   return (
     <aside data-tour="tour-sidebar" className={cn(
       "flex flex-col bg-card border-r border-border/60 transition-all duration-200",
-      onClose ? "h-full w-full" : "w-64 h-[calc(100vh-3.5rem)] sticky top-14 hidden lg:flex",
+      onClose
+        ? "h-full w-full pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]"
+        : "w-64 h-dvh sticky top-0 hidden lg:flex",
     )}>
       {onClose && (
         <div className="flex justify-end p-4">

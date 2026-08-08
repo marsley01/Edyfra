@@ -216,6 +216,10 @@ html {
   .container-max {
     @apply max-w-7xl mx-auto px-6;
   }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
 }
 
 /* ─── Custom keyframes ──────────────────────────────────────────────────── */
@@ -864,7 +868,7 @@ select,
   input,
   textarea,
   select {
-    font-size: 16px;
+    font-size: 16px !important;
     -webkit-text-size-adjust: 100%;
   }
 }
