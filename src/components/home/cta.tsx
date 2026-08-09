@@ -3,11 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Sparkles, Play } from "lucide-react";
 import Image from "next/image";
 
-export function HomeCTA({ stats }: { stats?: { value: number; label: string }[] }) {
-  const sessionCount = stats?.[2]?.value ? `${stats[2].value.toLocaleString()}+` : "Growing";
-  const tutorCount = stats?.[1]?.value ? `${stats[1].value.toLocaleString()}+` : "Verified";
-  const studentCount = stats?.[0]?.value ? `${stats[0].value.toLocaleString()}+` : "Growing";
-
+export function HomeCTA() {
   return (
     <section className="relative h-screen max-h-[900px] min-h-[600px] flex items-center justify-center overflow-hidden">
       {/* ── Image Background ── */}
@@ -42,7 +38,7 @@ export function HomeCTA({ stats }: { stats?: { value: number; label: string }[] 
         </div>
         <div className="text-left">
           <p className="text-[9px] font-bold uppercase tracking-widest text-white/60">Active Learning</p>
-          <p className="text-sm font-bold text-white">{sessionCount} sessions</p>
+          <p className="text-sm font-bold text-white">1-on-1 sessions</p>
         </div>
       </div>
 
@@ -60,7 +56,7 @@ export function HomeCTA({ stats }: { stats?: { value: number; label: string }[] 
         </div>
         <div className="text-left">
           <p className="text-[9px] font-bold uppercase tracking-widest text-white/60">Verified Support</p>
-          <p className="text-sm font-bold text-white">{tutorCount} tutors</p>
+          <p className="text-sm font-bold text-white">Expert tutors</p>
         </div>
       </div>
 
@@ -124,7 +120,7 @@ export function HomeCTA({ stats }: { stats?: { value: number; label: string }[] 
                 ))}
               </div>
               <p className="text-sm text-white/70">
-                <span className="font-bold text-white">{studentCount}</span> students studying right now
+                Join students studying with verified tutors
               </p>
             </div>
           </div>

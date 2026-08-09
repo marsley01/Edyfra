@@ -13,9 +13,8 @@ import {
   ClipboardList,
 } from "lucide-react";
 
-// stats prop kept for API compatibility — no longer displayed in the hero
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function HomeHero({ stats: _stats }: { stats?: { value: number; label: string }[] }) {
+// No live stats in the hero
+export function HomeHero() {
   const WHATSAPP_CHANNEL = "https://whatsapp.com/channel/0029Vb7GgdmHLHQfoNgSjo1P";
 
   return (

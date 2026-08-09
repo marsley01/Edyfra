@@ -560,35 +560,6 @@ export async function changeEmail(currentPassword: string, newEmail: string) {
 }
 
 /**
- * Cached via Next.js data cache — refreshes every 5 minutes.
- * Call `revalidateTag('global-stats')` to bust early (e.g. after admin actions).
- */
-export const getGlobalStats = unstable_cache(
-  async () => {
-    try {
-      const [studentCount, tutorCount, sessionCount, resourceCount] = await Promise.all([
-        prisma.user.count({ where: { role: Role.STUDENT } }),
-        prisma.tutorProfile.count({ where: { isVerified: true } }),
-        prisma.session.count({ where: { status: "COMPLETED" } }),
-        prisma.resource.count({ where: { status: "approved" } }),
-      ]);
-
-      return [
-        { value: studentCount, label: "Students Joined" },
-        { value: tutorCount, label: "Verified Tutors" },
-        { value: sessionCount, label: "Sessions Completed" },
-        { value: resourceCount, label: "Resources Shared" },
-      ];
-    } catch (error) {
-      console.error(error, { action: "getGlobalStats" });
-      return [];
-    }
-  },
-  ["global-stats"],
-  { revalidate: 300, tags: ["global-stats"] },
-);
-
-/**
  * Cached per education-level bucket — refreshes every 2 minutes.
  * Call `revalidateTag('leaderboard')` to bust early.
  */
