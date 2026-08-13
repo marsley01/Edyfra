@@ -2,7 +2,13 @@
 
 import { createClient } from "@/utils/supabase/server";
 import prisma from "@/lib/prisma";
-import { STORAGE_BUCKETS, createSignedUrl, isHttpUrl, uploadFileToBucket } from "@/lib/supabase-storage";
+import { STORAGE_BUCKETS, createSignedUrl, isHttpUrl, uploadFileToBucket, validateUploadFile, sanitizeFileExtension, sanitizeFileName } from "@/lib/supabase-storage";
+
+const KYC_VALIDATION_OPTIONS = {
+  maxSizeBytes: 10 * 1024 * 1024, // 10MB
+  allowedExtensions: ["jpg", "jpeg", "png", "webp", "pdf"],
+  allowedMimeTypes: ["image/jpeg", "image/png", "image/webp", "application/pdf"],
+};
 
 export async function uploadKycFile(formData: FormData) {
   const supabase = await createClient();
@@ -10,11 +16,17 @@ export async function uploadKycFile(formData: FormData) {
   if (!user) return { success: false, error: "Unauthorized" as const };
 
   const file = formData.get("file") as File | null;
-  const prefix = formData.get("prefix") as string;
+  const prefixRaw = (formData.get("prefix") as string) || "doc";
+  const prefix = sanitizeFileName(prefixRaw);
 
   if (!file) return { success: false, error: "No file provided" as const };
 
-  const ext = file.name.split(".").pop();
+  const validation = validateUploadFile(file, KYC_VALIDATION_OPTIONS);
+  if (!validation.valid) {
+    return { success: false, error: validation.error || "Invalid file" };
+  }
+
+  const ext = sanitizeFileExtension(file.name);
   const path = `kyc/${user.id}/onboarding-${prefix}-${Date.now()}.${ext}`;
 
   try {
@@ -45,14 +57,18 @@ export async function submitTutorApplication(formData: FormData) {
 
   try {
     if (idPhoto) {
-      const ext = idPhoto.name.split(".").pop();
+      const v = validateUploadFile(idPhoto, KYC_VALIDATION_OPTIONS);
+      if (!v.valid) return { success: false, error: `ID Photo error: ${v.error}` };
+      const ext = sanitizeFileExtension(idPhoto.name);
       const path = `kyc/${user.id}/id-${Date.now()}.${ext}`;
       await uploadFileToBucket(STORAGE_BUCKETS.kyc, path, idPhoto, idPhoto.type);
       idPhotoUrl = path;
     }
 
     if (selfie) {
-      const ext = selfie.name.split(".").pop();
+      const v = validateUploadFile(selfie, KYC_VALIDATION_OPTIONS);
+      if (!v.valid) return { success: false, error: `Selfie error: ${v.error}` };
+      const ext = sanitizeFileExtension(selfie.name);
       const path = `kyc/${user.id}/selfie-${Date.now()}.${ext}`;
       await uploadFileToBucket(STORAGE_BUCKETS.kyc, path, selfie, selfie.type);
       selfieUrl = path;

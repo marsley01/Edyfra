@@ -3,7 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { STORAGE_BUCKETS, createSignedUrl, isHttpUrl, uploadFileToBucket } from "@/lib/supabase-storage";
+import { STORAGE_BUCKETS, createSignedUrl, isHttpUrl, uploadFileToBucket, validateUploadFile, sanitizeFileExtension } from "@/lib/supabase-storage";
 
 const DOWNLOAD_LINK_TTL_SECONDS = 60 * 5; // 5 minutes
 
@@ -37,7 +37,27 @@ export async function uploadAndCreateResource(formData: FormData) {
     return { error: "Missing required fields" };
   }
 
-  const fileExt = file.name.split(".").pop();
+  // Validate file size and extension
+  const validation = validateUploadFile(file, {
+    maxSizeBytes: 50 * 1024 * 1024, // 50MB
+    allowedExtensions: ["pdf", "doc", "docx", "ppt", "pptx", "png", "jpg", "jpeg", "webp"],
+    allowedMimeTypes: [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-powerpoint",
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+    ],
+  });
+
+  if (!validation.valid) {
+    return { error: validation.error || "Invalid file" };
+  }
+
+  const fileExt = sanitizeFileExtension(file.name);
   const storagePath = `resources/${user.id}/${Date.now()}.${fileExt}`;
 
   try {

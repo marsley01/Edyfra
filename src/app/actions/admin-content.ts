@@ -5,7 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { isFounderEmail } from "@/utils/admin-guard";
-import { STORAGE_BUCKETS, createSignedUrl, isHttpUrl } from "@/lib/supabase-storage";
+import { STORAGE_BUCKETS, createSignedUrl, isHttpUrl, validateUploadFile, sanitizeFileName } from "@/lib/supabase-storage";
 
 async function guard() {
   const supabase = await createClient();
@@ -239,8 +239,27 @@ export async function uploadCurriculumContent(formData: FormData) {
     return { success: false, error: "Missing required fields" };
   }
 
+  const validation = validateUploadFile(file, {
+    maxSizeBytes: 50 * 1024 * 1024,
+    allowedExtensions: ["pdf", "doc", "docx", "ppt", "pptx", "png", "jpg", "jpeg", "webp"],
+    allowedMimeTypes: [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-powerpoint",
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+    ],
+  });
+
+  if (!validation.valid) {
+    return { success: false, error: validation.error || "Invalid file" };
+  }
+
   const adminClient = createAdminClient();
-  const safeName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
+  const safeName = sanitizeFileName(file.name);
   const fileName = `curriculum/${user.id}/${Date.now()}_${safeName}`;
 
   let { error: uploadError } = await adminClient.storage

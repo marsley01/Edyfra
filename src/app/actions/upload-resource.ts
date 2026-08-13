@@ -2,7 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import prisma from "@/lib/prisma";
-import { STORAGE_BUCKETS, uploadFileToBucket } from "@/lib/supabase-storage";
+import { STORAGE_BUCKETS, uploadFileToBucket, validateUploadFile, sanitizeFileExtension } from "@/lib/supabase-storage";
 
 export async function uploadResource(formData: FormData) {
   const supabase = await createClient();
@@ -26,14 +26,23 @@ export async function uploadResource(formData: FormData) {
   }
 
   // Validate file type and size
-  const allowedTypes = ["application/pdf", "image/png", "image/jpeg", "image/jpg", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation"];
-  const maxSize = 20 * 1024 * 1024; // 20MB
+  const validation = validateUploadFile(file, {
+    maxSizeBytes: 50 * 1024 * 1024,
+    allowedExtensions: ["pdf", "doc", "docx", "ppt", "pptx", "png", "jpg", "jpeg", "webp"],
+    allowedMimeTypes: [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-powerpoint",
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+    ],
+  });
 
-  if (!allowedTypes.includes(file.type)) {
-    return { error: "Invalid file type. Allowed: PDF, images, Word documents, PowerPoint presentations." };
-  }
-  if (file.size > maxSize) {
-    return { error: "File too large. Maximum size is 20MB." };
+  if (!validation.valid) {
+    return { error: validation.error || "Invalid file." };
   }
 
   // Ensure the Prisma User record exists (foreign key requirement)
@@ -42,9 +51,7 @@ export async function uploadResource(formData: FormData) {
     return { error: "Please visit your dashboard first to activate your account before uploading." };
   }
 
-  const supabaseClient = await createClient();
-  const fileExt = file.name.split(".").pop();
-  const sanitizedExt = fileExt?.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() || "bin";
+  const sanitizedExt = sanitizeFileExtension(file.name);
   const fileName = `${user.id}/${Date.now()}.${sanitizedExt}`;
 
   // Try uploading to Supabase Storage
