@@ -6,10 +6,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { showError, showSuccess, showUnknownError } from "@/lib/toast";
-import { getFirebaseMessaging } from "@/lib/firebase";
-import { getToken } from "firebase/messaging";
 
 type SupportState = "loading" | "unsupported" | "ready";
+
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
 
 export function PushNotificationManager() {
   const [support, setSupport] = useState<SupportState>("loading");
@@ -68,44 +79,34 @@ export function PushNotificationManager() {
         return;
       }
 
-      // Use Firebase Messaging to get FCM token
-      const messaging = getFirebaseMessaging();
-      if (!messaging) {
+      const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      if (!vapidKey) {
         showError({
           title: "Push isn't set up yet",
-          cause: "Firebase messaging is not initialized.",
+          cause: "VAPID configuration is missing.",
           fix: "We'll be back online with push soon.",
         });
         return;
       }
 
-      // We need the VAPID key from env
-      const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-      if (!vapidKey) {
-        console.warn("Missing VAPID key in env");
-      }
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidKey),
+      });
 
-      const token = await getToken(messaging, { vapidKey });
-      
-      if (!token) {
-        showError({
-          title: "Registration failed",
-          cause: "Could not generate a push token for your device.",
-          fix: "Please try again or contact support.",
-        });
-        return;
-      }
+      const raw = sub.toJSON();
 
       const saveRes = await fetch("/api/push/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify(raw),
       });
 
       if (!saveRes.ok) {
         showError({
           title: "Almost there",
-          cause: "We generated your push token but the server didn't accept it.",
+          cause: "We generated your push subscription but the server didn't accept it.",
           fix: "Try again — if it keeps happening, contact support.",
         });
         return;

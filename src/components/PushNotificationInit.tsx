@@ -4,8 +4,19 @@ import { useEffect, useState, useCallback } from "react";
 import { Bell, BellOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { showError, showSuccess } from "@/lib/toast";
-import { getFirebaseMessaging } from "@/lib/firebase";
-import { getToken } from "firebase/messaging";
+
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
 
 export function PushNotificationInit() {
   const [supported, setSupported] = useState(false);
@@ -48,41 +59,34 @@ export function PushNotificationInit() {
         return;
       }
 
-      // Use Firebase Messaging to get FCM token
-      const messaging = getFirebaseMessaging();
-      if (!messaging) {
+      const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      if (!vapidKey) {
         showError({
           title: "Push isn't ready yet",
-          cause: "Firebase messaging is not initialized.",
+          cause: "VAPID key is not configured.",
           fix: "We'll let you know once it's live.",
         });
         return;
       }
 
-      // We need the VAPID key from env
-      const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-      
-      const token = await getToken(messaging, { vapidKey });
-      
-      if (!token) {
-        showError({
-          title: "Registration failed",
-          cause: "Could not generate a push token for your device.",
-          fix: "Please try again or contact support.",
-        });
-        return;
-      }
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidKey),
+      });
+
+      const raw = sub.toJSON();
 
       const saveRes = await fetch("/api/push/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify(raw),
       });
 
       if (!saveRes.ok) {
         showError({
           title: "Couldn't save subscription",
-          cause: "We got the token, but the server rejected it.",
+          cause: "We got the subscription, but the server rejected it.",
           fix: "Try refreshing and trying again.",
         });
         return;

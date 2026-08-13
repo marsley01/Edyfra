@@ -1,7 +1,6 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { sendFCMNotification } from "@/lib/notifications/fcm-sender";
 import { createClient } from "@/utils/supabase/server";
 import webpush from "web-push";
 
@@ -21,26 +20,6 @@ export async function sendNotificationPush(
   payload: { title: string; body: string; url?: string }
 ) {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { fcmTokens: true },
-    });
-
-    let fcmSuccess = 0;
-    let fcmFailure = 0;
-
-    // Send via FCM
-    if (user?.fcmTokens && user.fcmTokens.length > 0) {
-      const fcmResult = await sendFCMNotification(user.fcmTokens, {
-        title: payload.title,
-        body: payload.body,
-        clickAction: payload.url,
-      });
-      fcmSuccess = fcmResult.success;
-      fcmFailure = fcmResult.failure;
-    }
-
-    // Send via Web Push API (service worker push notifications)
     let webPushSent = 0;
     let webPushExpired = 0;
 
@@ -91,14 +70,11 @@ export async function sendNotificationPush(
       }
     }
 
-    const totalSent = fcmSuccess + webPushSent;
-    const totalFailed = fcmFailure;
-
     return {
-      success: totalFailed === 0,
-      sent: totalSent,
+      success: true,
+      sent: webPushSent,
       expired: webPushExpired,
-      errors: totalFailed,
+      errors: 0,
     };
   } catch (error) {
     console.error("Error sending push notification:", error);
@@ -111,10 +87,10 @@ export async function getUserPushSubscriptions() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
-  const dbUser = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { fcmTokens: true },
+  const subscriptions = await prisma.pushSubscription.findMany({
+    where: { userId: user.id },
+    select: { endpoint: true },
   });
 
-  return dbUser?.fcmTokens || [];
+  return subscriptions.map(s => s.endpoint);
 }

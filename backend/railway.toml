@@ -1,0 +1,18 @@
+[build]
+# Root of the service within the monorepo — Railway will only build this folder
+rootDirectory = "backend"
+# Use the Dockerfile we ship (Railway auto-detects it but being explicit is safer)
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+# Railway sets $PORT automatically; this is what health checks hit
+startCommand = "uvicorn fastapi_app:app --host 0.0.0.0 --port $PORT --workers 2"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5
+
+# Minimum resources — scale up in the Railway dashboard as traffic grows
+[[services]]
+numReplicas = 1

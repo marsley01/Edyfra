@@ -53,6 +53,7 @@ from bookings import (
     get_booking_by_id,
     get_booking_for_status_update,
     update_booking_meeting_url,
+    create_booking_reminders,
 )
 
 load_dotenv()
@@ -72,9 +73,18 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Allowed origins: local dev + all production Vercel deployments + custom domain.
+# Add any new preview/staging URLs here or set CORS_ORIGINS env var (comma-separated).
+_extra_origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://edyfra-v2.vercel.app"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://edyfra-v2.vercel.app",
+        "https://edyfra.com",
+        "https://www.edyfra.com",
+        *_extra_origins,
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -1,4 +1,15 @@
-const PYTHON_URL = process.env.PYTHON_BACKEND_URL || "http://127.0.0.1:8000";
+/**
+ * booking-client.ts — server-safe client for the FastAPI Python backend.
+ *
+ * All calls go through /api/python/* (the Next.js proxy route) rather than
+ * directly to PYTHON_BACKEND_URL. This means:
+ *   - Auth is handled by the proxy (no token forwarding needed here)
+ *   - Works in both server components and client components
+ *   - Works in production without CORS issues
+ *
+ * The proxy is at src/app/api/python/[...path]/route.ts
+ */
+const API_BASE = "/api/python";
 
 async function callPython<T>(
   path: string,
@@ -8,7 +19,7 @@ async function callPython<T>(
     userId?: string;
   } = {},
 ): Promise<T> {
-  const url = `${PYTHON_URL}${path}`;
+  const url = `${API_BASE}${path}`;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
