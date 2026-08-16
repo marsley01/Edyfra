@@ -46,6 +46,7 @@
    as a solid green screen. This forces a root compositing layer to prevent it. */
 html {
   -webkit-backdrop-filter: blur(0px);
+  backdrop-filter: blur(0px);
   isolation: isolate;
 }
 
@@ -956,6 +957,7 @@ select,
 [contenteditable] {
   font-size: 16px;
   -webkit-appearance: none;
+  appearance: none;
   border-radius: 0;
 }
 
@@ -1062,6 +1064,7 @@ select,
 
 img {
   -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
   image-rendering: -webkit-optimize-contrast;
 }
 
