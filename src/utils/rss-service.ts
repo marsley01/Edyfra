@@ -1,3 +1,5 @@
+import { resolveThumbnail, type ThumbnailResult } from "@/lib/thumbnail-resolver";
+
 export interface RSSItem {
   title: string;
   link: string;
@@ -5,7 +7,13 @@ export interface RSSItem {
   pubDate: string;
   source: string;
   category: string;
+  /** Raw image extracted from the feed XML (enclosure / media tags). May be empty. */
   imageUrl: string;
+  /** Resolved thumbnail data — populated by fetchAllFeeds() */
+  thumbnail_url: string | null;
+  thumbnail_source: "og" | "pexels" | null;
+  pexels_photographer: string | null;
+  pexels_photo_page: string | null;
 }
 
 const CATEGORY_FEEDS: { category: string; name: string; url: string }[] = [
@@ -25,15 +33,6 @@ const CATEGORY_FEEDS: { category: string; name: string; url: string }[] = [
   { category: "Announcements", name: "NASA Breaking News", url: "https://www.nasa.gov/feed/" },
   { category: "Announcements", name: "Science Daily", url: "https://www.sciencedaily.com/rss/all.xml" },
 ];
-
-const FALLBACK_IMAGES: Record<string, string> = {
-  Tech: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop",
-  Education: "https://images.unsplash.com/photo-1523050854058-8df90110c7f1?q=80&w=2071&auto=format&fit=crop",
-  "Student Life": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070&auto=format&fit=crop",
-  Announcements: "https://images.unsplash.com/photo-1504711434969-e33886168d6c?q=80&w=2070&auto=format&fit=crop",
-};
-
-const UNSPLASH_BACKUP = "https://images.unsplash.com/photo-1546410531-bb4caa1b4247?q=80&w=2070&auto=format&fit=crop";
 
 function extractImage(itemXml: string): string {
   const enclosureMatch = itemXml.match(/<enclosure[^>]*url="([^"]+)"[^>]*>/);
@@ -72,15 +71,48 @@ export class RSSService {
     }
 
     for (const [category, items] of categoryMap) {
-      const fallbackImg = FALLBACK_IMAGES[category] || UNSPLASH_BACKUP;
-      const enriched = items.map(item => ({
-        ...item,
-        imageUrl: item.imageUrl || fallbackImg,
-      }));
-      results.push({
-        category,
-        items: enriched.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime()).slice(0, 8),
-      });
+      // Sort by date, take top 8, then resolve thumbnails in parallel
+      const sorted = items
+        .sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
+        .slice(0, 8);
+
+      const enriched = await Promise.all(
+        sorted.map(async (item): Promise<RSSItem> => {
+          // If the feed already provided an image, use it as-is and skip resolution
+          if (item.imageUrl) {
+            return {
+              ...item,
+              thumbnail_url: item.imageUrl,
+              thumbnail_source: null,
+              pexels_photographer: null,
+              pexels_photo_page: null,
+            };
+          }
+
+          // No feed image — run the full resolver (cache → OG → Pexels)
+          let thumb: ThumbnailResult = {
+            thumbnail_url: null,
+            source: null,
+            photographer: null,
+            photo_page: null,
+          };
+          try {
+            thumb = await resolveThumbnail(item.link, item.title);
+          } catch (err) {
+            console.warn("[rss] thumbnail resolution failed for", item.link, err);
+          }
+
+          return {
+            ...item,
+            thumbnail_url: thumb.thumbnail_url,
+            thumbnail_source: thumb.source,
+            pexels_photographer: thumb.photographer,
+            pexels_photo_page: thumb.photo_page,
+          };
+        })
+      );
+
+      results.push({ category, items: enriched });
     }
 
     return results;
@@ -104,7 +136,20 @@ export class RSSService {
       const imageUrl = extractImage(itemXml);
 
       if (title && link) {
-        items.push({ title, link, description, pubDate, source, category, imageUrl });
+        items.push({
+          title,
+          link,
+          description,
+          pubDate,
+          source,
+          category,
+          imageUrl,
+          // These are populated later in fetchAllFeeds()
+          thumbnail_url: null,
+          thumbnail_source: null,
+          pexels_photographer: null,
+          pexels_photo_page: null,
+        });
       }
     }
 

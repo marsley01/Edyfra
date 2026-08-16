@@ -16,6 +16,11 @@ export interface NewsArticle {
   published_at: string;
   reading_time?: string;
   isDraft?: boolean;
+  /** Resolved thumbnail — may differ from cover_image for DB articles */
+  thumbnail_url: string | null;
+  thumbnail_source: "og" | "pexels" | null;
+  pexels_photographer: string | null;
+  pexels_photo_page: string | null;
 }
 
 import { fetchOgImage } from "@/utils/og-scraper";
@@ -82,6 +87,11 @@ export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
       author: a.authorId ? "Author" : "Edyfra Desk",
       published_at: (a.publishedAt ?? a.createdAt).toISOString(),
       reading_time: undefined,
+      // DB articles use cover_image directly; no separate thumbnail resolver needed
+      thumbnail_url: a.coverImage ?? null,
+      thumbnail_source: null as null,
+      pexels_photographer: null,
+      pexels_photo_page: null,
     })).slice(0, limit);
   }
 
@@ -103,15 +113,6 @@ export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
       sorted.slice(0, limit).map(async (item, index) => {
         const excerpt = item.description.replace(/<[^>]*>?/gm, '').replace(/&lt;.*?&gt;/g, '').slice(0, 180) + "...";
 
-        let finalImageUrl = item.imageUrl;
-        if (!finalImageUrl) {
-          const og = await fetchOgImage(item.link);
-          if (og) {
-            finalImageUrl = og;
-          } else {
-            finalImageUrl = GENERIC_FALLBACK;
-          }
-        }
 
         return {
           id: `rss-${index}`,
@@ -119,11 +120,15 @@ export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
           slug: `rss-${index}`,
           excerpt: excerpt,
           content: item.link,
-          cover_image: finalImageUrl || getFallbackImage(item.category, item.title, item.source),
+          cover_image: item.thumbnail_url || getFallbackImage(item.category, item.title, item.source),
           category: item.category || "Global Updates",
           author: item.source,
           published_at: item.pubDate,
-          reading_time: "3m"
+          reading_time: "3m",
+          thumbnail_url: item.thumbnail_url,
+          thumbnail_source: item.thumbnail_source,
+          pexels_photographer: item.pexels_photographer,
+          pexels_photo_page: item.pexels_photo_page,
         };
       })
     );

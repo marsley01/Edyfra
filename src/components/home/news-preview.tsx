@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { ChevronRight, Calendar, Newspaper, RefreshCw, ArrowUpRight } from "lucide-react";
 import { getLatestNews, NewsArticle } from "@/app/actions/news";
@@ -9,37 +10,105 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { BookOpen } from "lucide-react";
 
+// ── Category pill colours ────────────────────────────────────────────────────
+
 const categoryColors: Record<string, string> = {
-  Tech: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
-  Education: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-  "Student Life": "bg-purple-500/10 text-purple-600 dark:text-purple-400",
-  Announcements: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-  "Global Updates": "bg-slate-500/10 text-slate-600 dark:text-slate-400",
+  Tech: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
+  Education: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
+  "Student Life": "bg-purple-500/10 text-purple-400 border border-purple-500/20",
+  Announcements: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
+  "Global Updates": "bg-slate-500/10 text-slate-400 border border-slate-500/20",
 };
 
-/** Skeleton card while loading */
+/** Gradient backgrounds for each category when no thumbnail is available */
+const categoryGradients: Record<string, string> = {
+  Tech: "from-[#3B28CC] to-[#1a1060]",
+  Education: "from-[#3B28CC] to-[#0d3d2e]",
+  "Student Life": "from-[#3B28CC] to-[#2d0f5e]",
+  Announcements: "from-[#3B28CC] to-[#3d2800]",
+  "Global Updates": "from-[#3B28CC] to-[#1a1a2e]",
+};
+
+// ── Skeleton ─────────────────────────────────────────────────────────────────
+
 function NewsSkeleton() {
   return (
-    <div className="flex flex-col gap-4 p-6 rounded-3xl border border-border bg-secondary/20 animate-pulse">
-      <div className="flex items-center gap-2">
-        <div className="h-5 w-20 rounded-full bg-secondary" />
-        <div className="h-4 w-16 rounded-full bg-secondary" />
+    <div className="flex flex-col rounded-3xl border border-border bg-secondary/20 animate-pulse overflow-hidden">
+      <div className="h-44 bg-secondary" />
+      <div className="p-6 flex flex-col gap-4">
+        <div className="flex items-center gap-2">
+          <div className="h-5 w-20 rounded-full bg-secondary" />
+          <div className="h-4 w-16 rounded-full bg-secondary" />
+        </div>
+        <div className="space-y-2">
+          <div className="h-6 rounded-xl bg-secondary" />
+          <div className="h-6 w-4/5 rounded-xl bg-secondary" />
+        </div>
+        <div className="h-4 w-full rounded bg-secondary" />
+        <div className="h-4 w-3/4 rounded bg-secondary" />
       </div>
-      <div className="space-y-2">
-        <div className="h-6 rounded-xl bg-secondary" />
-        <div className="h-6 w-4/5 rounded-xl bg-secondary" />
-      </div>
-      <div className="h-4 w-full rounded bg-secondary" />
-      <div className="h-4 w-3/4 rounded bg-secondary" />
     </div>
   );
 }
 
-/** Single news card — text-only, no per-article image */
+// ── Thumbnail area ────────────────────────────────────────────────────────────
+
+function CardThumbnail({ item }: { item: NewsArticle }) {
+  const gradient =
+    categoryGradients[item.category] ?? "from-[#3B28CC] to-[#1a1060]";
+  const colorClass =
+    categoryColors[item.category] ?? "bg-primary/10 text-primary border border-primary/20";
+
+  if (item.thumbnail_url) {
+    return (
+      <div className="relative h-44 w-full overflow-hidden flex-shrink-0">
+        <Image
+          src={item.thumbnail_url}
+          alt={item.title}
+          fill
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
+          sizes="(max-width: 768px) 100vw, 33vw"
+          unoptimized={item.thumbnail_source !== null} // External URLs — skip Next image optimization CDN
+        />
+        {/* Subtle gradient scrim so text on top is always readable */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+        {/* Pexels per-card attribution (required by Pexels API terms) */}
+        {item.thumbnail_source === "pexels" && item.pexels_photographer && item.pexels_photo_page && (
+          <a
+            href={item.pexels_photo_page}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="absolute bottom-2 left-2 text-white/60 hover:text-white/80 transition-colors"
+            style={{ fontSize: "10px" }}
+          >
+            Photo by {item.pexels_photographer} on Pexels
+          </a>
+        )}
+      </div>
+    );
+  }
+
+  // No thumbnail — render branded gradient placeholder
+  return (
+    <div
+      className={`relative h-44 w-full flex items-center justify-center bg-gradient-to-br ${gradient} flex-shrink-0`}
+    >
+      <span className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${colorClass}`}>
+        {item.category}
+      </span>
+    </div>
+  );
+}
+
+// ── Single news card ──────────────────────────────────────────────────────────
+
 function NewsCard({ item, index }: { item: NewsArticle; index: number }) {
   const isExternal = item.slug.startsWith("rss");
   const href = isExternal ? item.content : `/news/${item.slug}`;
-  const colorClass = categoryColors[item.category] ?? "bg-primary/10 text-primary";
+  const colorClass =
+    categoryColors[item.category] ?? "bg-primary/10 text-primary border border-primary/20";
 
   return (
     <motion.div
@@ -47,52 +116,65 @@ function NewsCard({ item, index }: { item: NewsArticle; index: number }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      className="h-full"
     >
       <a
         href={href}
         target={isExternal ? "_blank" : "_self"}
         rel="noopener noreferrer"
-        className="group flex flex-col gap-5 p-6 rounded-3xl border border-border/60 bg-card hover:bg-secondary/30 hover:border-border hover:-translate-y-1 hover:shadow-xl transition-all duration-400 h-full"
+        className="group flex flex-col rounded-3xl border border-border/60 bg-card hover:border-border hover:-translate-y-1 hover:shadow-xl transition-all duration-400 h-full overflow-hidden"
       >
-        {/* Category + Date */}
-        <div className="flex items-center justify-between gap-3">
-          <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${colorClass}`}>
-            {item.category}
-          </span>
-          <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1 shrink-0">
-            <Calendar className="h-3 w-3" />
-            {new Date(item.published_at).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" })}
-          </span>
-        </div>
+        {/* Thumbnail / gradient placeholder */}
+        <CardThumbnail item={item} />
 
-        {/* Title */}
-        <h3 className="text-xl font-black tracking-tight leading-tight group-hover:text-primary transition-colors line-clamp-3 flex-1">
-          {item.title}
-        </h3>
-
-        {/* Excerpt */}
-        <p className="text-sm text-muted-foreground font-medium leading-relaxed line-clamp-2">
-          {item.excerpt}
-        </p>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between pt-1 border-t border-border/40 mt-auto">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-primary font-bold text-[9px] uppercase">
-              {item.author?.[0] ?? "E"}
-            </div>
-            <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground truncate max-w-[120px]">
-              {item.author}
+        {/* Card body */}
+        <div className="flex flex-col gap-4 p-6 flex-1">
+          {/* Category + Date */}
+          <div className="flex items-center justify-between gap-3">
+            <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${colorClass}`}>
+              {item.category}
+            </span>
+            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1 shrink-0">
+              <Calendar className="h-3 w-3" />
+              {new Date(item.published_at).toLocaleDateString("en-KE", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })}
             </span>
           </div>
-          <span className="text-[9px] font-black uppercase tracking-widest text-primary flex items-center gap-1 group-hover:gap-2 transition-all">
-            Read {isExternal ? <ArrowUpRight className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-          </span>
+
+          {/* Title */}
+          <h3 className="text-xl font-black tracking-tight leading-tight group-hover:text-primary transition-colors line-clamp-3 flex-1">
+            {item.title}
+          </h3>
+
+          {/* Excerpt */}
+          <p className="text-sm text-muted-foreground font-medium leading-relaxed line-clamp-2">
+            {item.excerpt}
+          </p>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between pt-1 border-t border-border/40 mt-auto">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-primary font-bold text-[9px] uppercase">
+                {item.author?.[0] ?? "E"}
+              </div>
+              <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground truncate max-w-[120px]">
+                {item.author}
+              </span>
+            </div>
+            <span className="text-[9px] font-black uppercase tracking-widest text-primary flex items-center gap-1 group-hover:gap-2 transition-all">
+              Read {isExternal ? <ArrowUpRight className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+            </span>
+          </div>
         </div>
       </a>
     </motion.div>
   );
 }
+
+// ── Section ───────────────────────────────────────────────────────────────────
 
 export function HomeNews() {
   const [news, setNews] = useState<NewsArticle[]>([]);
@@ -101,7 +183,6 @@ export function HomeNews() {
   const abortRef = useRef<AbortController | null>(null);
 
   const loadNews = async () => {
-    // Cancel any in-flight request
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
@@ -134,6 +215,9 @@ export function HomeNews() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /** True when at least one visible card has a Pexels image */
+  const hasPexelsImages = news.some((a) => a.thumbnail_source === "pexels");
+
   return (
     <section className="py-32 md:py-48 bg-background">
       <div className="container-max space-y-16">
@@ -162,19 +246,41 @@ export function HomeNews() {
         {/* Cards */}
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => <NewsSkeleton key={i} />)}
+            {[1, 2, 3].map((i) => (
+              <NewsSkeleton key={i} />
+            ))}
           </div>
         ) : hasError ? (
           <div className="flex flex-col items-center gap-6 py-20 text-center">
-            <p className="text-muted-foreground font-medium">Couldn&apos;t load the latest news. Check your connection and try again.</p>
+            <p className="text-muted-foreground font-medium">
+              Couldn&apos;t load the latest news. Check your connection and try again.
+            </p>
             <Button variant="outline" onClick={loadNews} className="rounded-full gap-2">
               <RefreshCw className="h-4 w-4" /> Retry
             </Button>
           </div>
         ) : news.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {news.map((item, i) => <NewsCard key={item.id} item={item} index={i} />)}
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {news.map((item, i) => (
+                <NewsCard key={item.id} item={item} index={i} />
+              ))}
+            </div>
+
+            {/* Section-level Pexels attribution (required by Pexels API terms) */}
+            {hasPexelsImages && (
+              <div className="flex justify-end pt-2">
+                <a
+                  href="https://www.pexels.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Photos provided by Pexels
+                </a>
+              </div>
+            )}
+          </>
         ) : (
           <EmptyState
             icon={BookOpen}
