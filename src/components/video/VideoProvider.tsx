@@ -1,6 +1,6 @@
 'use client';
 
-import { StreamVideo } from '@stream-io/video-react-sdk';
+import { StreamVideo, StreamTheme } from '@stream-io/video-react-sdk';
 import '@stream-io/video-react-sdk/dist/css/styles.css';
 import {
   useEffect,
@@ -73,22 +73,21 @@ export function VideoProvider({
     };
   }, []);
 
-  // Always render children — video is an optional enhancement
-  if (isLoading || !client || error) {
-    return (
-      <VideoContext.Provider
-        value={{ client: null, activeCall, setActiveCall, isLoading, error }}
-      >
-        {children}
-      </VideoContext.Provider>
-    );
-  }
-
+  // Always render children — when client is null or loading, IncomingCall/StartCallButton
+  // handle the null check internally. Never block the tree.
   return (
     <VideoContext.Provider
       value={{ client, activeCall, setActiveCall, isLoading, error }}
     >
-      <StreamVideo client={client}>{children}</StreamVideo>
+      {client ? (
+        <StreamVideo client={client}>
+          <StreamTheme className="h-full w-full">
+            {children}
+          </StreamTheme>
+        </StreamVideo>
+      ) : (
+        children
+      )}
     </VideoContext.Provider>
   );
 }

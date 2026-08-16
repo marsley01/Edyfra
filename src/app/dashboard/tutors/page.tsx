@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import VerifiedBadge from "@/components/ui/verified-badge";
 import { Loader2, Star, CheckCircle2, Clock, Calendar, Search } from "lucide-react";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
 import { Input } from "@/components/ui/input";

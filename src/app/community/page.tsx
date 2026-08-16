@@ -648,7 +648,7 @@ export default function ForumPage() {
                   <div key={u.id} className="flex items-center gap-3">
                     <div className="relative h-9 w-9 shrink-0 rounded-xl overflow-hidden bg-card ring-1 ring-border">
                       {u.avatar ? (
-                        <img src={u.avatar} alt="" className="h-full w-full object-cover" />
+                        <img src={u.avatar} alt={u.name} className="h-full w-full object-cover" />
                       ) : (
                         <div
                           className={`h-full w-full bg-gradient-to-br ${

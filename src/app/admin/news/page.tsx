@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { checkAdminStatus } from "@/app/actions/admin";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
@@ -26,9 +27,13 @@ export default function NewsPage() {
   const [publish, setPublish] = useState(false);
 
   const load = async () => {
-    const { getNewsArticles } = await import("@/app/actions/admin-content");
-    const data = await getNewsArticles();
-    setArticles(data);
+    try {
+      const { getNewsArticles } = await import("@/app/actions/admin-content");
+      const data = await getNewsArticles();
+      setArticles(data);
+    } catch {
+      toast.error("Failed to load articles");
+    }
     setLoading(false);
   };
 

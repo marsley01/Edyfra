@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,31 @@ import { showError } from "@/lib/toast";
 
 export default function RoleChoicePage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        window.location.href = "/auth/login";
+        return;
+      }
+
+      const { getUserData } = await import("@/app/actions/user");
+      const profile = await getUserData();
+
+      if (profile) {
+        const hasProfile = profile.studentProfile || profile.tutorProfile;
+        const hasRole = profile.role === "TUTOR" || profile.role === "ADMIN" || profile.role === "FOUNDER";
+        if (hasProfile || (hasRole && !["STUDENT"].includes(profile.role))) {
+          window.location.href = "/dashboard";
+          return;
+        }
+      }
+      setLoading(false);
+    })();
+  }, [router]);
 
   const selectRole = async (role: "STUDENT" | "TUTOR") => {
     setLoading(true);

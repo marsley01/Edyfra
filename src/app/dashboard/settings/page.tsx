@@ -17,10 +17,13 @@ import {
   Settings, User, Bell, Palette, Shield, CreditCard,
   Moon, Sun, Monitor, Check, Loader2, Palette as PaletteIcon,
   BookOpen, Clock, MessageSquare, Trash2, Download, Lock, Mail,
-  Eye, EyeOff, Languages, Bot, Search, AlertTriangle, Smartphone
+  Eye, EyeOff, Languages, Bot, Search, AlertTriangle, Smartphone, X,
+  Calendar as CalendarIcon
 } from "lucide-react";
+import { getSubjectsByLevel } from "@/lib/subjects";
 import { useTheme } from "next-themes";
 import { getUserData, updateProfile, updateUserPreferences, updateNotificationSettings, updateStudentProfile, changePassword, changeEmail, downloadUserData, deleteUserAccount, updateAvatar } from "@/app/actions/user";
+import { getCalendarConnection, getGoogleCalendarAuthUrl, disconnectGoogleCalendar } from "@/app/actions/calendar";
 import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
@@ -45,10 +48,11 @@ export default function SettingsPage() {
   const [userData, setUserData] = useState<any>(null);
   const [prefs, setPrefs] = useState<any>({});
   const [notifPrefs, setNotifPrefs] = useState<Record<string, boolean>>({});
-  const [formData, setFormData] = useState({ name: "", bio: "", educationLevel: "", subjects: "", studyHours: "" });
+  const [formData, setFormData] = useState({ name: "", bio: "", educationLevel: "", subjects: [] as string[], studyHours: "" });
   const [currentAvatar, setCurrentAvatar] = useState<string | null>(null);
   const [passwordData, setPasswordData] = useState({ current: "", newPass: "", confirm: "" });
   const [newEmail, setNewEmail] = useState("");
+  const [emailPassword, setEmailPassword] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [downloading, setDownloading] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -56,8 +60,35 @@ export default function SettingsPage() {
   const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
   const [selectedAvatarStyle, setSelectedAvatarStyle] = useState<AvatarStyle | null>(null);
   const [savingAvatar, setSavingAvatar] = useState(false);
+  const [calendarLoading, setCalendarLoading] = useState(true);
+  const [calendarConnected, setCalendarConnected] = useState(false);
+  const [calendarId, setCalendarId] = useState<string | null>(null);
 
-  useEffect(() => { loadUserData(); }, []);
+  useEffect(() => {
+    loadUserData();
+    loadCalendar();
+
+    // Check for calendar OAuth callback result
+    const params = new URLSearchParams(window.location.search);
+    const calendarStatus = params.get("calendar");
+    if (calendarStatus === "connected") {
+      toast.success("Google Calendar connected!", {
+        description: "Your bookings will now appear in your calendar.",
+      });
+      loadCalendar();
+      window.history.replaceState({}, "", "/dashboard/settings");
+    } else if (calendarStatus === "denied") {
+      toast.error("Calendar access denied", {
+        description: "You can try again anytime from settings.",
+      });
+      window.history.replaceState({}, "", "/dashboard/settings");
+    } else if (calendarStatus === "error") {
+      toast.error("Failed to connect Google Calendar", {
+        description: "Please try again or check your Google account permissions.",
+      });
+      window.history.replaceState({}, "", "/dashboard/settings");
+    }
+  }, []);
 
   const loadUserData = async () => {
     const data = await getUserData() as any;
@@ -69,7 +100,7 @@ export default function SettingsPage() {
         name: data.name || "",
         bio: data.bio || "",
         educationLevel: data.educationLevel || "HIGH_SCHOOL",
-        subjects: data.studentProfile?.subjects?.join(", ") || "",
+        subjects: data.studentProfile?.subjects || [],
         studyHours: preferences.studyHoursPerWeek?.toString() || "",
       });
     }
@@ -84,6 +115,18 @@ export default function SettingsPage() {
     setLoading(false);
   };
 
+  const loadCalendar = async () => {
+    try {
+      const connection = await getCalendarConnection();
+      setCalendarConnected(!!connection);
+      setCalendarId(connection?.calendarId || null);
+    } catch {
+      // ignore
+    } finally {
+      setCalendarLoading(false);
+    }
+  };
+
   const handleUpdateProfile = async () => {
     setSaving(true);
     try {
@@ -91,7 +134,7 @@ export default function SettingsPage() {
         name: formData.name,
         bio: formData.bio,
         educationLevel: formData.educationLevel,
-        subjects: formData.subjects.split(",").map(s => s.trim()).filter(Boolean),
+        subjects: formData.subjects,
         studyHoursPerWeek: parseInt(formData.studyHours) || 0,
       });
       toast.success("Profile updated");
@@ -137,7 +180,7 @@ export default function SettingsPage() {
   const handleChangeEmail = async () => {
     if (!newEmail.includes("@")) { toast.error("Invalid email"); return; }
     try {
-      await changeEmail(newEmail);
+      await changeEmail(emailPassword, newEmail);
       toast.success("Verification email sent to " + newEmail);
     } catch (e: any) { toast.error(e.message); }
   };
@@ -166,6 +209,30 @@ export default function SettingsPage() {
     } catch { toast.error("Failed to delete account"); }
   };
 
+  const handleConnectCalendar = async () => {
+    try {
+      const result = await getGoogleCalendarAuthUrl();
+      if (result?.url) {
+        window.location.href = result.url;
+      } else if (result?.error) {
+        toast.error(result.error);
+      }
+    } catch {
+      toast.error("Failed to connect Google Calendar");
+    }
+  };
+
+  const handleDisconnectCalendar = async () => {
+    try {
+      await disconnectGoogleCalendar();
+      setCalendarConnected(false);
+      setCalendarId(null);
+      toast.success("Google Calendar disconnected");
+    } catch {
+      toast.error("Failed to disconnect Google Calendar");
+    }
+  };
+
   if (loading) return <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
   const notifItems = [
@@ -190,6 +257,7 @@ export default function SettingsPage() {
             <TabsList className="flex flex-col h-auto bg-transparent border-0 space-y-2">
               <TabsTrigger value="profile" className="w-full justify-start gap-3 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-xl border border-transparent hover:border-primary/20"><User className="h-4 w-4" /> Profile</TabsTrigger>
               <TabsTrigger value="notifications" className="w-full justify-start gap-3 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-xl border border-transparent hover:border-primary/20"><Bell className="h-4 w-4" /> Notifications</TabsTrigger>
+              <TabsTrigger value="calendar" className="w-full justify-start gap-3 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-xl border border-transparent hover:border-primary/20"><CalendarIcon className="h-4 w-4" /> Calendar</TabsTrigger>
               <TabsTrigger value="mash" className="w-full justify-start gap-3 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-xl border border-transparent hover:border-primary/20"><Bot className="h-4 w-4" /> Mash Preferences</TabsTrigger>
               <TabsTrigger value="study" className="w-full justify-start gap-3 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-xl border border-transparent hover:border-primary/20"><BookOpen className="h-4 w-4" /> Study</TabsTrigger>
               <TabsTrigger value="appearance" className="w-full justify-start gap-3 py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-xl border border-transparent hover:border-primary/20"><PaletteIcon className="h-4 w-4" /> Appearance</TabsTrigger>
@@ -278,10 +346,34 @@ export default function SettingsPage() {
                         <Input type="number" value={formData.studyHours} onChange={(e) => setFormData({ ...formData, studyHours: e.target.value })} className="rounded-xl border-primary/10" />
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label>Subjects of Interest</Label>
-                      <Input value={formData.subjects} onChange={(e) => setFormData({ ...formData, subjects: e.target.value })} placeholder="e.g., Mathematics, Physics, Chemistry" className="rounded-xl border-primary/10" />
-                      <p className="text-xs text-muted-foreground">Comma separated</p>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label>Your Subjects</Label>
+                        <span className="text-xs text-muted-foreground">{formData.subjects.length} selected</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-1">
+                        {getSubjectsByLevel(formData.educationLevel).map((s) => {
+                          const selected = formData.subjects.includes(s)
+                          return (
+                            <button
+                              key={s}
+                              type="button"
+                              onClick={() => setFormData({
+                                ...formData,
+                                subjects: selected ? formData.subjects.filter((x: string) => x !== s) : [...formData.subjects, s]
+                              })}
+                              className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${
+                                selected
+                                  ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                                  : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                              }`}
+                            >
+                              {selected && <X className="h-3 w-3" />}
+                              {s}
+                            </button>
+                          )
+                        })}
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -310,6 +402,54 @@ export default function SettingsPage() {
                       <Switch checked={notifPrefs[item.key] ?? true} onCheckedChange={(v) => handleSaveNotif(item.key, v)} />
                     </div>
                   ))}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* ======== CALENDAR ======== */}
+            <TabsContent value="calendar" className="mt-0">
+              <Card className="border-2 border-primary/5 shadow-sm rounded-2xl">
+                <CardHeader>
+                  <CardTitle>Google Calendar</CardTitle>
+                  <CardDescription>Connect your Google Calendar to get booking reminders and event invites</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {calendarLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    </div>
+                  ) : calendarConnected ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                        <Check className="h-5 w-5 text-emerald-500" />
+                        <div>
+                          <p className="font-bold text-sm">Google Calendar connected</p>
+                          <p className="text-xs text-muted-foreground">{calendarId ? `Calendar: ${calendarId}` : "Your bookings will be synced to your primary calendar"}</p>
+                        </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        When your bookings are confirmed, we will create calendar events with reminders so you never miss a session.
+                      </p>
+                      <Button onClick={handleDisconnectCalendar} variant="destructive" className="rounded-xl">
+                        Disconnect Google Calendar
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
+                        <p className="text-sm text-muted-foreground">
+                          Connect your Google Calendar to automatically add booking events and reminders. This works even if you signed up with email or phone — no Google login required.
+                        </p>
+                      </div>
+                      <Button onClick={handleConnectCalendar} className="rounded-xl bg-primary">
+                        <CalendarIcon className="h-4 w-4 mr-2" />
+                        Connect Google Calendar
+                      </Button>
+                      <p className="text-xs text-muted-foreground">
+                        Don't have a Google account? Use the <span className="font-bold">Download .ics</span> button on any booking to add it to your calendar app (Apple Calendar, Outlook, etc.).
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -533,6 +673,10 @@ export default function SettingsPage() {
                   <div className="space-y-2">
                     <Label>New Email Address</Label>
                     <Input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} className="rounded-xl border-primary/10" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Current Password</Label>
+                    <Input type="password" value={emailPassword} onChange={(e) => setEmailPassword(e.target.value)} className="rounded-xl border-primary/10" />
                   </div>
                   <Button onClick={handleChangeEmail} className="rounded-xl bg-primary"><Mail className="h-4 w-4 mr-2" /> Send Verification</Button>
                 </CardContent>

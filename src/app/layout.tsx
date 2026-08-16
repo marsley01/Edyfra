@@ -10,10 +10,11 @@ import { ThemeColorManager } from "@/components/theme-color-manager";
 import { ConditionalShell } from "@/components/conditional-shell";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { PushSubscriptionManager } from "@/components/push-subscription-manager";
-import EddyChatWrapper from "@/components/chat/EddyChatWrapper";
+
 import { OverlayManagerProvider } from "@/lib/overlay-manager";
 import { ClickFeedback } from "@/components/click-feedback";
-import { getAdminGlobalSettings, checkAdminStatus } from "@/app/actions/admin";
+import { MaintenanceGate } from "@/components/maintenance-gate";
+import { JsonLd } from "@/components/json-ld";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -28,13 +29,13 @@ export const metadata: Metadata = {
     "edyfra", "study platform kenya", "tutors kenya", "AI learning", "university tutors",
     "high school tutors", "online study", "peer learning", "education kenya",
   ],
-  authors: [{ name: "Edyfra", url: process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://edyfra.space" }],
+  authors: [{ name: "Edyfra", url: "https://edyfra-v2.vercel.app" }],
   creator: "Edyfra",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://edyfra.space"),
+  metadataBase: new URL("https://edyfra-v2.vercel.app"),
    openGraph: {
   type: "website",
   locale: "en_KE",
-  url: process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://edyfra.space",
+  url: "https://edyfra-v2.vercel.app",
   siteName: "Edyfra",
   title: "Edyfra — Kenya's Institutional Study Platform",
   description: "AI-powered tutor matching, live study rooms, and institutional analytics for Kenyan scholars.",
@@ -76,6 +77,7 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
   },
   other: {
+    "google-site-verification": "fh14-vbUDl1VxGmLpFqi38BKlZtrWPkw70ir-BYBWRo",
     "geo.region": "KE",
     "geo.placename": "Nairobi",
     "geo.position": "-1.286389;36.817223",
@@ -89,24 +91,52 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
 };
-export default async function RootLayout({
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://edyfra-v2.vercel.app';
+
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Edyfra",
+  url: siteUrl,
+  logo: `${siteUrl}/logo.png`,
+  description:
+    "Kenya's institutional study platform connecting students with verified tutors, AI-powered matching, live study rooms, and institutional analytics.",
+  foundingDate: "2025",
+  areaServed: "KE",
+  contactPoint: {
+    "@type": "ContactPoint",
+    contactType: "support",
+    email: "help@edyfra.com",
+  },
+};
+
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Edyfra",
+  url: siteUrl,
+  description:
+    "Connect with verified tutors and elite peers across Kenya. AI-powered matching, live study rooms, and institutional analytics.",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: {
+      "@type": "EntryPoint",
+      urlTemplate: `${siteUrl}/dashboard/search?q={search_term_string}`,
+    },
+    "query-input": "required name=search_term_string",
+  },
+};
+
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const settings = await getAdminGlobalSettings();
-  const isAdmin = await checkAdminStatus();
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
-        {settings.maintenanceMode && !isAdmin ? (
-          <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-4 text-center">
-            <h1 className="text-4xl md:text-6xl font-black tracking-tighter mb-4 text-primary">Edyfra</h1>
-            <h2 className="text-2xl md:text-3xl font-bold mb-2">We'll be right back.</h2>
-            <p className="text-muted-foreground max-w-md">The platform is currently undergoing scheduled maintenance. Please check back later.</p>
-          </div>
-        ) : (
+        <JsonLd data={organizationJsonLd} />
+        <JsonLd data={websiteJsonLd} />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -116,16 +146,17 @@ export default async function RootLayout({
           <OverlayManagerProvider>
             <ThemeColorManager />
             <ClickFeedback />
-            <ConditionalShell>{children}</ConditionalShell>
+            <MaintenanceGate>
+              <ConditionalShell>{children}</ConditionalShell>
+            </MaintenanceGate>
             <ServiceWorkerRegister />
             <PushSubscriptionManager />
-            <EddyChatWrapper />
+
             <Toaster richColors position="top-right" />
             <Analytics />
             <SpeedInsights />
           </OverlayManagerProvider>
         </ThemeProvider>
-        )}
       </body>
     </html>
   );

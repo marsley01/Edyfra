@@ -1,6 +1,6 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
+# ─── Dependencies ────────────────────────────────────────────────────────────
 /node_modules
 /.pnp
 .pnp.*
@@ -10,48 +10,94 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
+# ─── Testing ─────────────────────────────────────────────────────────────────
 /coverage
 
-# next.js
+# ─── Next.js ─────────────────────────────────────────────────────────────────
 /.next/
 /out/
 
-# production
+# ─── Production build ────────────────────────────────────────────────────────
 /build
 
-# misc
-.DS_Store
-*.pem
+# ─── Generated files (run `prisma generate` after cloning) ───────────────────
+/src/generated
 
-# debug
+# ─── Environment variables ───────────────────────────────────────────────────
+.env*
+
+# ─── Vercel ──────────────────────────────────────────────────────────────────
+.vercel
+
+# ─── TypeScript ──────────────────────────────────────────────────────────────
+*.tsbuildinfo
+next-env.d.ts
+
+# ─── Logs & debug ────────────────────────────────────────────────────────────
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-*.log
+lint-full.txt
 
-# env files
-.env
-.env.local
-.env.production
-.env.development.local
-.env.test.local
-.env.production.local
+# ─── OS & editor ─────────────────────────────────────────────────────────────
+.DS_Store
+.turbo
+*.pem
+.vscode/settings.json
 
-# vercel
-.vercel
+# ─── Build/CI output artifacts ───────────────────────────────────────────────
+build_output*.txt
+build_output*.log
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# ─── Scratch / one-off scripts ───────────────────────────────────────────────
+/scratch/
+/scopes/
 
-.vercel
-/src/generated
+# ─── SSH keys (should never be committed) ────────────────────────────────────
+/git
+/git.pub
 
-.vercel
+# ─── Misc junk ───────────────────────────────────────────────────────────────
+/null
+/prompts
+/fix.js
+/deploy-vercel.js
+/check_schema.sql
+/test-*.ts
+/EDYFRA_FINAL_REPORT.md
 
-# codex backup
+# ─── Codex backup ────────────────────────────────────────────────────────────
 .codex-push-previous
 .prompts
+
+# Python/Backend
+__pycache__/
+*.py[cod]
+*.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+/lib/
+/lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+*.log
+*.err
+.venv/
+venv/
+ENV/
 

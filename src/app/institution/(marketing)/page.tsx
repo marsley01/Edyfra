@@ -22,6 +22,7 @@ import {
   Database,
   Cpu,
 } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -86,47 +87,18 @@ const features = [
 ];
 
 function HeroVideo() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoLoaded, setVideoLoaded] = useState(false);
-
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"],
-  });
-
-  const videoScale = useTransform(scrollYProgress, [0, 1], [1.15, 1]);
-  const videoY = useTransform(scrollYProgress, [0, 1], [0, -80]);
-  const opacity = useTransform(scrollYProgress, [0, 0.12, 0.88, 1], [0.6, 1, 1, 0.6]);
-
   return (
-    <section
-      ref={sectionRef}
-      className="relative h-screen max-h-[1000px] min-h-[650px] flex items-center justify-center overflow-hidden border-b border-white/10"
-    >
-      {/* ── Video Background ── */}
-      <motion.div
-        style={{ scale: videoScale, y: videoY }}
-        className="absolute inset-0 w-full h-full will-change-transform"
-      >
-        {!videoLoaded && (
-          <div className="absolute inset-0 bg-gradient-to-br from-[#3730A3]/40 via-[#1e1b4b] to-black animate-pulse" />
-        )}
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          onLoadedData={() => setVideoLoaded(true)}
-          className={`w-full h-full object-cover transition-opacity duration-[1500ms] ${
-            videoLoaded ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          <source src="/videos/institution-hero.webm" type="video/webm" />
-        </video>
-      </motion.div>
+    <section className="relative h-screen max-h-[1000px] min-h-[650px] flex items-center justify-center overflow-hidden border-b border-white/10">
+      {/* ── Image Background ── */}
+      <div className="absolute inset-0 w-full h-full">
+        <Image
+          src="/image.png"
+          alt="Institution platform background"
+          fill
+          className="object-cover opacity-80"
+          priority
+        />
+      </div>
 
       {/* ── Gradient Overlays ── */}
       <div className="absolute inset-0 bg-gradient-to-t from-[#0f0e1e] via-[#0f0e1e]/60 to-[#0f0e1e]/20 z-10" />
@@ -144,11 +116,7 @@ function HeroVideo() {
       />
 
       {/* ── Floating Decorative Badges ── */}
-      <motion.div
-        animate={{ y: [0, -14, 0] }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-[10%] right-[6%] z-20 hidden lg:flex items-center gap-3 bg-white/[0.03] backdrop-blur-lg border border-white/10 rounded-xl px-4 py-3 shadow-2xl"
-      >
+      <div className="absolute top-[10%] right-[6%] z-20 hidden lg:flex items-center gap-3 bg-white/[0.03] backdrop-blur-lg border border-white/10 rounded-xl px-4 py-3 shadow-2xl animate-bounce">
         <div className="w-9 h-9 rounded-xl bg-[#3730A3]/30 flex items-center justify-center">
           <Activity className="h-4 w-4 text-[#818cf8]" />
         </div>
@@ -156,13 +124,9 @@ function HeroVideo() {
           <p className="text-[9px] font-bold uppercase tracking-widest text-white/50">Data Analysis</p>
           <p className="text-sm font-bold text-white">24/7 real-time</p>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div
-        animate={{ y: [0, 12, 0] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.7 }}
-        className="absolute bottom-[20%] left-[5%] z-20 hidden lg:flex items-center gap-3 bg-white/[0.03] backdrop-blur-lg border border-white/10 rounded-xl px-4 py-3 shadow-2xl"
-      >
+      <div className="absolute bottom-[20%] left-[5%] z-20 hidden lg:flex items-center gap-3 bg-white/[0.03] backdrop-blur-lg border border-white/10 rounded-xl px-4 py-3 shadow-2xl animate-bounce delay-150">
         <div className="w-9 h-9 rounded-xl bg-emerald-500/20 flex items-center justify-center">
           <Database className="h-4 w-4 text-emerald-400" />
         </div>
@@ -170,70 +134,37 @@ function HeroVideo() {
           <p className="text-[9px] font-bold uppercase tracking-widest text-white/50">Student Records</p>
           <p className="text-sm font-bold text-white">Analysed by AI</p>
         </div>
-      </motion.div>
+      </div>
 
       {/* ── Main Content Card ── */}
-      <motion.div
-        style={{ opacity }}
-        className="relative z-20 w-full max-w-4xl mx-auto px-5"
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-          className="backdrop-blur-lg bg-white/[0.02] border border-white/10 rounded-2xl p-8 sm:p-12 md:p-16 shadow-[0_0_80px_-20px_rgba(55,48,163,0.15)]"
-        >
+      <div className="relative z-20 w-full max-w-4xl mx-auto px-5">
+        <div className="backdrop-blur-lg bg-white/[0.02] border border-white/10 rounded-2xl p-8 sm:p-12 md:p-16 shadow-[0_0_80px_-20px_rgba(55,48,163,0.15)] animate-in fade-in slide-in-from-bottom-8 duration-700">
           <div className="space-y-8 text-center">
             {/* Eyebrow badge */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="inline-flex items-center gap-2 bg-white/[0.03] border border-white/10 rounded-lg px-4 py-2"
-            >
+            <div className="inline-flex items-center gap-2 bg-white/[0.03] border border-white/10 rounded-lg px-4 py-2">
               <Cpu className="h-3.5 w-3.5 text-[#818cf8]" />
               <span className="text-[10px] font-bold uppercase tracking-widest text-white/70">
                 AI-Powered Analytics
               </span>
-            </motion.div>
+            </div>
 
             {/* Headline */}
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="text-4xl sm:text-5xl md:text-7xl lg:text-7xl font-black tracking-tight leading-[0.95] text-white"
-            >
+            <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-7xl font-black tracking-tight leading-[0.95] text-white">
               Bring your school into the{" "}
               <span className="bg-gradient-to-r from-[#818cf8] via-[#6366f1] to-[#3730A3] bg-clip-text text-transparent">
                 future of learning.
               </span>
-            </motion.h2>
+            </h1>
 
             {/* Subtitle */}
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              className="text-base sm:text-lg md:text-xl text-white/60 font-medium max-w-2xl mx-auto leading-relaxed"
-            >
+            <p className="text-base sm:text-lg md:text-xl text-white/60 font-medium max-w-2xl mx-auto leading-relaxed">
               Edyfra analyses every student record through machine learning — identifying
               gaps, recommending coaches, and tracking improvement across your entire institution.
-            </motion.p>
+            </p>
 
             {/* CTA Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
-            >
-              <Link href="/institution/signup">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+              <Link href="/institution/apply">
                 <Button className="group h-14 px-10 rounded-xl bg-white text-slate-900 hover:bg-white/90 font-bold text-sm transition-all active:scale-95 shadow-2xl flex items-center gap-2">
                   Apply for Your School
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -247,16 +178,10 @@ function HeroVideo() {
                   Book a Demo
                 </Button>
               </Link>
-            </motion.div>
+            </div>
 
             {/* Trust indicator */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7, delay: 0.7 }}
-              className="flex items-center justify-center gap-3 pt-4"
-            >
+            <div className="flex items-center justify-center gap-3 pt-4">
               <div className="flex -space-x-2">
                 {["#6366f1", "#06b6d4", "#10b981", "#f59e0b", "#ec4899"].map((c, i) => (
                   <div
@@ -269,12 +194,12 @@ function HeroVideo() {
                 ))}
               </div>
               <p className="text-sm text-white/70">
-                <span className="font-bold text-white">500+</span> Kenyan institutions already onboard
+                <span className="font-bold text-white">Growing number of</span> Kenyan institutions already onboard
               </p>
-            </motion.div>
+            </div>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {/* ── Bottom fade for section transition ── */}
       <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-white to-transparent z-30 pointer-events-none" />
@@ -454,7 +379,7 @@ export default function InstitutionLanding() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/institution/signup" className="mt-8">
+                <Link href="/institution/apply" className="mt-8">
                   <Button
                     className={`cta-btn w-full h-12 rounded-xl ${
                       plan.featured
@@ -518,7 +443,7 @@ export default function InstitutionLanding() {
             Apply in under three minutes. We&apos;ll get back to you within one school day.
           </p>
           <div className="mt-10 flex justify-center">
-            <Link href="/institution/signup">
+            <Link href="/institution/apply">
               <Button
                 size="lg"
                 className="cta-btn h-14 rounded-2xl bg-white px-10 text-base font-bold text-[#3730A3] hover:bg-white/90"

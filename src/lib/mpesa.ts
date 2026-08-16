@@ -1,4 +1,5 @@
-import axios from "axios";
+import "server-only";
+import axios, { AxiosError } from "axios";
 
 function getMpesaConfig() {
   const config = {
@@ -10,7 +11,7 @@ function getMpesaConfig() {
   };
 
   const missing = Object.entries(config)
-    .filter(([_, value]) => !value)
+    .filter(([, value]) => !value)
     .map(([key]) => key);
 
   if (missing.length > 0) {
@@ -20,11 +21,13 @@ function getMpesaConfig() {
   return config;
 }
 
-const IS_SANDBOX = true;
+const isSandbox = () => (process.env.MPESA_ENV || "sandbox") !== "production";
 
-const BASE_URL = IS_SANDBOX 
-  ? "https://sandbox.safaricom.co.ke" 
-  : "https://api.safaricom.co.ke";
+function getBaseUrl() {
+  return isSandbox()
+    ? "https://sandbox.safaricom.co.ke"
+    : "https://api.safaricom.co.ke";
+}
 
 /**
  * Get Safaricom Access Token
@@ -35,7 +38,7 @@ export async function getMpesaToken() {
   
   try {
     const { data } = await axios.get(
-      `${BASE_URL}/oauth/v1/generate?grant_type=client_credentials`,
+      `${getBaseUrl()}/oauth/v1/generate?grant_type=client_credentials`,
       {
         headers: {
           Authorization: `Basic ${auth}`,
@@ -43,8 +46,9 @@ export async function getMpesaToken() {
       }
     );
     return data.access_token;
-  } catch (error: any) {
-    console.error("[Mpesa] OAuth Error:", error.response?.data || error.message);
+  } catch (error) {
+    const err = error as AxiosError<{ errorMessage?: string }>;
+    console.error("[Mpesa] OAuth Error:", err.response?.data || err.message);
     throw new Error("Failed to get M-Pesa access token");
   }
 }
@@ -78,7 +82,7 @@ export async function initiateStkPush({
 
   try {
     const { data } = await axios.post(
-      `${BASE_URL}/mpesa/stkpush/v1/processrequest`,
+      `${getBaseUrl()}/mpesa/stkpush/v1/processrequest`,
       {
         BusinessShortCode: cfg.shortcode,
         Password: password,
@@ -99,9 +103,10 @@ export async function initiateStkPush({
       }
     );
     return data;
-  } catch (error: any) {
-    console.error("[Mpesa] STK Push Error:", error.response?.data || error.message);
-    throw new Error(error.response?.data?.errorMessage || "Failed to initiate M-Pesa payment");
+  } catch (error) {
+    const err = error as AxiosError<{ errorMessage?: string }>;
+    console.error("[Mpesa] STK Push Error:", err.response?.data || err.message);
+    throw new Error((err.response?.data as { errorMessage?: string } | undefined)?.errorMessage || "Failed to initiate M-Pesa payment");
   }
 }
 
@@ -128,11 +133,16 @@ export async function initiateB2CPayout({
   if (formattedPhone.startsWith("+")) formattedPhone = formattedPhone.slice(1);
 
   try {
+    const securityCredential = process.env.MPESA_B2C_SECURITY_CREDENTIAL;
+    if (!securityCredential) {
+      throw new Error("MPESA_B2C_SECURITY_CREDENTIAL is not configured. Generate it using Safaricom's public certificate.");
+    }
+
     const { data } = await axios.post(
-      `${BASE_URL}/mpesa/b2c/v1/paymentrequest`,
+      `${getBaseUrl()}/mpesa/b2c/v1/paymentrequest`,
       {
         InitiatorName: "EdyfraAdmin",
-        SecurityCredential: "YOUR_ENCRYPTED_PASSWORD", // Needs Safaricom certificate encryption
+        SecurityCredential: securityCredential,
         CommandID: "BusinessPayment", // or SalaryPayment
         Amount: Math.round(amount),
         PartyA: cfg.shortcode,
@@ -149,8 +159,9 @@ export async function initiateB2CPayout({
       }
     );
     return data;
-  } catch (error: any) {
-    console.error("[Mpesa] B2C Error:", error.response?.data || error.message);
+  } catch (error) {
+    const err = error as AxiosError;
+    console.error("[Mpesa] B2C Error:", err.response?.data || err.message);
     throw new Error("Failed to initiate M-Pesa payout");
   }
 }

@@ -9,6 +9,7 @@ import {
   LogOut,
   School,
   Settings,
+  Upload,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -16,6 +17,7 @@ import { logout } from "@/app/actions/auth";
 import { requireInstitutionAdmin } from "@/app/actions/institution-guard";
 import { getPlan } from "@/lib/institution-plans";
 import { cn } from "@/lib/utils";
+import { DashboardPrefetcher } from "@/components/institution/prefetcher";
 
 const NAV: { section: string; items: { href: string; label: string; icon: LucideIcon; exact?: boolean }[] }[] = [
   {
@@ -37,6 +39,7 @@ const NAV: { section: string; items: { href: string; label: string; icon: Lucide
       { href: "/institution/dashboard/results", label: "Results & Analysis", icon: BarChart3 },
       { href: "/institution/dashboard/coaching", label: "Holiday Coaching", icon: Calendar },
       { href: "/institution/dashboard/reports", label: "Reports", icon: BookOpen },
+      { href: "/institution/dashboard/csv-upload", label: "CSV Upload", icon: Upload },
     ],
   },
   {
@@ -50,21 +53,22 @@ const NAV: { section: string; items: { href: string; label: string; icon: Lucide
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const membership = await requireInstitutionAdmin();
   const inst = membership.institution;
-  const plan = getPlan(inst.planTier);
+  const plan = getPlan(inst.plan as any);
 
   // We can't usePathname in a server component — use a `headers` call instead.
   // For simplicity we just render a flat sidebar; the page provides its own title.
   return (
     <div className="min-h-screen bg-[#f8f9fc]">
+      <DashboardPrefetcher />
       <Sidebar
         schoolName={inst.name}
         schoolCode={inst.code ?? "—"}
         role={membership.role}
         planName={plan.name}
-        adminName={inst.adminName ?? "Admin"}
+        adminName={inst.name}
       />
       <div className="flex min-h-screen min-w-0 flex-1 flex-col lg:ml-64">
-        <TopBar schoolName={inst.name} planName={plan.name} status={inst.status} />
+        <TopBar schoolName={inst.name} planName={plan.name} status={inst.isActive ? "ACTIVE" : "PENDING"} />
         <MobileNav />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">{children}</main>
       </div>

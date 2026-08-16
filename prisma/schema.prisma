@@ -13,6 +13,7 @@ datasource db {
 model User {
   id                       String                  @id @default(cuid())
   email                    String                  @unique
+  username                 String?                 @unique
   phone                    String?                 @unique
   name                     String
   avatar                   String?
@@ -30,6 +31,7 @@ model User {
   createdAt                DateTime                @default(now())
   bio                      String?
   settings                 Json                    @default("{\"theme\": \"system\", \"fontSize\": \"medium\", \"accentColor\": \"#8b5cf6\"}")
+  preferences              UserPreferences?
   curriculum               String?                 @default("8-4-4")
   dailyMessageCount        Int                     @default(0)
   dailySearchCount         Int                     @default(0)
@@ -55,6 +57,7 @@ model User {
   studentProfile           StudentProfile?
   tutorApplication         TutorApplication?
   tutorProfile             TutorProfile?
+  reviewedApplications     InstitutionApplication[]
   payments                 Payment[]
   resourcePurchases        ResourcePurchase[]
   resources                Resource[]
@@ -64,6 +67,7 @@ model User {
   matchRequests            MatchRequest[]
   newsArticles             NewsArticle[]
   userCredits              UserCredits?
+  tokenVersion             Int        @default(0) @map("token_version")
   referralCode             String?    @unique @map("referral_code")
   referredBy               String?    @map("referred_by")
   referredUsers            Referral[] @relation("Referrer")
@@ -72,6 +76,8 @@ model User {
   analyticsEvents          AnalyticsEvent[]
   feedback                 Feedback[]
   aiChatMessages           AiChatMessage[]
+  firebaseUid              String?                 @unique @map("firebase_uid")
+  fcmTokens                String[]                @map("fcm_tokens")
   communityTopics          CommunityTopic[]      @relation("CommunityTopicAuthor")
   communityPosts           CommunityPost[]       @relation("CommunityPostAuthor")
   communityReactions       CommunityReaction[]
@@ -94,6 +100,7 @@ model User {
   sentInvitations          InstitutionInvitation[] @relation("InvitedBy")
   resultAnalyses           StudentResultsAnalysis[] @relation("ResultAnalysisStudent")
   pushSubscriptions        PushSubscription[]
+  apiKeys                  ApiKey[]
   tutorAvailabilities      TutorAvailability[]     @relation("TutorAvailability")
   studentBookings          Booking[]               @relation("StudentBookings")
   tutorBookings            Booking[]               @relation("TutorBookings")
@@ -101,6 +108,7 @@ model User {
   sessionFlags             SessionFlag[]           @relation("TutorSessionFlags")
   favorites                FavoriteUser[]          @relation("UserFavorites")
   favoritedBy              FavoriteUser[]          @relation("FavoritedBy")
+  calendarConnections      CalendarConnection[]
 
   @@index([role])
 }
@@ -467,6 +475,24 @@ model PushSubscription {
   @@index([userId])
 }
 
+model ApiKey {
+  id          String    @id @default(cuid())
+  name        String
+  keyHash     String    @unique
+  keyPrefix   String
+  platform    String
+  scopes      String[]  @default(["resources", "tutors", "stats"])
+  enabled     Boolean   @default(true)
+  rateLimit   Int       @default(1000)
+  lastUsedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime?
+  createdBy   String
+  user        User      @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([platform])
+}
+
 model UserPreferences {
   id                 String   @id @default(cuid())
   userId             String   @unique
@@ -484,6 +510,8 @@ model UserPreferences {
   allowTutorRequests Boolean  @default(true)
   enableMashFallback Boolean  @default(true)
   updatedAt          DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 model Challenge {
@@ -824,6 +852,7 @@ enum ActivityType {
 
 model Institution {
   id             String   @id @default(cuid())
+  supabaseId     String?  @unique
   name           String
   type           String   @default("HIGH_SCHOOL")
   code           String?  @unique
@@ -871,6 +900,9 @@ model Institution {
   activity      InstitutionActivity[]
   teacherAssignments TeacherSubjectAssignment[]
   invitations   InstitutionInvitation[]
+  reviewedApplications InstitutionApplication[]
+  processingJobs ProcessingJob[]
+  csvUploads    CsvUpload[]
 }
 
 model InstitutionStaff {
@@ -973,6 +1005,7 @@ model Booking {
   amount            Int       @default(0)
   paystackReference String?   @map("paystack_reference")
   declineReason     String?   @map("decline_reason")
+  meetingUrl        String?   @map("meeting_url")
   createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt         DateTime  @updatedAt @map("updated_at")
 
@@ -1010,6 +1043,43 @@ model SessionFlag {
   booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@map("session_flags")
+}
+
+model ProcessingJob {
+  id              String    @id @default(cuid())
+  institutionId   String
+  filePath        String
+  status          String    @default("pending")
+  error           String?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  institution     Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  @@map("processing_jobs")
+}
+
+model InstitutionApplication {
+  id              String    @id @default(cuid())
+  name            String
+  email           String
+  institutionName String    @map("institution_name")
+  phone           String?
+  message         String?
+  status          AppStatus @default(PENDING)
+  adminNotes      String?   @map("admin_notes")
+  reviewedById    String?   @map("reviewed_by_id")
+  reviewedAt      DateTime? @map("reviewed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  institutionId   String?
+  institution     Institution? @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  reviewedBy      User?     @relation(fields: [reviewedById], references: [id])
+
+  @@map("institution_applications")
 }
 
 model Referral {
@@ -1237,22 +1307,26 @@ model AcademicTerm {
 model StudentResult {
   id              String   @id @default(cuid())
   institutionId   String
-  studentUserId   String
-  admissionNumber String
+  studentUserId   String?
+  admissionNumber String?
   studentName     String
   subject         String
   marks           Float
   grade           String?
   term            Int
   year            Int
-  form            String
-  uploadedById    String
+  form            String?
+  uploadedById    String?
   createdAt       DateTime @default(now())
+  csvUploadId     String?
+  studentEmail    String?
+  score           Float?
 
   institution Institution           @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-  student     User                  @relation("StudentResults", fields: [studentUserId], references: [id], onDelete: Cascade)
-  uploader    User                  @relation("ResultUploader", fields: [uploadedById], references: [id], onDelete: Cascade)
+  student     User?                 @relation("StudentResults", fields: [studentUserId], references: [id], onDelete: Cascade)
+  uploader    User?                 @relation("ResultUploader", fields: [uploadedById], references: [id], onDelete: Cascade)
   analysis    StudentResultsAnalysis?
+  csvUpload   CsvUpload?            @relation(fields: [csvUploadId], references: [id])
 
   @@index([institutionId, term, year])
   @@index([studentUserId, term, year])
@@ -1391,4 +1465,42 @@ enum GroupMatchStatus {
   forming
   matched
   expired
+}
+
+model CsvUpload {
+  id            String          @id @default(cuid())
+  institutionId String
+  institution   Institution     @relation(fields: [institutionId], references: [id])
+  fileName      String
+  status        String          @default("COMPLETED")
+  totalRows     Int
+  createdAt     DateTime        @default(now())
+  results       StudentResult[]
+}
+
+model CalendarConnection {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  provider      String    @default("google")
+  accessToken   String
+  refreshToken  String?
+  expiresAt     DateTime?
+  scope         String?
+  calendarId    String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model CalendarOAuthState {
+  id        String   @id @default(cuid())
+  state     String   @unique
+  userId    String
+  expiresAt  DateTime
+
+  @@index([state])
+  @@index([userId])
 }

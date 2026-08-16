@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { z } from "zod";
 import prisma from "@/lib/prisma";
+
+const resourceSchema = z.object({
+  title: z.string().min(1).max(200),
+  subject: z.string().min(1).max(100),
+  education_level: z.string().min(1).max(50),
+  resource_type: z.string().min(1).max(50),
+  topic: z.string().max(200).optional(),
+  description: z.string().max(2000).optional(),
+  price: z.number().min(0).optional(),
+  file_path: z.string().min(1).max(500),
+});
 
 export async function GET(request: NextRequest) {
   try {
@@ -97,11 +109,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, subject, education_level, resource_type, topic, description, price, file_path } = body;
-
-    if (!title || !subject || !education_level || !resource_type || !file_path) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    const parsed = resourceSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
     }
+
+    const { title, subject, education_level, resource_type, topic, description, price, file_path } = parsed.data;
 
     const resource = await prisma.resource.create({
       data: {
@@ -121,6 +137,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, resource });
   } catch (error: any) {
     console.error("[Resources API POST] Error:", error);
-    return NextResponse.json({ error: error?.message || "Failed to create resource" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to create resource" }, { status: 500 });
   }
 }

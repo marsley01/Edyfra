@@ -6,6 +6,12 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getUserData } from "./user";
 import { TUTOR_CONFIG } from "@/lib/config";
+import {
+  pythonGetVerifiedTutors,
+  pythonSearchTutors,
+  pythonGetTutorsBySubject,
+  pythonGetTutorStats,
+} from "@/lib/booking-client";
 
 export const getTutorProfile = cache(async () => {
   try {
@@ -97,21 +103,7 @@ export async function getTutorStats() {
   try {
     const user = await getUserData();
     if (!user) return null;
-
-    const [activeSessions, completedSessions, totalEarnings] = await Promise.all([
-      prisma.session.count({ where: { partnerId: user.id, status: "ACTIVE" } }),
-      prisma.session.count({ where: { partnerId: user.id, status: "COMPLETED" } }),
-      prisma.session.aggregate({
-        where: { partnerId: user.id, status: "COMPLETED" },
-        _sum: { priceKsh: true }
-      })
-    ]);
-
-    return {
-      activeSessions,
-      completedSessions,
-      totalEarnings: totalEarnings._sum.priceKsh || 0
-    };
+    return await pythonGetTutorStats(user.id, user.id);
   } catch (error) {
     console.error("Error in getTutorStats:", error);
     return null;
@@ -120,27 +112,8 @@ export async function getTutorStats() {
 
 export async function getVerifiedTutors(level?: EduLevel) {
   try {
-    const whereClause: any = {
-      role: Role.TUTOR,
-      tutorProfile: {
-        isNot: null
-      }
-    };
-    if (level) {
-      whereClause.OR = [
-        { tutorProfile: { levelsTaught: { has: level } } },
-        { tutorProfile: { levelsTaught: { isEmpty: true } } }
-      ];
-    }
-
-    return await prisma.user.findMany({
-      where: whereClause,
-      include: {
-        tutorProfile: true,
-        tutorAvailabilities: true
-      },
-      orderBy: { createdAt: "desc" }
-    });
+    const res = await pythonGetVerifiedTutors(level);
+    return res.tutors;
   } catch (error) {
     console.error("Error in getVerifiedTutors:", error);
     return [];
@@ -185,39 +158,8 @@ export async function activateTutor(tutorId: string) {
 export async function searchTutors(query: string) {
   try {
     if (!query || query.length < 2) return [];
-
-    const normalizedQuery = query.trim().toLowerCase();
-
-    return await prisma.user.findMany({
-      where: {
-        role: Role.TUTOR,
-        tutorProfile: {
-          isNot: null
-        },
-        OR: [
-          { name: { contains: normalizedQuery, mode: "insensitive" } },
-          { bio: { contains: normalizedQuery, mode: "insensitive" } },
-          {
-            tutorProfile: {
-              subjects: {
-                hasSome: [normalizedQuery, normalizedQuery.charAt(0).toUpperCase() + normalizedQuery.slice(1)]
-              }
-            }
-          },
-          {
-            county: { contains: normalizedQuery, mode: "insensitive" }
-          }
-        ]
-      },
-      include: {
-        tutorProfile: true
-      },
-      take: 20,
-      orderBy: [
-        { tutorProfile: { rating: "desc" } },
-        { createdAt: "desc" }
-      ]
-    });
+    const res = await pythonSearchTutors(query);
+    return res.tutors;
   } catch (error) {
     console.error("Error in searchTutors:", error);
     return [];
@@ -227,31 +169,8 @@ export async function searchTutors(query: string) {
 // Get tutors by subject for better visibility
 export async function getTutorsBySubject(subject: string, level?: EduLevel) {
   try {
-    const whereClause: any = {
-      role: Role.TUTOR,
-      tutorProfile: {
-        isNot: null,
-        subjects: {
-          hasSome: [subject]
-        }
-      }
-    };
-
-    if (level) {
-      whereClause.tutorProfile.levelsTaught = { has: level };
-    }
-
-    return await prisma.user.findMany({
-      where: whereClause,
-      include: {
-        tutorProfile: true
-      },
-      orderBy: [
-        { tutorProfile: { rating: "desc" } },
-        { createdAt: "desc" }
-      ],
-      take: 50
-    });
+    const res = await pythonGetTutorsBySubject(subject, level);
+    return res.tutors;
   } catch (error) {
     console.error("Error in getTutorsBySubject:", error);
     return [];

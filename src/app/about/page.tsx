@@ -1,8 +1,18 @@
-"use client";
-
-import { motion } from "framer-motion";
+import type { Metadata } from "next";
 import { ArrowRight, BookOpen, BrainCircuit, HeartHandshake, Sparkles } from "lucide-react";
 import { InitialAvatar } from "@/components/ui/InitialAvatar";
+import { AnimatedSection } from "@/components/AnimatedSection";
+
+export const metadata: Metadata = {
+  title: "About",
+  description:
+    "Edyfra is Kenya's institutional study platform — connecting students with verified tutors, AI-powered matching, live study rooms, and institutional analytics. Built for scholars, by scholars.",
+  openGraph: {
+    title: "About Edyfra — Kenya's Study Platform",
+    description:
+      "Learning grows faster when the right people connect. Discover how Edyfra helps Kenyan students find tutors, study together, and track their progress.",
+  },
+};
 
 const principles = [
   {
@@ -93,12 +103,9 @@ export default function AboutPage() {
           {principles.map((principle, index) => {
             const Icon = principle.icon;
             return (
-              <motion.div
+              <AnimatedSection
                 key={principle.title}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.08 }}
+                delay={index * 0.08}
                 className="rounded-[2.5rem] bg-secondary p-10 space-y-6"
               >
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
@@ -110,7 +117,7 @@ export default function AboutPage() {
                     {principle.description}
                   </p>
                 </div>
-              </motion.div>
+              </AnimatedSection>
             );
           })}
         </section>

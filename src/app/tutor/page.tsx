@@ -321,34 +321,37 @@ export default function TutorDashboard() {
   const responseRate = profile?.responseRate ?? 100;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 font-sans p-3 sm:p-4">
-      {/* Match Banner - Slides in when student is matched */}
+    <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-700 font-sans px-3 py-4 sm:p-4">
+      {/* Match Banner - slides in when a student is matched. Positioned below
+          the mobile header (h-14) and the desktop header. Uses z-[55] so it
+          sits above the sidebar overlay but below drawers. */}
       <AnimatePresence>
         {matchBanner && (
           <motion.div
             initial={{ y: -100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -100, opacity: 0 }}
-            className="fixed top-14 lg:top-0 left-0 right-0 z-50 bg-emerald-500 text-white p-4 shadow-2xl"
+            className="fixed top-14 lg:top-16 left-0 right-0 z-[55] bg-emerald-500 text-white px-4 py-3 shadow-2xl"
           >
-            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center animate-pulse">
-                  <UserPlus className="h-6 w-6" />
+            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 shrink-0 rounded-full bg-white/20 flex items-center justify-center animate-pulse">
+                  <UserPlus className="h-5 w-5" />
                 </div>
-                <div>
-                  <p className="text-lg font-black">Student matched! {matchBanner.studentName} needs help with {matchBanner.subject}</p>
-                  <p className="text-white/80 text-sm font-medium flex items-center gap-2">
-                    <Timer className="h-4 w-4" />
-                    Join within {Math.floor(countdown / 60)}:{(countdown % 60).toString().padStart(2, "0")} or the student will be reassigned
+                <div className="min-w-0">
+                  <p className="text-sm sm:text-base font-black leading-tight">Student matched! {matchBanner.studentName} needs help with {matchBanner.subject}</p>
+                  <p className="text-white/80 text-xs font-medium flex items-center gap-1.5 mt-0.5">
+                    <Timer className="h-3 w-3 shrink-0" />
+                    Join within {Math.floor(countdown / 60)}:{(countdown % 60).toString().padStart(2, "0")} or student will be reassigned
                   </p>
                 </div>
               </div>
               <Button
                 onClick={() => handleJoinMatch(matchBanner.sessionId)}
-                className="bg-white text-emerald-700 hover:bg-emerald-50 font-black text-xs tracking-widest uppercase rounded-full h-14 px-10 shadow-xl animate-pulse"
+                size="sm"
+                className="w-full sm:w-auto bg-white text-emerald-700 hover:bg-emerald-50 font-black text-xs tracking-widest uppercase rounded-full h-10 px-6 shadow-xl shrink-0"
               >
-                <Video className="h-5 w-5 mr-2" /> Join Session
+                <Video className="h-4 w-4 mr-2" /> Join Now
               </Button>
             </div>
           </motion.div>
@@ -356,18 +359,26 @@ export default function TutorDashboard() {
       </AnimatePresence>
 
       {/* Premium Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div data-tour="tour-greeting" className="flex flex-col gap-4">
         <div className="space-y-1">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tightest">{(() => { const g = getTimeGreeting(tutorName); return `${g.text}${g.key === "late" ? "?" : "."} ${g.emoji}`; })()}</h1>
           <p className="text-muted-foreground text-sm sm:text-base font-medium">Here is your upcoming teaching schedule.</p>
         </div>
 
-        <div className={`flex items-center gap-4 px-5 py-3 rounded-2xl border-2 transition-all duration-500 shadow-lg self-start sm:self-auto ${isOnline ? "border-primary bg-primary/5 shadow-primary/5" : "border-border bg-secondary"}`}>
+        {/* Status toggle — full width on mobile for easy thumb reach */}
+        <div
+          data-tour="tour-status-toggle"
+          className={`flex items-center justify-between gap-4 px-5 py-4 rounded-2xl border-2 transition-all duration-500 shadow-sm ${
+            isOnline ? "border-primary bg-primary/5 shadow-primary/5" : "border-border bg-secondary"
+          }`}
+        >
           <div className="flex items-center gap-3">
-            <div className={`w-2.5 h-2.5 rounded-full ${isOnline ? "bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-muted-foreground"}`} />
+            <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+              isOnline ? "bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-muted-foreground"
+            }`} />
             <div className="flex flex-col">
-               <Label className="font-black text-[9px] uppercase tracking-widest leading-none">Status</Label>
-                <span className="text-sm font-bold mt-0.5">{isOnline ? "Ready to Teach" : "Offline"}</span>
+              <Label className="font-black text-[9px] uppercase tracking-widest leading-none">Status</Label>
+              <span className="text-sm font-bold mt-0.5">{isOnline ? "Ready to Teach" : "Offline"}</span>
             </div>
           </div>
           <Switch checked={isOnline} onCheckedChange={handleStatusToggle} disabled={toggling} className="data-[state=checked]:bg-primary" />
@@ -405,7 +416,7 @@ export default function TutorDashboard() {
       {/* Inline Match Requests — instant-help feed right on the dashboard.
           Tutor can accept from here without navigating to /tutor/requests. */}
       {isOnline && (
-        <div className="space-y-4">
+        <div data-tour="tour-match-requests" className="space-y-4">
           <div className="flex items-center justify-between px-2">
             <div className="space-y-1">
               <h2 className="text-2xl font-black tracking-tightest flex items-center gap-2">
@@ -484,21 +495,21 @@ export default function TutorDashboard() {
       )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div data-tour="tour-stats" className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { label: "Active Sessions", value: profile?.currentActiveSessions || 0, icon: Activity, color: "text-blue-500", bg: "bg-blue-500/10" },
+          { label: "Active", value: profile?.currentActiveSessions || 0, icon: Activity, color: "text-blue-500", bg: "bg-blue-500/10" },
           { label: "Completed", value: profile?.totalSessions || 0, icon: Sparkles, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-          { label: "Response Rate", value: `${responseRate}%`, icon: ShieldCheck, color: responseRate >= 60 ? "text-emerald-500" : "text-red-500", bg: responseRate >= 60 ? "bg-emerald-500/10" : "bg-red-500/10" },
+          { label: "Response", value: `${responseRate}%`, icon: ShieldCheck, color: responseRate >= 60 ? "text-emerald-500" : "text-red-500", bg: responseRate >= 60 ? "bg-emerald-500/10" : "bg-red-500/10" },
           { label: "Rating", value: profile?.rating ? profile.rating.toFixed(1) : "New", icon: Star, color: "text-yellow-500", bg: "bg-yellow-500/10" },
         ].map((stat) => (
           <Card key={stat.label} className="border-border bg-secondary/30 rounded-2xl overflow-hidden hover:border-primary/50 transition-all group">
-            <CardContent className="p-4 sm:p-6 flex flex-col gap-3">
-              <div className={`${stat.bg} w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110`}>
-                <stat.icon className={`h-5 w-5 ${stat.color}`} />
+            <CardContent className="p-3 sm:p-5 flex flex-col gap-2 sm:gap-3 min-h-[100px]">
+              <div className={`${stat.bg} w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shrink-0`}>
+                <stat.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${stat.color}`} />
               </div>
               <div>
-                <p className="text-[9px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest">{stat.label}</p>
-                <h3 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tightest tabular-nums mt-0.5">{stat.value}</h3>
+                <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-none">{stat.label}</p>
+                <h3 className="text-lg sm:text-2xl md:text-3xl font-black tracking-tightest tabular-nums mt-1">{stat.value}</h3>
               </div>
             </CardContent>
           </Card>
@@ -511,7 +522,7 @@ export default function TutorDashboard() {
 
           <div className="flex items-center justify-between px-2">
             <div className="space-y-1">
-              <h2 className="text-3xl font-black tracking-tightest">Your Schedule</h2>
+              <h2 data-tour="tour-schedule" className="text-3xl font-black tracking-tightest">Your Schedule</h2>
               <p className="text-muted-foreground font-medium">Upcoming booked sessions with students.</p>
             </div>
             <Button onClick={loadBookings} variant="ghost" className="rounded-full text-xs font-black uppercase tracking-widest text-primary hover:bg-primary/5">
@@ -525,12 +536,12 @@ export default function TutorDashboard() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : [...activeSessions, ...pendingSessions, ...upcomingBookings].length === 0 ? (
-              <div className="p-20 flex flex-col items-center justify-center text-center space-y-6 bg-secondary/30 rounded-[3rem] border border-dashed border-border">
-                <CalendarIcon className="h-12 w-12 text-muted-foreground/20" />
-               <div className="space-y-2">
-                  <p className="text-xl font-black tracking-tightest">No upcoming sessions.</p>
-                  <p className="text-muted-foreground font-medium max-w-xs mx-auto">Your schedule is clear. Students will book sessions based on your availability.</p>
-               </div>
+              <div className="py-14 px-6 flex flex-col items-center justify-center text-center space-y-4 bg-secondary/30 rounded-3xl border border-dashed border-border">
+                <CalendarIcon className="h-10 w-10 text-muted-foreground/20" />
+                <div className="space-y-1.5">
+                  <p className="text-lg font-black tracking-tightest">No upcoming sessions.</p>
+                  <p className="text-muted-foreground text-sm font-medium max-w-xs mx-auto">Your schedule is clear. Students will book sessions based on your availability.</p>
+                </div>
               </div>
             ) : (
               <>
@@ -609,7 +620,14 @@ export default function TutorDashboard() {
                       </div>
 
                       <Button 
-                        onClick={() => handleJoinRoom(booking.id)}
+                        onClick={() => {
+                          const bookingRow = upcomingBookings.find((b) => b.id === booking.id);
+                          if (bookingRow?.meetingUrl) {
+                            window.open(bookingRow.meetingUrl, "_blank");
+                          } else {
+                            handleJoinRoom(booking.id);
+                          }
+                        }}
                         disabled={!canJoin}
                         className={`w-full sm:w-auto h-12 px-6 rounded-2xl font-black text-xs tracking-widest uppercase shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 ${
                           canJoin
@@ -620,7 +638,7 @@ export default function TutorDashboard() {
                         }`}
                       >
                         <Video className="h-4 w-4" />
-                        {minutesUntilSession > 5 ? "Join in 5 min" : canJoin ? "Join Session" : "Expired"}
+                        {booking.meetingUrl ? "Join Meet" : minutesUntilSession > 5 ? "Join in 5 min" : canJoin ? "Join Session" : "Expired"}
                       </Button>
                     </CardContent>
                   </Card>
@@ -631,28 +649,28 @@ export default function TutorDashboard() {
           </div>
         </div>
 
-        <div className="space-y-8">
-           <Card className="border-none bg-primary text-white rounded-[3rem] overflow-hidden shadow-2xl shadow-primary/20">
-              <CardHeader className="p-10 pb-4">
-                 <h3 className="text-2xl font-black tracking-tightest flex items-center gap-3">
-                    <Clock className="h-6 w-6" /> Availability
+        <div className="space-y-6">
+           <Card data-tour="tour-availability" className="border-none bg-primary text-white rounded-3xl overflow-hidden shadow-2xl shadow-primary/20">
+              <CardHeader className="p-6 sm:p-8 pb-3 sm:pb-4">
+                 <h3 className="text-xl sm:text-2xl font-black tracking-tightest flex items-center gap-3">
+                    <Clock className="h-5 w-5" /> Availability
                  </h3>
                  <p className="text-primary-foreground/80 font-medium text-sm leading-relaxed">
                    Set your bookable time slots so students know when you are free.
                  </p>
               </CardHeader>
-              <CardContent className="p-10 pt-4 space-y-6">
-                 <div className="space-y-3">
-                    <div className="flex items-center justify-between p-4 rounded-2xl bg-white/10 border border-white/5 backdrop-blur-md">
+              <CardContent className="p-6 sm:p-8 pt-3 space-y-4">
+                 <div className="space-y-2.5">
+                    <div className="flex items-center justify-between p-3.5 rounded-2xl bg-white/10 border border-white/5 backdrop-blur-md">
                       <span className="font-bold text-sm">Mon - Fri</span>
                       <span className="text-[10px] font-black uppercase tracking-widest opacity-80">2pm – 6pm EAT</span>
                     </div>
-                    <div className="flex items-center justify-between p-4 rounded-2xl bg-white/10 border border-white/5 backdrop-blur-md">
+                    <div className="flex items-center justify-between p-3.5 rounded-2xl bg-white/10 border border-white/5 backdrop-blur-md">
                       <span className="font-bold text-sm">Saturday</span>
                       <span className="text-[10px] font-black uppercase tracking-widest opacity-80">9am – 1pm EAT</span>
                     </div>
                  </div>
-                 <Button onClick={() => router.push("/tutor/settings")} className="w-full h-14 rounded-2xl bg-white text-primary font-black text-xs tracking-widest uppercase hover:bg-white/90 shadow-xl">
+                 <Button onClick={() => router.push("/tutor/settings")} className="w-full h-12 rounded-2xl bg-white text-primary font-black text-xs tracking-widest uppercase hover:bg-white/90 shadow-xl">
                     Manage Slots
                  </Button>
               </CardContent>

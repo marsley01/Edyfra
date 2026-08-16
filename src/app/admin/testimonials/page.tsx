@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { checkAdminStatus } from "@/app/actions/admin";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
@@ -15,9 +16,13 @@ export default function TestimonialsPage() {
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
-    const { getTestimonials } = await import("@/app/actions/admin-content");
-    const data = await getTestimonials();
-    setTestimonials(data);
+    try {
+      const { getTestimonials } = await import("@/app/actions/admin-content");
+      const data = await getTestimonials();
+      setTestimonials(data);
+    } catch {
+      toast.error("Failed to load testimonials");
+    }
     setLoading(false);
   };
 

@@ -1,7 +1,45 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+
 @custom-variant dark (&:is(.dark *));
+
+/* ── Global button feedback ──────────────────────────────────────────────────
+   Tailwind v4 preflight sets buttons to cursor:default. Restore pointer and
+   add instant press feedback (brightness) + smooth hover transitions to ALL
+   buttons, links styled as buttons, and clickable inputs. Uses filter instead
+   of transform so component-level transforms (translate-y-px, scale) coexist. */
+@layer base {
+  button,
+  [role="button"],
+  input[type="submit"],
+  input[type="button"],
+  input[type="reset"],
+  summary,
+  a.button,
+  .primary-btn,
+  .cta-btn {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button:disabled,
+  [role="button"][aria-disabled="true"],
+  input[type="submit"]:disabled,
+  input[type="button"]:disabled {
+    cursor: not-allowed;
+  }
+
+  button:not(:disabled):active,
+  [role="button"]:not([aria-disabled="true"]):active,
+  input[type="submit"]:not(:disabled):active,
+  input[type="button"]:not(:disabled):active,
+  a.button:not([aria-disabled="true"]):active,
+  .primary-btn:not([aria-disabled="true"]):active,
+  .cta-btn:not([aria-disabled="true"]):active {
+    filter: brightness(0.9) saturate(1.05);
+  }
+}
 
 /* ── iOS Safari green screen fix ── */
 /* backdrop-filter triggers a WebKit GPU compositing bug that renders the page
@@ -25,40 +63,51 @@ html {
 }
 
 :root {
-  --background: #F4F7FA;
-  --foreground: #0F172A;
-  --card: #FFFFFF;
-  --card-foreground: #0F172A;
-  --popover: #FFFFFF;
-  --popover-foreground: #0F172A;
-  --primary: #2563EB;
+  /* Edyfra Brand Colors */
+  --violet: #7C3AED;
+  --violet-light: #F0EAFF;
+  --coral: #E8521B;
+  --coral-light: #FFF0EC;
+  --mint: #00C07A;
+  --solar: #FFD600;
+  --bubblegum: #FF5DAE;
+  --space: #0F0527;
+
+  --page-bg: #F7F4FF;
+  --card-bg: #FFFFFF;
+  --text-100: #1A0B3B;
+  --text-200: #5C4F80;
+  --text-300: #9B8EBB;
+  --border: #E2D5FF;
+
+  /* Map existing variables for shadcn compatibility */
+  --background: var(--page-bg);
+  --foreground: var(--text-100);
+  --card: var(--card-bg);
+  --card-foreground: var(--text-100);
+  --popover: var(--card-bg);
+  --popover-foreground: var(--text-100);
+  --primary: var(--violet);
   --primary-foreground: #FFFFFF;
-  --secondary: #E2E8F0;
-  --secondary-foreground: #0F172A;
-  --muted: #F1F5F9;
-  --muted-foreground: #64748B;
-  --accent: #E0F2FE;
-  --accent-foreground: #0EA5E9;
+  --secondary: var(--violet-light);
+  --secondary-foreground: var(--violet);
+  --muted: var(--violet-light);
+  --muted-foreground: var(--text-300);
+  --accent: var(--violet-light);
+  --accent-foreground: var(--violet);
   --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
-  --border: #CBD5E1;
-  --input: #CBD5E1;
-  --ring: #3B82F6;
-  --radius: 0.75rem;
+  --border: var(--border);
+  --input: var(--border);
+  --ring: var(--violet);
+  --radius: 12px;
 
-  /* Brand accent (coral — high-energy CTA, badges, notifications) */
-  --brand-accent: #E07A5F;
+  --brand-accent: var(--coral);
   --brand-accent-foreground: #ffffff;
+  --surface: var(--card-bg);
+  --tech-border: var(--border);
 
-  /* Surface (secondary card/panel background) */
-  --surface: #FFFFFF;
-
-  /* Tech border (ultra-thin, low-opacity edge lines) */
-  --tech-border: #E2E8F0;
-
-  /* ── Edyfra layer system ───────────────────────────────────────────────
-     See src/lib/layers.ts. Components MUST use these vars instead of
-     hardcoded z-50 / z-[9999]. */
+  /* ── Edyfra layer system ─────────────────────────────────────────────── */
   --edyfra-z-base: 0;
   --edyfra-z-content: 1;
   --edyfra-z-sticky: 10;
@@ -70,11 +119,7 @@ html {
   --edyfra-z-toast: 70;
   --edyfra-z-fullscreen: 100;
 
-  /* ── Overlay safe-area insets ──────────────────────────────────────────
-     Updated by the OverlayManager in response to active overlays.
-     Floating UI (Eddy Chat, Dynamic Island, FABs) should position itself
-     relative to these vars so it never collides with the Mobile Nav,
-     the iOS Dynamic Island, or a Call Session. */
+  /* ── Overlay safe-area insets ────────────────────────────────────────── */
   --edyfra-overlay-top: 0px;
   --edyfra-overlay-bottom: 0px;
   --edyfra-overlay-bottom-edge: 0px;
@@ -83,36 +128,38 @@ html {
 }
 
 .dark {
-  --background: #0B1120;
-  --foreground: #F8FAFC;
-  --card: #1E293B;
-  --card-foreground: #F8FAFC;
-  --popover: #0B1120;
-  --popover-foreground: #F8FAFC;
-  --primary: #3B82F6;
+  --page-bg: #0F0527;
+  --card-bg: #1A0B3B;
+  --text-100: #F0EAFF;
+  --text-200: #B8A6E0;
+  --text-300: #7B6AAA;
+  --border: #3A1E6B;
+
+  --background: var(--page-bg);
+  --foreground: var(--text-100);
+  --card: var(--card-bg);
+  --card-foreground: var(--text-100);
+  --popover: var(--card-bg);
+  --popover-foreground: var(--text-100);
+  --primary: var(--violet);
   --primary-foreground: #FFFFFF;
-  --secondary: #1E293B;
-  --secondary-foreground: #F1F5F9;
-  --muted: #0F172A;
-  --muted-foreground: #94A3B8;
-  --accent: #1E293B;
-  --accent-foreground: #F8FAFC;
+  --secondary: #241352;
+  --secondary-foreground: var(--text-100);
+  --muted: #1e0b4a;
+  --muted-foreground: var(--text-300);
+  --accent: #241352;
+  --accent-foreground: var(--text-100);
   --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
-  --border: #334155;
-  --input: #334155;
-  --ring: #3B82F6;
-  --radius: 0.5rem;
+  --border: var(--border);
+  --input: var(--border);
+  --ring: var(--violet);
 
-  --brand-accent: #8B5CF6;
+  --brand-accent: var(--coral);
   --brand-accent-foreground: #FFFFFF;
-
-  --surface: #1E293B;
-
-  --tech-border: rgba(255, 255, 255, 0.08);
+  --surface: var(--card-bg);
+  --tech-border: var(--border);
 }
-
-/* ── User has no accent-color setting — CSS defaults are used above ──*/
 
 @theme inline {
   --color-background: var(--background);
@@ -144,16 +191,51 @@ html {
   --font-sans: var(--font-inter), system-ui, sans-serif;
   --tracking-tighter: -0.02em;
   --tracking-tightest: -0.05em;
+
+  /* Edyfra Theme Colors */
+  --color-violet: var(--violet);
+  --color-violet-light: var(--violet-light);
+  --color-violet-mid: #D4B9FF;
+  --color-violet-dark: #4C1D95;
+  --color-coral: var(--coral);
+  --color-coral-light: var(--coral-light);
+  --color-coral-mid: #FECDBC;
+  --color-mint: var(--mint);
+  --color-mint-light: #E8F8F1;
+  --color-solar: var(--solar);
+  --color-solar-light: #FFFBF0;
+  --color-bubblegum: var(--bubblegum);
+  --color-bubblegum-light: #FFF0F7;
+  --color-space: var(--space);
+
+  --color-page-bg: var(--page-bg);
+  --color-card-bg: var(--card-bg);
+  --color-text-100: var(--text-100);
+  --color-text-200: var(--text-200);
+  --color-text-300: var(--text-300);
+
+  /* Radius rules */
+  --radius-card: 16px;
+  --radius-bubble: 9999px;
+  --radius-btn: 12px;
+
+  /* Shadows rules */
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-bubble: 0 8px 32px rgba(124, 58, 237, 0.15);
+  --shadow-glow: none;
 }
 
 @layer base {
-  * {
-    @apply border-border antialiased;
+  *, *::before, *::after {
+    box-sizing: border-box;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
-  
+
   body {
-    @apply bg-background text-foreground selection:bg-primary/20 selection:text-primary;
+    @apply bg-background text-text-200 antialiased selection:bg-primary/20 selection:text-primary;
+    font-size: 0.9375rem;
+    font-weight: 400;
+    line-height: 1.65;
     /* Support for iOS Safe Areas */
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -161,13 +243,64 @@ html {
     padding-right: env(safe-area-inset-right, 0px);
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    @apply tracking-tighter font-semibold;
+  h1 {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: var(--text-100);
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-100);
+    letter-spacing: -0.02em;
+  }
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-100);
+    letter-spacing: -0.015em;
+  }
+
+  label, .ui-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-300);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
   .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
+}
+
+/* Floating bubble keyframes */
+@keyframes float-bubble {
+  0%, 100% {
+    transform: translateY(-16px);
+  }
+  50% {
+    transform: translateY(16px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bubble {
+    animation-name: float-bubble;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+  }
+}
+
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  display: block;
 }
 
 @layer components {
@@ -178,7 +311,39 @@ html {
   .container-max {
     @apply max-w-7xl mx-auto px-6;
   }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
 }
+
+/* ─── Custom keyframes ──────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+@keyframes float-delayed {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes typing-dot {
+  0%, 60%, 100% { opacity: 0.3; transform: scale(0.9); }
+  30%           { opacity: 1;   transform: scale(1.1); }
+}
+
+.animate-float        { animation: float 3s ease-in-out infinite; }
+.animate-float-delayed { animation: float-delayed 3.5s ease-in-out 0.5s infinite; }
+.animate-shimmer      { animation: shimmer 1.5s ease-in-out infinite; }
+.typing-dot           { animation: typing-dot 1.2s ease-in-out infinite; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
 
 /* ─── Stream Video SDK — Edyfra theme overrides ────────────────────────────
    See https://getstream.io/video/docs/react/ui-cookbook/theming/
@@ -798,7 +963,7 @@ select,
   input,
   textarea,
   select {
-    font-size: 16px;
+    font-size: 16px !important;
     -webkit-text-size-adjust: 100%;
   }
 }

@@ -106,15 +106,13 @@ export function OverviewTab() {
     { label: "Earnings", value: `KSH ${(profile?.totalSessions || 0) * (profile?.hourlyRate || 0)}`, icon: Wallet, color: "text-primary", bg: "bg-primary/10" },
     { label: "Rating", value: profile?.rating ? profile.rating.toFixed(1) : "New", icon: Star, color: "text-yellow-500", bg: "bg-yellow-500/10" },
   ];
-  
-  const tutorName = profile?.user?.name?.split(" ")[0] || "Tutor";
 
   return (
     <div className="space-y-12 animate-in fade-in duration-700 font-sans p-2">
       {/* Premium Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
         <div className="space-y-2">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tightest">{(() => { const g = getTimeGreeting(tutorName); return `${g.text}${g.key === "late" ? "?" : "."} ${g.emoji}`; })()}</h1>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tightest">{(() => { const g = getTimeGreeting(profile?.user?.name ?? "Tutor"); return `${g.text}${g.key === "late" ? "?" : "."} ${g.emoji}`; })()}</h1>
           <p className="text-muted-foreground text-lg font-medium">Here is your upcoming teaching schedule.</p>
         </div>
 
@@ -258,11 +256,18 @@ export function OverviewTab() {
                         <span className="text-sm font-black text-foreground">Confirmed</span>
                       </div>
                       <Button 
-                        onClick={() => handleJoinRoom(booking.id)}
+                        onClick={() => {
+                          const bookingRow = upcomingBookings.find((b) => b.id === booking.id);
+                          if (bookingRow?.meetingUrl) {
+                            window.open(bookingRow.meetingUrl, "_blank");
+                          } else {
+                            handleJoinRoom(booking.id);
+                          }
+                        }}
                         className={`w-full sm:w-auto h-16 px-10 rounded-[1.8rem] font-black text-xs tracking-[0.2em] uppercase shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3 bg-primary hover:bg-primary/90 text-white`}
                       >
                         <Video className="h-5 w-5" />
-                        Join Room
+                        {booking.meetingUrl ? "Join Meet" : "Join Room"}
                       </Button>
                     </div>
                   </CardContent>

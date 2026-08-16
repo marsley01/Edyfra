@@ -30,7 +30,7 @@ export async function sendErrorNotification(params: ErrorNotificationParams) {
 
     const { notifyManyUsers } = await import("@/app/actions/notifications");
     await notifyManyUsers(
-      admins.map((admin) => admin.id),
+      admins.map((admin: { id: string }) => admin.id),
       {
         type: "ERROR_ALERT",
         title: `System Error: ${type}`,

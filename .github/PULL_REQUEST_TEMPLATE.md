@@ -1,33 +1,38 @@
-## What did you change?
-[Describe your changes clearly]
+## Description
 
-## Why did you change it?
-[What problem does this fix or feature does 
-this add?]
+Please include a summary of the change and which issue is fixed.
 
-## Pages or features affected
-[List every page, component, or API route 
-you modified]
+Fixes #(issue)
 
-## Scope check
-- [ ] All changes are within my assigned scope
-- [ ] I did not modify any files outside my scope
-- [ ] I did not add or change any API keys
-- [ ] I did not modify middleware.ts or 
-      next.config.js
+## Type of Change
 
-## Testing
-- [ ] Tested locally on localhost:3000
-- [ ] No console errors
-- [ ] No TypeScript errors (npm run build passes)
-- [ ] Mobile view tested
+- [ ] Bug fix (non-breaking change that fixes an issue)
+- [ ] New feature (non-breaking change that adds functionality)
+- [ ] Breaking change (fix or feature that changes existing functionality)
+- [ ] Documentation update
+- [ ] Refactoring (no functional changes)
+- [ ] Performance improvement
+- [ ] Security fix
 
-## Screenshots (required for UI changes)
-[Paste before and after screenshots here]
+## Checklist
 
-## New dependencies added
-[List any new npm packages you installed and why. 
-If none, write "None"]
+- [ ] Code follows the project's style guide
+- [ ] Self-reviewed my own code
+- [ ] Added tests for new functionality
+- [ ] All existing tests pass
+- [ ] TypeScript compiles with no errors (`npm run typecheck`)
+- [ ] ESLint passes (`npm run lint`)
+- [ ] Prettier formatting applied (`npm run format`)
+- [ ] No new `any` types
+- [ ] No new `console.log` statements
+- [ ] Input validation added for new endpoints
+- [ ] Error handling added for new functionality
+- [ ] Environment variables documented in `.env.example` (if applicable)
 
-## Notes for Mash
-[Anything Mash should know before reviewing]
+## Screenshots
+
+If applicable, add screenshots to help explain your changes.
+
+## Additional Context
+
+Add any other context about the PR here.

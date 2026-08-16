@@ -4,7 +4,19 @@ import { useEffect, useState, useCallback } from "react";
 import { Bell, BellOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { showError, showSuccess } from "@/lib/toast";
-import { urlBase64ToUint8Array } from "@/lib/utils";
+
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
 
 export function PushNotificationInit() {
   const [supported, setSupported] = useState(false);
@@ -12,24 +24,24 @@ export function PushNotificationInit() {
   const [subscribed, setSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
 
-   useEffect(() => {
-     if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
-       return;
-     }
-     setSupported(true);
-     setPermission(Notification.permission);
+  useEffect(() => {
+    if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+      return;
+    }
+    setSupported(true);
+    setPermission(Notification.permission);
 
-     navigator.serviceWorker.ready
-       .then((reg) => {
-         return reg.pushManager.getSubscription();
-       })
-       .then((sub) => {
-         setSubscribed(!!sub);
-       })
-       .catch((err) => {
-         console.error("[PushNotificationInit] Error checking subscription:", err);
-       });
-   }, []);
+    navigator.serviceWorker.ready
+      .then((reg) => {
+        return reg.pushManager.getSubscription();
+      })
+      .then((sub) => {
+        setSubscribed(!!sub);
+      })
+      .catch((err) => {
+        console.error("[PushNotificationInit] Error checking subscription:", err);
+      });
+  }, []);
 
   const subscribe = useCallback(async () => {
     if (!supported) return;
@@ -47,46 +59,38 @@ export function PushNotificationInit() {
         return;
       }
 
+      const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      if (!vapidKey) {
+        showError({
+          title: "Push isn't ready yet",
+          cause: "VAPID key is not configured.",
+          fix: "We'll let you know once it's live.",
+        });
+        return;
+      }
+
       const reg = await navigator.serviceWorker.ready;
-
-      const keyRes = await fetch("/api/push/vapid-public-key");
-      if (!keyRes.ok) {
-        showError({
-          title: "Push isn't ready yet",
-          cause: "Browser push isn't configured on the server.",
-          fix: "We'll let you know once it's live.",
-        });
-        return;
-      }
-      const { publicKey } = await keyRes.json();
-      if (!publicKey) {
-        showError({
-          title: "Push isn't ready yet",
-          cause: "Browser push isn't configured on the server.",
-          fix: "We'll let you know once it's live.",
-        });
-        return;
-      }
-
-      const existing = await reg.pushManager.getSubscription();
-      if (existing) {
-        await existing.unsubscribe();
-      }
-
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey),
+        applicationServerKey: urlBase64ToUint8Array(vapidKey),
       });
 
       const raw = sub.toJSON();
-      await fetch("/api/push/subscribe", {
+
+      const saveRes = await fetch("/api/push/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          endpoint: raw.endpoint,
-          keys: raw.keys,
-        }),
+        body: JSON.stringify(raw),
       });
+
+      if (!saveRes.ok) {
+        showError({
+          title: "Couldn't save subscription",
+          cause: "We got the subscription, but the server rejected it.",
+          fix: "Try refreshing and trying again.",
+        });
+        return;
+      }
 
       setSubscribed(true);
       showSuccess("Push is on", { description: "We'll ping your browser when something new lands." });

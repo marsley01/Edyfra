@@ -23,7 +23,7 @@ export default async function InstitutionPendingPage() {
   if (!member) redirect("/institution/login");
 
   // If already approved, bounce into the dashboard
-  if (member.institution.status === "ACTIVE") {
+  if (member.institution.isActive) {
     redirect("/institution/dashboard");
   }
 

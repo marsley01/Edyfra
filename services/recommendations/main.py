@@ -8,8 +8,10 @@ from sklearn.metrics.pairwise import cosine_similarity
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from shared.db import fetch_all
 from shared.models import RecommendationRequest, RecommendationResponse
+from shared import ServiceAuthMiddleware
 
 app = FastAPI(title="Edyfra Recommendations Service", version="1.0.0")
+app.add_middleware(ServiceAuthMiddleware)
 
 model = None
 
@@ -108,5 +110,6 @@ def recommend_resources(req: RecommendationRequest):
 if __name__ == "__main__":
     import uvicorn
 
+    host = os.getenv("HOST", "127.0.0.1")
     port = int(os.getenv("PORT", 8001))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(app, host=host, port=port)

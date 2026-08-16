@@ -1,0 +1,26 @@
+# Default owners for the entire repository
+* @edyfra/core
+
+# Documentation
+docs/* @edyfra/docs
+
+# GitHub configuration
+.github/* @edyfra/devops
+
+# CI/CD workflows
+.github/workflows/* @edyfra/devops
+
+# Database schema
+prisma/schema.prisma @edyfra/backend
+
+# Server Actions
+src/app/actions/* @edyfra/backend
+
+# API Routes
+src/app/api/* @edyfra/backend
+
+# UI Components
+src/components/ui/* @edyfra/frontend
+
+# Security
+SECURITY.md @edyfra/security

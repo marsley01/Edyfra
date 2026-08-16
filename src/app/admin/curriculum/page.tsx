@@ -180,6 +180,28 @@ export default function AdminCurriculumPage() {
     }
   };
 
+  const handleOpenFile = async (id: string) => {
+    try {
+      const { getResourceDownloadUrl } = await import("@/app/actions/resources");
+      const res = await getResourceDownloadUrl(id);
+      if (res.url) {
+        window.open(res.url, "_blank", "noopener,noreferrer");
+      } else {
+        showError({
+          title: "We couldn't open that file",
+          cause: res.error || "No download link could be generated.",
+          fix: "Try again, or refresh the page.",
+        });
+      }
+    } catch {
+      showError({
+        title: "We couldn't open that file",
+        cause: "A hiccup on our side blocked the request.",
+        fix: "Try again, or refresh the page.",
+      });
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-4">
@@ -325,9 +347,9 @@ export default function AdminCurriculumPage() {
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       {r.filePath && (
-                        <a href={r.filePath} target="_blank" rel="noopener noreferrer">
-                          <Button size="sm" variant="outline" className="rounded-xl"><ExternalLink className="h-4 w-4" /></Button>
-                        </a>
+                        <Button size="sm" variant="outline" className="rounded-xl" onClick={() => handleOpenFile(r.id)}>
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
                       )}
                       <Button size="sm" variant="destructive" className="rounded-xl" onClick={() => handleDelete(r.id)}>
                         <Trash2 className="h-4 w-4" />

@@ -14,7 +14,7 @@ import Link from "next/link";
 export default function AuthCallbackHandle() {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") || "/dashboard";
+  const next = params.get("next") || "/onboarding";
   const [status, setStatus] = useState<"working" | "error">("working");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -80,7 +80,7 @@ export default function AuthCallbackHandle() {
           </div>
           <div className="flex items-center justify-center gap-3">
             <Link
-              href="/login"
+              href="/auth/login"
               className="h-11 inline-flex items-center px-5 rounded-full bg-foreground text-background text-xs font-black tracking-widest uppercase"
             >
               Go to login

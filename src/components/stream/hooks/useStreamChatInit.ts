@@ -58,11 +58,16 @@ export function useStreamChatInit({
   const clientRef = useRef<StreamChat | null>(null);
   const initOnceRef = useRef<string | null>(null);
   const connectingRef = useRef(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   // Stable serialization for memberIds in the dep array
   const memberIdsKey = JSON.stringify(memberIds);
 
   const init = useCallback(async () => {
+    abortRef.current?.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+
     setError(null);
     setIsRetrying(true);
     try {
@@ -75,7 +80,7 @@ export function useStreamChatInit({
           return await getStreamToken(userId);
         } catch (err) {
           console.warn("[useStreamChatInit] server-action token failed, trying HTTP", err);
-          const res = await fetch("/api/stream/token", { method: "POST" });
+          const res = await fetch("/api/stream/token", { method: "POST", signal: ctrl.signal });
           if (!res.ok) throw new Error("Failed to authenticate with chat service");
           const data = await res.json();
           return data.token;
@@ -169,6 +174,7 @@ export function useStreamChatInit({
   // Cleanup: reset the once-key and disconnect on unmount.
   useEffect(() => {
     return () => {
+      abortRef.current?.abort();
       initOnceRef.current = null;
       const c = clientRef.current;
       if (c && c.userID) {

@@ -1,168 +1,154 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { createClient } from "@/utils/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { motion } from "framer-motion";
-import { Sparkles, Mail, ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
-import Link from "next/link";
-import { showError, showSuccess } from "@/lib/toast";
+import { useState } from 'react'
+import Link from 'next/link'
+import { motion } from 'framer-motion'
+import { Loader2, AlertCircle, ArrowLeft, Mail, ArrowRight } from 'lucide-react'
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function isValidEmail(v: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
+}
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [emailError, setEmailError] = useState("");
-  const supabase = createClient();
+  const [email, setEmail] = useState('')
+  const [sent, setSent] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setEmailError("");
-
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
     if (!email.trim()) {
-      setEmailError("Drop in your email so we know where to send the reset link.");
-      return;
+      setError('Enter your email address')
+      return
     }
-    if (!EMAIL_REGEX.test(email.trim())) {
-      setEmailError("That email doesn't look right — double-check the spelling.");
-      return;
+    if (!isValidEmail(email)) {
+      setError('That doesn\'t look like a valid email address.')
+      return
     }
+    setLoading(true)
+    setError(null)
 
-    setLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
-      });
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
 
-      if (error) throw error;
-      setSubmitted(true);
-      showSuccess("Reset link sent", {
-        description: "Open it from your inbox within the next 60 minutes.",
-      });
-    } catch (err: any) {
-      const msg = (err?.message || "").toLowerCase();
-      if (msg.includes("rate") || msg.includes("too many")) {
-        showError({
-          title: "Whoa — too many requests",
-          cause: "You've asked for several reset links in a row.",
-          fix: "Wait about a minute and try again — and check spam if you haven't got the previous email.",
-          raw: err,
-        });
-      } else if (msg.includes("not found") || msg.includes("no user")) {
-        // Supabase intentionally hides "no user" to avoid leaking account existence —
-        // but show the user the same friendly note either way.
-        setSubmitted(true);
-      } else {
-        showError({
-          title: "We couldn't send the reset link",
-          cause: err?.message || "Our auth service didn't respond.",
-          fix: "Try again in a moment. If it keeps failing, contact support.",
-          raw: err,
-        });
+      if (!res.ok) {
+        const data = await res.json()
+        if (res.status === 429) {
+          setError('Too many requests. Please wait a minute and try again.')
+        } else {
+          setError(data.error || 'Something went wrong. Please try again.')
+        }
+        return
       }
+      setSent(true)
+    } catch {
+      setError('Could not reach the server. Check your internet connection.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
+
+  if (sent) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 pt-0 font-sans">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full max-w-[440px] space-y-8 text-center"
+        >
+          <div className="flex flex-col items-center gap-4 text-center">
+            <Link href="/" className="flex items-center gap-3 group mb-4">
+              <img src="/image.png" alt="Edyfra Logo" className="w-9 h-9 rounded-xl shadow-lg object-cover" />
+              <span className="text-3xl font-black text-foreground tracking-tighter">Edyfra</span>
+            </Link>
+            <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
+              <Mail className="h-7 w-7 text-primary" />
+            </div>
+            <h1 className="text-4xl font-black tracking-tightest">Check your email</h1>
+            <p className="text-muted-foreground font-medium text-lg leading-relaxed">
+              If an account exists for <span className="font-bold text-foreground">{email}</span>, you&apos;ll receive a reset link shortly.
+            </p>
+            <Link
+              href="/auth/login"
+              className="mt-6 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to sign in
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative overflow-hidden">
-      {/* Background Polish */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-primary/5 blur-[120px] rounded-full" />
-      
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 pt-0 font-sans">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-md relative z-10"
+        className="w-full max-w-[440px] space-y-10"
       >
-        <div className="flex justify-center mb-12">
-           <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-xl shadow-primary/20 group-hover:scale-110 transition-all">
-                 <Sparkles className="h-6 w-6" />
-              </div>
-              <span className="text-3xl font-black tracking-tightest uppercase">Edyfra.</span>
-           </Link>
+        {/* Logo */}
+        <div className="flex flex-col items-center gap-4 text-center">
+          <Link href="/" className="flex items-center gap-3 group mb-4">
+            <img src="/image.png" alt="Edyfra Logo" className="w-9 h-9 rounded-xl shadow-lg object-cover" />
+            <span className="text-3xl font-black text-foreground tracking-tighter">Edyfra</span>
+          </Link>
+          <h1 className="text-4xl font-black tracking-tightest">Reset your password.</h1>
+          <p className="text-muted-foreground font-medium text-lg">Enter your email and we&apos;ll send you a reset link.</p>
         </div>
 
-        <Card className="rounded-[2.5rem] border-border/50 bg-secondary/30 backdrop-blur-xl shadow-2xl overflow-hidden">
-          <CardHeader className="space-y-4 p-10 pb-6">
-            <CardTitle className="text-4xl font-black tracking-tightest leading-none">
-              Forgot <br /> <span className="text-muted-foreground">Password?</span>
-            </CardTitle>
-            <CardDescription className="text-lg font-medium leading-relaxed">
-              {submitted 
-                ? "If that email is registered, we've sent a recovery link. Check your inbox (and spam, just in case)." 
-                : "No worries — just enter your email and we'll send you a fresh reset link."}
-            </CardDescription>
-          </CardHeader>
-          
-          <CardContent className="p-10 pt-0">
-            {!submitted ? (
-              <form onSubmit={handleReset} className="space-y-6">
-                <div className="space-y-3">
-                  <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-2">Email Address</Label>
-                  <div className="relative group">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                    <Input 
-                      type="email"
-                      placeholder="you@example.com"
-                      value={email}
-                      onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError(""); }}
-                      className="h-14 pl-12 rounded-2xl border-border bg-background shadow-sm focus-visible:ring-primary text-base font-medium"
-                      required
-                      autoComplete="email"
-                    />
-                  </div>
-                  {emailError && (
-                    <p className="text-xs font-bold text-red-500/90 ml-2 animate-in fade-in slide-in-from-top-1">{emailError}</p>
-                  )}
-                </div>
-                <Button 
-                  type="submit" 
-                  disabled={loading}
-                  className="w-full h-14 bg-foreground text-background hover:bg-foreground/90 font-black text-xs tracking-widest uppercase rounded-2xl shadow-xl transition-all active:scale-95 disabled:opacity-50"
-                >
-                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Send Reset Link"}
-                </Button>
-              </form>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-8 space-y-6 text-center">
-                 <div className="w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
-                    <CheckCircle2 className="h-10 w-10" />
-                 </div>
-                 <div className="space-y-3 max-w-xs">
-                    <h3 className="text-xl font-black">Check your inbox</h3>
-                    <p className="text-muted-foreground font-medium text-sm leading-relaxed">
-                      We&apos;ve sent a link to <span className="text-foreground font-bold">{email}</span>. Open it within the next 60 minutes to pick a new password.
-                    </p>
-                    <p className="text-xs text-muted-foreground/70">
-                      Can&apos;t find it? Check spam, or wait 60 seconds and request another.
-                    </p>
-                 </div>
-                 <Button 
-                  onClick={() => { setSubmitted(false); setEmail(""); }}
-                  variant="outline"
-                  className="h-12 px-8 rounded-full border-border font-black text-[10px] tracking-widest uppercase"
-                 >
-                   Try another email
-                 </Button>
-              </div>
-            )}
-          </CardContent>
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 text-red-500 text-sm font-bold"
+            >
+              <AlertCircle className="h-5 w-5" />
+              {error}
+            </motion.div>
+          )}
 
-          <CardFooter className="p-10 pt-0 flex justify-center border-t border-border/50 pt-8">
-             <Link href="/login" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">
-                <ArrowLeft className="h-3 w-3" /> Back to Login
-             </Link>
-          </CardFooter>
-        </Card>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-muted-foreground">Email Address</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+              placeholder="you@example.com"
+              className="h-14 w-full rounded-2xl px-6 border border-border bg-secondary font-medium text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-4 focus:ring-primary/20 transition-all"
+              autoFocus
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full h-16 rounded-full bg-foreground text-background font-black text-xs tracking-widest uppercase shadow-2xl transition-all active:scale-95 disabled:opacity-50 hover:bg-primary hover:text-white"
+          >
+            {loading
+              ? <Loader2 className="h-5 w-5 animate-spin mx-auto" />
+              : <span className="flex items-center justify-center">Send Reset Link <ArrowRight className="ml-2 h-4 w-4" /></span>}
+          </button>
+        </form>
+
+        {/* Footer */}
+        <p className="text-center text-sm font-medium text-muted-foreground">
+          <Link href="/auth/login" className="text-xs font-black uppercase tracking-widest hover:text-primary transition-colors">
+            <span className="flex items-center justify-center gap-1.5"><ArrowLeft className="h-4 w-4" /> Back to sign in</span>
+          </Link>
+        </p>
       </motion.div>
     </div>
-  );
+  )
 }

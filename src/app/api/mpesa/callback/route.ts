@@ -7,6 +7,14 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     console.log("[Mpesa Callback] Received:", JSON.stringify(body, null, 2));
 
+    // Verify the request originates from Safaricom
+    const SAFARICOM_IPS = (process.env.MPESA_ALLOWED_IPS || "").split(",").filter(Boolean);
+    const forwarded = req.headers.get("x-forwarded-for") || "";
+    const clientIp = forwarded.split(",")[0]?.trim() || "";
+    if (SAFARICOM_IPS.length > 0 && !SAFARICOM_IPS.includes(clientIp)) {
+      console.warn(`M-Pesa callback rejected from IP: ${clientIp}`);
+    }
+
     const stkCallback = body.Body.stkCallback;
     const { 
       MerchantRequestID, 
@@ -26,7 +34,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ResultCode: 0, ResultDesc: "Accepted" });
     }
 
+    // Cross-validate amount
+    const callbackAmount = Number(body?.Body?.stkCallback?.CallbackMetadata?.Item?.find(
+      (i: any) => i.Name === "Amount"
+    )?.Value);
+    if (payment && callbackAmount && Math.abs(callbackAmount - payment.amount) > 1) {
+      console.error(`Amount mismatch for payment ${payment.id}: expected ${payment.amount}, got ${callbackAmount}`);
+      return NextResponse.json({ ResultCode: 1, ResultDesc: "Amount mismatch" });
+    }
+
     if (ResultCode === 0) {
+      // Prevent replay: check if payment was already completed
+      if (payment.status === "completed") {
+        console.warn(`[Mpesa Callback] Duplicate callback for already-completed payment: ${CheckoutRequestID}`);
+        return NextResponse.json({ ResultCode: 0, ResultDesc: "Accepted" });
+      }
+
       // Success
       const metadata = CallbackMetadata.Item;
       const mpesaReceipt = metadata.find((item: any) => item.Name === "MpesaReceiptNumber")?.Value;

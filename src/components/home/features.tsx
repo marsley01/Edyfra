@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { ChevronRight, Library, BookOpen, GraduationCap, CheckCircle2, Building2 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { LottieAnimation } from "@/components/lottie-animation";
+import studySpinner from "@/../public/animations/study-spinner.json";
 
 const FeatureVisuals = [
   <div key="discovery" className="w-full h-full bg-gradient-to-br from-primary/5 to-background flex flex-col items-center justify-center gap-6 p-8">
@@ -97,6 +99,13 @@ export function HomeFeatures() {
   return (
     <section className="py-32 md:py-48 space-y-32 md:space-y-48 font-sans">
       <div className="container-max text-center space-y-6">
+        <div className="flex justify-center mb-2">
+          <LottieAnimation
+            animationData={studySpinner}
+            className="w-12 h-12 opacity-80"
+            ariaLabel="Features animation"
+          />
+        </div>
         <h2 className="text-4xl md:text-6xl font-black tracking-tightest leading-none">
           Built for the way students, tutors, <br className="hidden md:block" /> and institutions actually grow.
         </h2>

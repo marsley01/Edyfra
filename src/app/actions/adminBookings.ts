@@ -1,4 +1,4 @@
-import { Role, SessionStatus } from "@prisma/client";
+import { Role, SessionStatus } from "@/generated/client";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 

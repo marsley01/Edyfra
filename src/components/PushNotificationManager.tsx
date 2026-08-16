@@ -6,9 +6,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { showError, showSuccess, showUnknownError } from "@/lib/toast";
-import { urlBase64ToUint8Array } from "@/lib/utils";
 
 type SupportState = "loading" | "unsupported" | "ready";
+
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
 
 export function PushNotificationManager() {
   const [support, setSupport] = useState<SupportState>("loading");
@@ -67,51 +79,34 @@ export function PushNotificationManager() {
         return;
       }
 
-      const reg = await navigator.serviceWorker.ready;
-
-      const keyRes = await fetch("/api/push/vapid-public-key");
-      if (!keyRes.ok) {
+      const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      if (!vapidKey) {
         showError({
           title: "Push isn't set up yet",
-          cause: "The server hasn't enabled browser push.",
-          fix: "We'll turn it on soon — try again later.",
-        });
-        return;
-      }
-      const { publicKey } = await keyRes.json();
-      if (!publicKey) {
-        showError({
-          title: "Push isn't set up yet",
-          cause: "The server didn't hand us a key to register with.",
+          cause: "VAPID configuration is missing.",
           fix: "We'll be back online with push soon.",
         });
         return;
       }
 
-      const existing = await reg.pushManager.getSubscription();
-      if (existing) {
-        await existing.unsubscribe();
-      }
-
+      const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey),
+        applicationServerKey: urlBase64ToUint8Array(vapidKey),
       });
 
       const raw = sub.toJSON();
+
       const saveRes = await fetch("/api/push/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          endpoint: raw.endpoint,
-          keys: raw.keys,
-        }),
+        body: JSON.stringify(raw),
       });
 
       if (!saveRes.ok) {
         showError({
           title: "Almost there",
-          cause: "We saved your subscription but the server didn't accept it.",
+          cause: "We generated your push subscription but the server didn't accept it.",
           fix: "Try again — if it keeps happening, contact support.",
         });
         return;

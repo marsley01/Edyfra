@@ -1,8 +1,3 @@
-/** @type {import("next").NextConfig} */
-const withBundleAnalyzer = require("@next/bundle-analyzer")({
-  enabled: process.env.ANALYZE === "true",
-});
-
 const nextConfig = {
   turbopack: {
     root: __dirname,
@@ -14,11 +9,27 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**",
+        hostname: "*.supabase.co",
       },
       {
-        protocol: "http",
-        hostname: "**",
+        protocol: "https",
+        hostname: "*.supabase.in",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "edyfra.com",
+      },
+      {
+        protocol: "https",
+        hostname: "edyfra-v2.vercel.app",
       },
     ],
   },
@@ -56,11 +67,17 @@ const nextConfig = {
         key: "Content-Security-Policy",
         value: [
           "default-src 'self'",
-          "script-src 'self' 'unsafe-eval' 'unsafe-inline' *.vercel-scripts.com assistloop.ai",
+          process.env.NODE_ENV === "development"
+            ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.vercel-scripts.com"
+            : "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' *.vercel-scripts.com",
           "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
           "font-src 'self' fonts.gstatic.com",
           "img-src 'self' data: blob: https: http:",
-          "connect-src 'self' *.supabase.co *.vercel-insights.com wss://*.supabase.co *.stream-io-api.com wss://*.stream-io-api.com wss://chat.stream-io-api.com",
+          // stream-io-api.com covers both chat and video REST + WS endpoints.
+          // stream-io-cdn.com is used by the Video SDK for TURN relay signalling.
+          // hint.stream-io-video.com is used by the Video SDK for SFU edge discovery.
+          // stream-io-video.com is for SFU WebSocket media connections.
+          "connect-src 'self' *.supabase.co *.vercel-insights.com wss://*.supabase.co *.stream-io-api.com wss://*.stream-io-api.com wss://chat.stream-io-api.com wss://video.stream-io-api.com *.stream-io-cdn.com wss://*.stream-io-cdn.com *.stream-io-video.com wss://*.stream-io-video.com identitytoolkit.googleapis.com securetoken.googleapis.com firebasestorage.googleapis.com *.firebaseio.com huggingface.co *.huggingface.co raw.githubusercontent.com cdn.jsdelivr.net",
           "frame-ancestors 'none'",
         ].join("; "),
       },
@@ -95,9 +112,6 @@ const nextConfig = {
       {
         source: "/api/:path*",
         headers: [
-          { key: "Access-Control-Allow-Origin", value: "*" },
-          { key: "Access-Control-Allow-Methods", value: "GET, POST, PUT, DELETE, OPTIONS" },
-          { key: "Access-Control-Allow-Headers", value: "Content-Type, Authorization" },
           { key: "Cache-Control", value: "private, max-age=0, stale-while-revalidate=60" },
         ],
       },
@@ -105,4 +119,4 @@ const nextConfig = {
   },
 };
 
-module.exports = withBundleAnalyzer(nextConfig);
+module.exports = nextConfig;

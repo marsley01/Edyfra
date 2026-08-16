@@ -1,14 +1,14 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "exactOptionalPropertyTypes": false,
+    "noUncheckedIndexedAccess": false,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -17,18 +17,14 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
+    "plugins": [{ "name": "next" }],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@generated/*": [
-        "./src/generated/*"
-      ]
+      "@/*": ["./src/*"],
+      "@generated/*": ["./src/generated/*"],
+      "@agent-preflight/types": ["./src/lib/preflight/types/index.ts"],
+      "@agent-preflight/utils": ["./src/lib/preflight/utils/index.ts"],
+      "@agent-preflight/providers": ["./src/lib/preflight/providers/index.ts"],
+      "@agent-preflight/memory": ["./src/lib/preflight/memory/index.ts"]
     }
   },
   "include": [
@@ -38,10 +34,5 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "scripts",
-    "prisma",
-    "supabase"
-  ]
+  "exclude": ["node_modules", "scripts", "prisma", "supabase", "scratch"]
 }

@@ -2,12 +2,13 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { Role, VerifPath, TutorApplication, User, TutorProfile } from "@prisma/client";
+import { Role, VerifPath, TutorApplication, User, TutorProfile } from "@/generated/client";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { getUserData } from "./user";
 import { notifyUser } from "@/app/actions/notifications";
 import { TUTOR_CONFIG } from "@/lib/config";
+import { resolveKycUrl } from "@/app/actions/tutor-kyc";
 
 async function requireAdminUser() {
   const adminUser = await getUserData();
@@ -34,7 +35,14 @@ export async function getTutorApplicationsWithDetails(): Promise<any[]> {
     });
 
     const applications = await Promise.race([queryPromise, timeoutPromise]);
-    return applications || [];
+    const resolved = await Promise.all(
+      (applications || []).map(async (app) => ({
+        ...app,
+        idPhotoUrl: await resolveKycUrl(app.idPhotoUrl),
+        selfieUrl: await resolveKycUrl(app.selfieUrl),
+      }))
+    );
+    return resolved || [];
   } catch (error) {
     console.error("Error fetching tutor applications:", error);
     return [];
@@ -57,7 +65,7 @@ export async function getAllTutorsWithDetails(): Promise<any[]> {
      });
 
      // Transform to match the expected format in the UI
-     return tutors.map((tutor) => {
+     return Promise.all(tutors.map(async (tutor) => {
        // tutor.tutorApplication is a single object (one-to-one), not an array
        const latestApp = tutor.tutorApplication || null;
        
@@ -74,10 +82,10 @@ export async function getAllTutorsWithDetails(): Promise<any[]> {
            educationLevel: tutor.educationLevel,
            email: tutor.email
          },
-         idPhotoUrl: latestApp?.idPhotoUrl || tutor.tutorProfile?.idPhotoUrl || null,
-         selfieUrl: latestApp?.selfieUrl || tutor.tutorProfile?.selfieUrl || null
+         idPhotoUrl: await resolveKycUrl(latestApp?.idPhotoUrl || tutor.tutorProfile?.idPhotoUrl || null),
+         selfieUrl: await resolveKycUrl(latestApp?.selfieUrl || tutor.tutorProfile?.selfieUrl || null)
        };
-     });
+     }));
   } catch (error) {
     console.error("Error fetching all tutors:", error);
     return [];

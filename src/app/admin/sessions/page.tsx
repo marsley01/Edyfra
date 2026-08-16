@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { toast } from "sonner";
 import { getActiveSessions, closeSession, closeSessionsBatch } from "@/app/actions/admin";
 import { 
   Zap, Clock, XCircle, Monitor, 
@@ -33,6 +34,7 @@ export default function AdminSessionsPage() {
       setSessions(data);
     } catch (err) {
       console.error(err);
+      toast.error("Failed to load active sessions");
     } finally {
       setLoading(false);
     }

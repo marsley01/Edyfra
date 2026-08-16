@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { 
   Search, 
   Filter, 
@@ -52,7 +52,13 @@ export default function MarketplacePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
+  const fetchAbortRef = useRef<AbortController | null>(null);
+
   const fetchPurchases = async () => {
+    fetchAbortRef.current?.abort();
+    const ctrl = new AbortController();
+    fetchAbortRef.current = ctrl;
+
     setLoading(true);
     try {
       const supabase = createClient();
@@ -75,6 +81,7 @@ export default function MarketplacePage() {
       if (error) throw error;
       if (data) setPurchases(data);
     } catch (err) {
+      if ((err as any)?.name === "AbortError") return;
       showError({
         title: "Couldn't load your purchases",
         cause: "We hit an issue talking to the marketplace database.",
@@ -87,6 +94,10 @@ export default function MarketplacePage() {
   };
 
   const fetchResources = useCallback(async () => {
+    fetchAbortRef.current?.abort();
+    const ctrl = new AbortController();
+    fetchAbortRef.current = ctrl;
+
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -96,7 +107,7 @@ export default function MarketplacePage() {
       if (selectedType !== "All") params.set("type", selectedType);
       if (search) params.set("search", search);
 
-      const res = await fetch(`/api/resources?${params.toString()}`);
+      const res = await fetch(`/api/resources?${params.toString()}`, { signal: ctrl.signal });
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}`);
       }
@@ -105,6 +116,7 @@ export default function MarketplacePage() {
         setResources(data.resources);
       }
     } catch (err) {
+      if ((err as any)?.name === "AbortError") return;
       showError({
         title: "Couldn't load the marketplace",
         cause: "Our resources service didn't respond.",
@@ -168,35 +180,10 @@ export default function MarketplacePage() {
 
     setIsPaying(true);
     try {
-      const res = await fetch("/api/paystack/initialize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: selectedResource.price,
-          type: "resource",
-          id: selectedResource.id,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.success && data.authorization_url) {
-        showSuccess("Redirecting to secure checkout…", {
-          description: "You'll be back here automatically once payment is confirmed.",
-        });
-        window.location.href = data.authorization_url;
-      } else {
-        showError({
-          title: "We couldn't start your payment",
-          cause: data.error || "Paystack didn't return a checkout link.",
-          fix: "Try again in a moment, or use a different payment method.",
-        });
-      }
-    } catch (err) {
       showError({
-        title: "Payment service didn't respond",
-        cause: "Your connection blinked or the gateway is busy.",
-        fix: "Wait a few seconds and try again.",
-        raw: err,
+        title: "Card payments are currently unavailable",
+        cause: "Paystack integration has been removed.",
+        fix: "Please use M-Pesa or check back later.",
       });
     } finally {
       setIsPaying(false);
@@ -346,7 +333,7 @@ export default function MarketplacePage() {
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded-full">{resource.subject}</span>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{resource.education_level || resource.level}</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{resource.educationLevel || resource.education_level || resource.level}</span>
                 </div>
                 <h3 className="text-lg font-black tracking-tightest leading-tight group-hover:text-primary transition-colors">{resource.title}</h3>
               </div>
@@ -447,7 +434,7 @@ export default function MarketplacePage() {
                   </div>
                   <div className="space-y-1">
                     <h2 className="text-2xl font-black tracking-tightest">{selectedResource.title}</h2>
-                    <p className="text-muted-foreground font-medium">By {selectedResource.seller}</p>
+                    <p className="text-muted-foreground font-medium">By {selectedResource.seller?.name ?? selectedResource.seller ?? "Tutor"}</p>
                   </div>
                 </div>
 

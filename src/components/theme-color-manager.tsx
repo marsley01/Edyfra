@@ -39,8 +39,7 @@ export function ThemeColorManager() {
     const applyColor = async () => {
       try {
         const userData = await getUserData();
-        const settings = userData?.settings as Record<string, unknown> | undefined;
-        const accentColor = settings?.accentColor as string | undefined;
+        const accentColor = (userData as any)?.preferences?.accentColor as string | undefined;
 
         if (accentColor) {
           applyAccentColor(accentColor);

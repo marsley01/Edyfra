@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { Chat, Channel, MessageList, MessageComposer, Window, Thread, WithComponents } from "stream-chat-react";
-import { MessageCircle, Sparkles, Loader2 } from "lucide-react";
+import { MessageCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import "stream-chat-react/dist/css/index.css";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
@@ -39,11 +39,11 @@ export default function StreamChatRoom({
     mashAI,
   });
 
-  const [isAskingMash, setIsAskingMash] = useState(false);
+  const [isAsking, setIsAsking] = useState(false);
 
-  const handleAskMash = async () => {
-    if (!channelId || isAskingMash) return;
-    setIsAskingMash(true);
+  const handleAsk = async () => {
+    if (!channelId || isAsking) return;
+    setIsAsking(true);
     try {
       const { handleMashMention } = await import("@/app/actions/stream");
       await handleMashMention(
@@ -54,18 +54,16 @@ export default function StreamChatRoom({
         mashAI?.tier
       );
     } catch (err) {
-      console.error("Failed to ask mash", err);
+      console.error("Failed to ask study assistant", err);
     } finally {
-      setIsAskingMash(false);
+      setIsAsking(false);
     }
   };
 
-  // ─── Error state ─────────────────────────────────────────────────────────
   if (error) {
     return <ChatErrorState error={error} isRetrying={isRetrying} onRetry={retry} />;
   }
 
-  // ─── Loading state ───────────────────────────────────────────────────────
   if (!chatClient || !channel) {
     return <ChatLoadingState />;
   }
@@ -83,26 +81,23 @@ export default function StreamChatRoom({
                       <span className="text-primary text-lg">💬</span>
                     </div>
                     <div>
-                      <h3 className="text-xs font-black uppercase tracking-widest text-foreground">
+                      <h3 className="text-sm font-semibold text-foreground">
                         {channelName || "Study Room"}
                       </h3>
-                      <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">
-                        {(memberIds?.length ?? 0) === 0 ? "Just you" : `${(memberIds?.length ?? 0) + 2} Members`}
-                        <span className="ml-2 text-emerald-500">
-                          · <Sparkles className="inline h-3 w-3 -mt-0.5" /> Mash AI
-                        </span>
+                      <p className="text-xs text-muted-foreground">
+                        {(memberIds?.length ?? 0) === 0 ? "Just you" : `${(memberIds?.length ?? 0) + 2} members`}
                       </p>
                     </div>
                   </div>
-                  
+
                   <Button 
                     size="sm" 
-                    onClick={handleAskMash}
-                    disabled={isAskingMash}
-                    className="h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/25 font-black text-[10px] tracking-widest uppercase transition-all shadow-lg shadow-emerald-500/10"
+                    onClick={handleAsk}
+                    disabled={isAsking}
+                    className="h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/25 text-xs font-medium transition-all shadow-lg shadow-emerald-500/10"
                   >
-                    {isAskingMash ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <MessageCircle className="h-3.5 w-3.5 mr-1.5" />}
-                    <span className="hidden sm:inline">Ask Mash</span>
+                    {isAsking ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <MessageCircle className="h-3.5 w-3.5 mr-1.5" />}
+                    <span className="hidden sm:inline">Ask</span>
                   </Button>
                 </div>
             )}

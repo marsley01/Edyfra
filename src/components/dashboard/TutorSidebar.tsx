@@ -87,9 +87,11 @@ export function TutorSidebar({ user, onClose }: { user: User; onClose?: () => vo
   };
 
   return (
-    <aside className={cn(
-      "flex flex-col bg-card border-r border-border/60 transition-all duration-200",
-      onClose ? "h-full w-full" : "w-64 h-[calc(100vh-3.5rem)] sticky top-14 hidden lg:flex",
+    <aside data-tour="tour-sidebar" className={cn(
+      "flex flex-col bg-card-bg border-r-[1.5px] border-border transition-all duration-200 py-6 px-3",
+      onClose
+        ? "h-full w-full pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]"
+        : "w-[240px] h-dvh sticky top-0 hidden lg:flex",
     )}>
       {onClose && (
         <div className="flex justify-end p-4">
@@ -132,15 +134,15 @@ export function TutorSidebar({ user, onClose }: { user: User; onClose?: () => vo
                     href={href}
                     onClick={onClose}
                     className={cn(
-                      "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group",
+                      "flex items-center gap-[10px] px-[14px] py-[10px] rounded-[10px] text-[0.9rem] font-medium transition-all duration-150 group relative",
                       isActive
-                        ? "bg-primary/10 text-primary shadow-sm"
-                        : "text-muted-foreground hover:text-foreground hover:bg-secondary/60",
+                        ? "bg-violet-light text-violet font-bold"
+                        : "text-text-200 hover:text-text-100 hover:bg-page-bg",
                     )}
                   >
                     <Icon className={cn(
                       "h-4 w-4 shrink-0 transition-colors",
-                      isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
+                      isActive ? "text-violet" : "text-text-200 group-hover:text-text-100",
                     )} />
                     <span className="truncate">{itemLabel}</span>
                     {showCount && <NotificationCountBadge />}
@@ -170,7 +172,7 @@ export function TutorSidebar({ user, onClose }: { user: User; onClose?: () => vo
           <div className="flex items-center gap-3">
             <Avatar className="h-9 w-9 rounded-xl shadow-sm">
               <AvatarImage src={avatar || undefined} alt={displayName} className="rounded-xl object-cover" />
-              <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-bold text-xs">
+              <AvatarFallback className="rounded-xl bg-gradient-to-br from-violet to-bubblegum text-white font-bold text-xs">
                 {displayName?.[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>

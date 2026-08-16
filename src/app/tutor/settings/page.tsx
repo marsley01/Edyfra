@@ -13,8 +13,9 @@ import {
   User, BookOpen, Loader2, Save, Bell, Clock, Shield, Palette,
   Moon, Sun, Monitor, Bot, Lock, Mail, Download, Trash2, AlertTriangle,
   Wallet, Phone, Calendar, Check, Settings as SettingsIcon, Globe,
-  ChevronRight, Sparkles, Star, Video
+  ChevronRight, Sparkles, Star, Video, X
 } from "lucide-react";
+import { getSubjectsByLevel } from "@/lib/subjects";
 import { getUserData, updateProfile, updateTutorProfile, changePassword, changeEmail, downloadUserData, deleteUserAccount, updateAvatar, updateNotificationSettings } from "@/app/actions/user";
 import { getNotificationSettings } from "@/app/actions/notifications";
 import { PushNotificationManager } from "@/components/PushNotificationManager";
@@ -60,7 +61,7 @@ export default function TutorSettingsPage() {
   const [activeTab, setActiveTab] = useState("profile");
   const [userData, setUserData] = useState<any>(null);
   const [formData, setFormData] = useState<any>({
-    name: "", bio: "", subjects: "", confidenceLevels: "", levelsTaught: "",
+    name: "", bio: "", subjects: [], confidenceLevels: "", levelsTaught: "",
     hourlyRate: "", mpesaNumber: "", sessionPreference: "both", maxGroupStudents: "3",
     defaultSessionDuration: "60", allowSessionRecording: false, showRatingPublicly: true,
     allowReRequest: true, autoAcceptRequests: false, allowMashInactive: true, showMashSummary: true,
@@ -70,6 +71,7 @@ export default function TutorSettingsPage() {
   const [availableNow, setAvailableNow] = useState(false);
   const [passwordData, setPasswordData] = useState({ current: "", newPass: "", confirm: "" });
   const [newEmail, setNewEmail] = useState("");
+  const [emailPassword, setEmailPassword] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [downloading, setDownloading] = useState(false);
   const [currentAvatar, setCurrentAvatar] = useState<string | null>(null);
@@ -94,7 +96,7 @@ export default function TutorSettingsPage() {
         name: user.name || "",
         bio: tp.bio || "",
         bioCharsLeft: 300 - (tp.bio?.length || 0),
-        subjects: tp.subjects?.join(", ") || "",
+        subjects: tp.subjects || [],
         confidenceLevels: "",
         levelsTaught: tp.levelsTaught?.join(", ") || "",
         hourlyRate: tp.hourlyRate?.toString() || TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH.toString(),
@@ -128,7 +130,7 @@ export default function TutorSettingsPage() {
       await updateTutorProfile({
         name: formData.name,
         bio: formData.bio,
-        subjects: formData.subjects.split(",").map((s: string) => s.trim()).filter(Boolean),
+        subjects: formData.subjects,
         levelsTaught: formData.levelsTaught.split(",").map((s: string) => s.trim()).filter(Boolean),
         hourlyRate: parseInt(formData.hourlyRate) || TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH,
         mpesaNumber: formData.mpesaNumber,
@@ -199,7 +201,7 @@ export default function TutorSettingsPage() {
       return;
     }
     try {
-      await changeEmail(newEmail);
+      await changeEmail(emailPassword, newEmail);
       showSuccess("Verification sent", { description: "Check your new email's inbox to confirm." });
     }
     catch (e: any) { showUnknownError(e, "Couldn't update your email"); }
@@ -252,7 +254,7 @@ export default function TutorSettingsPage() {
     let score = 0;
     if (formData.name) score += 20;
     if (formData.bio) score += 20;
-    if (formData.subjects) score += 20;
+    if (formData.subjects.length > 0) score += 20;
     if (formData.levelsTaught) score += 20;
     if (formData.hourlyRate && formData.mpesaNumber) score += 20;
     return score;
@@ -304,7 +306,7 @@ export default function TutorSettingsPage() {
                 </div>
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1"><Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" /> {userData?.tutorProfile?.rating || "New"}</span>
-                  <span className="flex items-center gap-1"><BookOpen className="h-3.5 w-3.5" /> {formData.subjects || "No subjects set"}</span>
+                  <span className="flex items-center gap-1"><BookOpen className="h-3.5 w-3.5" /> {formData.subjects.length > 0 ? formData.subjects.join(", ") : "No subjects set"}</span>
                 </div>
               </div>
               <div className="hidden sm:flex flex-col items-end gap-1">
@@ -442,7 +444,32 @@ export default function TutorSettingsPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label className="text-xs font-semibold text-muted-foreground">Subjects</Label>
-                      <Input value={formData.subjects} onChange={(e) => setFormData({ ...formData, subjects: e.target.value })} placeholder="Math, Physics, Chemistry" className="h-11 rounded-xl border-border/50 bg-secondary/30" />
+                      <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-1">
+                        {getSubjectsByLevel(formData.levelsTaught || "HIGH_SCHOOL").map((s) => {
+                          const selected = formData.subjects.includes(s)
+                          return (
+                            <button
+                              key={s}
+                              type="button"
+                              onClick={() => setFormData({
+                                ...formData,
+                                subjects: selected ? formData.subjects.filter((x: string) => x !== s) : [...formData.subjects, s]
+                              })}
+                              className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${
+                                selected
+                                  ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                                  : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                              }`}
+                            >
+                              {selected && <X className="h-3 w-3" />}
+                              {s}
+                            </button>
+                          )
+                        })}
+                      </div>
+                      {formData.subjects.length > 0 && (
+                        <p className="text-xs text-muted-foreground">{formData.subjects.length} selected</p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label className="text-xs font-semibold text-muted-foreground">Confidence Levels</Label>
@@ -775,6 +802,7 @@ export default function TutorSettingsPage() {
                   </CardHeader>
                   <CardContent className="p-6 sm:p-8 space-y-4">
                     <Input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="New email address" className="h-11 rounded-xl border-border/50 bg-secondary/30" />
+                    <Input type="password" value={emailPassword} onChange={(e) => setEmailPassword(e.target.value)} placeholder="Current password" className="h-11 rounded-xl border-border/50 bg-secondary/30" />
                     <Button onClick={handleChangeEmail} className="rounded-xl h-11 px-6"><Mail className="h-4 w-4 mr-2" /> Send Verification</Button>
                   </CardContent>
                 </Card>

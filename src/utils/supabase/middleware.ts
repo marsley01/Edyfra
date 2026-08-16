@@ -24,7 +24,12 @@ export async function updateSession(request: NextRequest) {
             request,
           });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, {
+              ...options,
+              httpOnly: true,
+              secure: process.env.NODE_ENV === "production",
+              sameSite: "lax",
+            })
           );
         },
       },
@@ -50,8 +55,6 @@ export async function updateSession(request: NextRequest) {
   const isInstitutionPortalRoute =
     request.nextUrl.pathname === '/institution/dashboard' ||
     request.nextUrl.pathname.startsWith('/institution/dashboard/') ||
-    request.nextUrl.pathname === '/institution/login' ||
-    request.nextUrl.pathname === '/institution/signup' ||
     request.nextUrl.pathname === '/institution/accept' ||
     request.nextUrl.pathname === '/institution/pending' ||
     request.nextUrl.pathname.startsWith('/institution/accept/') ||
