@@ -174,7 +174,11 @@ export async function getNewsBySlug(slug: string): Promise<NewsArticle | null> {
           category: existing.category,
           author: "Edyfra AI",
           published_at: (existing.publishedAt ?? existing.createdAt).toISOString(),
-          reading_time: "2m"
+          reading_time: "2m",
+          thumbnail_url: existing.coverImage || article.thumbnail_url,
+          thumbnail_source: article.thumbnail_source,
+          pexels_photographer: article.pexels_photographer,
+          pexels_photo_page: article.pexels_photo_page,
         };
       }
 
@@ -226,6 +230,10 @@ Keep it under 3 paragraphs (max 200 words). Focus on why it matters to students,
     cover_image: data.coverImage || getFallbackImage(data.category, data.title, data.authorId ? "Author" : "Edyfra Desk"),
     category: data.category,
     author: data.authorId ? "Author" : "Edyfra Desk",
-    published_at: (data.publishedAt ?? data.createdAt).toISOString()
+    published_at: (data.publishedAt ?? data.createdAt).toISOString(),
+    thumbnail_url: data.coverImage ?? null,
+    thumbnail_source: null,
+    pexels_photographer: null,
+    pexels_photo_page: null,
   };
 }
