@@ -94,7 +94,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ keys: keys ?? [] });
   } catch (err) {
     console.error("[api-keys] GET failed:", err);
-    return NextResponse.json({ error: "Failed to load API keys" }, { status: 500 });
+    const message = err instanceof Error ? err.message : "Failed to load API keys";
+    return NextResponse.json({ error: "Failed to load API keys", detail: message }, { status: 500 });
   }
 }
 
@@ -160,7 +161,8 @@ export async function POST(request: NextRequest) {
     });
   } catch (err) {
     console.error("[api-keys] POST failed:", err);
-    return NextResponse.json({ error: "Failed to create API key" }, { status: 500 });
+    const message = err instanceof Error ? err.message : "Failed to create API key";
+    return NextResponse.json({ error: "Failed to create API key", detail: message }, { status: 500 });
   }
 }
 
@@ -242,6 +244,7 @@ export async function PATCH(request: NextRequest) {
     });
   } catch (err) {
     console.error("[api-keys] PATCH failed:", err);
-    return NextResponse.json({ error: "Failed to update API key" }, { status: 500 });
+    const message = err instanceof Error ? err.message : "Failed to update API key";
+    return NextResponse.json({ error: "Failed to update API key", detail: message }, { status: 500 });
   }
 }
