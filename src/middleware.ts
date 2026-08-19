@@ -59,6 +59,17 @@ export async function middleware(request: NextRequest) {
   const isApiRoute = url.pathname.startsWith('/api/')
   const origin = request.headers.get('origin')
 
+  // Force HTTPS on any non-local host (Vercel already does this at the edge,
+  // this also covers custom hosts / direct HTTP traffic)
+  const proto = request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim()
+  const host = request.nextUrl.hostname
+  const isLocalHost = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local')
+  if (proto === 'http' && !isLocalHost) {
+    const httpsUrl = new URL(request.url)
+    httpsUrl.protocol = 'https'
+    return NextResponse.redirect(httpsUrl, 308)
+  }
+
   // CSRF check for mutation requests on non-API routes (server actions)
   if (MUTATION_METHODS.has(request.method) && request.headers.get('content-type')?.includes('text/plain')) {
     if (!validateCsrf(request)) {
