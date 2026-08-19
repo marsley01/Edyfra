@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   ShieldCheck, ShieldAlert, GraduationCap, 
-  MapPin, Clock, Star, ExternalLink,
+  MapPin, Clock, Star,
   CheckCircle2, XCircle, Search, Loader2,
   FileText, Mail, Info, Trash2, AlertTriangle, Clock3
 } from "lucide-react";
@@ -355,10 +355,6 @@ export default function AdminTutorsPage() {
                         <XCircle className="h-4 w-4" /> REJECTED
                       </div>
                     )}
-                    
-                    <Button variant="ghost" size="icon" className="rounded-xl h-10 w-10 hover:bg-white/5">
-                      <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                    </Button>
                   </div>
               </div>
             </CardContent>

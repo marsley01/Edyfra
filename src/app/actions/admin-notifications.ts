@@ -74,3 +74,28 @@ export async function markNotificationRead(notificationId: string) {
     return { success: false, error: "Failed to mark as read" };
   }
 }
+
+// Mark every notification in the platform log as read
+export async function markAllNotificationsRead() {
+  try {
+    const result = await prisma.notification.updateMany({
+      where: { read: false },
+      data: { read: true }
+    });
+    return { success: true, count: result.count };
+  } catch (error) {
+    console.error("Error marking all notifications as read:", error);
+    return { success: false, error: "Failed to mark all as read" };
+  }
+}
+
+// Clear (delete) all notifications from the platform log
+export async function clearAllNotifications() {
+  try {
+    const result = await prisma.notification.deleteMany({});
+    return { success: true, count: result.count };
+  } catch (error) {
+    console.error("Error clearing notifications:", error);
+    return { success: false, error: "Failed to clear notifications" };
+  }
+}

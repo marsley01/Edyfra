@@ -9,6 +9,14 @@ import { AvatarPremium } from "@/components/ui/avatar-premium";
 import { showSuccess } from "@/lib/toast";
 import { useState } from "react";
 
+import { useRouter } from "next/navigation";
+import {
+  markAllNotificationsRead,
+  clearAllNotifications,
+  markNotificationRead,
+} from "@/app/actions/admin-notifications";
+import { showError } from "@/lib/toast";
+
 export function AdminNotificationsClient({
   notifications,
   stats,
@@ -16,6 +24,7 @@ export function AdminNotificationsClient({
   notifications: any[];
   stats: any[];
 }) {
+  const router = useRouter();
   const [filter, setFilter] = useState<"all" | "read" | "unread">("all");
 
   const filteredNotifications = notifications.filter(n => {
@@ -28,11 +37,40 @@ export function AdminNotificationsClient({
   const readCount = notifications.filter(n => n.read).length;
 
   const handleMarkAllRead = async () => {
-    showSuccess("All caught up", { description: "Every notification is marked as read." });
+    const result = await markAllNotificationsRead();
+    if (result.success) {
+      showSuccess("All caught up", { description: "Every notification is marked as read." });
+      router.refresh();
+    } else {
+      showError({
+        title: "Couldn't mark notifications as read",
+        cause: result.error || "Something didn't go through on our side.",
+        fix: "Try again, or refresh the page.",
+      });
+    }
   };
 
   const handleClearAll = async () => {
-    showSuccess("Notifications cleared", { description: "The list is now empty." });
+    if (!confirm("Clear the entire platform notification log? This cannot be undone.")) return;
+    const result = await clearAllNotifications();
+    if (result.success) {
+      showSuccess("Notifications cleared", { description: "The list is now empty." });
+      router.refresh();
+    } else {
+      showError({
+        title: "Couldn't clear notifications",
+        cause: result.error || "Something didn't go through on our side.",
+        fix: "Try again, or refresh the page.",
+      });
+    }
+  };
+
+  const handleOpen = async (n: any) => {
+    if (!n.read) {
+      await markNotificationRead(n.id);
+      router.refresh();
+    }
+    if (n.actionUrl) router.push(n.actionUrl);
   };
 
   return (
@@ -149,8 +187,9 @@ export function AdminNotificationsClient({
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         {n.actionUrl && (
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
+                            onClick={() => handleOpen(n)}
                             className="rounded-xl font-black text-[9px] tracking-widest uppercase h-8 sm:h-10 px-3 sm:px-4 bg-primary/10 text-primary hover:bg-primary hover:text-white"
                           >
                             <Send className="h-3 w-3 sm:mr-2" />

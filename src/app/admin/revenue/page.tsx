@@ -8,18 +8,19 @@ import {
   BookOpen, 
   ArrowUpRight, 
   ArrowDownRight,
-  Download,
   CheckCircle2,
   AlertCircle,
   Clock
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
+import { RevenueActions } from "./revenue-actions";
 
 async function getRevenueStats() {
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   // Fetch all successful payments for calculation
   const successfulPayments = await prisma.payment.findMany({
@@ -30,6 +31,14 @@ async function getRevenueStats() {
   const monthlyRevenue = successfulPayments
     .filter(p => p.paidAt && new Date(p.paidAt) >= startOfMonth)
     .reduce((acc: number, curr) => acc + (curr.amount || 0), 0);
+  const lastMonthRevenue = successfulPayments
+    .filter(p => p.paidAt && new Date(p.paidAt) >= startOfLastMonth && new Date(p.paidAt) < startOfMonth)
+    .reduce((acc: number, curr) => acc + (curr.amount || 0), 0);
+  const monthDelta = lastMonthRevenue > 0
+    ? Math.round(((monthlyRevenue - lastMonthRevenue) / lastMonthRevenue) * 100)
+    : monthlyRevenue > 0
+      ? 100
+      : 0;
 
   // Stream breakdown
   const breakdown: Record<string, number> = {
@@ -65,15 +74,26 @@ async function getRevenueStats() {
     where: { refundedAt: null }
   });
   const pendingPayouts = sessionPayments.reduce((acc: number, curr) => acc + (curr.tutorPayout || 0), 0);
+  const pendingTutors = new Set(sessionPayments.filter(p => !p.paidAt).map(p => p.tutorId)).size;
+
+  // Marketplace sales (resource purchases)
+  const todayPurchases = await prisma.resourcePurchase.findMany({
+    where: { paidAt: { gte: startOfToday } }
+  });
+  const marketplaceToday = todayPurchases.reduce((acc: number, curr) => acc + (curr.amount || 0), 0);
 
   return {
     total: totalRevenue,
     monthly: monthlyRevenue,
+    monthDelta,
     breakdown: streamBreakdown,
     plusCount: plusSubscribers,
     conversion: conversionRate,
     transactions: recentTransactions,
-    pendingPayouts: pendingPayouts
+    pendingPayouts: pendingPayouts,
+    pendingTutors,
+    marketplaceToday,
+    marketplaceItemsToday: todayPurchases.length
   };
 }
 
@@ -88,12 +108,7 @@ export default async function AdminRevenuePage() {
           <p className="text-muted-foreground font-medium">Telemetry for Edyfra's monetization ecosystem.</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" className="h-11 px-6 rounded-xl border-2 font-black text-xs uppercase tracking-widest gap-2">
-            <Download className="h-4 w-4" /> Export CSV
-          </Button>
-          <Button className="h-11 px-6 rounded-xl bg-primary text-white font-black text-xs uppercase tracking-widest shadow-lg shadow-primary/20">
-            Pay All Tutors
-          </Button>
+          <RevenueActions transactions={stats.transactions as any} />
         </div>
       </div>
 
@@ -107,8 +122,8 @@ export default async function AdminRevenuePage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-black tracking-tightest">KES {stats.total.toLocaleString()}</div>
-            <p className="text-[10px] font-bold text-emerald-500 mt-1 flex items-center gap-1">
-              <ArrowUpRight className="h-3 w-3" /> +12.5% from last month
+            <p className={`text-[10px] font-bold mt-1 flex items-center gap-1 ${stats.monthDelta >= 0 ? "text-emerald-500" : "text-red-500"}`}>
+              {stats.monthDelta >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />} {Math.abs(stats.monthDelta)}% vs last month
             </p>
           </CardContent>
           <div className="absolute top-0 right-0 p-6 opacity-10">
@@ -139,7 +154,7 @@ export default async function AdminRevenuePage() {
           <CardContent>
             <div className="text-3xl font-black tracking-tightest">KES {stats.pendingPayouts.toLocaleString()}</div>
             <p className="text-[10px] font-bold text-amber-500 mt-1 uppercase tracking-widest">
-               12 Tutors Waiting
+              {stats.pendingTutors} Tutor{stats.pendingTutors === 1 ? "" : "s"} Waiting
             </p>
           </CardContent>
         </Card>
@@ -151,9 +166,9 @@ export default async function AdminRevenuePage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black tracking-tightest">KES 4,200</div>
+            <div className="text-3xl font-black tracking-tightest">KES {stats.marketplaceToday.toLocaleString()}</div>
             <p className="text-[10px] font-bold text-purple-500 mt-1 uppercase tracking-widest">
-               24 Items Sold Today
+              {stats.marketplaceItemsToday} Items Sold Today
             </p>
           </CardContent>
         </Card>

@@ -34,6 +34,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const supabase = supabaseRef.current;
   const [adminUser, setAdminUser] = useState<User | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [navQuery, setNavQuery] = useState("");
   // Prevents premature redirect while the async auth check is in-flight.
   // Without this, any latency causes adminUser===null → immediate /dashboard redirect.
   const [isChecking, setIsChecking] = useState(true);
@@ -95,6 +96,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin/api-keys", label: "API Keys", icon: KeyRound },
     { href: "/admin/settings", label: "Settings", icon: Settings },
   ];
+
+  const filteredNavItems = navQuery.trim()
+    ? navItems.filter((item) => `${item.label} ${item.href}`.toLowerCase().includes(navQuery.toLowerCase()))
+    : navItems;
 
   // While the async auth check is in-flight, show a minimal loading state.
   // This prevents the race condition where adminUser===null causes a flash redirect.
@@ -189,7 +194,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
               <AdminSidebarContent
                 pathname={pathname}
-                navItems={navItems}
+                navItems={filteredNavItems}
                 adminUser={adminUser}
                 supabase={supabase}
                 router={router}
@@ -205,7 +210,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <aside className="w-64 bg-background border-r border-border/40 hidden lg:flex flex-col fixed top-7 bottom-0 z-50">
           <AdminSidebarContent
             pathname={pathname}
-            navItems={navItems}
+            navItems={filteredNavItems}
             adminUser={adminUser}
             supabase={supabase}
             router={router}
@@ -219,7 +224,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <div className="relative group">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <input
-                  placeholder="Search…"
+                  value={navQuery}
+                  onChange={(e) => setNavQuery(e.target.value)}
+                  placeholder="Search pages…"
                   className="bg-muted/50 border border-border/40 rounded-full py-1.5 pl-9 pr-4 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all w-48 xl:w-64 placeholder:text-muted-foreground/60"
                 />
               </div>
@@ -227,7 +234,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             <div className="flex items-center gap-3">
               <ThemeToggle />
-              <button className="relative p-2 rounded-lg hover:bg-muted/50 transition-colors">
+              <button
+                onClick={() => router.push("/admin/notifications")}
+                aria-label="Notifications"
+                className="relative p-2 rounded-lg hover:bg-muted/50 transition-colors"
+              >
                 <Bell className="h-4 w-4 text-muted-foreground" />
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full" />
               </button>
@@ -293,6 +304,9 @@ function AdminSidebarContent({ pathname, navItems, adminUser, supabase, router, 
             </Link>
           );
         })}
+        {navItems.length === 0 && (
+          <p className="px-3 py-4 text-xs text-muted-foreground/70">No pages match your search.</p>
+        )}
       </nav>
 
       {/* User Footer */}
