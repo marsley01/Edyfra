@@ -60,13 +60,18 @@ export function HomeNewsletter() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col md:flex-row items-center gap-4">
+            <label htmlFor="newsletter-email" className="sr-only">
+              Email address
+            </label>
             <Input
+              id="newsletter-email"
               type="email"
               placeholder="your@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="flex-1 md:w-[280px]"
               disabled={isSubmitting}
+              autoComplete="email"
             />
             <Button 
               type="submit" 

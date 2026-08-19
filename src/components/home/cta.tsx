@@ -13,7 +13,7 @@ export function HomeCTA() {
           alt="Study platform background"
           fill
           className="object-cover opacity-80"
-          priority
+          sizes="100vw"
         />
       </div>
 
@@ -32,17 +32,17 @@ export function HomeCTA() {
       />
 
       {/* ── Floating Decorative Badges ── */}
-      <div className="absolute top-[12%] right-[8%] z-20 hidden lg:flex items-center gap-2.5 bg-white/[0.03] backdrop-blur-lg border border-white/10 rounded-xl px-4 py-2.5 shadow-2xl animate-bounce">
+      <div className="absolute top-[12%] right-[8%] z-20 hidden lg:flex items-center gap-2.5 bg-[#0F0527]/85 border border-white/10 rounded-xl px-4 py-2.5 shadow-2xl">
         <div className="w-8 h-8 rounded-xl bg-emerald-500/20 flex items-center justify-center">
           <Play className="h-4 w-4 text-emerald-400" />
         </div>
         <div className="text-left">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-white/60">Active Learning</p>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-white/80">Active Learning</p>
           <p className="text-sm font-bold text-white">1-on-1 sessions</p>
         </div>
       </div>
 
-      <div className="absolute bottom-[18%] left-[6%] z-20 hidden lg:flex items-center gap-2.5 bg-white/[0.03] backdrop-blur-lg border border-white/10 rounded-xl px-4 py-2.5 shadow-2xl animate-bounce delay-150">
+      <div className="absolute bottom-[18%] left-[6%] z-20 hidden lg:flex items-center gap-2.5 bg-[#0F0527]/85 border border-white/10 rounded-xl px-4 py-2.5 shadow-2xl">
         <div className="flex -space-x-2">
           {["#00F0FF", "#9D4EDD", "#E07A5F", "#39FF14"].map((c, i) => (
             <div
@@ -55,14 +55,14 @@ export function HomeCTA() {
           ))}
         </div>
         <div className="text-left">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-white/60">Verified Support</p>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-white/80">Verified Support</p>
           <p className="text-sm font-bold text-white">Expert tutors</p>
         </div>
       </div>
 
       {/* ── Main Content Card ── */}
       <div className="relative z-20 w-full max-w-4xl mx-auto px-5">
-        <div className="backdrop-blur-lg bg-white/[0.02] border border-white/10 rounded-2xl p-8 sm:p-12 md:p-16 shadow-[0_0_80px_-20px_rgba(0,0,0,0.3)] animate-in fade-in slide-in-from-bottom-8 duration-700">
+        <div className="bg-[#0F0527]/85 border border-white/10 rounded-2xl p-8 sm:p-12 md:p-16 shadow-[0_0_80px_-20px_rgba(0,0,0,0.3)]">
           <div className="space-y-8 text-center">
             {/* Eyebrow badge */}
             <div className="inline-flex items-center gap-2 bg-white/[0.03] border border-white/10 rounded-lg px-4 py-2">
@@ -82,7 +82,7 @@ export function HomeCTA() {
             </h2>
 
             {/* Subtitle */}
-            <p className="text-base sm:text-lg md:text-xl text-white/60 font-medium max-w-xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-white/80 font-medium max-w-xl mx-auto leading-relaxed">
               Mash AI, verified tutors, and a community of Kenyan scholars — all in one place.
               Free to start, built for steady progress.
             </p>
@@ -119,7 +119,7 @@ export function HomeCTA() {
                   </div>
                 ))}
               </div>
-              <p className="text-sm text-white/70">
+              <p className="text-sm text-white/85">
                 Join students studying with verified tutors
               </p>
             </div>

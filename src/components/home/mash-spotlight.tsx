@@ -114,7 +114,7 @@ export function MashSpotlight() {
             {/* Input Bar (visual only) */}
             <div className="px-6 py-4 border-t border-border/50 bg-secondary/20">
               <div className="h-11 rounded-xl bg-secondary/60 border border-border/50 flex items-center px-4">
-                <span className="text-sm text-muted-foreground/50 font-medium">
+                <span className="text-sm text-muted-foreground font-medium">
                   Ask Mash anything...
                 </span>
               </div>

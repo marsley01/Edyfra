@@ -2,6 +2,14 @@
   "name": "edyfra",
   "version": "0.1.0",
   "private": true,
+  "browserslist": [
+    "chrome >= 90",
+    "edge >= 90",
+    "firefox >= 90",
+    "safari >= 15",
+    "ios_saf >= 15",
+    "not dead"
+  ],
   "scripts": {
     "postinstall": "prisma generate",
     "dev": "next dev",

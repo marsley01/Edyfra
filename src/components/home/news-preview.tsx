@@ -207,9 +207,32 @@ export function HomeNews() {
     }
   };
 
+  const sectionRef = useRef<HTMLElement | null>(null);
+
   useEffect(() => {
-    loadNews();
+    const node = sectionRef.current;
+    if (!node) return;
+
+    // Fetch news only when the section approaches the viewport so the request
+    // stays out of the critical path for the initial page load.
+    if (typeof IntersectionObserver === "undefined") {
+      loadNews();
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          observer.disconnect();
+          loadNews();
+        }
+      },
+      { rootMargin: "600px 0px" },
+    );
+    observer.observe(node);
+
     return () => {
+      observer.disconnect();
       abortRef.current?.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -219,7 +242,7 @@ export function HomeNews() {
   const hasPexelsImages = news.some((a) => a.thumbnail_source === "pexels");
 
   return (
-    <section className="py-32 md:py-48 bg-background">
+    <section ref={sectionRef} className="py-32 md:py-48 bg-background">
       <div className="container-max space-y-16">
         {/* Section header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">

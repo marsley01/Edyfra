@@ -80,7 +80,7 @@ export function SubjectCoverage() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="text-center text-sm text-muted-foreground/60 font-medium"
+          className="text-center text-sm text-muted-foreground font-medium"
         >
           More subjects added based on community demand.
         </motion.p>

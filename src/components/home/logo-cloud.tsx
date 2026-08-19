@@ -11,7 +11,7 @@ export function LogoCloud() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="text-sm font-medium text-muted-foreground/60 tracking-wide text-center"
+          className="text-sm font-medium text-muted-foreground tracking-wide text-center"
         >
           Built for Kenyan students, from Form 1 to final year.
         </motion.p>

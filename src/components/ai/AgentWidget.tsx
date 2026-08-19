@@ -210,6 +210,7 @@ export function AgentWidget({ agentId }: { agentId: "eddy" | "mash" }) {
                 <button
                   type="submit"
                   disabled={!input.trim() || isTyping}
+                  aria-label="Send message"
                   className={`absolute right-1.5 w-8 h-8 rounded-full flex items-center justify-center transition-all ${
                     input.trim() && !isTyping ? `${agentBg} text-white shadow-md` : "text-muted-foreground"
                   }`}
@@ -241,6 +242,8 @@ export function AgentWidget({ agentId }: { agentId: "eddy" | "mash" }) {
           onClick={() => setIsOpen(!isOpen)}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
+          aria-label={isOpen ? `Close ${agentName} chat` : `Open ${agentName} chat`}
+          aria-expanded={isOpen}
           className={`relative flex items-center justify-center w-14 h-14 rounded-full shadow-2xl transition-transform hover:scale-110 active:scale-95 z-50`}
         >
           {/* Breathing Background Glow */}

@@ -75,8 +75,9 @@ export function HomeTestimonials({ initialReviews }: TestimonialsProps) {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest ml-2">Your Name *</label>
+                    <label htmlFor="review-name" className="text-[10px] font-black uppercase tracking-widest ml-2">Your Name *</label>
                     <Input
+                      id="review-name"
                       required
                       value={form.author_name}
                       onChange={e => setForm({ ...form, author_name: e.target.value })}
@@ -85,8 +86,9 @@ export function HomeTestimonials({ initialReviews }: TestimonialsProps) {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest ml-2">Institution (Optional)</label>
+                    <label htmlFor="review-school" className="text-[10px] font-black uppercase tracking-widest ml-2">Institution (Optional)</label>
                     <Input
+                      id="review-school"
                       value={form.school}
                       onChange={e => setForm({ ...form, school: e.target.value })}
                       placeholder="University of Nairobi"
@@ -95,8 +97,9 @@ export function HomeTestimonials({ initialReviews }: TestimonialsProps) {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest ml-2">Your Experience * <span className="text-muted-foreground normal-case">(min 20 chars)</span></label>
+                  <label htmlFor="review-quote" className="text-[10px] font-black uppercase tracking-widest ml-2">Your Experience * <span className="text-muted-foreground normal-case">(min 20 chars)</span></label>
                   <textarea
+                    id="review-quote"
                     required
                     value={form.quote}
                     onChange={e => setForm({ ...form, quote: e.target.value })}

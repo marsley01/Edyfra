@@ -62,12 +62,12 @@ export function LottieAnimation({
   }, [url, animationData]);
 
   if (loading) {
-    return <div className={className} aria-label={ariaLabel} aria-busy="true" />;
+    return <div className={className} aria-hidden="true" aria-busy="true" />;
   }
 
   if (hasError || !data) {
     // Fail silently — caller can render their own fallback alongside.
-    return <div className={className} aria-label={ariaLabel} aria-hidden="true" />;
+    return <div className={className} aria-hidden="true" />;
   }
 
   return (
@@ -76,6 +76,7 @@ export function LottieAnimation({
       className={className}
       loop={loop}
       autoplay={autoplay}
+      aria-hidden={ariaLabel ? undefined : true}
       aria-label={ariaLabel}
     />
   );

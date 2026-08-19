@@ -78,7 +78,7 @@ html {
   --card-bg: #FFFFFF;
   --text-100: #1A0B3B;
   --text-200: #5C4F80;
-  --text-300: #9B8EBB;
+  --text-300: #6B5F8F;
   --border: #E2D5FF;
 
   /* Map existing variables for shadcn compatibility */
@@ -133,7 +133,7 @@ html {
   --card-bg: #1A0B3B;
   --text-100: #F0EAFF;
   --text-200: #B8A6E0;
-  --text-300: #7B6AAA;
+  --text-300: #A895CC;
   --border: #3A1E6B;
 
   --background: var(--page-bg);

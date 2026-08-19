@@ -1,17 +1,37 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import { getApprovedReviews } from "@/app/actions/reviews";
 import { unstable_cache } from "next/cache";
 import { HomeHero } from "@/components/home/hero";
 import { LogoCloud } from "@/components/home/logo-cloud";
 import { HomeFeatures } from "@/components/home/features";
-import { HomeNews } from "@/components/home/news-preview";
-import { HomeTestimonials } from "@/components/home/testimonials";
-import { HomeCTA } from "@/components/home/cta";
-import { HowItWorks } from "@/components/home/how-it-works";
-import { MashSpotlight } from "@/components/home/mash-spotlight";
-import { SubjectCoverage } from "@/components/home/subject-coverage";
-import { HomeNewsletter } from "@/components/home/newsletter";
-import { AbstractAnimation } from "@/components/home/abstract-animation";
+
+// Below-the-fold sections are code-split so their JS only loads after the
+// hero has painted. Each has a lightweight skeleton while its chunk streams in.
+const HomeNews = dynamic(() => import("@/components/home/news-preview").then((m) => m.HomeNews), {
+  loading: () => <div className="py-32 md:py-48" aria-hidden="true" />,
+});
+const HomeTestimonials = dynamic(() => import("@/components/home/testimonials").then((m) => m.HomeTestimonials), {
+  loading: () => <div className="py-32 md:py-48 bg-secondary/30" aria-hidden="true" />,
+});
+const HomeCTA = dynamic(() => import("@/components/home/cta").then((m) => m.HomeCTA), {
+  loading: () => <div className="h-screen max-h-[900px] min-h-[600px]" aria-hidden="true" />,
+});
+const AbstractAnimation = dynamic(() => import("@/components/home/abstract-animation").then((m) => m.AbstractAnimation), {
+  loading: () => <div className="h-[400px] md:h-[500px]" aria-hidden="true" />,
+});
+const HomeNewsletter = dynamic(() => import("@/components/home/newsletter").then((m) => m.HomeNewsletter), {
+  loading: () => <div className="py-16" aria-hidden="true" />,
+});
+const HowItWorks = dynamic(() => import("@/components/home/how-it-works").then((m) => m.HowItWorks), {
+  loading: () => <div className="py-32 md:py-48" aria-hidden="true" />,
+});
+const MashSpotlight = dynamic(() => import("@/components/home/mash-spotlight").then((m) => m.MashSpotlight), {
+  loading: () => <div className="py-32 md:py-48" aria-hidden="true" />,
+});
+const SubjectCoverage = dynamic(() => import("@/components/home/subject-coverage").then((m) => m.SubjectCoverage), {
+  loading: () => <div className="py-32 md:py-40" aria-hidden="true" />,
+});
 
 export const metadata: Metadata = {
   title: "Kenya's Institutional Study Platform",

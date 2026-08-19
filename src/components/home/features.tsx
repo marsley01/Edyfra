@@ -144,8 +144,8 @@ export function HomeFeatures() {
                   <h3 className="text-4xl md:text-5xl font-black tracking-tightest">{feature.title}</h3>
                   <p className="text-lg md:text-xl text-muted-foreground font-medium leading-relaxed">{feature.description}</p>
                 </div>
-                <Link href={feature.link} className="inline-flex items-center gap-2 text-primary font-black uppercase tracking-widest text-[10px] group">
-                  Learn more <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                <Link href={feature.link} aria-label={`Learn more about ${feature.title}`} className="inline-flex items-center gap-2 text-primary font-black uppercase tracking-widest text-[10px] group">
+                  Learn more about {feature.title} <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </motion.div>
             </div>

@@ -192,6 +192,7 @@ export function Navigation() {
               <button 
                 onClick={() => setIsOpen(false)} 
                 className="p-3 rounded-2xl hover:bg-secondary transition-colors"
+                aria-label="Close menu"
               >
                 <X className="h-6 w-6" />
               </button>

@@ -147,7 +147,11 @@ export function Footer() {
             </div>
             <form onSubmit={handleSubscribe} className="flex flex-col w-full lg:w-auto gap-2">
               <div className="flex w-full gap-2">
+                <label htmlFor="footer-newsletter-email" className="sr-only">
+                  Email address
+                </label>
                 <Input
+                  id="footer-newsletter-email"
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
@@ -162,6 +166,7 @@ export function Footer() {
                   type="submit"
                   disabled={subscribed || loading}
                   size="icon"
+                  aria-label="Subscribe to the newsletter"
                   className="h-12 w-12 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shrink-0 transition-all active:scale-95 shadow-lg shadow-primary/20"
                 >
                   {subscribed ? (

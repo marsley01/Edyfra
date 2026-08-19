@@ -4,8 +4,10 @@ const nextConfig = {
   },
   serverExternalPackages: ["@prisma/client", "prisma"],
   compress: true,
+  productionBrowserSourceMaps: true,
   images: {
-    minimumCacheTTL: 3600,
+    minimumCacheTTL: 2592000,
+    formats: ["image/avif", "image/webp"],
     remotePatterns: [
       {
         protocol: "https",
@@ -99,7 +101,14 @@ const nextConfig = {
       {
         source: "/:path(image\\.png|favicon\\.ico|icon\\.png|apple-touch-icon\\.png|og-image\\.png|.*\\.svg)",
         headers: [
-          { key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" },
+          { key: "Cache-Control", value: "public, max-age=2592000, stale-while-revalidate=31536000" },
+        ],
+      },
+      // Optimized images from the Next.js image optimizer — long cache
+      {
+        source: "/_next/image",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=2592000, stale-while-revalidate=31536000" },
         ],
       },
       // Public static folder assets
