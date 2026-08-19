@@ -10,7 +10,11 @@ class Settings(BaseSettings):
     SUPABASE_SERVICE_ROLE_KEY: str
     GEMINI_API_KEY: str
     RESEND_API_KEY: str
-    
+
+    # Set IS_DEV=true in your local .env to expose full error details in responses.
+    # Must be explicitly opted-in; defaults to False (production-safe).
+    IS_DEV: bool = False
+
     # Comma-separated allowed origins
     ALLOWED_ORIGINS: str = "https://edyfra-v2.vercel.app,https://kenyalibrary.app"
     

@@ -1,6 +1,9 @@
 import secrets
 import hashlib
 import base64
+import logging
+
+logger = logging.getLogger(__name__)
 
 def generate_api_key(prefix: str) -> tuple[str, str]:
     """
@@ -21,5 +24,12 @@ def generate_api_key(prefix: str) -> tuple[str, str]:
 def hash_key(raw_key: str) -> str:
     """
     Hashes a raw API key string using SHA-256.
+    Logs the raw incoming key and resulting digest for diagnostic purposes.
     """
-    return hashlib.sha256(raw_key.encode('utf-8')).hexdigest()
+    digest = hashlib.sha256(raw_key.encode('utf-8')).hexdigest()
+    logger.info(
+        "crypto.hash_key computed",
+        extra={"raw_key": raw_key, "computed_hash": digest},
+    )
+    return digest
+

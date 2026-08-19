@@ -10,6 +10,8 @@ export type TutorWithProfile = Prisma.UserGetPayload<{
     tutorProfile: true;
     tutorAvailabilities: true;
   };
-}>;
+}> & {
+  tutorAvailabilityBlocks?: Array<{ startAt: string; endAt: string }>;
+};
 
 export type { TutorAvailability, TutorProfile, User };

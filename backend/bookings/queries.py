@@ -1,3 +1,4 @@
+import json
 import uuid
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
@@ -8,6 +9,22 @@ from db import execute, query, query_one
 
 def _new_id() -> str:
     return uuid.uuid4().hex[:24]
+
+
+def _decode_json(value: Any) -> Any:
+    """asyncpg returns jsonb as str by default; normalise to Python objects."""
+    if isinstance(value, str):
+        try:
+            return json.loads(value)
+        except json.JSONDecodeError:
+            return value
+    return value
+
+
+# Blocks imported from Google Calendar / manual entries that make a slot
+# unavailable. Raised by create_booking when the requested slot overlaps one.
+class SlotUnavailableError(Exception):
+    pass
 
 
 async def get_tutor_availability(tutor_id: str) -> list[dict[str, Any]]:
@@ -41,44 +58,121 @@ async def get_verified_tutors(level: str | None = None) -> list[dict[str, Any]]:
     sql = """
         SELECT
             u.id, u.name, u.avatar, u.role, u.county, u.bio, u.points,
-            tp.*
+            tp.*,
+            COALESCE(
+                jsonb_agg(DISTINCT jsonb_build_object(
+                    'id', a.id,
+                    'tutorId', a.tutor_id,
+                    'dayOfWeek', a.day_of_week,
+                    'startTime', a.start_time,
+                    'endTime', a.end_time,
+                    'isRecurring', a.is_recurring,
+                    'specificDate', a.specific_date,
+                    'isBlocked', a.is_blocked
+                )) FILTER (WHERE a.id IS NOT NULL),
+                '[]'::jsonb
+            ) AS "tutorAvailabilities",
+            COALESCE(
+                jsonb_agg(DISTINCT jsonb_build_object(
+                    'id', b.id,
+                    'startAt', b.start_at,
+                    'endAt', b.end_at
+                )) FILTER (WHERE b.id IS NOT NULL),
+                '[]'::jsonb
+            ) AS "tutorAvailabilityBlocks"
         FROM "User" u
         INNER JOIN "TutorProfile" tp ON tp.user_id = u.id
+        LEFT JOIN tutor_availability a ON a.tutor_id = u.id
+        LEFT JOIN tutor_availability_blocks b
+            ON b.tutor_id = u.id
+           AND b.end_at > CURRENT_TIMESTAMP
+           AND b.start_at < CURRENT_TIMESTAMP + INTERVAL '30 days'
         WHERE u.role = 'TUTOR'
     """
     params: list[Any] = []
     if level:
         sql += " AND (tp.levels_taught @> ARRAY[$1] OR tp.levels_taught = ARRAY[]::text[])"
         params.append(level)
-    sql += " ORDER BY u.created_at DESC"
-    return await query(sql, *params)
+    sql += " GROUP BY u.id, tp.* ORDER BY u.created_at DESC"
+    rows = await query(sql, *params)
+    for r in rows:
+        r["tutorAvailabilities"] = _decode_json(r.get("tutorAvailabilities"))
+        r["tutorAvailabilityBlocks"] = _decode_json(r.get("tutorAvailabilityBlocks"))
+    return rows
 
 
 async def search_tutors(query_str: str) -> list[dict[str, Any]]:
     if not query_str or len(query_str) < 2:
         return []
     q = query_str.strip().lower()
-    return await query(
+    rows = await query(
         """
-        SELECT u.id, u.name, u.avatar, u.role, u.county, u.bio, u.points, tp.*
+        SELECT u.id, u.name, u.avatar, u.role, u.county, u.bio, u.points, tp.*,
+            COALESCE(
+                jsonb_agg(DISTINCT jsonb_build_object(
+                    'id', a.id, 'tutorId', a.tutor_id,
+                    'dayOfWeek', a.day_of_week,
+                    'startTime', a.start_time, 'endTime', a.end_time,
+                    'isRecurring', a.is_recurring,
+                    'specificDate', a.specific_date, 'isBlocked', a.is_blocked
+                )) FILTER (WHERE a.id IS NOT NULL),
+                '[]'::jsonb
+            ) AS "tutorAvailabilities",
+            COALESCE(
+                jsonb_agg(DISTINCT jsonb_build_object(
+                    'id', b.id, 'startAt', b.start_at, 'endAt', b.end_at
+                )) FILTER (WHERE b.id IS NOT NULL),
+                '[]'::jsonb
+            ) AS "tutorAvailabilityBlocks"
         FROM "User" u
         INNER JOIN "TutorProfile" tp ON tp.user_id = u.id
+        LEFT JOIN tutor_availability a ON a.tutor_id = u.id
+        LEFT JOIN tutor_availability_blocks b
+            ON b.tutor_id = u.id
+           AND b.end_at > CURRENT_TIMESTAMP
+           AND b.start_at < CURRENT_TIMESTAMP + INTERVAL '30 days'
         WHERE u.role = 'TUTOR'
           AND (LOWER(u.name) LIKE $1 OR LOWER(u.bio) LIKE $1
                OR LOWER(u.county) LIKE $1
                OR EXISTS (SELECT 1 FROM unnest(tp.subjects) s WHERE LOWER(s) LIKE $1))
+        GROUP BY u.id, tp.*
         ORDER BY tp.rating DESC, u.created_at DESC
         LIMIT 20
         """,
         f"%{q}%",
     )
+    for r in rows:
+        r["tutorAvailabilities"] = _decode_json(r.get("tutorAvailabilities"))
+        r["tutorAvailabilityBlocks"] = _decode_json(r.get("tutorAvailabilityBlocks"))
+    return rows
 
 
 async def get_tutors_by_subject(subject: str, level: str | None = None) -> list[dict[str, Any]]:
     sql = """
-        SELECT u.id, u.name, u.avatar, u.role, u.county, u.bio, u.points, tp.*
+        SELECT u.id, u.name, u.avatar, u.role, u.county, u.bio, u.points, tp.*,
+            COALESCE(
+                jsonb_agg(DISTINCT jsonb_build_object(
+                    'id', a.id, 'tutorId', a.tutor_id,
+                    'dayOfWeek', a.day_of_week,
+                    'startTime', a.start_time, 'endTime', a.end_time,
+                    'isRecurring', a.is_recurring,
+                    'specificDate', a.specific_date, 'isBlocked', a.is_blocked
+                )) FILTER (WHERE a.id IS NOT NULL),
+                '[]'::jsonb
+            ) AS "tutorAvailabilities",
+            COALESCE(
+                jsonb_agg(DISTINCT jsonb_build_object(
+                    'id', b.id, 'startAt', b.start_at, 'endAt', b.end_at
+                )) FILTER (WHERE b.id IS NOT NULL),
+                '[]'::jsonb
+            ) AS "tutorAvailabilityBlocks"
         FROM "User" u
         INNER JOIN "TutorProfile" tp ON tp.user_id = u.id
+        LEFT JOIN tutor_availability a ON a.tutor_id = u.id
+        LEFT JOIN tutor_availability_blocks b
+            ON b.tutor_id = u.id
+           AND b.end_at > CURRENT_TIMESTAMP
+           AND b.start_at < CURRENT_TIMESTAMP + INTERVAL '30 days'
         WHERE u.role = 'TUTOR'
           AND $1 = ANY(tp.subjects)
     """
@@ -86,8 +180,12 @@ async def get_tutors_by_subject(subject: str, level: str | None = None) -> list[
     if level:
         sql += " AND $2 = ANY(tp.levels_taught)"
         params.append(level)
-    sql += " ORDER BY tp.rating DESC, u.created_at DESC LIMIT 50"
-    return await query(sql, *params)
+    sql += " GROUP BY u.id, tp.* ORDER BY tp.rating DESC, u.created_at DESC LIMIT 50"
+    rows = await query(sql, *params)
+    for r in rows:
+        r["tutorAvailabilities"] = _decode_json(r.get("tutorAvailabilities"))
+        r["tutorAvailabilityBlocks"] = _decode_json(r.get("tutorAvailabilityBlocks"))
+    return rows
 
 
 async def get_incoming_requests(tutor_id: str) -> list[dict[str, Any]]:
@@ -222,6 +320,28 @@ async def create_booking(
     end_h = (end_total // 60) % 24
     end_m = end_total % 60
     end_time = f"{end_h:02d}:{end_m:02d}"
+
+    # The requested slot must not be inside an availability block
+    # (Google Calendar import or manual). Booking times are EAT; blocks are
+    # absolute timestamps, so the slot bounds are converted to UTC.
+    slot_start = f"{date_str} {start_time}:00"
+    slot_end = f"{date_str} {end_time}:00"
+    free_check = await query_one(
+        """
+        SELECT NOT EXISTS (
+            SELECT 1
+            FROM tutor_availability_blocks b
+            WHERE b.tutor_id = $1
+              AND b.start_at < (($2)::timestamp AT TIME ZONE 'Africa/Nairobi')
+              AND b.end_at > (($3)::timestamp AT TIME ZONE 'Africa/Nairobi')
+        ) AS is_free
+        """,
+        tutor_id,
+        slot_end,
+        slot_start,
+    )
+    if free_check and not free_check.get("is_free"):
+        raise SlotUnavailableError(f"Slot {date_str} {start_time}-{end_time} is blocked")
 
     booking_id = _new_id()
     row = await query_one(

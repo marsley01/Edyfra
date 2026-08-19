@@ -13,10 +13,11 @@ import {
   User, BookOpen, Loader2, Save, Bell, Clock, Shield, Palette,
   Moon, Sun, Monitor, Bot, Lock, Mail, Download, Trash2, AlertTriangle,
   Wallet, Phone, Calendar, Check, Settings as SettingsIcon, Globe,
-  ChevronRight, Sparkles, Star, Video, X
+  ChevronRight, Sparkles, Star, Video, X, CalendarClock, RefreshCw
 } from "lucide-react";
 import { getSubjectsByLevel } from "@/lib/subjects";
 import { getUserData, updateProfile, updateTutorProfile, changePassword, changeEmail, downloadUserData, deleteUserAccount, updateAvatar, updateNotificationSettings } from "@/app/actions/user";
+import { getTutorCalendarSettings, updateTutorCalendarSettings } from "@/app/actions/calendar-sync";
 import { getNotificationSettings } from "@/app/actions/notifications";
 import { PushNotificationManager } from "@/components/PushNotificationManager";
 import { TUTOR_CONFIG } from "@/lib/config";
@@ -47,6 +48,7 @@ const ACCENT_COLORS = [
 const SIDEBAR_ITEMS = [
   { id: "profile", label: "Profile", icon: User },
   { id: "availability", label: "Availability", icon: Calendar },
+  { id: "calendar", label: "Calendar Sync", icon: CalendarClock },
   { id: "sessions", label: "Sessions", icon: Clock },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "mash", label: "Mash AI", icon: Bot },
@@ -83,6 +85,10 @@ export default function TutorSettingsPage() {
     newRequest: true, studentJoined: true, studentLeft: true,
     newMessage: true, newRating: true, announcements: true, tutorMessages: true,
   });
+  const [icalUrl, setIcalUrl] = useState("");
+  const [calendarAutoSync, setCalendarAutoSync] = useState(false);
+  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
+  const [syncingCalendar, setSyncingCalendar] = useState(false);
 
   useEffect(() => { loadProfile(); }, []);
 
@@ -118,6 +124,14 @@ export default function TutorSettingsPage() {
         const notifSettings = await getNotificationSettings();
         if (Object.keys(notifSettings).length > 0) {
           setNotifPrefs(prev => ({ ...prev, ...notifSettings }));
+        }
+      } catch {}
+      try {
+        const calendarSettings = await getTutorCalendarSettings();
+        if (calendarSettings) {
+          setIcalUrl(calendarSettings.icalUrl || "");
+          setCalendarAutoSync(calendarSettings.autoSync);
+          setLastSyncedAt(calendarSettings.lastSyncedAt);
         }
       } catch {}
     }
@@ -172,6 +186,56 @@ export default function TutorSettingsPage() {
     setNotifPrefs(updated);
     try { await updateNotificationSettings(updated); }
     catch { showError({ title: "Couldn't save notification preferences", cause: "We couldn't reach our servers.", fix: "Try again, or refresh the page." }); }
+  };
+
+  const handleSyncCalendar = async () => {
+    const url = icalUrl.trim();
+    if (!url) {
+      showError({
+        title: "Add your calendar link first",
+        cause: "We need the iCal URL before we can sync anything.",
+        fix: "Copy the Secret address (iCal format) from Google Calendar and paste it above.",
+      });
+      return;
+    }
+    setSyncingCalendar(true);
+    try {
+      const res = await fetch("/api/tutor/sync-calendar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ical_url: url, tutor_id: userData?.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || data.error || "Sync failed");
+
+      setLastSyncedAt(new Date().toISOString());
+      showSuccess("Calendar synced", {
+        description: `${data.synced} new block${data.synced === 1 ? "" : "s"} imported, ${data.already_existed} already up to date.`,
+      });
+    } catch (e: any) {
+      showError({
+        title: "Couldn't sync your calendar",
+        cause: e?.message || "The link might be wrong, or Google is unreachable.",
+        fix: "Double-check the iCal URL and try again.",
+      });
+    } finally {
+      setSyncingCalendar(false);
+    }
+  };
+
+  const handleToggleCalendarAutoSync = async (value: boolean) => {
+    setCalendarAutoSync(value);
+    try {
+      await updateTutorCalendarSettings({ icalUrl: icalUrl.trim() || null, autoSync: value });
+      showSuccess(value ? "Auto-sync enabled" : "Auto-sync disabled", {
+        description: value
+          ? "We'll re-import your calendar every 6 hours."
+          : "Your calendar will only update when you sync manually.",
+      });
+    } catch {
+      setCalendarAutoSync(!value);
+      showError({ title: "Couldn't save that", cause: "We couldn't reach our servers.", fix: "Try again, or refresh the page." });
+    }
   };
 
   const handleChangePassword = async () => {
@@ -553,6 +617,83 @@ export default function TutorSettingsPage() {
                     </div>
                     <Switch checked={formData.autoAcceptRequests} onCheckedChange={(v) => setFormData({ ...formData, autoAcceptRequests: v })} />
                   </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* CALENDAR SYNC */}
+            {activeTab === "calendar" && (
+              <Card className="border-border/30 bg-card shadow-xl shadow-primary/5 overflow-hidden rounded-[2rem] [font-family:var(--font-dm-sans),var(--font-sans)]">
+                <CardHeader className="p-6 sm:p-8 border-b border-border/50 bg-primary/5">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                      <CalendarClock className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl font-bold">Sync Calendar</CardTitle>
+                      <CardDescription>Import your busy times from Google Calendar so nobody books a slot you already have</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6 sm:p-8 space-y-6">
+                  <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800">
+                    <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
+                    <p className="text-sm font-medium">
+                      This URL gives access to your full calendar. Do not share it.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-muted-foreground">Google Calendar iCal URL</Label>
+                    <Input
+                      value={icalUrl}
+                      onChange={(e) => setIcalUrl(e.target.value)}
+                      placeholder="https://calendar.google.com/calendar/ical/..."
+                      className="h-11 rounded-xl border-border/50 bg-background"
+                    />
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      In Google Calendar → Settings → [Your Calendar] → scroll to
+                      &quot;Integrate calendar&quot; → copy the Secret address in iCal format.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <Button
+                      onClick={handleSyncCalendar}
+                      disabled={syncingCalendar || !userData?.id}
+                      className="h-11 px-6 rounded-xl bg-primary text-white shadow-lg shadow-primary/20 transition-all active:scale-95"
+                    >
+                      {syncingCalendar ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                      )}
+                      Sync Now
+                    </Button>
+                    {lastSyncedAt && (
+                      <p className="text-sm text-muted-foreground">
+                        Last synced: {new Date(lastSyncedAt).toLocaleString("en-KE", {
+                          day: "numeric", month: "short", year: "numeric",
+                          hour: "numeric", minute: "2-digit",
+                        })}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/20 border border-border/30">
+                    <div className="space-y-0.5">
+                      <Label className="text-sm font-medium">Auto-sync every 6 hours</Label>
+                      <p className="text-sm text-muted-foreground">
+                        We&apos;ll re-import your calendar on a schedule so blocks stay fresh
+                      </p>
+                    </div>
+                    <Switch checked={calendarAutoSync} onCheckedChange={handleToggleCalendarAutoSync} />
+                  </div>
+
+                  <p className="text-xs text-muted-foreground">
+                    Imported events become <span className="font-semibold text-foreground">blocked slots</span> for the next 30 days.
+                    Students won&apos;t be able to book them.
+                  </p>
                 </CardContent>
               </Card>
             )}

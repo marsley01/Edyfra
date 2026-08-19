@@ -35,3 +35,18 @@ class WebhookResourceViewedRequest(BaseModel):
     resource_title: str
     subject_id: str
     student_ref: str
+
+class BookMatchRequest(BaseModel):
+    book_title: str
+    subject: str
+    grade_level: str
+    isbn: Optional[str] = None
+
+class WebhookSubscribeRequest(BaseModel):
+    endpoint_url: str
+    events: list[str]
+
+class WebhookTestRequest(BaseModel):
+    subscription_id: str
+
+

@@ -13,6 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { SheetsImportModal } from "@/components/admin/SheetsImportModal";
+import { FileSpreadsheet } from "lucide-react";
 
 /* ─────────────────────────── Design Tokens ─────────────────────────── */
 const STAT_CARDS = [
@@ -80,6 +82,7 @@ export function AdminDashboardClient({
   const router = useRouter();
   const [time, setTime] = useState(new Date());
   const [greeting, setGreeting] = useState("");
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -139,10 +142,19 @@ export function AdminDashboardClient({
           transition={{ delay: 0.15 }}
           className="flex items-center gap-3"
         >
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 hidden sm:flex">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">All systems online</span>
           </div>
+          <Button
+            onClick={() => setIsImportModalOpen(true)}
+            variant="outline"
+            size="sm"
+            className="rounded-full gap-2 text-xs"
+          >
+            <FileSpreadsheet className="h-3.5 w-3.5" />
+            Import Data
+          </Button>
           <Button
             onClick={() => window.location.reload()}
             variant="outline"
@@ -681,6 +693,7 @@ export function AdminDashboardClient({
           </div>
         </Card>
       </motion.div>
+      <SheetsImportModal open={isImportModalOpen} onOpenChange={setIsImportModalOpen} />
     </div>
   );
 }

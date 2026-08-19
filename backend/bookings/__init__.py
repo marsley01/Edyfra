@@ -17,4 +17,5 @@ from .queries import (
     create_booking_reminders,
     get_booking_by_id,
     get_booking_for_status_update,
+    SlotUnavailableError,
 )

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Calendar, Clock, Loader2 } from "lucide-react";
+import { slotOverlapsBlock } from "@/lib/booking-slots";
 import { showError, showSuccess } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -51,6 +52,7 @@ function toLocalDateKey(d: Date): string {
 
 function buildTimeSlots(
   availabilities: TutorWithProfile["tutorAvailabilities"],
+  blocks?: TutorWithProfile["tutorAvailabilityBlocks"],
 ): TimeSlot[] {
   if (!availabilities?.length) return [];
 
@@ -77,6 +79,8 @@ function buildTimeSlots(
       if (slotStart <= now) continue;
 
       const dateKey = toLocalDateKey(day);
+      if (slotOverlapsBlock(dateKey, slot.startTime, SLOT_DURATION_MIN, blocks)) continue;
+
       const label = `${day.toLocaleDateString("en-US", {
         weekday: "short",
         month: "short",
@@ -105,8 +109,8 @@ export function BookingDialog({ tutor }: BookingDialogProps) {
   const [selectedSlot, setSelectedSlot] = useState("");
 
   const timeSlots = useMemo(
-    () => buildTimeSlots(tutor.tutorAvailabilities),
-    [tutor.tutorAvailabilities],
+    () => buildTimeSlots(tutor.tutorAvailabilities, tutor.tutorAvailabilityBlocks),
+    [tutor.tutorAvailabilities, tutor.tutorAvailabilityBlocks],
   );
 
   const subjects = tutor.tutorProfile?.subjects ?? [];

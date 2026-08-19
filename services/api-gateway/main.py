@@ -1,3 +1,4 @@
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -6,6 +7,9 @@ from middleware.auth import APIKeyAuthMiddleware
 from middleware.rate_limit import RateLimitMiddleware
 from middleware.logging import RequestLoggingMiddleware
 from routes import subjects, tutors, study_rooms, sessions, resources, ai, institutions, analytics, webhooks
+from utils.supabase import supabase, execute_async
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Edyfra External API Gateway",
@@ -49,3 +53,40 @@ async def health():
     Liveness probe used by Railway's health check.
     """
     return {"status": "ok", "service": "edyfra-api-gateway", "version": "1.0.0"}
+
+
+@app.get("/api/v1/health", tags=["Health"])
+async def deep_health():
+    """
+    Deep health check for KLS and other consumers.
+    Verifies Supabase connectivity and confirms the api_keys table exists
+    before returning. Safe to call without an API key.
+    """
+    supabase_connected = False
+    api_keys_table_exists = False
+
+    try:
+        # A minimal SELECT that succeeds even if the table is empty.
+        # Using limit(1) keeps the payload tiny.
+        res = await execute_async(
+            supabase.table("api_keys").select("id").limit(1)
+        )
+        supabase_connected = True
+        # If we reach here without an exception, the table exists.
+        api_keys_table_exists = True
+    except Exception as e:
+        logger.exception("deep_health.supabase_check failed")
+        # Try to distinguish a missing-table error from a connectivity error.
+        err_str = str(e).lower()
+        if "does not exist" in err_str or "relation" in err_str or "42p01" in err_str:
+            # Connected but table is absent — root cause #1.
+            supabase_connected = True
+            api_keys_table_exists = False
+        # else: supabase_connected stays False (network / auth error)
+
+    status = "ok" if (supabase_connected and api_keys_table_exists) else "degraded"
+    return {
+        "status": status,
+        "supabase_connected": supabase_connected,
+        "api_keys_table_exists": api_keys_table_exists,
+    }

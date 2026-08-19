@@ -124,6 +124,11 @@ async def book_session(payload: SessionBookRequest, request: Request):
         # 4. Send confirmation email (best effort, non-blocking failure tolerance)
         send_booking_confirmation(booking_record)
 
+        # 5. Dispatch outbound webhook for session.booked
+        import asyncio
+        from utils.webhook_dispatcher import dispatch_event
+        asyncio.create_task(dispatch_event("session.booked", booking_record, request.state.api_key["id"]))
+
         rate_remaining = getattr(request.state, "rate_limit_remaining", 0)
         return StandardResponse(
             data={

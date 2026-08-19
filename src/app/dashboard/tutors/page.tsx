@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
+import { slotOverlapsBlock } from "@/lib/booking-slots";
 
 export default function TutorsPage() {
   const [tutors, setTutors] = useState<any[]>([]);
@@ -176,6 +177,8 @@ function BookingDialog({ tutor }: { tutor: any }) {
       const slotsForDay = tutor.tutorAvailabilities.filter((a: any) => a.dayOfWeek === dayOfWeek && !a.isBlocked);
       slotsForDay.forEach((slot: any) => {
         const dateStr = d.toISOString();
+        const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        if (slotOverlapsBlock(dateKey, slot.startTime, 60, tutor.tutorAvailabilityBlocks)) return;
         const value = `${dateStr}|${slot.startTime}`;
         const label = `${d.toLocaleDateString('en-US', {weekday: 'short', month: 'short', day: 'numeric'})}, ${slot.startTime} - ${slot.endTime}`;
         timeSlots.push({ label, value, date: dateStr, startTime: slot.startTime });

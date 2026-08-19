@@ -54,6 +54,7 @@ from bookings import (
     get_booking_for_status_update,
     update_booking_meeting_url,
     create_booking_reminders,
+    SlotUnavailableError,
 )
 
 load_dotenv()
@@ -348,16 +349,19 @@ async def api_create_booking(payload: CreateBookingPayload, request: Request):
     if not ctx.user_id:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-    result = await create_booking(
-        student_id=ctx.user_id,
-        tutor_id=payload.tutorId,
-        subject=payload.subject,
-        topic=payload.topic,
-        date_str=payload.date,
-        start_time=payload.startTime,
-        duration_minutes=payload.durationMinutes,
-        education_level=payload.educationLevel,
-    )
+    try:
+        result = await create_booking(
+            student_id=ctx.user_id,
+            tutor_id=payload.tutorId,
+            subject=payload.subject,
+            topic=payload.topic,
+            date_str=payload.date,
+            start_time=payload.startTime,
+            duration_minutes=payload.durationMinutes,
+            education_level=payload.educationLevel,
+        )
+    except SlotUnavailableError as e:
+        raise HTTPException(status_code=409, detail=str(e))
     if not result:
         raise HTTPException(status_code=500, detail="Failed to create booking")
     return {"success": True, "bookingId": result["id"], "booking": result}

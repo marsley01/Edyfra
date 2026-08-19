@@ -1,21 +1,27 @@
 import time
+import logging
 from datetime import datetime, timezone
 from fastapi import Request, Response
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.background import BackgroundTasks
 
+from config import settings
 from utils.crypto import hash_key
 from utils.supabase import supabase, execute_async
 from models.responses import ErrorResponse, ErrorDetail
 
+logger = logging.getLogger(__name__)
+
 # Routes that do not require API Key authentication
 BYPASS_ROUTES = {
     "/health",
+    "/api/v1/health",
     "/docs",
     "/redoc",
     "/openapi.json"
 }
+
 
 def get_required_scopes(path: str, method: str) -> list[str]:
     """Maps request path to required scopes."""
@@ -63,8 +69,8 @@ async def increment_api_call_count(key_id: str):
                 })
                 .eq("id", key_id)
             )
-    except Exception as e:
-        print(f"[auth-middleware] Failed to update key usage: {e}")
+    except Exception:
+        logger.warning("auth.increment_api_call_count failed", extra={"key_id": key_id}, exc_info=True)
 
 class APIKeyAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next) -> Response:
@@ -107,9 +113,17 @@ class APIKeyAuthMiddleware(BaseHTTPMiddleware):
 
             api_key = res.data[0]
         except Exception as e:
-            print(f"[auth-middleware] Database lookup failed: {e}")
+            # Log full stack trace so Railway surfaces the real Supabase error.
+            logger.exception(
+                "auth.db_lookup failed",
+                extra={"key_hash_prefix": key_hash[:8] + "..."},
+            )
+            error_message = "Failed to authenticate request."
+            if settings.IS_DEV:
+                # Expose the raw exception in dev mode to speed up diagnosis.
+                error_message = f"Failed to authenticate request. Detail: {e}"
             error_resp = ErrorResponse(
-                error=ErrorDetail(code="INTERNAL_SERVER_ERROR", message="Failed to authenticate request.")
+                error=ErrorDetail(code="INTERNAL_SERVER_ERROR", message=error_message)
             )
             return JSONResponse(status_code=500, content=error_resp.model_dump())
 
