@@ -7,7 +7,7 @@
  */
 
 import { type NextRequest, NextResponse } from "next/server";
-import { resolveThumbnail } from "@/lib/thumbnail-resolver";
+import { resolveThumbnail, validateExternalArticleUrl } from "@/lib/thumbnail-resolver";
 
 export const runtime = "nodejs";
 
@@ -16,7 +16,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const articleUrl = searchParams.get("url");
   const articleTitle = searchParams.get("title") ?? "";
 
-  if (!articleUrl || !articleUrl.startsWith("http")) {
+  const safeArticleUrl = articleUrl ? validateExternalArticleUrl(articleUrl) : null;
+  if (!safeArticleUrl) {
     return NextResponse.json(
       { error: "Missing or invalid `url` query parameter" },
       { status: 400 }
@@ -24,7 +25,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const result = await resolveThumbnail(articleUrl, articleTitle);
+    const result = await resolveThumbnail(safeArticleUrl, articleTitle);
     return NextResponse.json(result, {
       status: 200,
       headers: {

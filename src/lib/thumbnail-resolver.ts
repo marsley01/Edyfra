@@ -48,6 +48,53 @@ const STOP_WORDS = new Set([
   "at", "by", "from", "or", "as", "on", "up", "out", "about",
 ]);
 
+const BLOCKED_HOSTNAMES = new Set([
+  "localhost",
+  "metadata.google.internal",
+]);
+
+function isPrivateOrLocalIp(hostname: string): boolean {
+  const h = hostname.trim().toLowerCase();
+
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(h)) {
+    const parts = h.split(".").map(Number);
+    if (parts.some((n) => Number.isNaN(n) || n < 0 || n > 255)) return true;
+    const [a, b] = parts;
+    if (a === 10) return true;
+    if (a === 127) return true;
+    if (a === 169 && b === 254) return true;
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 192 && b === 168) return true;
+    if (a === 0) return true;
+    return false;
+  }
+
+  if (h === "::1") return true;
+  if (h.startsWith("fc") || h.startsWith("fd")) return true;
+  if (h.startsWith("fe80:")) return true;
+
+  return false;
+}
+
+export function validateExternalArticleUrl(input: string): string | null {
+  let parsed: URL;
+  try {
+    parsed = new URL(input);
+  } catch {
+    return null;
+  }
+
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
+  if (parsed.username || parsed.password) return null;
+
+  const hostname = parsed.hostname.toLowerCase();
+  if (BLOCKED_HOSTNAMES.has(hostname)) return null;
+  if (hostname.endsWith(".local")) return null;
+  if (isPrivateOrLocalIp(hostname)) return null;
+
+  return parsed.toString();
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -162,13 +209,18 @@ export async function resolveThumbnail(
   articleUrl: string,
   articleTitle: string
 ): Promise<ThumbnailResult> {
+  const safeArticleUrl = validateExternalArticleUrl(articleUrl);
+  if (!safeArticleUrl) {
+    return { thumbnail_url: null, source: null, photographer: null, photo_page: null };
+  }
+
   // ── 1. Check Supabase cache ──────────────────────────────────────────────
   try {
     const supabase = await createSupabaseServer();
     const { data } = await supabase
       .from("news_thumbnails")
       .select("thumbnail_url, thumbnail_source, pexels_photographer, pexels_photo_page, fetched_at")
-      .eq("article_url", articleUrl)
+      .eq("article_url", safeArticleUrl)
       .maybeSingle();
 
     if (data) {
@@ -188,7 +240,7 @@ export async function resolveThumbnail(
   }
 
   // ── 2. OG scraping ──────────────────────────────────────────────────────
-  const ogUrl = await scrapeOgImage(articleUrl);
+  const ogUrl = await scrapeOgImage(safeArticleUrl);
   if (ogUrl) {
     const result: ThumbnailResult = {
       thumbnail_url: ogUrl,
@@ -196,7 +248,7 @@ export async function resolveThumbnail(
       photographer: null,
       photo_page: null,
     };
-    await persistToCache(articleUrl, result);
+    await persistToCache(safeArticleUrl, result);
     return result;
   }
 
