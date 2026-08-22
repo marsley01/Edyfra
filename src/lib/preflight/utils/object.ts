@@ -123,9 +123,13 @@ export function set(
 ): void {
   const keys = path.split(".");
   let current = obj;
+  const blockedKeys = new Set(["__proto__", "prototype", "constructor"]);
 
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i] as string;
+    if (blockedKeys.has(key)) {
+      return;
+    }
     const isLast = i === keys.length - 1;
 
     if (isLast) {
