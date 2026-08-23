@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
@@ -73,7 +73,7 @@ export default function LeaderboardPage() {
       {/* Hero — theme aware */}
       <div className="relative overflow-hidden rounded-[2.5rem] border border-border bg-card p-8 sm:p-10 shadow-xl">
         <div className="pointer-events-none absolute -top-32 -right-32 h-80 w-80 rounded-full bg-yellow-500/10 dark:bg-yellow-500/20 blur-[120px]" />
-        <div className="pointer-events-none absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-violet-500/10 dark:bg-violet-500/20 blur-[120px]" />
+        <div className="pointer-events-none absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-brand-orange/10 dark:bg-brand-orange/20 blur-[120px]" />
         <div className="relative flex flex-col lg:flex-row items-start lg:items-center gap-6">
           <div className="flex-1 space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-[10px] font-black uppercase tracking-[0.22em] text-yellow-700 dark:text-yellow-300">
@@ -129,11 +129,11 @@ export default function LeaderboardPage() {
 
       {/* Current user rank card */}
       {userData && myRank > 0 && (
-        <div className="relative overflow-hidden rounded-3xl border-2 border-primary/30 bg-gradient-to-br from-primary/5 via-card to-violet-500/5 dark:from-primary/10 dark:via-card dark:to-violet-500/10 p-5 sm:p-6 shadow-lg">
+        <div className="relative overflow-hidden rounded-3xl border-2 border-primary/30 bg-gradient-to-br from-primary/5 via-card to-coral/5 dark:from-primary/10 dark:via-card dark:to-coral/10 p-5 sm:p-6 shadow-lg">
           <div className="pointer-events-none absolute -top-12 -right-12 h-48 w-48 rounded-full bg-cyan-400/15 dark:bg-cyan-400/20 blur-3xl" />
           <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
             <div className="flex items-center gap-4">
-              <div className="relative h-14 w-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-violet-500 flex items-center justify-center text-white text-lg font-black shadow-lg ring-2 ring-card">
+              <div className="relative h-14 w-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-coral flex items-center justify-center text-white text-lg font-black shadow-lg ring-2 ring-card">
                 #{myRank}
                 <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-card animate-pulse" />
               </div>
@@ -167,7 +167,7 @@ export default function LeaderboardPage() {
                     width: `${(myPoints / Math.max(topPoints, 1)) * 100}%`,
                   }}
                   transition={{ duration: 1.4, ease: "easeOut" }}
-                  className="h-full bg-gradient-to-r from-cyan-500 via-violet-500 to-fuchsia-500"
+                  className="h-full bg-gradient-to-r from-cyan-500 via-brand-orange to-coral"
                 />
               </div>
             </div>
@@ -196,7 +196,7 @@ export default function LeaderboardPage() {
                   key={scholar.id}
                   className={`relative flex items-center justify-between p-4 sm:p-5 transition-all ${
                     isMe
-                      ? "bg-gradient-to-r from-cyan-500/5 via-violet-500/5 to-transparent dark:from-cyan-500/10 dark:via-violet-500/5 border-l-4 border-primary"
+                      ? "bg-gradient-to-r from-cyan-500/5 via-brand-orange/5 to-transparent dark:from-cyan-500/10 dark:via-brand-orange/5 border-l-4 border-primary"
                       : "hover:bg-secondary/40"
                   }`}
                 >
@@ -204,7 +204,7 @@ export default function LeaderboardPage() {
                     <span className="w-8 text-center font-black text-muted-foreground tabular-nums">
                       #{rank}
                     </span>
-                    <div className="relative h-10 w-10 sm:h-12 sm:w-12 rounded-2xl overflow-hidden ring-1 ring-border bg-gradient-to-br from-cyan-500/30 to-violet-500/30 shrink-0">
+                    <div className="relative h-10 w-10 sm:h-12 sm:w-12 rounded-2xl overflow-hidden ring-1 ring-border bg-gradient-to-br from-cyan-500/30 to-coral/30 shrink-0">
                       {scholar.avatar ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -238,7 +238,7 @@ export default function LeaderboardPage() {
                   <div className="flex items-center gap-3 sm:gap-4 shrink-0">
                     <div className="hidden sm:block w-28 h-1.5 rounded-full bg-secondary overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-cyan-500/70 to-violet-500/70"
+                        className="h-full bg-gradient-to-r from-cyan-500/70 to-coral/70"
                         style={{
                           width: `${(scholar.points / Math.max(topPoints, 1)) * 100}%`,
                         }}
@@ -465,3 +465,4 @@ function PodiumCard({
     </motion.div>
   );
 }
+

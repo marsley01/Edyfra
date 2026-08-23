@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { FileSpreadsheet, UploadCloud, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { validateUpload } from "@/lib/upload-filter";
 
 interface CsvUploadProps {
   onParsed: (text: string, fileName: string) => void;
@@ -19,6 +20,13 @@ export function CsvUpload({ onParsed, className }: CsvUploadProps) {
       setError(null);
       const file = accepted[0];
       if (!file) return;
+
+      const validation = validateUpload(file);
+      if (!validation.valid) {
+        setError(validation.reason || "Invalid file");
+        return;
+      }
+
       if (!file.name.toLowerCase().endsWith(".csv") && !file.type.includes("csv")) {
         setError("Please upload a .csv file");
         return;
@@ -51,12 +59,12 @@ export function CsvUpload({ onParsed, className }: CsvUploadProps) {
         className={cn(
           "flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-6 py-10 transition-colors",
           isDragActive
-            ? "border-indigo-400 bg-indigo-50/40"
-            : "border-gray-200 bg-gray-50/40 hover:border-indigo-300 hover:bg-indigo-50/20",
+            ? "border-primary bg-primary/40"
+            : "border-gray-200 bg-gray-50/40 hover:border-primary hover:bg-primary/20",
         )}
       >
         <input {...getInputProps()} />
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm text-indigo-500">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm text-primary">
           {fileName ? <FileSpreadsheet className="h-6 w-6" /> : <UploadCloud className="h-6 w-6" />}
         </div>
         {fileName ? (

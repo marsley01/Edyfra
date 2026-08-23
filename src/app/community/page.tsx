@@ -1,6 +1,7 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
@@ -33,6 +34,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { BlobDecor } from "@/components/ui/blob-decor";
+import { MiniBlobs } from "@/components/ui/mini-blobs";
 import { LottieAnimation } from "@/components/lottie-animation";
 import { getPublicPosts } from "@/app/actions/forum";
 
@@ -66,12 +69,12 @@ type DynamicCategory = {
 };
 
 const CATEGORY_CONFIG: Record<string, { emoji: string; gradient: string; icon: any }> = {
-  Mathematics: { emoji: "🧮", gradient: "from-blue-500 via-indigo-500 to-violet-600", icon: Calculator },
-  Sciences: { emoji: "🔬", gradient: "from-emerald-500 via-teal-500 to-cyan-600", icon: FlaskConical },
-  Tech: { emoji: "💻", gradient: "from-violet-500 via-fuchsia-500 to-pink-600", icon: Code2 },
-  "KCSE": { emoji: "📚", gradient: "from-orange-500 via-rose-500 to-pink-600", icon: GraduationCap },
-  University: { emoji: "🎓", gradient: "from-pink-500 via-rose-500 to-red-600", icon: Building2 },
-  General: { emoji: "☕", gradient: "from-amber-500 via-orange-500 to-red-500", icon: Coffee },
+  Mathematics: { emoji: "🧮", gradient: "from-brand-orange via-orange-500 to-red-500", icon: Calculator },
+  Sciences: { emoji: "🔬", gradient: "from-coral via-rose-400 to-brand-orange", icon: FlaskConical },
+  Tech: { emoji: "💻", gradient: "from-amber-500 via-brand-orange to-coral", icon: Code2 },
+  "KCSE": { emoji: "📚", gradient: "from-orange-500 via-coral to-red-500", icon: GraduationCap },
+  University: { emoji: "🎓", gradient: "from-coral via-red-500 to-rose-600", icon: Building2 },
+  General: { emoji: "☕", gradient: "from-amber-400 via-orange-400 to-brand-orange", icon: Coffee },
 };
 
 const DEFAULT_CONFIG = { emoji: "💡", gradient: "from-slate-500 to-zinc-600", icon: BookOpen };
@@ -104,14 +107,14 @@ function buildCategories(posts: PublicPost[]): DynamicCategory[] {
 
 function buildTrendingTags(posts: PublicPost[]): { tag: string; count: number; color: string }[] {
   const COLORS = [
-    "from-rose-500 to-pink-500",
-    "from-blue-500 to-violet-500",
-    "from-emerald-500 to-cyan-500",
-    "from-violet-500 to-fuchsia-500",
-    "from-amber-500 to-orange-500",
-    "from-cyan-500 to-blue-500",
-    "from-pink-500 to-rose-500",
-    "from-green-500 to-teal-500",
+    "from-brand-orange to-coral",
+    "from-orange-500 to-red-500",
+    "from-amber-500 to-brand-orange",
+    "from-coral to-rose-500",
+    "from-red-500 to-orange-600",
+    "from-amber-400 to-orange-500",
+    "from-rose-400 to-coral",
+    "from-orange-400 to-red-400",
   ];
   const freq = new Map<string, number>();
   for (const p of posts) {
@@ -196,6 +199,13 @@ export default function ForumPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("all");
+  const router = useRouter();
+
+  const openProfile = (e: React.MouseEvent, userId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    router.push(`/profile/${userId}`);
+  };
 
   useEffect(() => {
     async function loadRecentDiscussions() {
@@ -246,25 +256,21 @@ export default function ForumPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Vibrant hero */}
-      <div className="relative overflow-hidden border-b border-border pt-32 pb-16 px-6">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute top-0 -left-20 h-80 w-80 rounded-full bg-rose-500/10 dark:bg-rose-500/15 blur-3xl" />
-          <div className="absolute top-32 -right-20 h-96 w-96 rounded-full bg-violet-500/10 dark:bg-violet-500/15 blur-3xl" />
-          <div className="absolute -bottom-20 left-1/3 h-72 w-72 rounded-full bg-cyan-500/10 dark:bg-cyan-500/15 blur-3xl" />
-        </div>
+      {/* Vibrant hero — solid organic blobs + geometric accents */}
+      <div className="relative overflow-hidden border-b border-border pt-32 pb-16 px-6 bg-gradient-to-br from-brand-orange/[0.06] via-background to-coral/[0.06]">
+        <BlobDecor variant="mixed" />
 
         <div className="container-max relative">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-10">
             <div className="space-y-4 max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-gradient-to-r from-rose-500/10 via-violet-500/10 to-cyan-500/10 dark:from-rose-500/15 dark:via-violet-500/15 dark:to-cyan-500/15 border border-border text-[10px] font-black uppercase tracking-[0.22em] text-foreground backdrop-blur">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-gradient-to-r from-brand-orange/10 via-coral/10 to-brand-orange/10 dark:from-brand-orange/15 dark:via-coral/15 dark:to-brand-orange/15 border border-border text-[10px] font-black uppercase tracking-[0.22em] text-foreground backdrop-blur">
                 <Sparkles className="h-3.5 w-3.5 text-yellow-500 dark:text-yellow-300" />
                 Edyfra Community
                 <span className="ml-1 h-1.5 w-1.5 rounded-md bg-emerald-500 animate-pulse" />
                 <span className="text-emerald-600 dark:text-emerald-300">live</span>
               </div>
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tightest leading-[0.95]">
-                <span className="bg-gradient-to-br from-rose-500 via-fuchsia-500 to-cyan-500 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-br from-brand-orange via-orange-500 to-brand-orange bg-clip-text text-transparent">
                   Your people
                 </span>
                 <br />
@@ -278,7 +284,7 @@ export default function ForumPage() {
 
             <div className="flex flex-col sm:flex-row gap-3 shrink-0">
               <Link href="/dashboard/feed">
-                <Button className="h-14 px-8 rounded-lg bg-gradient-to-br from-rose-500 via-fuchsia-500 to-violet-500 text-white hover:brightness-110 font-black text-xs tracking-widest uppercase shadow-[0_0_32px_rgba(244,63,94,0.35)] dark:shadow-[0_0_32px_rgba(244,63,94,0.45)] transition-all active:scale-95">
+                <Button className="h-14 px-8 rounded-lg bg-gradient-to-br from-brand-orange via-orange-500 to-coral text-white hover:brightness-110 font-black text-xs tracking-widest uppercase shadow-[0_0_32px_rgba(244,63,94,0.35)] dark:shadow-[0_0_32px_rgba(244,63,94,0.45)] transition-all active:scale-95">
                   <Plus className="h-4 w-4 mr-1.5" /> Start a Post
                 </Button>
               </Link>
@@ -299,7 +305,7 @@ export default function ForumPage() {
               placeholder="Search discussions, subjects, or topics…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-14 pl-14 pr-32 rounded-xl bg-card/80 backdrop-blur-xl border-border shadow-md dark:shadow-lg text-base text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-fuchsia-400/40"
+              className="h-14 pl-14 pr-32 rounded-xl bg-card/80 backdrop-blur-xl border-border shadow-md dark:shadow-lg text-base text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/40"
             />
             <kbd className="absolute right-4 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-secondary border border-border text-[10px] font-black uppercase tracking-widest text-muted-foreground">
               ⌘K
@@ -478,11 +484,11 @@ export default function ForumPage() {
               </h2>
               <Link
                 href="/dashboard/feed"
-                className="group block relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-rose-500/5 via-violet-500/5 to-cyan-500/5 dark:from-rose-500/10 dark:via-violet-500/10 dark:to-cyan-500/10 p-6 hover:border-primary/40 transition-all hover:shadow-xl"
+                className="group block relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-brand-orange/5 via-coral/5 to-brand-orange/5 dark:from-brand-orange/10 dark:via-coral/10 dark:to-brand-orange/10 p-6 hover:border-primary/40 transition-all hover:shadow-xl"
               >
                 <div className="pointer-events-none absolute -top-20 -right-20 h-60 w-60 rounded-full bg-rose-500/10 dark:bg-rose-500/20 blur-3xl" />
                 <div className="relative flex items-start gap-4">
-                  <div className="h-12 w-12 shrink-0 rounded-lg bg-gradient-to-br from-rose-500 to-violet-500 flex items-center justify-center text-white font-black ring-2 ring-border">
+                  <div className="h-12 w-12 shrink-0 rounded-lg bg-gradient-to-br from-brand-orange to-coral flex items-center justify-center text-white font-black ring-2 ring-border">
                     {featured.user.name?.[0]?.toUpperCase() || "?"}
                   </div>
                   <div className="flex-1 min-w-0 space-y-2">
@@ -493,6 +499,12 @@ export default function ForumPage() {
                       <span className="text-xs font-black text-foreground truncate">
                         {featured.user.name}
                       </span>
+                      <button
+                        onClick={(e) => openProfile(e, featured.userId)}
+                        className="text-[10px] font-black uppercase tracking-widest text-cyan-600 hover:text-cyan-500 dark:text-cyan-400"
+                      >
+                        view profile
+                      </button>
                       <span className="text-[10px] text-muted-foreground">
                         · {formatDistanceToNow(new Date(featured.createdAt))} ago
                       </span>
@@ -521,7 +533,7 @@ export default function ForumPage() {
           <section className="space-y-5">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-black tracking-tight text-foreground flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-violet-500" />
+                <Sparkles className="h-5 w-5 text-brand-orange" />
                 {activeCategory !== "all"
                   ? `${categories.find((c) => c.id === activeCategory)?.name || "Category"} Discussions`
                   : "Fresh discussions"}
@@ -560,10 +572,10 @@ export default function ForumPage() {
                           href="/dashboard/feed"
                           className="group flex items-start gap-3.5 p-4 sm:p-5 hover:bg-secondary/50 transition-colors"
                         >
-                          <div className="relative h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-lg overflow-hidden ring-1 ring-border bg-gradient-to-br from-rose-500/40 to-violet-500/40">
+                          <div className="relative h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-lg overflow-hidden ring-1 ring-border bg-gradient-to-br from-brand-orange/40 to-coral/40">
                             <Avatar className="h-full w-full rounded-lg">
                               <AvatarImage src={post.user.avatar || undefined} />
-                              <AvatarFallback className="text-sm font-black text-white bg-gradient-to-br from-rose-500 to-violet-500">
+                              <AvatarFallback className="text-sm font-black text-white bg-gradient-to-br from-brand-orange to-coral">
                                 {post.user.name?.[0]}
                               </AvatarFallback>
                             </Avatar>
@@ -576,6 +588,12 @@ export default function ForumPage() {
                               <span className="text-xs font-black text-foreground truncate">
                                 {post.user.name}
                               </span>
+                              <button
+                                onClick={(e) => openProfile(e, post.userId)}
+                                className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors"
+                              >
+                                profile
+                              </button>
                               <span className="text-[10px] text-muted-foreground">
                                 · {formatDistanceToNow(new Date(post.createdAt))} ago
                               </span>
@@ -615,11 +633,13 @@ export default function ForumPage() {
         <div className="lg:col-span-4 space-y-5">
           {/* Active contributors */}
           <motion.div
-            className="relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-emerald-500/5 via-cyan-500/5 to-transparent dark:from-emerald-500/10 dark:via-cyan-500/5 p-5"
+            className="relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-coral/5 via-cyan-500/5 to-transparent dark:from-coral/10 dark:via-cyan-500/5 p-5"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
           >
+            <MiniBlobs palette={1} />
+            <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 bg-gradient-to-br from-cyan-400 to-blue-500 opacity-15 [border-radius:63%_37%_54%_46%/55%_48%_52%_45%] rotate-12" />
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-black uppercase tracking-widest text-foreground flex items-center gap-2">
                 <span className="relative flex h-2 w-2">
@@ -645,7 +665,11 @@ export default function ForumPage() {
                 ))
               ) : (
                 activeUsers.map((u, i) => (
-                  <div key={u.id} className="flex items-center gap-3">
+                  <Link
+                    key={u.id}
+                    href={`/profile/${u.id}`}
+                    className="flex items-center gap-3 rounded-xl p-1.5 -m-1.5 hover:bg-secondary/60 transition-colors"
+                  >
                     <div className="relative h-9 w-9 shrink-0 rounded-xl overflow-hidden bg-card ring-1 ring-border">
                       {u.avatar ? (
                         <img src={u.avatar} alt={u.name} className="h-full w-full object-cover" />
@@ -653,10 +677,10 @@ export default function ForumPage() {
                         <div
                           className={`h-full w-full bg-gradient-to-br ${
                             [
-                              "from-rose-500 to-pink-500",
-                              "from-cyan-500 to-blue-500",
-                              "from-violet-500 to-fuchsia-500",
-                              "from-emerald-500 to-teal-500",
+                              "from-brand-orange to-red-500",
+                              "from-amber-500 to-blue-500",
+                              "from-brand-orange to-coral",
+                              "from-coral to-brand-orange",
                               "from-amber-500 to-orange-500",
                             ][i % 5]
                           } flex items-center justify-center text-white text-xs font-black`}
@@ -669,7 +693,7 @@ export default function ForumPage() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-black text-foreground truncate">
+                      <p className="text-xs font-black text-foreground truncate group-hover:text-primary transition-colors">
                         {u.name}
                       </p>
                       <p className="text-[10px] text-muted-foreground font-bold">
@@ -679,14 +703,16 @@ export default function ForumPage() {
                     {i === 0 && (
                       <Crown className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500 shrink-0" />
                     )}
-                  </div>
+                  </Link>
                 ))
               )}
             </div>
           </motion.div>
 
           {/* Community guidelines */}
-          <div className="relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-rose-500/5 via-fuchsia-500/5 to-transparent dark:from-rose-500/10 dark:via-fuchsia-500/5 p-5">
+          <div className="relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-brand-orange/5 via-orange-500/5 to-transparent dark:from-brand-orange/10 dark:via-orange-500/5 p-5">
+            <MiniBlobs palette={0} />
+            <div className="pointer-events-none absolute -bottom-14 -left-10 h-32 w-40 bg-gradient-to-tr from-brand-orange to-pink-500 opacity-15 [border-radius:38%_62%_44%_56%/60%_38%_62%_40%] -rotate-6" />
             <h3 className="text-sm font-black uppercase tracking-widest text-rose-600 dark:text-rose-300 mb-3 flex items-center gap-2">
               <Heart className="h-4 w-4" />
               Vibe check
@@ -701,7 +727,7 @@ export default function ForumPage() {
                 <li key={i} className="flex items-start gap-2.5">
                   <span
                     className={`h-5 w-5 rounded-lg text-[10px] font-black flex items-center justify-center shrink-0 bg-gradient-to-br ${
-                      ["from-rose-500 to-pink-500", "from-violet-500 to-fuchsia-500", "from-cyan-500 to-blue-500", "from-emerald-500 to-teal-500"][i]
+                      ["from-brand-orange to-red-500", "from-brand-orange to-coral", "from-amber-500 to-blue-500", "from-coral to-brand-orange"][i]
                     } text-white`}
                   >
                     {i + 1}
@@ -711,19 +737,20 @@ export default function ForumPage() {
               ))}
             </ul>
             <Link href="/dashboard/feed" className="block mt-4">
-              <Button className="w-full h-11 rounded-lg bg-gradient-to-r from-rose-500 to-violet-500 text-white font-black text-[10px] tracking-widest uppercase">
+              <Button className="w-full h-11 rounded-lg bg-gradient-to-r from-brand-orange to-coral text-white font-black text-[10px] tracking-widest uppercase">
                 Read full guidelines
               </Button>
             </Link>
           </div>
 
           {/* Live stat card */}
-          <motion.div
-            className="relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-cyan-500/5 via-violet-500/5 to-pink-500/5 dark:from-cyan-500/15 dark:via-violet-500/10 dark:to-pink-500/10 p-5"
+            <motion.div
+            className="relative overflow-hidden rounded-xl border border-border bg-gradient-to-br from-amber-500/5 via-coral/5 to-red-500/5 dark:from-amber-500/15 dark:via-coral/10 dark:to-red-500/10 p-5"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4 }}
           >
+            <MiniBlobs palette={0} />
             <div className="pointer-events-none absolute -top-10 -right-10 h-32 w-32 rounded-full bg-cyan-400/15 dark:bg-cyan-400/20 blur-2xl" />
             <div className="relative">
               <p className="text-[10px] font-black uppercase tracking-widest text-cyan-600 dark:text-cyan-300 mb-1">
@@ -768,4 +795,6 @@ function EmptyState({ title, description }: { title: string; description: string
     </div>
   );
 }
+
+
 

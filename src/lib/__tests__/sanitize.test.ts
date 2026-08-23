@@ -3,7 +3,8 @@ import { sanitizeText, sanitizeFilename } from "@/lib/sanitize";
 
 describe("sanitizeText", () => {
   it("strips HTML tags", () => {
-    expect(sanitizeText("<script>alert('xss')</script>hello")).toBe("alert('xss')hello");
+    // DOMPurify with ALLOWED_TAGS:[] strips script tags AND their content
+    expect(sanitizeText("<script>alert('xss')</script>hello")).toBe("hello");
   });
 
   it("removes null bytes", () => {
@@ -21,6 +22,7 @@ describe("sanitizeText", () => {
 
 describe("sanitizeFilename", () => {
   it("removes path traversal", () => {
+    // /  → _ then leading underscores stripped → etc_passwd
     expect(sanitizeFilename("../../../etc/passwd")).toBe("etc_passwd");
   });
 

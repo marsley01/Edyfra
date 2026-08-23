@@ -9,13 +9,15 @@ import {
   Rocket,
   ShieldCheck,
   Video,
-  Bug,
   Star,
   Zap,
+  Bug,
+
   type LucideIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LottieAnimation } from "@/components/lottie-animation";
+import { FeedbackSection } from "@/components/changelog/feedback-section";
 import type { ChangelogEntry } from "@/data/changelog";
 
 interface Props {
@@ -25,7 +27,7 @@ interface Props {
 const icons: LucideIcon[] = [ShieldCheck, Video, Rocket, Zap, Star];
 
 const iconColors = [
-  "bg-violet-500 text-white ring-violet-200 dark:ring-violet-900",
+  "bg-brand-orange text-white ring-primary dark:ring-primary",
   "bg-blue-500 text-white ring-blue-200 dark:ring-blue-900",
   "bg-emerald-500 text-white ring-emerald-200 dark:ring-emerald-900",
   "bg-amber-500 text-white ring-amber-200 dark:ring-amber-900",
@@ -33,7 +35,7 @@ const iconColors = [
 ];
 
 const badgeColors = [
-  "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-900/30 dark:text-violet-300 dark:border-violet-800",
+  "bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800",
   "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800",
   "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800",
   "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800",
@@ -47,8 +49,8 @@ export function ChangelogClient({ entries }: Props) {
   return (
     <div className="relative min-h-screen px-6 py-16 sm:px-8 lg:px-16 overflow-hidden">
       {/* Background blobs */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-100/40 rounded-full blur-3xl -z-10 dark:bg-indigo-900/20" />
-      <div className="absolute bottom-10 right-10 w-96 h-96 bg-purple-100/40 rounded-full blur-3xl -z-10 dark:bg-purple-900/20" />
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/40 rounded-full blur-3xl -z-10 dark:bg-primary/20" />
+      <div className="absolute bottom-10 right-10 w-96 h-96 bg-orange-100/40 rounded-full blur-3xl -z-10 dark:bg-orange-900/20" />
 
       {/* Header */}
       <motion.div
@@ -67,7 +69,7 @@ export function ChangelogClient({ entries }: Props) {
         </div>
 
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 rounded-full">
+          <div className="inline-flex items-center gap-2 px-3 py-1 text-sm font-medium text-primary dark:text-primary bg-primary dark:bg-primary/30 border border-primary dark:border-primary rounded-full">
             <Sparkles className="w-4 h-4" />
             <span>Fresh product drops</span>
           </div>
@@ -83,7 +85,7 @@ export function ChangelogClient({ entries }: Props) {
       {/* Timeline */}
       <div className="max-w-3xl mx-auto relative">
         {/* Vertical line */}
-        <div className="absolute left-6 top-4 bottom-4 w-0.5 bg-gradient-to-b from-indigo-200 via-blue-200 to-slate-200 dark:from-indigo-800 dark:via-blue-800 dark:to-slate-700" />
+        <div className="absolute left-6 top-4 bottom-4 w-0.5 bg-gradient-to-b from-blue-500 via-blue-200 to-slate-200 dark:from-blue-500 dark:via-blue-800 dark:to-slate-700" />
 
         <div className="space-y-8">
           {entries.map((update, index) => {
@@ -129,7 +131,7 @@ export function ChangelogClient({ entries }: Props) {
                     </div>
                   </div>
 
-                  <h3 className="text-xl font-bold text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  <h3 className="text-xl font-bold text-foreground group-hover:text-primary dark:group-hover:text-primary transition-colors">
                     {update.title}
                   </h3>
 
@@ -152,13 +154,13 @@ export function ChangelogClient({ entries }: Props) {
                           {update.highlights && update.highlights.length > 0 && (
                             <div>
                               <div className="flex items-center gap-2 mb-2 text-foreground font-semibold">
-                                <Star className="w-4 h-4 text-indigo-500" />
+                                <Star className="w-4 h-4 text-primary" />
                                 <span>What&apos;s new</span>
                               </div>
                               <ul className="space-y-1.5">
                                 {update.highlights.map((item, i) => (
                                   <li key={i} className="flex items-start gap-2.5 text-muted-foreground pl-1">
-                                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-indigo-400/50 shrink-0" />
+                                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary/50 shrink-0" />
                                     {item}
                                   </li>
                                 ))}
@@ -192,6 +194,8 @@ export function ChangelogClient({ entries }: Props) {
           })}
         </div>
       </div>
+
+      <FeedbackSection />
     </div>
   );
 }

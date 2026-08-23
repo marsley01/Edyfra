@@ -11,7 +11,7 @@
  * Push notifications and notificationclick are unchanged from the original.
  */
 
-const CACHE_VERSION = "v2";
+const CACHE_VERSION = "v3";
 const STATIC_CACHE  = `edyfra-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `edyfra-runtime-${CACHE_VERSION}`;
 const IMAGE_CACHE   = `edyfra-images-${CACHE_VERSION}`;
@@ -69,9 +69,17 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Never intercept in development — Turbopack chunk URLs aren't stable and
+  // cache-first serving causes "module factory is not available" errors.
+  if (self.location.hostname === "localhost" || self.location.hostname === "127.0.0.1") {
+    return;
+  }
+
   // Only intercept GET; skip the SW file itself and HMR websockets
   if (request.method !== "GET") return;
   if (url.pathname === "/sw.js") return;
+  // Ignore non-http schemes (chrome-extension:, chrome:, etc.)
+  if (!url.protocol.startsWith("http")) return;
 
   // ── Next.js hashed static assets → Cache-First (safe to cache indefinitely)
   if (url.pathname.startsWith("/_next/static/")) {
@@ -126,9 +134,9 @@ async function cacheFirst(request, cacheName) {
   const cached = await caches.match(request);
   if (cached) return cached;
   const response = await fetch(request);
-  if (response.ok) {
+  if (response.ok && request.url.startsWith("http")) {
     const cache = await caches.open(cacheName);
-    cache.put(request, response.clone());
+    cache.put(request, response.clone()).catch(() => {});
   }
   return response;
 }
@@ -137,7 +145,9 @@ async function staleWhileRevalidate(request, cacheName) {
   const cache  = await caches.open(cacheName);
   const cached = await cache.match(request);
   const networkFetch = fetch(request).then((res) => {
-    if (res.ok) cache.put(request, res.clone());
+    if (res.ok && request.url.startsWith("http")) {
+      cache.put(request, res.clone()).catch(() => {});
+    }
     return res;
   });
   return cached ?? networkFetch;

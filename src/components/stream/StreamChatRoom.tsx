@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { Chat, Channel, MessageList, MessageComposer, Window, Thread, WithComponents } from "stream-chat-react";
 import { MessageCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { ChatLoadingState } from "./atomic/ChatLoadingState";
 import { StreamAttachment } from "./StreamAttachment";
 import { EDYFRA_CHAT_THEME_CSS } from "./styles/chatTheme";
 import type { StreamChatRoomProps } from "./types";
+import { validateUpload } from "@/lib/upload-filter";
 
 polyfillClipboard();
 
@@ -40,6 +41,14 @@ export default function StreamChatRoom({
   });
 
   const [isAsking, setIsAsking] = useState(false);
+  const [minTimePassed, setMinTimePassed] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMinTimePassed(true);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleAsk = async () => {
     if (!channelId || isAsking) return;
@@ -60,12 +69,8 @@ export default function StreamChatRoom({
     }
   };
 
-  if (error) {
-    return <ChatErrorState error={error} isRetrying={isRetrying} onRetry={retry} />;
-  }
-
-  if (!chatClient || !channel) {
-    return <ChatLoadingState />;
+  if (error || !chatClient || !channel || !minTimePassed) {
+    return <ChatLoadingState error={error} onRetry={retry} />;
   }
 
   return (
@@ -103,7 +108,25 @@ export default function StreamChatRoom({
             )}
 
             <div className="flex-1 relative overflow-hidden">
-              <Channel channel={channel}>
+              <Channel
+                {...({
+                  channel,
+                  doFileUploadRequest: async (file: any, channel: any) => {
+                    const validation = validateUpload(file);
+                    if (!validation.valid) {
+                      throw new Error(validation.reason || "File type not permitted");
+                    }
+                    return channel.sendFile(file);
+                  },
+                  doImageUploadRequest: async (file: any, channel: any) => {
+                    const validation = validateUpload(file);
+                    if (!validation.valid) {
+                      throw new Error(validation.reason || "File type not permitted");
+                    }
+                    return channel.sendImage(file);
+                  },
+                } as any)}
+              >
                 <Window>
                   <MessageList />
                   <MessageComposer />

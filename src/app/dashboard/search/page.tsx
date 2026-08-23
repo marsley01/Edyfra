@@ -1,14 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
-import { Search, Loader2, UserPlus, GraduationCap, MapPin, SearchX, RefreshCcw } from "lucide-react";
+import { Search, Loader2, UserPlus, GraduationCap, MapPin, SearchX, RefreshCcw, MessageCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { BlobDecor } from "@/components/ui/blob-decor";
 import { searchStudents, Student } from "@/app/actions/search";
+import { connectWithUser } from "@/app/actions/profile";
 import { Skeleton } from "@/components/ui/skeleton";
+import { showError, showSuccess } from "@/lib/toast";
 import Link from "next/link";
 
 export default function SearchPage() {
@@ -17,6 +21,28 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [connectingId, setConnectingId] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handleConnect = async (student: Student) => {
+    setConnectingId(student.id);
+    try {
+      const res = await connectWithUser(student.id);
+      if (res.ok && res.channelId) {
+        showSuccess(`Chat with ${student.name.split(" ")[0]} opened`, {
+          description: "You're following them too — say hi!",
+        });
+        router.push(`/dashboard/messages?channel=${res.channelId}`);
+      } else {
+        if (res.error?.includes("sign in")) router.push("/login");
+        showError({ title: "Couldn't connect", cause: res.error, fix: "Try again in a moment." });
+      }
+    } catch {
+      showError({ title: "Couldn't connect", cause: "Network hiccup.", fix: "Try again in a moment." });
+    } finally {
+      setConnectingId(null);
+    }
+  };
 
   useEffect(() => {
     if (query.length < 2) {
@@ -44,15 +70,16 @@ export default function SearchPage() {
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="space-y-4 text-center py-10">
-        <motion.h1 
+      <div className="relative space-y-4 text-center py-10">
+        <BlobDecor variant="mixed" />
+        <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-5xl font-black tracking-tighter"
+          className="text-5xl font-black tracking-tighter relative"
         >
           Find Your <span className="text-primary">People</span>
         </motion.h1>
-        <p className="text-muted-foreground text-lg max-w-xl mx-auto font-medium">
+        <p className="text-muted-foreground text-lg max-w-xl mx-auto font-medium relative">
            Find students by name, school, or what they study.
         </p>
       </div>
@@ -145,14 +172,23 @@ export default function SearchPage() {
                         </div>
                         <div className="space-y-1">
                           <h3 className="font-black text-lg tracking-tight group-hover:text-primary transition-colors">{student.name}</h3>
+                          {student.username && (
+                            <p className="text-[10px] font-bold text-primary/80">@{student.username}</p>
+                          )}
                           <div className="flex flex-col gap-1 text-xs font-bold text-muted-foreground uppercase tracking-widest">
                             <span className="flex items-center gap-1.5"><GraduationCap className="h-3 w-3" /> {student.school || ""}</span>
                             <span className="flex items-center gap-1.5"><MapPin className="h-3 w-3" /> {student.course?.replace("_", " ")}</span>
                           </div>
                         </div>
                       </div>
-                      <Button variant="ghost" size="icon" className="rounded-xl hover:bg-primary/10 hover:text-primary">
-                        <UserPlus className="h-5 w-5" />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleConnect(student)}
+                        disabled={connectingId === student.id}
+                        className="rounded-xl hover:bg-primary/10 hover:text-primary"
+                      >
+                        {connectingId === student.id ? <Loader2 className="h-5 w-5 animate-spin" /> : <UserPlus className="h-5 w-5" />}
                       </Button>
                     </div>
                     <div className="mt-6 flex gap-3">
@@ -161,8 +197,19 @@ export default function SearchPage() {
                           View Profile
                         </Button>
                       </Link>
-                      <Button variant="outline" className="rounded-xl font-black text-xs tracking-widest h-11 uppercase border-border">
-                        Connect
+                      <Button
+                        variant="outline"
+                        onClick={() => handleConnect(student)}
+                        disabled={connectingId === student.id}
+                        className="rounded-xl font-black text-xs tracking-widest h-11 uppercase border-border bg-primary/5 hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors min-w-[110px]"
+                      >
+                        {connectingId === student.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <>
+                            <MessageCircle className="h-3.5 w-3.5 mr-1.5" /> Connect
+                          </>
+                        )}
                       </Button>
                     </div>
                   </CardContent>

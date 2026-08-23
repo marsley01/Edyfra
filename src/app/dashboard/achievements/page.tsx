@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -48,7 +48,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
 
 type Tier = "bronze" | "silver" | "gold" | "platinum" | "diamond";
 
-// ─── Celebration rate limiter ────────────────────────────────────────────────
+// â”€â”€â”€ Celebration rate limiter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // The full unlock celebration (fireworks + modal) can fire at most twice per
 // rolling 24h window per browser. Subsequent unlocks still earn the achievement
 // and show a toast, but the big screen takeover is suppressed so it doesn't
@@ -251,10 +251,10 @@ const TIER_STYLES: Record<
   },
   platinum: {
     label: "Platinum",
-    ring: "from-cyan-300 via-violet-400 to-cyan-300",
-    bg: "from-cyan-400/10 to-violet-500/8 dark:from-cyan-400/20 dark:to-violet-500/15",
-    text: "text-violet-600 dark:text-violet-300",
-    border: "border-violet-400/30",
+    ring: "from-cyan-300 via-brand-orange to-cyan-300",
+    bg: "from-cyan-400/10 to-coral/8 dark:from-cyan-400/20 dark:to-coral/15",
+    text: "text-brand-orange-dark dark:text-orange-300",
+    border: "border-brand-orange/30",
   },
   diamond: {
     label: "Diamond",
@@ -268,7 +268,7 @@ const TIER_STYLES: Record<
 const RARITY_STYLES: Record<string, string> = {
   Common: "bg-secondary text-muted-foreground border-border",
   Rare: "bg-blue-500/10 text-blue-600 dark:text-blue-300 border-blue-500/30",
-  Epic: "bg-violet-500/10 text-violet-600 dark:text-violet-300 border-violet-500/30",
+  Epic: "bg-brand-orange/10 text-brand-orange-dark dark:text-orange-300 border-brand-orange/30",
   Legendary:
     "bg-gradient-to-r from-amber-500/15 via-rose-500/15 to-cyan-500/15 text-amber-700 dark:text-amber-200 border-amber-400/40",
 };
@@ -392,7 +392,7 @@ export default function AchievementsPage() {
       {/* Hero / stat card — theme aware */}
       <div className="relative overflow-hidden rounded-[2.5rem] border border-border bg-card p-8 sm:p-10 shadow-xl">
         <div className="pointer-events-none absolute -top-32 -right-32 h-80 w-80 rounded-full bg-yellow-500/10 dark:bg-yellow-500/20 blur-[120px]" />
-        <div className="pointer-events-none absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-violet-500/10 dark:bg-violet-500/20 blur-[120px]" />
+        <div className="pointer-events-none absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-brand-orange/10 dark:bg-brand-orange/20 blur-[120px]" />
         <div className="relative flex flex-col lg:flex-row items-start lg:items-center gap-8">
           <div className="flex-1 space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-[10px] font-black uppercase tracking-[0.22em] text-yellow-700 dark:text-yellow-300">
@@ -437,7 +437,7 @@ export default function AchievementsPage() {
                           : "—"
               }
               sub="tier"
-              gradient="from-violet-500 to-fuchsia-500"
+              gradient="from-brand-orange to-coral"
             />
           </div>
         </div>
@@ -689,3 +689,4 @@ function AchievementCard({ a, index }: { a: any; index: number }) {
     </motion.div>
   );
 }
+

@@ -1,46 +1,23 @@
 import { getAI } from "@/lib/preflight/instance";
+import { getAIConfig } from "@/lib/ai-config";
 import OpenAI from "openai";
-import prisma from "@/lib/prisma";
-
-const DEFAULT_MODEL = "openai/gpt-4o-mini";
 
 let openaiInstance: OpenAI | null = null;
 let currentKey: string | null = null;
 
-async function getAIKeyFromDB(): Promise<{ key: string | null; provider: string | null }> {
-  try {
-    const entry = await prisma.platformSettings.findUnique({
-      where: { key: "global" },
-      select: { value: true },
-    });
-    const value = entry?.value as Record<string, unknown> | undefined;
-    return {
-      key: (value?.googleAiKey as string) || null,
-      provider: (value?.aiProvider as string) || "openrouter",
-    };
-  } catch (err) {
-    console.error("[AIService] Failed to fetch key from DB:", err);
-    return { key: null, provider: null };
-  }
-}
-
 let currentProvider: string = "openrouter";
 
 async function getOpenAI() {
-  let apiKey: string | undefined = process.env.OPENROUTER_API_KEY;
+  const config = await getAIConfig();
+  const apiKey = config.apiKey ?? undefined;
   let provider = "openrouter";
 
-  if (!apiKey) {
-    const dbConfig = await getAIKeyFromDB();
-    apiKey = dbConfig.key ?? undefined;
-    provider = dbConfig.provider || "openrouter";
-  }
+  if (!apiKey) return null;
 
-  if (apiKey?.startsWith("AIzaSy")) {
+  // Legacy keys saved before the OpenRouter migration are Gemini-native.
+  if (apiKey.startsWith("AIzaSy")) {
     provider = "gemini";
   }
-
-  if (!apiKey) return null;
 
   if (!openaiInstance || currentKey !== apiKey) {
     currentKey = apiKey;
@@ -57,7 +34,7 @@ async function getOpenAI() {
       defaultHeaders:
         provider === "openrouter"
           ? {
-              "HTTP-Referer": "https://edyfra-v2.vercel.app",
+              "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "https://edyfra.com",
               "X-Title": "Edyfra",
             }
           : undefined,
@@ -70,11 +47,13 @@ export class AIService {
   static async generateCompletion(
     prompt: string,
     systemPrompt: string = "You are an expert educational assistant.",
-    model: string = DEFAULT_MODEL,
+    model?: string,
   ): Promise<string> {
+    const defaultModel = (await getAIConfig()).model;
+    const chosenModel = model ?? defaultModel;
     try {
       const ai = await getAI();
-      return await ai.generateCompletion(prompt, systemPrompt, { model });
+      return await ai.generateCompletion(prompt, systemPrompt, { model: chosenModel });
     } catch {
       const openai = await getOpenAI();
       if (!openai) {
@@ -108,12 +87,12 @@ export class AIService {
       };
 
       try {
-        return await doCall(model, 15000);
+        return await doCall(chosenModel, 15000);
       } catch (firstErr) {
         const firstMessage = firstErr instanceof Error ? firstErr.message : String(firstErr);
         console.warn("[AIService] First attempt failed, retrying:", firstMessage);
         try {
-          return await doCall(model, 20000);
+          return await doCall(chosenModel, 20000);
         } catch {
           console.error("[AIService] Retry also failed");
           return `I'm having a bit of trouble thinking right now. Let's try again in a moment.`;
@@ -125,7 +104,7 @@ export class AIService {
   static async generateJSON(
     prompt: string,
     schema?: Record<string, unknown>,
-    model: string = DEFAULT_MODEL,
+    model?: string,
   ): Promise<Record<string, unknown>> {
     try {
       const ai = await getAI();

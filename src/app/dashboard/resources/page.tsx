@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { 
@@ -17,6 +17,14 @@ import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
 import { showError, showSuccess, showInfo } from "@/lib/toast";
+import { MiniBlobs } from "@/components/ui/mini-blobs";
+import { BlobDecor } from "@/components/ui/blob-decor";
+import {
+  fetchKLBResources,
+  getKLBMeta,
+  type KLBResource,
+} from "@/app/actions/klb";
+import { LibraryBig, ExternalLink, Landmark } from "lucide-react";
 
 const SUBJECTS = [
   "All", "Mathematics", "English", "Kiswahili", "Physics", "Chemistry",
@@ -32,7 +40,7 @@ export default function MarketplacePage() {
   const [resources, setResources] = useState<any[]>([]);
   const [purchases, setPurchases] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"browse" | "my-purchases">("browse");
+  const [tab, setTab] = useState<"browse" | "klb" | "my-purchases">("browse");
   const [search, setSearch] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("All");
   const [selectedLevel, setSelectedLevel] = useState("All");
@@ -42,6 +50,47 @@ export default function MarketplacePage() {
   const [isPaying, setIsPaying] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  // KLB Library state
+  const [klbItems, setKlbItems] = useState<KLBResource[]>([]);
+  const [klbLoading, setKlbLoading] = useState(false);
+  const [klbLive, setKlbLive] = useState(false);
+  const [klbSubjects, setKlbSubjects] = useState<string[]>([]);
+  const [klbTypes, setKlbTypes] = useState<string[]>([]);
+  const [klbQuery, setKlbQuery] = useState("");
+  const [klbSubject, setKlbSubject] = useState("All");
+  const [klbType, setKlbType] = useState("All");
+  const [klbTouched, setKlbTouched] = useState(false);
+
+  const fetchKLB = useCallback(async (opts?: { query?: string; subject?: string; type?: string }) => {
+    setKlbLoading(true);
+    try {
+      const res = await fetchKLBResources({
+        query: opts?.query ?? "",
+        subject: opts?.subject ?? "All",
+        type: opts?.type ?? "All",
+      });
+      setKlbItems(res.items);
+      setKlbLive(res.live);
+    } catch {
+      setKlbItems([]);
+    } finally {
+      setKlbLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (tab === "klb" && !klbTouched) {
+      setKlbTouched(true);
+      getKLBMeta().then((m) => {
+        setKlbSubjects(m.subjects);
+        setKlbTypes(m.types);
+        setKlbLive(m.live);
+      });
+      fetchKLB({});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
 
   useEffect(() => {
     if (tab === "browse") {
@@ -192,11 +241,17 @@ export default function MarketplacePage() {
 
   return (
     <div className="p-6 space-y-8 max-w-7xl mx-auto">
-      {/* ... previous content ... */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-black tracking-tightest">Resource <span className="text-primary">Marketplace</span></h1>
-          <p className="text-muted-foreground font-medium">Verified study materials from top tutors.</p>
+      {/* Header with solid blob accents */}
+      <div className="relative overflow-hidden rounded-[2.5rem] border border-border bg-gradient-to-br from-brand-orange/10 via-card to-coral/10 p-8">
+        <BlobDecor variant="mixed" className="opacity-70" />
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-black tracking-tight">Resource <span className="text-primary">Library</span></h1>
+            <p className="text-muted-foreground font-medium">Verified study materials from top tutors — plus the official KLB catalogue.</p>
+          </div>
+          <div className="flex items-center gap-2 rounded-2xl border border-primary/25 bg-primary/10 px-4 py-2.5 text-xs font-black uppercase tracking-widest text-primary w-fit">
+            <Landmark className="h-4 w-4" /> KLB connected
+          </div>
         </div>
       </div>
 
@@ -211,6 +266,14 @@ export default function MarketplacePage() {
           Browse
         </button>
         <button
+          onClick={() => setTab("klb")}
+          className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all inline-flex items-center gap-2 ${
+            tab === "klb" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <LibraryBig className="h-4 w-4" /> KLB Library
+        </button>
+        <button
           onClick={() => setTab("my-purchases")}
           className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
             tab === "my-purchases" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"
@@ -220,7 +283,108 @@ export default function MarketplacePage() {
         </button>
       </div>
 
-      {tab === "browse" ? (
+      {tab === "klb" ? (
+        <div className="space-y-6">
+          {/* KLB search + filters */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              fetchKLB({ query: klbQuery, subject: klbSubject, type: klbType });
+            }}
+            className="flex flex-col md:flex-row gap-3"
+          >
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={klbQuery}
+                onChange={(e) => setKlbQuery(e.target.value)}
+                placeholder="Search KLB books, revision packs, past papers..."
+                className="pl-11 h-13 rounded-2xl border-border bg-secondary/50 focus:bg-background transition-all h-14"
+              />
+            </div>
+            <select
+              value={klbSubject}
+              onChange={(e) => {
+                setKlbSubject(e.target.value);
+                fetchKLB({ query: klbQuery, subject: e.target.value, type: klbType });
+              }}
+              className="h-14 rounded-2xl border border-border bg-secondary/50 px-4 text-sm font-bold"
+            >
+              <option value="All">All Subjects</option>
+              {klbSubjects.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <select
+              value={klbType}
+              onChange={(e) => {
+                setKlbType(e.target.value);
+                fetchKLB({ query: klbQuery, subject: klbSubject, type: e.target.value });
+              }}
+              className="h-14 rounded-2xl border border-border bg-secondary/50 px-4 text-sm font-bold"
+            >
+              <option value="All">All Types</option>
+              {klbTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+            <Button type="submit" className="h-14 px-8 rounded-2xl bg-primary text-primary-foreground font-black text-xs uppercase tracking-widest">
+              Search
+            </Button>
+          </form>
+
+          {klbLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : klbItems.length === 0 ? (
+            <div className="text-center py-20 space-y-4">
+              <LibraryBig className="h-12 w-12 mx-auto text-muted-foreground/40" />
+              <p className="text-lg font-medium text-muted-foreground">No KLB materials match your filters.</p>
+            </div>
+          ) : (
+            <>
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                {klbItems.length} item{klbItems.length !== 1 ? "s" : ""} · {klbLive ? "live from KLB API" : "official KLB catalogue"}
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {klbItems.map((item, i) => (
+                  <motion.a
+                    key={item.id}
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.04 }}
+                    className="group relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm hover:shadow-xl hover:border-primary/40 hover:-translate-y-0.5 transition-all space-y-3"
+                  >
+                    <MiniBlobs palette={i % 4 === 1 ? 1 : i % 4 === 2 ? 2 : i % 4 === 3 ? 3 : 0} />
+                    <div className="relative flex items-start justify-between gap-3">
+                      <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-brand-orange to-coral text-white flex items-center justify-center shadow-md">
+                        <FileText className="h-5 w-5" />
+                      </div>
+                      <span className="px-2.5 py-1 rounded-lg bg-secondary text-[9px] font-black uppercase tracking-widest text-muted-foreground">
+                        {item.type}
+                      </span>
+                    </div>
+                    <h3 className="relative font-black text-base leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                      {item.title}
+                    </h3>
+                    <p className="relative text-xs text-muted-foreground font-medium leading-relaxed line-clamp-2">
+                      {item.description}
+                    </p>
+                    <div className="relative flex items-center justify-between pt-2 border-t border-border/50">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                        {item.subject} · {item.level}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-primary">
+                        Open <ExternalLink className="h-3 w-3" />
+                      </span>
+                    </div>
+                  </motion.a>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      ) : tab === "browse" ? (
       <>
       {/* Search & Filter */}
       <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
@@ -480,3 +644,4 @@ export default function MarketplacePage() {
     </div>
   );
 }
+

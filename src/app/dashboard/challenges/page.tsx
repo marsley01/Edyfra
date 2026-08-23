@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
@@ -163,7 +163,7 @@ export default function ChallengesPage() {
     if (user?.educationLevel) generateChallenge(user.educationLevel);
   };
 
-  /* ─── Loading ─── */
+  /* â”€â”€â”€ Loading â”€â”€â”€ */
   if (isGenerating && !challenge) {
     return (
       <div className="p-4 md:p-8 max-w-5xl mx-auto min-h-[70vh] flex flex-col items-center justify-center gap-6">
@@ -186,7 +186,7 @@ export default function ChallengesPage() {
     );
   }
 
-  /* ─── Error ─── */
+  /* â”€â”€â”€ Error â”€â”€â”€ */
   if (error && !challenge) {
     return (
       <div className="p-4 md:p-8 max-w-5xl mx-auto min-h-[70vh] flex flex-col items-center justify-center gap-4">
@@ -204,7 +204,7 @@ export default function ChallengesPage() {
 
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto space-y-8">
-      {/* ─── Personalized Hero ─── */}
+      {/* â”€â”€â”€ Personalized Hero â”€â”€â”€ */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -215,7 +215,7 @@ export default function ChallengesPage() {
 
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center text-white shadow-lg shadow-primary/20">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-coral flex items-center justify-center text-white shadow-lg shadow-primary/20">
               <GraduationCap className="h-7 w-7" />
             </div>
             <div>
@@ -237,16 +237,16 @@ export default function ChallengesPage() {
               <Trophy className="h-4 w-4 text-primary" />
               <span className="text-xs font-black text-primary">{user?.points || 0} pts</span>
             </div>
-            <div className="px-4 py-2 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center gap-2">
-              <Shield className="h-4 w-4 text-violet-500" />
-              <span className="text-xs font-black text-violet-500 uppercase">{user?.tier || "BRONZE"}</span>
+            <div className="px-4 py-2 rounded-xl bg-brand-orange/10 border border-brand-orange/20 flex items-center gap-2">
+              <Shield className="h-4 w-4 text-brand-orange" />
+              <span className="text-xs font-black text-brand-orange uppercase">{user?.tier || "BRONZE"}</span>
             </div>
           </div>
         </div>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* ─── Main Challenge Area ─── */}
+        {/* â”€â”€â”€ Main Challenge Area â”€â”€â”€ */}
         <div className="lg:col-span-2 space-y-4">
           {challenge ? (
             <AnimatePresence mode="wait">
@@ -260,7 +260,7 @@ export default function ChallengesPage() {
                 {/* Challenge Header */}
                 <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-border/30 px-6 py-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center text-white shadow-lg">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-coral flex items-center justify-center text-white shadow-lg">
                       <Brain className="h-5 w-5" />
                     </div>
                     <div>
@@ -386,7 +386,7 @@ export default function ChallengesPage() {
                                 : "text-red-600 dark:text-red-400"
                             }`}
                           >
-                            {isCorrect ? "You got it right! 🎉" : "Not quite right"}
+                            {isCorrect ? "You got it right! ðŸŽ‰" : "Not quite right"}
                           </h4>
                           <p className="text-sm text-muted-foreground leading-relaxed">
                             {resultExplanation || challenge.explanation}
@@ -434,7 +434,7 @@ export default function ChallengesPage() {
           )}
         </div>
 
-        {/* ─── Sidebar Stats ─── */}
+        {/* â”€â”€â”€ Sidebar Stats â”€â”€â”€ */}
         <div className="space-y-4">
           {/* Learning Profile */}
           <motion.div
@@ -477,7 +477,7 @@ export default function ChallengesPage() {
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${stats?.successRate || 0}%` }}
-                  className="h-full rounded-full bg-gradient-to-r from-primary to-violet-500"
+                  className="h-full rounded-full bg-gradient-to-r from-primary to-coral"
                 />
               </div>
             </div>
@@ -506,7 +506,7 @@ export default function ChallengesPage() {
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3 rounded-xl bg-secondary/30 border border-border/30">
-                <BookOpen className="h-4 w-4 text-violet-500 shrink-0 mt-0.5" />
+                <BookOpen className="h-4 w-4 text-brand-orange shrink-0 mt-0.5" />
                 <div>
                   <p className="text-[10px] font-bold text-foreground">{stats?.totalChallenges || 0} Challenges</p>
                   <p className="text-[9px] text-muted-foreground">{stats?.totalAttempts || 0} attempts logged</p>
@@ -552,3 +552,4 @@ export default function ChallengesPage() {
     </div>
   );
 }
+

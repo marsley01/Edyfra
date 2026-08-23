@@ -364,7 +364,7 @@ export default function SettingsPage() {
                               })}
                               className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${
                                 selected
-                                  ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                                  ? 'border-primary bg-primary text-primary'
                                   : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
                               }`}
                             >

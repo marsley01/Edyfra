@@ -162,12 +162,12 @@ export default async function AdminRevenuePage() {
         <Card className="rounded-[2rem] border-border bg-secondary/20 overflow-hidden relative">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <BookOpen className="h-3 w-3 text-purple-500" /> Marketplace Sales
+              <BookOpen className="h-3 w-3 text-brand-orange" /> Marketplace Sales
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-black tracking-tightest">KES {stats.marketplaceToday.toLocaleString()}</div>
-            <p className="text-[10px] font-bold text-purple-500 mt-1 uppercase tracking-widest">
+            <p className="text-[10px] font-bold text-brand-orange mt-1 uppercase tracking-widest">
               {stats.marketplaceItemsToday} Items Sold Today
             </p>
           </CardContent>
@@ -258,7 +258,7 @@ export default async function AdminRevenuePage() {
                   </div>
                   <div className="h-2 bg-secondary rounded-full overflow-hidden">
                     <div 
-                      className={`h-full rounded-full ${type === 'SUBSCRIPTION' ? 'bg-primary' : type === 'SESSION' ? 'bg-blue-500' : 'bg-purple-500'}`} 
+                      className={`h-full rounded-full ${type === 'SUBSCRIPTION' ? 'bg-primary' : type === 'SESSION' ? 'bg-blue-500' : 'bg-brand-orange'}`} 
                       style={{ width: `${percent}%` }}
                     />
                   </div>

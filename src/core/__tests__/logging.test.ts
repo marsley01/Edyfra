@@ -3,6 +3,8 @@ import { Logger, ConsoleTransport, JsonTransport } from "@/core/logging/Logger";
 
 describe("Logger", () => {
   beforeEach(() => {
+    // Logger skips all transports in test env; stub to development so ConsoleTransport is registered
+    vi.stubEnv("NODE_ENV", "development");
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -10,6 +12,7 @@ describe("Logger", () => {
   });
 
   afterEach(() => {
+    vi.unstubAllEnvs();
     vi.restoreAllMocks();
   });
 

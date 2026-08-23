@@ -3,7 +3,6 @@ import dynamic from "next/dynamic";
 import { getApprovedReviews } from "@/app/actions/reviews";
 import { unstable_cache } from "next/cache";
 import { HomeHero } from "@/components/home/hero";
-import { LogoCloud } from "@/components/home/logo-cloud";
 import { HomeFeatures } from "@/components/home/features";
 
 // Below-the-fold sections are code-split so their JS only loads after the
@@ -59,17 +58,15 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col overflow-hidden bg-background">
       <HomeHero />
-      <LogoCloud />
       <HomeFeatures />
+      <HowItWorks />
+      <SubjectCoverage />
       <HomeNews />
       <HomeTestimonials initialReviews={reviews} />
+      <MashSpotlight />
       <HomeCTA />
       <AbstractAnimation />
       <HomeNewsletter />
-      {/* New sections below CTA */}
-      <HowItWorks />
-      <MashSpotlight />
-      <SubjectCoverage />
     </div>
   );
 }

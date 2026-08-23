@@ -1,0 +1,342 @@
+- generic [active] [ref=e1]:
+  - navigation "Main navigation" [ref=e2]:
+    - generic [ref=e3]:
+      - link "Edyfra Home" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - img "Edyfra Logo" [ref=e5]
+        - generic [ref=e6]: Edyfra
+      - generic [ref=e7]:
+        - link "Home" [ref=e8] [cursor=pointer]:
+          - /url: /
+        - link "Features" [ref=e10] [cursor=pointer]:
+          - /url: /features
+        - link "Community" [ref=e11] [cursor=pointer]:
+          - /url: /community
+        - link "Roadmap" [ref=e12] [cursor=pointer]:
+          - /url: /roadmap
+        - link "Institutions" [ref=e13] [cursor=pointer]:
+          - /url: /institution
+        - link "News" [ref=e14] [cursor=pointer]:
+          - /url: /news
+        - link "Changelog" [ref=e15] [cursor=pointer]:
+          - /url: /changelog
+        - link "About" [ref=e16] [cursor=pointer]:
+          - /url: /about
+      - generic [ref=e17]:
+        - link [ref=e19] [cursor=pointer]:
+          - /url: /login
+          - button "Sign In" [ref=e20]
+        - link [ref=e21] [cursor=pointer]:
+          - /url: /signup
+          - button "Get Started" [ref=e22]
+  - main [ref=e23]:
+    - generic [ref=e24]:
+      - generic [ref=e26]:
+        - heading "Find your tutor. Pass your exams." [level=1] [ref=e27]: Find your tutor.Pass your exams.
+        - paragraph [ref=e28]: Verified tutors, AI matching, and real study rooms — built for CBC and university students across Kenya.
+        - generic [ref=e29]:
+          - link "Start for Free" [ref=e30] [cursor=pointer]:
+            - /url: /signup
+          - link "Watch how it works" [ref=e31] [cursor=pointer]:
+            - /url: "#how-it-works"
+        - search [ref=e32]:
+          - generic [ref=e33]:
+            - textbox "Search study videos" [ref=e37]:
+              - /placeholder: Search study videos e.g. CBC Biology, Networking, KCSE Math...
+            - button "Search" [disabled] [ref=e38]
+      - paragraph [ref=e41]: Built for Kenyan students, from Form 1 to final year.
+      - generic [ref=e42]:
+        - generic [ref=e43]:
+          - generic "Features animation" [ref=e45]
+          - heading "Built for the way students, tutors, and institutions actually grow." [level=2] [ref=e46]
+          - paragraph [ref=e47]: "Every section is built around a simple question: what do you need next to keep learning moving?"
+        - generic [ref=e48]:
+          - generic [ref=e50]:
+            - generic [ref=e54]:
+              - generic [ref=e59]: Revision Notes
+              - generic [ref=e66]: Past Papers
+              - generic [ref=e73]: Study Guides
+            - generic [ref=e80]:
+              - generic [ref=e84]:
+                - heading "Resource Library" [level=3] [ref=e85]
+                - paragraph [ref=e86]: Find past papers, notes, and study guides that match what you are learning instead of digging through random files.
+              - link "Learn more about Resource Library" [ref=e87] [cursor=pointer]:
+                - /url: /features
+          - generic [ref=e91]:
+            - generic [ref=e94]:
+              - generic [ref=e100]:
+                - paragraph [ref=e101]: Mentor
+                - paragraph [ref=e102]: University Expert
+              - generic [ref=e108]:
+                - paragraph [ref=e109]: Peer
+                - paragraph [ref=e110]: High School Pro
+              - generic [ref=e116]:
+                - paragraph [ref=e117]: Intelligence
+                - paragraph [ref=e118]: Mash AI
+            - generic [ref=e119]:
+              - generic [ref=e124]:
+                - heading "Verified Mentors" [level=3] [ref=e125]
+                - paragraph [ref=e126]: Ask for help from tutors and high-performing peers who understand the Kenyan classroom and the pressure before exams.
+              - link "Learn more about Verified Mentors" [ref=e127] [cursor=pointer]:
+                - /url: /dashboard/tutors
+          - generic [ref=e131]:
+            - generic [ref=e134]:
+              - generic [ref=e136]:
+                - generic [ref=e137]: School Adoption
+                - generic [ref=e138]: 82%
+              - generic [ref=e141]:
+                - generic [ref=e142]: Tutor Coverage
+                - generic [ref=e143]: 65%
+              - generic [ref=e146]:
+                - generic [ref=e147]: Learner Progress
+                - generic [ref=e148]: 91%
+            - generic [ref=e150]:
+              - generic [ref=e156]:
+                - heading "Institution Hubs" [level=3] [ref=e157]
+                - paragraph [ref=e158]: Schools can onboard cohorts, manage private tutor rosters, and follow student engagement without leaving the same Edyfra ecosystem.
+              - link "Learn more about Institution Hubs" [ref=e159] [cursor=pointer]:
+                - /url: /institution
+      - generic [ref=e164]:
+        - generic [ref=e165]:
+          - generic [ref=e166]: News Room
+          - heading "Latest from Edyfra." [level=2] [ref=e171]
+          - paragraph [ref=e172]: News, platform notes, and study updates worth checking before your next session.
+        - link [ref=e173] [cursor=pointer]:
+          - /url: /news
+          - button "Open News Room" [ref=e174]
+      - generic [ref=e210]:
+        - generic [ref=e211]:
+          - generic [ref=e212]:
+            - heading "Loved by scholars." [level=2] [ref=e213]
+            - paragraph [ref=e214]: Authentic feedback from students dominating their fields.
+          - button "Share Your Experience" [ref=e215] [cursor=pointer]
+        - generic [ref=e216]:
+          - generic [ref=e220]:
+            - heading "No reviews yet." [level=3] [ref=e221]
+            - paragraph [ref=e222]: Be the first scholar to share your experience on the platform.
+          - button "Write the First Review" [ref=e223] [cursor=pointer]
+      - generic [ref=e224]:
+        - img "Study platform background" [ref=e226]
+        - generic [ref=e234]:
+          - paragraph [ref=e235]: Active Learning
+          - paragraph [ref=e236]: 1-on-1 sessions
+        - generic [ref=e237]:
+          - generic [ref=e238]:
+            - generic [ref=e239]: M
+            - generic [ref=e240]: K
+            - generic [ref=e241]: A
+            - generic [ref=e242]: J
+          - generic [ref=e243]:
+            - paragraph [ref=e244]: Verified Support
+            - paragraph [ref=e245]: Expert tutors
+        - generic [ref=e248]:
+          - generic [ref=e249]: Kenya's Study Platform
+          - heading "Your study starts now." [level=2] [ref=e253]: Your studystarts now.
+          - paragraph [ref=e254]: Mash AI, verified tutors, and a community of Kenyan scholars — all in one place. Free to start, built for steady progress.
+          - generic [ref=e255]:
+            - link [ref=e256] [cursor=pointer]:
+              - /url: /signup
+              - button "Create My Study Space" [ref=e257]
+            - link [ref=e258] [cursor=pointer]:
+              - /url: /about
+              - button "See The Mission" [ref=e259]
+          - generic [ref=e260]:
+            - generic [ref=e261]:
+              - generic [ref=e262]: A
+              - generic [ref=e263]: B
+              - generic [ref=e264]: C
+              - generic [ref=e265]: D
+              - generic [ref=e266]: E
+            - paragraph [ref=e267]: Join students studying with verified tutors
+      - generic [ref=e285]:
+        - heading "Get the latest from Edyfra" [level=2] [ref=e286]
+        - paragraph [ref=e287]: Study tips, platform updates, and exclusive opportunities delivered to your inbox.
+        - generic [ref=e288]:
+          - generic [ref=e289]: Email address
+          - textbox "Email address" [ref=e290]:
+            - /placeholder: your@email.com
+          - button "Subscribe" [disabled]
+      - generic [ref=e292]:
+        - generic [ref=e293]:
+          - generic "Study spinner animation" [ref=e295]
+          - paragraph [ref=e296]: How It Works
+          - heading "Three steps to your best study session." [level=2] [ref=e297]: Three steps to yourbest study session.
+        - generic [ref=e298]:
+          - generic [ref=e299]:
+            - text: "01"
+            - heading "Create your account" [level=3] [ref=e300]
+            - generic [ref=e301]:
+              - paragraph [ref=e302]: Sign up in under a minute.
+              - paragraph [ref=e303]: Tell us your level and what you are studying.
+          - generic [ref=e304]:
+            - text: "02"
+            - heading "Get matched instantly" [level=3] [ref=e305]
+            - generic [ref=e306]:
+              - paragraph [ref=e307]: Our algorithm connects you to a peer, verified tutor, or Mash AI
+              - paragraph [ref=e308]: based on your exact subject and level.
+          - generic [ref=e309]:
+            - text: "03"
+            - heading "Study and grow" [level=3] [ref=e310]
+            - generic [ref=e311]:
+              - paragraph [ref=e312]: Track your progress, earn points, complete challenges,
+              - paragraph [ref=e313]: and build a consistent study habit.
+      - generic [ref=e316]:
+        - generic [ref=e317]:
+          - generic [ref=e318]:
+            - paragraph [ref=e319]: AI Study Companion
+            - heading "Meet Mash — your AI study companion." [level=2] [ref=e320]: Meet Mash —your AI study companion.
+          - paragraph [ref=e321]: Mash steps in when no partner is available, guides you through tough questions without giving you the answers, and remembers your subject so every conversation feels personal.
+          - link [ref=e322] [cursor=pointer]:
+            - /url: /signup
+            - button "Try Mash" [ref=e323]
+        - generic [ref=e324]:
+          - generic [ref=e325]:
+            - generic [ref=e329]:
+              - paragraph [ref=e330]: Mash AI
+              - paragraph [ref=e331]: Always available
+            - generic [ref=e332]: Online
+          - generic [ref=e335]:
+            - generic [ref=e336]: I keep getting confused with quadratic equations — I never know when to factorise vs use the formula.
+            - generic [ref=e338]: Great question. Let's figure out which method fits best. Can you show me the equation you're working on right now?
+            - generic [ref=e340]: It's 2x² + 5x - 3 = 0
+            - generic [ref=e342]: Perfect. Before I show you the answer — check the coefficient of x². What does that tell you about which method to try first?
+          - generic [ref=e344]: Ask Mash anything...
+      - generic [ref=e348]:
+        - generic [ref=e349]:
+          - paragraph [ref=e350]: Subject Coverage
+          - heading "Your subject is covered." [level=2] [ref=e351]
+          - paragraph [ref=e352]: Edyfra supports the full Kenyan curriculum — from KCPE through KCSE, University level, and beyond.
+        - generic [ref=e353]:
+          - generic [ref=e354]: Mathematics
+          - generic [ref=e355]: Physics
+          - generic [ref=e356]: Chemistry
+          - generic [ref=e357]: Biology
+          - generic [ref=e358]: English
+          - generic [ref=e359]: Kiswahili
+          - generic [ref=e360]: History
+          - generic [ref=e361]: Geography
+          - generic [ref=e362]: Business Studies
+          - generic [ref=e363]: Computer Science
+          - generic [ref=e364]: Economics
+          - generic [ref=e365]: Agriculture
+          - generic [ref=e366]: CRE
+          - generic [ref=e367]: IRE
+          - generic [ref=e368]: Art & Design
+          - generic [ref=e369]: Medicine
+          - generic [ref=e370]: Engineering
+          - generic [ref=e371]: Law
+          - generic [ref=e372]: Data Science
+          - generic [ref=e373]: Psychology
+          - generic [ref=e374]: Nursing
+          - generic [ref=e375]: Software Engineering
+          - generic [ref=e376]: Architecture
+        - paragraph [ref=e377]: More subjects added based on community demand.
+  - contentinfo [ref=e378]:
+    - generic [ref=e379]:
+      - generic [ref=e381]:
+        - generic [ref=e382]:
+          - generic [ref=e383]: Stay in the loop
+          - heading "Keep your learning momentum close." [level=3] [ref=e386]
+          - paragraph [ref=e387]: Product updates, tutor news, and institution rollout milestones in your inbox.
+        - generic [ref=e389]:
+          - generic [ref=e390]: Email address
+          - textbox "Email address" [ref=e391]:
+            - /placeholder: you@school.ac.ke
+          - button "Subscribe to the newsletter" [ref=e392] [cursor=pointer]
+      - generic [ref=e393]:
+        - generic [ref=e394]:
+          - link "Edyfra Home" [ref=e395] [cursor=pointer]:
+            - /url: /
+            - img "Edyfra Logo" [ref=e397]
+            - generic [ref=e398]: Edyfra
+          - paragraph [ref=e399]: Built in Nairobi for students, tutors, and institutions that want one calmer place to learn, teach, and track progress.
+          - generic [ref=e400]:
+            - generic [ref=e401]: Students, tutors, and schools
+            - generic [ref=e407]: edyfraplatform@gmail.com
+            - generic [ref=e412]: Nairobi, Kenya
+          - generic [ref=e417]:
+            - link "Contact Edyfra via Email" [ref=e418] [cursor=pointer]:
+              - /url: mailto:edyfraplatform@gmail.com
+            - link "Join Edyfra WhatsApp Channel" [ref=e422] [cursor=pointer]:
+              - /url: https://whatsapp.com/channel/0029Vb7GgdmHLHQfoNgSjo1P
+            - link "Visit the institutions page" [ref=e425] [cursor=pointer]:
+              - /url: /institution
+        - generic [ref=e429]:
+          - heading "Explore" [level=4] [ref=e430]
+          - list [ref=e431]:
+            - listitem [ref=e432]:
+              - link "Features" [ref=e433] [cursor=pointer]:
+                - /url: /features
+            - listitem [ref=e434]:
+              - link "Community" [ref=e435] [cursor=pointer]:
+                - /url: /community
+            - listitem [ref=e436]:
+              - link "Roadmap" [ref=e437] [cursor=pointer]:
+                - /url: /roadmap
+            - listitem [ref=e438]:
+              - link "News Feed" [ref=e439] [cursor=pointer]:
+                - /url: /news
+            - listitem [ref=e440]:
+              - link "About Us" [ref=e441] [cursor=pointer]:
+                - /url: /about
+        - generic [ref=e442]:
+          - heading "Get Started" [level=4] [ref=e443]
+          - list [ref=e444]:
+            - listitem [ref=e445]:
+              - link "Create Account" [ref=e446] [cursor=pointer]:
+                - /url: /signup
+            - listitem [ref=e447]:
+              - link "Sign In" [ref=e448] [cursor=pointer]:
+                - /url: /login
+            - listitem [ref=e449]:
+              - link "Talk to Support" [ref=e450] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e451]:
+          - heading "Institutions" [level=4] [ref=e452]
+          - list [ref=e453]:
+            - listitem [ref=e454]:
+              - link "Institution Overview" [ref=e455] [cursor=pointer]:
+                - /url: /institution
+            - listitem [ref=e456]:
+              - link "Institution Login" [ref=e457] [cursor=pointer]:
+                - /url: /institution/login
+            - listitem [ref=e458]:
+              - link "Book Onboarding" [ref=e459] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e460]:
+          - heading "Support" [level=4] [ref=e461]
+          - list [ref=e462]:
+            - listitem [ref=e463]:
+              - link "Email Us" [ref=e464] [cursor=pointer]:
+                - /url: mailto:edyfraplatform@gmail.com
+            - listitem [ref=e465]:
+              - link "WhatsApp Channel" [ref=e466] [cursor=pointer]:
+                - /url: https://whatsapp.com/channel/0029Vb7GgdmHLHQfoNgSjo1P
+            - listitem [ref=e467]:
+              - link "Contact Page" [ref=e468] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e469]:
+          - heading "Legal" [level=4] [ref=e470]
+          - list [ref=e471]:
+            - listitem [ref=e472]:
+              - link "Privacy & Cookies" [ref=e473] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e474]:
+              - link "Terms & Security" [ref=e475] [cursor=pointer]:
+                - /url: /terms
+      - generic [ref=e476]:
+        - paragraph [ref=e477]:
+          - generic [ref=e478]: © 2026 Edyfra Platforms.
+          - generic [ref=e479]: ·
+          - generic [ref=e480]: built by
+          - link "Mash" [ref=e481] [cursor=pointer]:
+            - /url: https://marsley-mash-site.vercel.app
+        - generic [ref=e482]:
+          - link "Privacy" [ref=e483] [cursor=pointer]:
+            - /url: /privacy
+          - link "Terms" [ref=e484] [cursor=pointer]:
+            - /url: /terms
+          - link "Institutions" [ref=e485] [cursor=pointer]:
+            - /url: /institution
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e491] [cursor=pointer]

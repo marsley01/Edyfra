@@ -155,7 +155,7 @@ export function SettingsClient({
                       {a.title ?? a.role.replace("INSTITUTION_", "")} · {a.email}
                     </p>
                   </div>
-                  <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-indigo-700 ring-1 ring-indigo-200">
+                  <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-primary ring-1 ring-primary">
                     {a.role.replace("INSTITUTION_", "")}
                   </span>
                 </div>
@@ -175,7 +175,7 @@ export function SettingsClient({
                   key={p.tier}
                   className={
                     p.tier === institution.plan
-                      ? "rounded-xl border-2 border-indigo-300 bg-indigo-50/40 p-4"
+                      ? "rounded-xl border-2 border-primary bg-primary/40 p-4"
                       : "rounded-xl border border-gray-200 p-4"
                   }
                 >
@@ -185,7 +185,7 @@ export function SettingsClient({
                     {p.studentCap == null ? "Unlimited" : `Up to ${p.studentCap} students`}
                   </p>
                   {p.tier === institution.plan && (
-                    <span className="mt-3 inline-block rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-white">
+                    <span className="mt-3 inline-block rounded-full bg-primary px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-white">
                       Current
                     </span>
                   )}
@@ -211,7 +211,7 @@ export function SettingsClient({
         </Card>
 
         <div className="flex justify-end">
-          <Button type="submit" disabled={pending} className="bg-indigo-600 hover:bg-indigo-700">
+          <Button type="submit" disabled={pending} className="bg-primary hover:bg-primary">
             {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             Save changes
           </Button>
@@ -343,7 +343,7 @@ function AddDeputy({ onClose }: { onClose: () => void }) {
             <Button type="button" variant="ghost" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={pending} className="bg-indigo-600 hover:bg-indigo-700">
+            <Button type="submit" disabled={pending} className="bg-primary hover:bg-primary">
               {pending ? "Sending…" : "Send invite"}
             </Button>
           </div>
@@ -375,7 +375,7 @@ function Input({ className = "", ...props }: { onChange?: (v: string) => void; c
     <input
       {...rest}
       onChange={onChange ? (e) => onChange(e.target.value) : undefined}
-      className={`min-h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-base text-gray-900 placeholder:text-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:text-sm ${className}`}
+      className={`min-h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-base text-gray-900 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm ${className}`}
     />
   );
 }
@@ -393,7 +393,7 @@ function Select({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="min-h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-base text-gray-900 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:text-sm"
+      className="min-h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-base text-gray-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm"
     >
       {options.map((o) => (
         <option key={o.value} value={o.value}>

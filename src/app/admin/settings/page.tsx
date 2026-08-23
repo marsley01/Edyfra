@@ -202,20 +202,20 @@ export default function AdminSettingsPage() {
         <Card className="border-white/5 bg-white/[0.02] backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
           <CardHeader className="p-10 border-b border-white/5">
             <div className="flex items-center gap-4 mb-2">
-              <Cpu className="h-6 w-6 text-purple-400" />
+              <Cpu className="h-6 w-6 text-orange-400" />
               <CardTitle className="text-2xl font-black">AI Configurations</CardTitle>
             </div>
             <CardDescription>Manage API keys and AI features.</CardDescription>
           </CardHeader>
           <CardContent className="p-10 space-y-8">
-            <div className="space-y-4 p-6 rounded-3xl bg-purple-500/5 border border-purple-500/20">
+            <div className="space-y-4 p-6 rounded-3xl bg-brand-orange/5 border border-brand-orange/20">
                <div className="flex items-center justify-between mb-4">
-                  <Label className="text-sm font-black uppercase tracking-widest text-purple-400">OpenRouter API Key</Label>
+                  <Label className="text-sm font-black uppercase tracking-widest text-orange-400">OpenRouter API Key</Label>
                   <Button 
                     variant="ghost" 
                     size="icon" 
                     onClick={() => setShowKey(!showKey)}
-                    className="h-8 w-8 text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
+                    className="h-8 w-8 text-orange-400 hover:text-orange-300 hover:bg-brand-orange/10"
                   >
                     {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </Button>

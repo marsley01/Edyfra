@@ -2,24 +2,31 @@ import { EdyfraAIService } from "./ai-service";
 import { createEdyfraMemory } from "./memory-setup";
 import { createEdyfraAgentSystem } from "./agents";
 import type { EdyfraAgentSystem } from "./agents";
+import { getAIConfig } from "@/lib/ai-config";
 
 let aiInstance: EdyfraAIService | null = null;
+let instanceKey: string | null = null;
 let memoryInstance: ReturnType<typeof createEdyfraMemory> | null = null;
 let agentSystemInstance: EdyfraAgentSystem | null = null;
 
-function getConfig() {
+async function getConfig() {
+  const config = await getAIConfig();
   return {
-    openrouterKey: process.env.OPENROUTER_API_KEY,
+    openrouterKey: config.apiKey ?? undefined,
     googleKey: process.env.GOOGLE_AI_KEY,
-    appUrl: "https://edyfra-v2.vercel.app",
+    appUrl: process.env.NEXT_PUBLIC_APP_URL || "https://edyfra.com",
     appName: "Edyfra",
   };
 }
 
 export async function getAI(): Promise<EdyfraAIService> {
-  if (!aiInstance) {
-    aiInstance = new EdyfraAIService(getConfig());
+  const config = await getConfig();
+
+  // Rebuild when the active key changes (e.g. admin saved a new one).
+  if (!aiInstance || instanceKey !== (config.openrouterKey ?? null)) {
+    aiInstance = new EdyfraAIService(config);
     await aiInstance.initialize();
+    instanceKey = config.openrouterKey ?? null;
   }
   return aiInstance;
 }
@@ -42,6 +49,7 @@ export async function getAgentSystem(): Promise<EdyfraAgentSystem> {
 
 export async function resetInstances(): Promise<void> {
   aiInstance = null;
+  instanceKey = null;
   memoryInstance = null;
   agentSystemInstance = null;
 }

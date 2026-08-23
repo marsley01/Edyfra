@@ -1,43 +1,25 @@
-import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { ReviewsModerationClient } from "./reviews-client";
-import prisma from "@/lib/prisma";
+import { checkAdminStatus } from "@/app/actions/admin";
+import { getPendingReviews, getApprovedReviews } from "@/app/actions/reviews";
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminReviewsPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  // Same admin gate as the rest of /admin (env founder emails + DB ADMIN role)
+  const isAdmin = await checkAdminStatus();
+  if (!isAdmin) redirect("/dashboard");
 
-  const dbUser = user ? await prisma.user.findFirst({
-    where: {
-      OR: [
-        { id: user.id },
-        ...(user.email ? [{ email: user.email }] : [])
-      ]
-    },
-    select: { role: true }
-  }) : null;
-
-  if (!user || dbUser?.role !== "ADMIN") {
-    redirect("/dashboard");
-  }
-
-  // Fetch all reviews (pending + approved)
-  const { data: pending } = await supabase
-    .from("reviews")
-    .select("*")
-    .eq("approved", false)
-    .order("created_at", { ascending: false });
-
-  const { data: approved } = await supabase
-    .from("reviews")
-    .select("*")
-    .eq("approved", true)
-    .order("created_at", { ascending: false });
+  // Fetch from the same table homepage reviews are submitted to (siteTestimonial)
+  const [pendingReviews, approvedReviews] = await Promise.all([
+    getPendingReviews(),
+    getApprovedReviews(),
+  ]);
 
   return (
     <ReviewsModerationClient
-      pendingReviews={pending || []}
-      approvedReviews={approved || []}
+      pendingReviews={pendingReviews}
+      approvedReviews={approvedReviews}
     />
   );
 }

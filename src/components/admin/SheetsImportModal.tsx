@@ -79,7 +79,7 @@ export function SheetsImportModal({ open, onOpenChange }: SheetsImportModalProps
       <DialogContent className="font-sans max-w-lg rounded-xl border-border/40">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl tracking-tight">
-            <FileSpreadsheet className="w-5 h-5 text-violet-600" />
+            <FileSpreadsheet className="w-5 h-5 text-brand-orange-dark" />
             Import Google Sheet
           </DialogTitle>
           <DialogDescription className="text-sm">
@@ -113,7 +113,7 @@ export function SheetsImportModal({ open, onOpenChange }: SheetsImportModalProps
                   disabled={isLoading}
                 />
                 <div className="flex items-start gap-1.5 mt-1.5 text-xs text-muted-foreground bg-muted/30 p-2 rounded-md">
-                  <Info className="w-3.5 h-3.5 mt-0.5 shrink-0 text-violet-500" />
+                  <Info className="w-3.5 h-3.5 mt-0.5 shrink-0 text-brand-orange" />
                   <p>
                     <strong>Important:</strong> The sheet must be set to <em>"Anyone with the link - Viewer"</em>. Private sheets will fail to import.
                   </p>
@@ -135,7 +135,7 @@ export function SheetsImportModal({ open, onOpenChange }: SheetsImportModalProps
               <Button 
                 onClick={handleImport} 
                 disabled={isLoading || !sheetsUrl}
-                className="bg-violet-600 hover:bg-violet-700 text-white"
+                className="bg-brand-orange-dark hover:bg-orange-700 text-white"
               >
                 {isLoading ? (
                   <>
@@ -187,7 +187,7 @@ export function SheetsImportModal({ open, onOpenChange }: SheetsImportModalProps
             )}
 
             <div className="flex justify-center gap-3 pt-4">
-              <Button onClick={() => onOpenChange(false)} className="bg-violet-600 hover:bg-violet-700 text-white">
+              <Button onClick={() => onOpenChange(false)} className="bg-brand-orange-dark hover:bg-orange-700 text-white">
                 Close
               </Button>
               <Button variant="outline" onClick={handleReset}>

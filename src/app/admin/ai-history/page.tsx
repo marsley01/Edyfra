@@ -109,11 +109,11 @@ export default function AdminAiHistoryPage() {
     <div className="p-6 sm:p-8 max-w-7xl mx-auto space-y-8">
       {/* Hero */}
       <div className="relative overflow-hidden rounded-[2.5rem] border border-border bg-card p-8 sm:p-10 shadow-xl">
-        <div className="pointer-events-none absolute -top-32 -right-32 h-80 w-80 rounded-full bg-violet-500/10 dark:bg-violet-500/20 blur-[120px]" />
+        <div className="pointer-events-none absolute -top-32 -right-32 h-80 w-80 rounded-full bg-brand-orange/10 dark:bg-brand-orange/20 blur-[120px]" />
         <div className="pointer-events-none absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-cyan-500/10 dark:bg-cyan-500/20 blur-[120px]" />
         <div className="relative flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/30 text-[10px] font-black uppercase tracking-[0.22em] text-violet-600 dark:text-violet-300">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-orange/10 border border-brand-orange/30 text-[10px] font-black uppercase tracking-[0.22em] text-brand-orange-dark dark:text-orange-300">
               <Bot className="h-3 w-3" />
               AI Conversations
             </div>

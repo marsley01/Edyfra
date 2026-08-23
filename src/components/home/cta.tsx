@@ -1,11 +1,19 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowRight, Sparkles, Play } from "lucide-react";
+import { ArrowRight, Play } from "lucide-react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
+
+const MilkyWave = dynamic(
+  () => import("@/components/three/MilkyWave").then((m) => m.MilkyWave),
+  { ssr: false }
+);
 
 export function HomeCTA() {
   return (
-    <section className="relative h-screen max-h-[900px] min-h-[600px] flex items-center justify-center overflow-hidden">
+    <section className="relative flex h-screen max-h-[900px] min-h-[600px] items-center justify-center overflow-hidden">
       {/* ── Image Background ── */}
       <div className="absolute inset-0 w-full h-full">
         <Image
@@ -16,10 +24,11 @@ export function HomeCTA() {
           sizes="100vw"
         />
       </div>
+      <MilkyWave className="absolute inset-0 z-[1] opacity-90" />
 
       {/* ── Gradient Overlays ── */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10 z-10" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/20 z-10" />
+      <div className="absolute inset-0 bg-gradient-to-t from-deep-void/90 via-deep-void/40 to-deep-void/20 z-10" />
+      <div className="absolute inset-0 bg-gradient-to-r from-deep-void/50 via-transparent to-deep-void/30 z-10" />
 
       {/* ── Subtle Grid Pattern ── */}
       <div
@@ -32,9 +41,9 @@ export function HomeCTA() {
       />
 
       {/* ── Floating Decorative Badges ── */}
-      <div className="absolute top-[12%] right-[8%] z-20 hidden lg:flex items-center gap-2.5 bg-[#0F0527]/85 border border-white/10 rounded-xl px-4 py-2.5 shadow-2xl">
-        <div className="w-8 h-8 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-          <Play className="h-4 w-4 text-emerald-400" />
+      <div className="absolute top-[12%] right-[8%] z-20 hidden lg:flex items-center gap-2.5 bg-deep-void/85 border border-glass-stroke rounded-xl px-4 py-2.5 shadow-2xl">
+        <div className="w-8 h-8 rounded-xl bg-emerald-energy/20 flex items-center justify-center">
+          <Play className="h-4 w-4 text-emerald-energy" />
         </div>
         <div className="text-left">
           <p className="text-[9px] font-bold uppercase tracking-widest text-white/80">Active Learning</p>
@@ -42,9 +51,9 @@ export function HomeCTA() {
         </div>
       </div>
 
-      <div className="absolute bottom-[18%] left-[6%] z-20 hidden lg:flex items-center gap-2.5 bg-[#0F0527]/85 border border-white/10 rounded-xl px-4 py-2.5 shadow-2xl">
+      <div className="absolute bottom-[18%] left-[6%] z-20 hidden lg:flex items-center gap-2.5 bg-deep-void/85 border border-glass-stroke rounded-xl px-4 py-2.5 shadow-2xl">
         <div className="flex -space-x-2">
-          {["#00F0FF", "#9D4EDD", "#E07A5F", "#39FF14"].map((c, i) => (
+          {["#FF9500", "#FF9500", "#4edea3", "#B8A6E0"].map((c, i) => (
             <div
               key={i}
               className="w-7 h-7 rounded-full border-2 border-black/40 flex items-center justify-center text-[7px] text-white font-bold"
@@ -62,27 +71,19 @@ export function HomeCTA() {
 
       {/* ── Main Content Card ── */}
       <div className="relative z-20 w-full max-w-4xl mx-auto px-5">
-        <div className="bg-[#0F0527]/85 border border-white/10 rounded-2xl p-8 sm:p-12 md:p-16 shadow-[0_0_80px_-20px_rgba(0,0,0,0.3)]">
+        <div className="bg-deep-void/85 border border-glass-stroke rounded-xl p-8 sm:p-12 md:p-16 shadow-[0_0_80px_-20px_rgba(0,0,0,0.3)] backdrop-blur-xl">
           <div className="space-y-8 text-center">
-            {/* Eyebrow badge */}
-            <div className="inline-flex items-center gap-2 bg-white/[0.03] border border-white/10 rounded-lg px-4 py-2">
-              <Sparkles className="h-3.5 w-3.5 text-brand-accent" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-white/80">
-                Kenya&apos;s Study Platform
-              </span>
-            </div>
-
             {/* Headline */}
-            <h2 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tightest leading-[0.9] text-white">
+            <h2 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.95] text-on-surface">
               Your study
               <br />
-              <span className="bg-gradient-to-r from-[#00F0FF] via-[#9D4EDD] to-[#E07A5F] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-brand-orange to-[#ffc107] bg-clip-text text-transparent">
                 starts now.
               </span>
             </h2>
 
             {/* Subtitle */}
-            <p className="text-base sm:text-lg md:text-xl text-white/80 font-medium max-w-xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-on-surface-variant font-medium max-w-xl mx-auto leading-relaxed">
               Mash AI, verified tutors, and a community of Kenyan scholars — all in one place.
               Free to start, built for steady progress.
             </p>
@@ -90,7 +91,7 @@ export function HomeCTA() {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <Link href="/signup">
-                <Button className="group h-14 px-10 rounded-xl bg-white text-foreground hover:bg-white/90 font-bold text-sm transition-all active:scale-95 shadow-2xl flex items-center gap-2">
+                <Button className="group h-14 px-10 rounded-full bg-brand-orange text-deep-void hover:bg-brand-orange-dark primary-glow-hover transition-smooth font-bold text-base flex items-center gap-2 active:scale-95">
                   Create My Study Space
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
@@ -98,7 +99,7 @@ export function HomeCTA() {
               <Link href="/about">
                 <Button
                   variant="outline"
-                  className="h-14 px-10 rounded-xl border-white/20 text-white hover:bg-white/10 font-bold text-sm transition-all flex items-center gap-2"
+                  className="h-14 px-10 rounded-full border-glass-stroke bg-transparent text-on-surface hover:bg-glass-fill hover:text-brand-orange hover:border-brand-orange/50 transition-smooth font-bold text-base flex items-center gap-2"
                 >
                   <Play className="h-4 w-4" />
                   See The Mission
@@ -109,7 +110,7 @@ export function HomeCTA() {
             {/* Trust indicator */}
             <div className="flex items-center justify-center gap-3 pt-4">
               <div className="flex -space-x-2">
-                {["#8b5cf6", "#06b6d4", "#f59e0b", "#10b981", "#E07A5F"].map((c, i) => (
+                {["#FF9500", "#FF9500", "#4edea3", "#B8A6E0", "#e68600"].map((c, i) => (
                   <div
                     key={i}
                     className="w-8 h-8 rounded-full border-2 border-black/30 flex items-center justify-center text-[8px] text-white font-bold shadow-lg"
@@ -119,7 +120,7 @@ export function HomeCTA() {
                   </div>
                 ))}
               </div>
-              <p className="text-sm text-white/85">
+              <p className="text-sm text-on-surface-variant">
                 Join students studying with verified tutors
               </p>
             </div>

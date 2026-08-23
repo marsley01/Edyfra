@@ -9,16 +9,16 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-violet text-white rounded-btn font-bold text-[0.9rem] border-none transition-all duration-120 hover:bg-[#6D28D9] hover:scale-[1.02]",
+          "bg-primary text-primary-foreground rounded-btn font-bold text-[0.9rem] border-none transition-all duration-120 hover:brightness-90 hover:scale-[1.02]",
         outline:
-          "bg-transparent text-text-200 border-[1.5px] border-border rounded-btn font-bold text-[0.9rem] hover:bg-page-bg transition-all duration-120",
+          "bg-transparent text-on-surface border-[1.5px] border-glass-stroke rounded-full font-bold text-[0.9rem] hover:border-brand-orange/50 hover:text-brand-orange transition-all duration-120",
         secondary:
-          "bg-violet-light text-violet border-[1.5px] border-border rounded-btn font-bold text-[0.9rem] hover:bg-[#E9DFFF] transition-all duration-120",
+          "bg-secondary text-secondary-foreground border-[1.5px] border-transparent rounded-btn font-bold text-[0.9rem] hover:brightness-110 transition-all duration-120",
         ghost:
-          "bg-transparent text-text-200 border-[1.5px] border-border rounded-btn font-bold text-[0.9rem] hover:bg-page-bg transition-all duration-120",
+          "bg-transparent text-on-surface-variant border-none rounded-full font-bold text-[0.9rem] hover:bg-secondary hover:text-brand-orange transition-all duration-120",
         destructive:
           "bg-destructive/10 text-destructive border border-destructive/20 rounded-btn font-bold text-[0.9rem] hover:bg-destructive/20 transition-all duration-120",
-        link: "text-violet underline-offset-4 hover:underline transition-all duration-120",
+        link: "text-primary underline-offset-4 hover:underline transition-all duration-120",
       },
       size: {
         default: "h-11 px-6 py-3",

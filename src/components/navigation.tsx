@@ -78,35 +78,35 @@ export function Navigation() {
     <>
       <nav
       className={cn(
-        "fixed top-0 w-full z-50 transition-all duration-300 border-b border-transparent pt-[env(safe-area-inset-top,0px)]",
-        scrolled ? "bg-background/80 backdrop-blur-md border-border shadow-sm" : ""
+        "fixed top-0 w-full z-50 transition-all duration-300 bg-glass-fill backdrop-blur-xl border-b border-glass-stroke pt-[env(safe-area-inset-top,0px)]",
+        scrolled ? "shadow-sm" : ""
       )}
       aria-label="Main navigation"
     >
-      <div className={cn("container mx-auto px-4 sm:px-6 flex items-center justify-between", scrolled ? "h-14 sm:h-16" : "h-16 sm:h-20")}>
+      <div className={cn("container mx-auto px-4 sm:px-6 flex items-center justify-between", scrolled ? "h-14 sm:h-16" : "h-14 sm:h-16")}>
         {/* Logo — icon + text */}
         <Link href="/" className="flex items-center gap-2.5 group" aria-label="Edyfra Home">
           <Image src="/image.png" alt="Edyfra Logo" width={36} height={36} className="w-9 h-9 rounded-xl shadow-lg group-hover:scale-105 transition-transform object-cover" />
-          <span className="text-xl font-black tracking-tight text-foreground group-hover:text-primary transition-colors">
+          <span className="text-[28px] font-bold tracking-tight text-foreground group-hover:text-brand-orange transition-colors">
             Edyfra
           </span>
         </Link>
 
         {/* Desktop Links */}
-        <div className="hidden lg:flex items-center gap-8">
+        <div className="hidden lg:flex items-center justify-center gap-12 flex-1">
           {navLinks.map((link) => (
             <Link
               key={link.name}
               href={link.href}
               aria-current={isLinkActive(link.href) ? "page" : undefined}
               className={cn(
-                "text-sm font-medium transition-colors relative group",
-                isLinkActive(link.href) ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                "text-label-md font-medium transition-colors relative group",
+                isLinkActive(link.href) ? "text-brand-orange" : "text-on-surface-variant hover:text-brand-orange"
               )}
             >
               {link.name}
               <span className={cn(
-                "absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300",
+                "absolute -bottom-1 left-0 h-0.5 bg-brand-orange transition-all duration-300",
                 isLinkActive(link.href) ? "w-full" : "w-0 group-hover:w-full"
               )} />
             </Link>
@@ -114,12 +114,12 @@ export function Navigation() {
         </div>
 
         {/* Desktop Actions */}
-        <div className="hidden lg:flex items-center gap-4">
+        <div className="hidden lg:flex items-center gap-3 ml-auto">
           {user ? (
             <>
               <ThemeToggle />
               <Link href="/dashboard">
-                <Button variant="ghost" className="rounded-full px-6 font-semibold">
+                <Button variant="ghost" className="rounded-full px-6 font-semibold text-on-surface-variant hover:text-brand-orange">
                   Dashboard
                 </Button>
               </Link>
@@ -128,12 +128,10 @@ export function Navigation() {
             <>
               <ThemeToggle />
               <Link href="/login">
-                <Button variant="ghost" className="rounded-full px-6 font-semibold">Sign In</Button>
+                <Button variant="ghost" className="rounded-full px-6 py-3 font-semibold text-on-surface-variant hover:text-brand-orange">Sign In</Button>
               </Link>
-              <Link href="/signup">
-                <Button className="rounded-full px-6 font-bold bg-foreground text-background hover:bg-foreground/90 transition-all active:scale-95 shadow-xl">
-                  Get Started
-                </Button>
+              <Link href="/signup" className="primary-glow-hover transition-smooth inline-flex items-center justify-center rounded-full bg-brand-orange px-6 py-3 text-label-md font-bold text-deep-void hover:bg-brand-orange-dark">
+                Get Started
               </Link>
             </>
           )}
@@ -230,7 +228,7 @@ export function Navigation() {
               ) : (
                 <>
                   <Link href="/signup" onClick={() => setIsOpen(false)} className="block w-full">
-                    <Button className="w-full h-14 rounded-2xl font-bold text-lg bg-foreground text-background hover:bg-foreground/90 shadow-xl active:scale-[0.98] transition-all">
+                    <Button className="w-full h-14 rounded-full font-bold text-lg bg-brand-orange text-deep-void hover:bg-brand-orange-dark primary-glow active:scale-[0.98] transition-all">
                       Get Started
                     </Button>
                   </Link>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,7 +20,7 @@ const TYPE_ICONS: Record<string, any> = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  ANNOUNCEMENT: "bg-violet-500/10 text-violet-500",
+  ANNOUNCEMENT: "bg-brand-orange/10 text-brand-orange",
   MATCH_FOUND: "bg-emerald-500/10 text-emerald-500",
   POINTS_EARNED: "bg-yellow-500/10 text-yellow-600",
   REVIEW_RECEIVED: "bg-blue-500/10 text-blue-500",
@@ -230,3 +230,4 @@ export default function TutorNotificationsPage() {
     </div>
   );
 }
+

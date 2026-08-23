@@ -71,18 +71,17 @@ Write a 3-sentence insight about this student's academic performance, their stro
   return { ok: true as const, insight, strongest: strongest.subject, weakest: weakest.subject };
 }
 
+import { getAIConfig, openRouterHeaders } from "@/lib/ai-config";
+
 async function callOpenRouter(prompt: string): Promise<string> {
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) throw new Error("Missing OPENROUTER_API_KEY");
+  const { apiKey, model } = await getAIConfig();
+  if (!apiKey) throw new Error("Missing OpenRouter API key — configure it in Admin → AI Settings.");
 
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
+    headers: openRouterHeaders(apiKey),
     body: JSON.stringify({
-      model: "openai/gpt-4o-mini",
+      model,
       messages: [
         {
           role: "system",

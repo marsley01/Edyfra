@@ -43,7 +43,7 @@ export function ConditionalShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Navigation />
-      <main className="min-h-[100dvh] pt-20">{children}</main>
+      <main className="min-h-[100dvh] pt-14 sm:pt-16">{children}</main>
       <Footer />
     </>
   );

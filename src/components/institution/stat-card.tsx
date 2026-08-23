@@ -13,21 +13,21 @@ interface StatCardProps {
 }
 
 const ACCENT_BG: Record<NonNullable<StatCardProps["accent"]>, string> = {
-  indigo: "from-indigo-500/10 to-indigo-500/0",
+  indigo: "from-blue-500/10 to-blue-500/0",
   cyan: "from-cyan-500/10 to-cyan-500/0",
   emerald: "from-emerald-500/10 to-emerald-500/0",
   amber: "from-amber-500/10 to-amber-500/0",
   rose: "from-rose-500/10 to-rose-500/0",
-  violet: "from-violet-500/10 to-violet-500/0",
+  violet: "from-brand-orange/10 to-coral/0",
 };
 
 const ACCENT_TEXT: Record<NonNullable<StatCardProps["accent"]>, string> = {
-  indigo: "text-indigo-500",
+  indigo: "text-primary",
   cyan: "text-cyan-500",
   emerald: "text-emerald-500",
   amber: "text-amber-500",
   rose: "text-rose-500",
-  violet: "text-violet-500",
+  violet: "text-brand-orange",
 };
 
 export function StatCard({

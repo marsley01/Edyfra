@@ -1,9 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
+import { ArrowUp, Bot } from "lucide-react";
+
+const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 const mockMessages = [
   {
@@ -26,36 +27,41 @@ const mockMessages = [
 
 export function MashSpotlight() {
   return (
-    <section className="py-32 md:py-48 px-6 bg-secondary/10">
-      <div className="container-max">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+    <section className="px-4 py-20 md:px-16">
+      <div className="mx-auto max-w-screen-2xl">
+        <div className="grid grid-cols-1 items-center gap-20 lg:grid-cols-2">
           {/* Left — Copy */}
           <motion.div
             initial={{ opacity: 0, x: -24 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="space-y-8"
+            transition={{ duration: 0.8, ease: EASE }}
+            className="space-y-lg"
           >
-            <div className="space-y-2">
-              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">
-                AI Study Companion
-              </p>
-              <h2 className="text-4xl md:text-5xl font-black tracking-tightest leading-none">
-                Meet Mash —<br />
-                <span className="text-primary">your AI study companion.</span>
-              </h2>
-            </div>
-            <p className="text-lg font-medium text-muted-foreground leading-relaxed max-w-md">
-              Mash steps in when no partner is available, guides you through
-              tough questions without giving you the answers, and remembers your
-              subject so every conversation feels personal.
+            <span className="block uppercase tracking-[0.18em] text-label-sm text-brand-orange">
+              AI Study Companion
+            </span>
+            <h2 className="text-headline-lg font-bold md:text-[48px] md:leading-[56px]">
+              Meet Mash — <br />
+              your AI study companion.
+            </h2>
+            <p className="max-w-md text-body-lg text-on-surface-variant">
+              Mash steps in when no partner is available, guides you through tough questions
+              without giving you the answers, and remembers your subject so every conversation
+              feels personal. No cap, it&apos;s a lifesaver.
             </p>
-            <Link href="/signup">
-              <Button className="h-14 px-10 rounded-full bg-primary hover:bg-primary/90 text-white font-black text-xs tracking-widest uppercase shadow-lg shadow-primary/20 transition-all active:scale-95">
+            <div className="flex flex-wrap items-center gap-6">
+              <Link
+                href="/signup"
+                className="primary-glow-hover transition-smooth inline-flex items-center justify-center rounded-full bg-white px-12 py-6 text-title-md font-bold text-deep-void hover:bg-brand-orange"
+              >
                 Try Mash
-              </Button>
-            </Link>
+              </Link>
+              <div className="flex items-center gap-3 text-label-md text-emerald-energy">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-energy" />
+                Always available
+              </div>
+            </div>
           </motion.div>
 
           {/* Right — Mock Chat */}
@@ -63,32 +69,22 @@ export function MashSpotlight() {
             initial={{ opacity: 0, x: 24 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="rounded-[2rem] border border-border/50 bg-background overflow-hidden shadow-2xl"
+            transition={{ duration: 0.8, delay: 0.1, ease: EASE }}
+            className="glass-card relative flex h-[500px] flex-col p-3 md:p-6"
           >
             {/* Chat Header */}
-            <div className="px-6 py-4 border-b border-border/50 flex items-center gap-3 bg-secondary/30">
-              <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center">
-                <Sparkles className="h-4 w-4 text-white" />
+            <div className="mb-6 flex items-center gap-3 border-b border-glass-stroke pb-md">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-brand-orange to-brand-orange-dark shadow-lg">
+                <Bot className="h-5 w-5 text-white" />
               </div>
               <div>
-                <p className="text-xs font-black uppercase tracking-widest">
-                  Mash AI
-                </p>
-                <p className="text-[10px] text-muted-foreground font-medium">
-                  Always available
-                </p>
-              </div>
-              <div className="ml-auto flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                <span className="text-[10px] font-black text-emerald-500 uppercase tracking-wider">
-                  Online
-                </span>
+                <h4 className="text-title-md font-bold">Mash AI</h4>
+                <span className="text-label-sm text-emerald-energy">Online</span>
               </div>
             </div>
 
             {/* Messages */}
-            <div className="p-6 space-y-4 min-h-[320px]">
+            <div className="mb-6 flex flex-1 flex-col gap-6 overflow-y-auto pr-3">
               {mockMessages.map((msg, i) => (
                 <motion.div
                   key={i}
@@ -99,10 +95,10 @@ export function MashSpotlight() {
                   className={`flex ${msg.role === "student" ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm font-medium leading-relaxed ${
+                    className={`max-w-[85%] rounded-2xl p-3 text-body-md shadow-lg md:p-6 ${
                       msg.role === "student"
-                        ? "bg-primary text-white rounded-br-sm"
-                        : "bg-secondary text-foreground rounded-bl-sm border border-border/50"
+                        ? "chat-bubble-user self-end text-on-surface"
+                        : "chat-bubble-ai self-start shadow-brand-orange/20"
                     }`}
                   >
                     {msg.text}
@@ -112,12 +108,23 @@ export function MashSpotlight() {
             </div>
 
             {/* Input Bar (visual only) */}
-            <div className="px-6 py-4 border-t border-border/50 bg-secondary/20">
-              <div className="h-11 rounded-xl bg-secondary/60 border border-border/50 flex items-center px-4">
-                <span className="text-sm text-muted-foreground font-medium">
-                  Ask Mash anything...
-                </span>
-              </div>
+            <div className="relative mt-auto pt-sm">
+              <input
+                aria-hidden="true"
+                tabIndex={-1}
+                className="w-full rounded-full border border-glass-stroke bg-surface-container py-6 pl-6 pr-12 text-body-md text-on-surface placeholder:text-outline-variant"
+                placeholder="Ask Mash anything..."
+                type="text"
+                readOnly
+              />
+              <button
+                type="button"
+                tabIndex={-1}
+                aria-hidden="true"
+                className="absolute right-xs top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-brand-orange text-deep-void transition-colors hover:bg-brand-orange-dark"
+              >
+                <ArrowUp className="h-5 w-5" />
+              </button>
             </div>
           </motion.div>
         </div>

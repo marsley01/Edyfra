@@ -12,7 +12,7 @@ import {
   CartesianGrid,
 } from "recharts";
 
-const PALETTE = ["#3730A3", "#06B6D4", "#10B981", "#F59E0B", "#EC4899", "#8B5CF6", "#EF4444", "#14B8A6"];
+const PALETTE = ["#FF9500", "#06B6D4", "#10B981", "#F59E0B", "#EC4899", "#8B5CF6", "#EF4444", "#14B8A6"];
 
 interface SeriesPoint {
   term: string;

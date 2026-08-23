@@ -13,7 +13,7 @@ export function InitialAvatar({ name, size = 80 }: InitialAvatarProps) {
         width: size,
         height: size,
         borderRadius: "50%",
-        background: "linear-gradient(135deg, #06B6D4, #0891B2)",
+        background: "linear-gradient(135deg, #FF9500, #E68600)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",

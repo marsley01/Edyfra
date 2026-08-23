@@ -13,7 +13,6 @@ import {
   Building2,
   MapPin,
   Heart,
-  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -119,7 +118,7 @@ export function Footer() {
   };
 
   return (
-    <footer className="relative overflow-hidden bg-card/80 border-t border-border">
+    <footer className="relative overflow-hidden bg-surface-container-lowest border-t border-surface-container-low">
       {/* Subtle background glow */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -top-40 left-1/4 h-[28rem] w-[28rem] rounded-full bg-primary/10 blur-[120px]" />
@@ -127,17 +126,17 @@ export function Footer() {
       </div>
 
       <div className="relative container-max pt-20 pb-10">
-        {/* Newsletter card */}
-        <div className="relative mb-20 overflow-hidden rounded-2xl border border-border bg-background p-8 sm:p-12">
-          <div className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-primary/5 blur-3xl" />
+        {/* Newsletter card — suppressHydrationWarning: purely decorative blobs
+            here tripped false mismatches for users with stale cached chunks */}
+        <div
+          className="glass-panel relative mb-20 overflow-hidden rounded-xl p-8 sm:p-12"
+          suppressHydrationWarning
+        >
+          <div className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-brand-orange/10 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-brand-orange/10 blur-3xl" />
 
           <div className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
             <div className="space-y-3 max-w-xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-[0.22em] text-primary">
-                <Sparkles className="h-3 w-3" />
-                Stay in the loop
-              </div>
               <h3 className="text-3xl sm:text-4xl font-black tracking-tightest text-foreground">
                 Keep your learning momentum close.
               </h3>
@@ -247,7 +246,7 @@ export function Footer() {
           {/* Link sections */}
           {footerLinks.map((section) => (
             <div key={section.title} className="space-y-4">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.22em] text-primary">
+              <h4 className="text-title-md font-bold text-on-surface">
                 {section.title}
               </h4>
               <ul className="space-y-2.5">
@@ -257,7 +256,7 @@ export function Footer() {
                       href={link.href}
                       target={link.external ? "_blank" : undefined}
                       rel={link.external ? "noreferrer" : undefined}
-                      className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5 group"
+                      className="text-sm font-medium text-on-surface-variant opacity-80 transition-all hover:text-brand-orange hover:opacity-100 inline-flex items-center gap-1.5 group"
                     >
                       {link.name}
                     </Link>

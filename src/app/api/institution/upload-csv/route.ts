@@ -5,6 +5,8 @@ import { cookies } from 'next/headers'
 import prisma from '@/lib/prisma'
 import { parse } from 'csv-parse/sync'
 import { validateUploadFile, sanitizeFileName } from '@/lib/supabase-storage'
+import { validateUpload } from '@/lib/upload-filter'
+import { checkRateLimit, rateLimits } from '@/lib/rate-limit/upstash'
 
 const MAX_CSV_SIZE_BYTES = 10 * 1024 * 1024 // 10MB
 const MAX_CSV_ROWS = 5000
@@ -20,6 +22,16 @@ export async function POST(request: Request) {
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    // Rate Limiting Check
+    const rateLimitKey = `${rateLimits.upload.prefix}:${user.id}`
+    const rateLimit = await checkRateLimit(rateLimitKey, rateLimits.upload.limit, rateLimits.upload.window)
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: "Too many uploads, slow down", message: "Too many uploads, slow down" },
+        { status: 429 }
+      )
+    }
 
     const dbUser = await prisma.user.findUnique({
       where: { id: user.id },
@@ -47,6 +59,15 @@ export async function POST(request: Request) {
     
     if (!file) return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
 
+    // Server-side validation using validateUpload
+    const uploadValidation = validateUpload(file)
+    if (!uploadValidation.valid) {
+      return NextResponse.json(
+        { error: "File type not permitted", message: "File type not permitted" },
+        { status: 400 }
+      )
+    }
+
     // Validate file size and extension
     const validation = validateUploadFile(file, {
       maxSizeBytes: MAX_CSV_SIZE_BYTES,
@@ -69,7 +90,7 @@ export async function POST(request: Request) {
     
     let storagePath = null;
     
-    let { error: uploadError } = await supabaseAdmin.storage
+    const { error: uploadError } = await supabaseAdmin.storage
       .from('institution-csvs')
       .upload(filePath, file)
       

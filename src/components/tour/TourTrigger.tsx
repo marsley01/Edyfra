@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TourTriggerProps {
@@ -61,15 +61,18 @@ export default function TourTrigger({ tourId, className }: TourTriggerProps) {
           whileTap={{ scale: 0.95 }}
           onClick={handleRestart}
           className={cn(
-            "fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full",
-            "bg-primary text-white shadow-2xl shadow-primary/30 hover:shadow-primary/50",
+            // Sits left of the AI bot orb, above the mobile bottom nav
+            // (nav ≈ 64px + safe-area) so neither the tutors nor alerts tabs are covered.
+            "fixed bottom-[calc(env(safe-area-inset-bottom)+5rem)] right-[5.25rem] lg:bottom-6 lg:right-24 z-40",
+            "flex items-center gap-2 px-4 py-3 rounded-full",
+            "bg-primary text-primary-foreground shadow-2xl shadow-primary/30 hover:shadow-primary/50",
             "text-xs font-black uppercase tracking-widest transition-all",
             className
           )}
           aria-label="Restart tour guide"
         >
-          <Sparkles className="h-4 w-4" />
-          <span className="hidden sm:inline">Tour</span>
+          <UserRound className="h-4 w-4" />
+          <span className="hidden sm:inline">Tour Guide</span>
         </motion.button>
       )}
     </AnimatePresence>

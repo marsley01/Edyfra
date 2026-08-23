@@ -25,6 +25,7 @@ export async function searchStudents(query: string): Promise<Student[]> {
         role: Role.STUDENT,
         OR: [
           { name: { contains: normalizedQuery, mode: "insensitive" } },
+          { username: { contains: normalizedQuery, mode: "insensitive" } },
           { county: { contains: normalizedQuery, mode: "insensitive" } },
         ],
       },
@@ -56,7 +57,9 @@ export async function searchStudents(query: string): Promise<Student[]> {
       name: user.name,
       school: user.county || "Kenya",
       course: "",
-      username: user.name.toLowerCase().replace(/\s/g, "_"),
+      username:
+        user.username ||
+        user.name.toLowerCase().replace(/\s/g, "_"),
       avatar_url:
         user.avatar || `https://api.dicebear.com/7.x/notionists/svg?seed=${user.id}`,
     }));

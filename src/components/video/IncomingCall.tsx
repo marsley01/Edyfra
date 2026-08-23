@@ -227,7 +227,7 @@ export function IncomingCall({ onAccepted }: IncomingCallProps) {
           <div className="absolute w-56 h-56 border border-primary/20 rounded-full animate-ping [animation-duration:3s]"></div>
         </div>
 
-        <div className="relative z-10 w-24 h-24 rounded-full bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center text-white text-4xl font-semibold shadow-lg shadow-primary/20">
+        <div className="relative z-10 w-24 h-24 rounded-full bg-gradient-to-br from-primary to-coral flex items-center justify-center text-white text-4xl font-semibold shadow-lg shadow-primary/20">
           {callerName.charAt(0).toUpperCase() || '?'}
         </div>
 

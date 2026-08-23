@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { createAdminClient } from "@/utils/supabase/admin";
+import { getAIConfig, invalidateAICache, DEFAULT_AI_MODEL } from "@/lib/ai-config";
 
 /**
  * Server-side rate limiter + usage logging for AI calls via OpenRouter.
@@ -12,10 +13,14 @@ import { createAdminClient } from "@/utils/supabase/admin";
  * Usage is persisted to `ai_usage_log` (id, user_id, timestamp, model,
  * tokens_used, feature) so the daily budget survives restarts and is shared
  * across every serverless instance.
+ *
+ * Credentials resolve through `getAIConfig()` — env var first, then the key
+ * saved by admins in AI Settings (platformSettings), so a new key works
+ * immediately without a redeploy.
  */
 
-export const AI_PRIMARY_MODEL = "google/gemini-2.0-flash-exp:free";
-export const AI_FALLBACK_MODEL = "google/gemini-2.0-flash-lite-preview-02-05:free";
+export const AI_PRIMARY_MODEL = DEFAULT_AI_MODEL;
+export const AI_FALLBACK_MODEL = "google/gemma-4-31b-it:free";
 
 export const PER_USER_RPM_LIMIT = 12;
 export const DAILY_CALL_LIMIT = 1400;
@@ -32,20 +37,28 @@ export class AIRateLimitError extends Error {
 }
 
 let openaiClient: OpenAI | null = null;
+let clientKey: string | null = null;
 
-function getOpenAIClient(): OpenAI {
-  if (!openaiClient) {
+/** Rebuild the OpenRouter client whenever the resolved key changes. */
+async function getOpenAIClient(): Promise<OpenAI | null> {
+  const config = await getAIConfig();
+  if (!config.apiKey) return null;
+
+  if (!openaiClient || clientKey !== config.apiKey) {
     openaiClient = new OpenAI({
       baseURL: "https://openrouter.ai/api/v1",
-      apiKey: process.env.OPENROUTER_API_KEY || "dummy-key-for-build",
+      apiKey: config.apiKey,
       defaultHeaders: {
         "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "https://edyfra.com",
         "X-Title": "Edyfra",
       },
     });
+    clientKey = config.apiKey;
   }
   return openaiClient;
 }
+
+export { invalidateAICache };
 
 /** In-memory sliding window keyed by user id. Serverless-safe; multiple
  *  instances share the DB-backed daily counter for the global budget. */
@@ -132,12 +145,19 @@ function withConcision(systemPrompt?: string): string | undefined {
 }
 
 export async function generateWithAI(options: CallOptions): Promise<string> {
+  const client = await getOpenAIClient();
+  if (!client) {
+    throw new AIRateLimitError("AI is not configured yet. Ask an admin to add an OpenRouter key in AI Settings.");
+  }
+
+  const config = await getAIConfig();
   const windowKey = options.userId ?? "system";
   assertPerUserLimit(windowKey);
   await assertDailyLimit();
 
   const systemInstruction = withConcision(options.systemPrompt);
-  let usedModel = options.model ?? AI_PRIMARY_MODEL;
+  let usedModel = options.model ?? config.model;
+  let triedFallback = false;
 
   for (let attempt = 0; ; attempt++) {
     try {
@@ -147,7 +167,7 @@ export async function generateWithAI(options: CallOptions): Promise<string> {
       }
       messages.push({ role: "user", content: options.prompt });
 
-      const response = await getOpenAIClient().chat.completions.create({
+      const response = await client.chat.completions.create({
         model: usedModel,
         messages,
         temperature: options.temperature ?? 0.7,
@@ -170,7 +190,8 @@ export async function generateWithAI(options: CallOptions): Promise<string> {
 
       if (!rateLimited) throw err;
 
-      if (usedModel === AI_PRIMARY_MODEL) {
+      if (!triedFallback && usedModel !== AI_FALLBACK_MODEL) {
+        triedFallback = true;
         usedModel = AI_FALLBACK_MODEL;
         await sleep(BACKOFF_MS[0]);
         continue;
@@ -188,12 +209,19 @@ export async function generateWithAI(options: CallOptions): Promise<string> {
 }
 
 export async function* streamWithAI(options: CallOptions): AsyncGenerator<string> {
+  const client = await getOpenAIClient();
+  if (!client) {
+    throw new AIRateLimitError("AI is not configured yet. Ask an admin to add an OpenRouter key in AI Settings.");
+  }
+
+  const config = await getAIConfig();
   const windowKey = options.userId ?? "system";
   assertPerUserLimit(windowKey);
   await assertDailyLimit();
 
   const systemInstruction = withConcision(options.systemPrompt);
-  let usedModel = options.model ?? AI_PRIMARY_MODEL;
+  let usedModel = options.model ?? config.model;
+  let triedFallback = false;
 
   for (let attempt = 0; ; attempt++) {
     try {
@@ -203,7 +231,7 @@ export async function* streamWithAI(options: CallOptions): AsyncGenerator<string
       }
       messages.push({ role: "user", content: options.prompt });
 
-      const stream = await getOpenAIClient().chat.completions.create({
+      const stream = await client.chat.completions.create({
         model: usedModel,
         messages,
         temperature: options.temperature ?? 0.7,
@@ -231,7 +259,8 @@ export async function* streamWithAI(options: CallOptions): AsyncGenerator<string
     } catch (err) {
       const rateLimited = err instanceof Error && /429|rate ?limit|resource exhausted/i.test(err.message);
 
-      if (rateLimited && usedModel === AI_PRIMARY_MODEL) {
+      if (rateLimited && !triedFallback && usedModel !== AI_FALLBACK_MODEL) {
+        triedFallback = true;
         usedModel = AI_FALLBACK_MODEL;
         await sleep(BACKOFF_MS[0]);
         attempt++;

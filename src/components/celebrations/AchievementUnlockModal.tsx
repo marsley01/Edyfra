@@ -58,11 +58,11 @@ export function AchievementUnlockModal({
       beam: "from-yellow-400/60",
     },
     platinum: {
-      ring: "from-cyan-300 via-violet-400 to-cyan-300",
+      ring: "from-cyan-300 via-brand-orange to-cyan-300",
       glow: "shadow-[0_0_110px_rgba(139,92,246,0.7)]",
-      bg: "from-cyan-400/30 via-violet-500/20 to-cyan-400/20",
+      bg: "from-cyan-400/30 via-brand-orange/20 to-cyan-400/20",
       label: "Platinum Honor",
-      beam: "from-violet-400/60",
+      beam: "from-brand-orange/60",
     },
     diamond: {
       ring: "from-cyan-200 via-white to-cyan-300",

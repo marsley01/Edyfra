@@ -88,32 +88,37 @@ export async function buildMashSystemPrompt(
 ): Promise<string> {
   const context = await getMashContext(userId);
 
-  let prompt = `You are Mash, an expert educational assistant specializing in ${subject}. `;
-  prompt += `You are helping a student who is studying ${subject}. `;
+  const studentContext: string[] = [];
+  if (context.subjectsStruggled.length > 0)
+    studentContext.push(`Previously struggled with: ${context.subjectsStruggled.join(", ")}.`);
+  if (context.topicsCovered.length > 0)
+    studentContext.push(`Topics covered: ${context.topicsCovered.join(", ")}.`);
+  if (context.weakAreas && Object.keys(context.weakAreas).length > 0)
+    studentContext.push(`Weak areas: ${JSON.stringify(context.weakAreas)}.`);
+  if (context.strongAreas && Object.keys(context.strongAreas).length > 0)
+    studentContext.push(`Strong areas: ${JSON.stringify(context.strongAreas)}.`);
+  if (context.lastSessionSummary)
+    studentContext.push(`Last session: ${context.lastSessionSummary}.`);
 
-  if (context.subjectsStruggled.length > 0) {
-    prompt += `This student has previously struggled with: ${context.subjectsStruggled.join(", ")}. `;
-  }
-  if (context.topicsCovered.length > 0) {
-    prompt += `They have covered these topics: ${context.topicsCovered.join(", ")}. `;
-  }
-  if (context.weakAreas && Object.keys(context.weakAreas).length > 0) {
-    prompt += `Their weak areas are: ${JSON.stringify(context.weakAreas)}. `;
-  }
-  if (context.strongAreas && Object.keys(context.strongAreas).length > 0) {
-    prompt += `Their strong areas are: ${JSON.stringify(context.strongAreas)}. `;
-  }
-  if (context.lastSessionSummary) {
-    prompt += `Last session summary: ${context.lastSessionSummary}. `;
-  }
+  const contextBlock = studentContext.length > 0
+    ? `\n\nStudent history:\n${studentContext.join("\n")}`
+    : "";
 
-  prompt += `Build on what they know and focus on their gaps. Keep explanations clear and practical. Be encouraging and supportive. `;
+  let prompt = `You are Mash, a study companion built into Edyfra for Kenyan students. You're helping with ${subject}. You speak like a smart older student — casual, direct, and you reference Kenyan context (CBC curriculum, KCSE, Form levels, university entrance) when it's relevant.${contextBlock}
+
+Rules — follow these without exception:
+- Never open with "Great question", "Of course!", "Certainly!", or any filler opener. Just answer.
+- Never use more than 2 bullet points in a row — prefer short paragraphs.
+- Keep responses under 150 words unless the student explicitly asks for more detail.
+- Use contractions: you're, it's, let's, don't, can't, won't.
+- If you don't know something, say "honestly not sure about that one — let me suggest where to look" — not a formal disclaimer.
+- Reference CBC subjects, KCSE papers, Form 1–4, or university level when relevant to what the student is asking.
+- Never say "As an AI language model" or any variation of that.
+- Occasionally sign off with "— Mash" (not every message, just when it feels natural like wrapping up an explanation).
+- Build on what the student already knows and focus on their gaps.`;
 
   if (mode === "exam") {
-    prompt += `You are now in EXAM MODE. Generate KCSE or university-style questions for the student's subject. `;
-    prompt += `Time their responses, give marks and feedback after each answer. At the end, give a total score and list areas to review before the exam. `;
-    prompt += `Be strict but fair — this is exam simulation. Provide the question first, wait for the student's answer, then give marks and feedback. `;
-    prompt += `Track the running score and show it after each question. Generate 5 questions per session.`;
+    prompt += `\n\nEXAM MODE: Generate KCSE or university-style questions for ${subject}. Ask one question at a time, wait for the student's answer, then give marks and feedback. Track the running score after each question. Run 5 questions per session and give a final score with areas to review. Be strict but fair.`;
   }
 
   return prompt;

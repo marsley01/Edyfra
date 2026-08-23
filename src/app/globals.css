@@ -4,7 +4,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ── Global button feedback ──────────────────────────────────────────────────
+/* â”€â”€ Global button feedback â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    Tailwind v4 preflight sets buttons to cursor:default. Restore pointer and
    add instant press feedback (brightness) + smooth hover transitions to ALL
    buttons, links styled as buttons, and clickable inputs. Uses filter instead
@@ -41,7 +41,7 @@
   }
 }
 
-/* ── iOS Safari green screen fix ── */
+/* â”€â”€ iOS Safari green screen fix â”€â”€ */
 /* backdrop-filter triggers a WebKit GPU compositing bug that renders the page
    as a solid green screen. This forces a root compositing layer to prevent it. */
 html {
@@ -66,7 +66,7 @@ html {
 :root {
   /* Edyfra Brand Colors */
   --violet: #7C3AED;
-  --violet-light: #F0EAFF;
+  --violet-light: #FFF0EC;
   --coral: #E8521B;
   --coral-light: #FFF0EC;
   --mint: #00C07A;
@@ -81,6 +81,40 @@ html {
   --text-300: #6B5F8F;
   --border: #E2D5FF;
 
+  /* â”€â”€ Stitch design-system tokens â”€â”€
+     Static brand accents (identical in both modes) */
+  --deep-void: #0F0527;
+  --brand-orange: #FF9500;
+  --emerald-energy: #10B981;
+  --brand-orange: #FF9500;
+  --brand-orange-dark: #E68600;
+  --soft-lavender: #B8A6E0;
+
+  /* Adaptive glass surfaces */
+  --glass-fill: rgba(255, 255, 255, 0.6);
+  --glass-stroke: rgba(15, 5, 39, 0.1);
+  --shadow-glass: 0 8px 32px rgba(26, 11, 59, 0.08);
+
+  /* M3-style surface roles — light scheme */
+  --on-surface: #1C1333;
+  --on-surface-variant: #4F4867;
+  --outline: #7C7590;
+  --outline-variant: #D3CBE6;
+  --surface-container-lowest: #FFFFFF;
+  --surface-container-low: #F8F5FE;
+  --surface-container: #F2EDFA;
+  --surface-container-high: #EBE3F7;
+  --surface-container-highest: #E5DCF2;
+  --surface-bright: #FBF8FF;
+  --surface-dim: #DDD3EE;
+  --inverse-surface: #332946;
+  --inverse-on-surface: #F5EFFE;
+  --inverse-primary: #C9C4FF;
+  --tertiary: #147A52;
+  --on-tertiary: #FFFFFF;
+  --tertiary-container: #9CF2CD;
+  --on-tertiary-container: #002110;
+
   /* Map existing variables for shadcn compatibility */
   --background: var(--page-bg);
   --foreground: var(--text-100);
@@ -88,27 +122,27 @@ html {
   --card-foreground: var(--text-100);
   --popover: var(--card-bg);
   --popover-foreground: var(--text-100);
-  --primary: var(--violet);
-  --primary-foreground: #FFFFFF;
-  --secondary: var(--violet-light);
-  --secondary-foreground: var(--violet);
-  --muted: var(--violet-light);
+  --primary: var(--brand-orange);
+  --primary-foreground: var(--deep-void);
+  --secondary: #FFF4E6;
+  --secondary-foreground: #7A3A00;
+  --muted: #FFF4E6;
   --muted-foreground: var(--text-300);
-  --accent: var(--violet-light);
-  --accent-foreground: var(--violet);
+  --accent: #FFE8C4;
+  --accent-foreground: #7A3A00;
   --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
   --border: var(--border);
   --input: var(--border);
-  --ring: var(--violet);
+  --ring: var(--brand-orange);
   --radius: 12px;
 
-  --brand-accent: var(--coral);
-  --brand-accent-foreground: #ffffff;
+  --brand-accent: var(--brand-orange);
+  --brand-accent-foreground: #0F0527;
   --surface: var(--card-bg);
   --tech-border: var(--border);
 
-  /* ── Edyfra layer system ─────────────────────────────────────────────── */
+  /* â”€â”€ Edyfra layer system â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   --edyfra-z-base: 0;
   --edyfra-z-content: 1;
   --edyfra-z-sticky: 10;
@@ -120,7 +154,7 @@ html {
   --edyfra-z-toast: 70;
   --edyfra-z-fullscreen: 100;
 
-  /* ── Overlay safe-area insets ────────────────────────────────────────── */
+  /* â”€â”€ Overlay safe-area insets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   --edyfra-overlay-top: 0px;
   --edyfra-overlay-bottom: 0px;
   --edyfra-overlay-bottom-edge: 0px;
@@ -129,35 +163,60 @@ html {
 }
 
 .dark {
-  --page-bg: #0F0527;
-  --card-bg: #1A0B3B;
-  --text-100: #F0EAFF;
-  --text-200: #B8A6E0;
-  --text-300: #A895CC;
-  --border: #3A1E6B;
+  --page-bg: #170d2f;
+  --card-bg: #231a3c;
+  --text-100: #e9ddff;
+  --text-200: #c6c4d9;
+  --text-300: #908fa2;
+  --border: rgba(255, 255, 255, 0.12);
+
+  /* Adaptive glass surfaces — dark */
+  --glass-fill: rgba(255, 255, 255, 0.05);
+  --glass-stroke: rgba(255, 255, 255, 0.12);
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+  /* M3-style surface roles — dark (Stitch mockup values) */
+  --on-surface: #e9ddff;
+  --on-surface-variant: #c6c4d9;
+  --outline: #908fa2;
+  --outline-variant: #464556;
+  --surface-container-lowest: #110729;
+  --surface-container-low: #1f1537;
+  --surface-container: #231a3c;
+  --surface-container-high: #2e2447;
+  --surface-container-highest: #392f52;
+  --surface-bright: #3e3357;
+  --surface-dim: #170d2f;
+  --inverse-surface: #e9ddff;
+  --inverse-on-surface: #352b4e;
+  --inverse-primary: #423cf8;
+  --tertiary: #4edea3;
+  --on-tertiary: #003824;
+  --tertiary-container: #00583b;
+  --on-tertiary-container: #42d59a;
 
   --background: var(--page-bg);
   --foreground: var(--text-100);
   --card: var(--card-bg);
   --card-foreground: var(--text-100);
-  --popover: var(--card-bg);
+  --popover: var(--surface-container-low);
   --popover-foreground: var(--text-100);
-  --primary: var(--violet);
-  --primary-foreground: #FFFFFF;
-  --secondary: #241352;
-  --secondary-foreground: var(--text-100);
-  --muted: #1e0b4a;
-  --muted-foreground: var(--text-300);
-  --accent: #241352;
-  --accent-foreground: var(--text-100);
-  --destructive: #EF4444;
-  --destructive-foreground: #FFFFFF;
+  --primary: var(--brand-orange);
+  --primary-foreground: var(--deep-void);
+  --secondary: var(--surface-container-high);
+  --secondary-foreground: var(--on-surface);
+  --muted: var(--surface-container-low);
+  --muted-foreground: var(--on-surface-variant);
+  --accent: var(--surface-container-highest);
+  --accent-foreground: var(--on-surface);
+  --destructive: #ffb4ab;
+  --destructive-foreground: #690005;
   --border: var(--border);
   --input: var(--border);
-  --ring: var(--violet);
+  --ring: var(--brand-orange);
 
-  --brand-accent: var(--coral);
-  --brand-accent-foreground: #FFFFFF;
+  --brand-accent: var(--brand-orange);
+  --brand-accent-foreground: var(--deep-void);
   --surface: var(--card-bg);
   --tech-border: var(--border);
 }
@@ -189,15 +248,18 @@ html {
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 4px);
   --radius-xl: calc(var(--radius) + 8px);
-  --font-sans: system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-syne: var(--font-syne);
+  --font-dm-sans: var(--font-dm-sans);
   --tracking-tighter: -0.02em;
   --tracking-tightest: -0.05em;
 
   /* Edyfra Theme Colors */
   --color-violet: var(--violet);
   --color-violet-light: var(--violet-light);
-  --color-violet-mid: #D4B9FF;
-  --color-violet-dark: #4C1D95;
+  --color-violet-mid: #FECDBC;
+  --color-violet-dark: #E8521B;
   --color-coral: var(--coral);
   --color-coral-light: var(--coral-light);
   --color-coral-mid: #FECDBC;
@@ -214,6 +276,58 @@ html {
   --color-text-100: var(--text-100);
   --color-text-200: var(--text-200);
   --color-text-300: var(--text-300);
+
+  /* â”€â”€ Stitch design-system colors â”€â”€ */
+  --color-deep-void: var(--deep-void);
+  --color-brand-orange: var(--brand-orange);
+  --color-emerald-energy: var(--emerald-energy);
+  --color-brand-orange: var(--brand-orange);
+  --color-brand-orange-dark: var(--brand-orange-dark);
+  --color-soft-lavender: var(--soft-lavender);
+  --color-glass-fill: var(--glass-fill);
+  --color-glass-stroke: var(--glass-stroke);
+  --color-on-surface: var(--on-surface);
+  --color-on-surface-variant: var(--on-surface-variant);
+  --color-outline: var(--outline);
+  --color-outline-variant: var(--outline-variant);
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-highest: var(--surface-container-highest);
+  --color-surface-bright: var(--surface-bright);
+  --color-surface-dim: var(--surface-dim);
+  --color-inverse-surface: var(--inverse-surface);
+  --color-inverse-on-surface: var(--inverse-on-surface);
+  --color-inverse-primary: var(--inverse-primary);
+  --color-tertiary-fixed: #6ffbbe;
+  --color-on-tertiary-container: var(--on-tertiary-container);
+  --color-on-secondary-container: #beace6;
+
+  /* â”€â”€ Stitch type scale â”€â”€ */
+  --text-display-lg: 3rem;
+  --text-display-lg--line-height: 3.5rem;
+  --text-display-lg--letter-spacing: -0.02em;
+  --text-display-lg--font-weight: 700;
+  --text-headline-lg: 2rem;
+  --text-headline-lg--line-height: 2.5rem;
+  --text-headline-lg--letter-spacing: -0.01em;
+  --text-headline-lg--font-weight: 600;
+  --text-title-md: 1.25rem;
+  --text-title-md--line-height: 1.75rem;
+  --text-title-md--font-weight: 600;
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.75rem;
+  --text-body-md: 1rem;
+  --text-body-md--line-height: 1.5rem;
+  --text-label-md: 0.875rem;
+  --text-label-md--line-height: 1.25rem;
+  --text-label-md--letter-spacing: 0.01em;
+  --text-label-md--font-weight: 500;
+  --text-label-sm: 0.75rem;
+  --text-label-sm--line-height: 1rem;
+  --text-label-sm--letter-spacing: 0.05em;
+  --text-label-sm--font-weight: 600;
 
   /* Radius rules */
   --radius-card: 16px;
@@ -233,8 +347,8 @@ html {
   }
 
   body {
-    @apply bg-background text-text-200 antialiased selection:bg-primary/20 selection:text-primary;
-    font-size: 0.9375rem;
+    @apply bg-background text-on-surface-variant antialiased selection:bg-primary/20 selection:text-primary;
+    font-size: 1rem;
     font-weight: 400;
     line-height: 1.65;
     /* Support for iOS Safe Areas */
@@ -245,24 +359,26 @@ html {
   }
 
   h1 {
-    font-size: 2.25rem;
-    font-weight: 800;
-    color: var(--text-100);
-    line-height: 1.15;
-    letter-spacing: -0.025em;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--on-surface);
+    line-height: 2.5rem;
+    letter-spacing: -0.01em;
   }
 
   h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-100);
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--on-surface);
+    line-height: 1.2;
     letter-spacing: -0.02em;
   }
 
   h3 {
-    font-size: 1.1rem;
+    font-size: 1.25rem;
     font-weight: 600;
-    color: var(--text-100);
+    color: var(--on-surface);
+    line-height: 1.4;
     letter-spacing: -0.015em;
   }
 
@@ -318,7 +434,120 @@ html {
   }
 }
 
-/* ─── Custom keyframes ──────────────────────────────────────────────────── */
+/* â”€â”€ Stitch design-system components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+.glass-card {
+  background: var(--glass-fill);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-stroke);
+  box-shadow: var(--shadow-glass);
+  border-radius: 12px;
+  transition:
+    transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  border-color: rgba(255, 149, 0, 0.5);
+  box-shadow: 0 15px 40px rgba(255, 149, 0, 0.15);
+}
+
+.glass-panel {
+  background: var(--glass-fill);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-stroke);
+}
+
+.primary-glow {
+  box-shadow: 0 0 30px rgba(255, 149, 0, 0.3);
+}
+
+.primary-glow-hover:hover {
+  box-shadow: 0 0 40px rgba(255, 149, 0, 0.6);
+  transform: translateY(-2px) scale(1.05);
+}
+
+.transition-smooth {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Ambient background lighting */
+.ambient-blob-1 {
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 50vw;
+  height: 50vw;
+  background: radial-gradient(circle, #ff9500 0%, transparent 70%);
+  opacity: 0.15;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+.ambient-blob-2 {
+  position: absolute;
+  bottom: -10%;
+  right: -10%;
+  width: 60vw;
+  height: 60vw;
+  background: radial-gradient(circle, #FF9500 0%, transparent 70%);
+  opacity: 0.1;
+  filter: blur(100px);
+  pointer-events: none;
+}
+
+.hero-pattern {
+  background-image: radial-gradient(var(--glass-stroke) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Bento tile grid */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1.5rem;
+}
+
+/* Chat UI bubbles */
+.chat-bubble-user {
+  background: var(--surface-container-high);
+  border-bottom-right-radius: 0;
+}
+
+.chat-bubble-ai {
+  background: var(--brand-orange);
+  color: var(--deep-void);
+  border-bottom-left-radius: 0;
+  font-weight: 500;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .animate-fade-in-up {
+    animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+  }
+
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+}
+
+/* â”€â”€â”€ Custom keyframes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @keyframes shimmer {
   0%   { transform: translateX(-100%); }
   100% { transform: translateX(300%); }
@@ -346,7 +575,7 @@ html {
 .typing-dot:nth-child(2) { animation-delay: 0.2s; }
 .typing-dot:nth-child(3) { animation-delay: 0.4s; }
 
-/* ─── Stream Video SDK — Edyfra theme overrides ────────────────────────────
+/* â”€â”€â”€ Stream Video SDK — Edyfra theme overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    See https://getstream.io/video/docs/react/ui-cookbook/theming/
    These CSS vars are read by `.str-video` and all of its children. */
 .str-video {
@@ -357,8 +586,8 @@ html {
   --str-video__background-color2: #060914;
   --str-video__background-color3: #0c1421;
   --str-video__primary-color: #06b6d4;
-  --str-video__primary-color-low-opacity: rgba(6, 182, 212, 0.15);
-  --str-video__highlight-color: #22d3ee;
+  --str-video__primary-color-low-opacity: rgba(255, 149, 0, 0.15);
+  --str-video__highlight-color: #ffc107;
   --str-video__border-radius-circle: 12px;
   --str-video__border-radius: 12px;
   font-family: var(--font-inter), system-ui, sans-serif;
@@ -368,11 +597,11 @@ html {
 .str-video__menu-container,
 .str-video__device-settings {
   background: #0a1024 !important;
-  border-color: rgba(6, 182, 212, 0.2) !important;
+  border-color: rgba(255, 149, 0, 0.2) !important;
   color: #f0f6ff !important;
 }
 
-/* ─── Active call (Zoom-style) container ─────────────────────────────────── */
+/* â”€â”€â”€ Active call (Zoom-style) container â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .active-call {
   display: flex;
   flex-direction: column;
@@ -391,7 +620,7 @@ html {
   gap: 8px;
   padding: 10px 14px;
   background: rgba(6, 12, 28, 0.92);
-  border-bottom: 1px solid rgba(6, 182, 212, 0.15);
+  border-bottom: 1px solid rgba(255, 149, 0, 0.15);
   backdrop-filter: blur(12px);
   flex-shrink: 0;
 }
@@ -455,7 +684,7 @@ html {
 
 .video-tile.speaking {
   border-color: #06b6d4;
-  box-shadow: 0 0 16px rgba(6, 182, 212, 0.35);
+  box-shadow: 0 0 16px rgba(255, 149, 0, 0.35);
 }
 
 .video-tile .str-video__participant-view {
@@ -503,7 +732,7 @@ html {
 }
 
 .mute-badge.video {
-  background: rgba(6, 182, 212, 0.85);
+  background: rgba(255, 149, 0, 0.85);
 }
 
 .avatar-fallback {
@@ -523,7 +752,7 @@ html {
   width: 64px;
   height: 64px;
   border-radius: 9999px;
-  background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #06b6d4 0%, #FF9500 100%);
   color: #fff;
   display: flex;
   align-items: center;
@@ -531,7 +760,7 @@ html {
   font-size: 24px;
   font-weight: 800;
   letter-spacing: -0.02em;
-  box-shadow: 0 8px 24px rgba(6, 182, 212, 0.25);
+  box-shadow: 0 8px 24px rgba(255, 149, 0, 0.25);
 }
 
 .avatar-fallback .name {
@@ -580,7 +809,7 @@ html {
 
 .chat-side-panel {
   width: 320px;
-  border-left: 1px solid rgba(6, 182, 212, 0.12);
+  border-left: 1px solid rgba(255, 149, 0, 0.12);
   background: rgba(6, 12, 28, 0.92);
   display: flex;
   flex-direction: column;
@@ -595,7 +824,7 @@ html {
   gap: 6px;
   padding: 12px 16px;
   background: rgba(6, 12, 28, 0.95);
-  border-top: 1px solid rgba(6, 182, 212, 0.12);
+  border-top: 1px solid rgba(255, 149, 0, 0.12);
   flex-wrap: wrap;
   flex-shrink: 0;
 }
@@ -607,7 +836,7 @@ html {
   gap: 3px;
   padding: 8px 12px;
   border-radius: 10px;
-  border: 1px solid rgba(6, 182, 212, 0.15);
+  border: 1px solid rgba(255, 149, 0, 0.15);
   background: rgba(8, 14, 30, 0.8);
   color: #94a3b8;
   cursor: pointer;
@@ -618,9 +847,9 @@ html {
 }
 
 .ctrl-btn:hover:not(:disabled) {
-  background: rgba(6, 182, 212, 0.1);
+  background: rgba(255, 149, 0, 0.1);
   color: #06b6d4;
-  border-color: rgba(6, 182, 212, 0.35);
+  border-color: rgba(255, 149, 0, 0.35);
   transform: translateY(-1px);
 }
 
@@ -642,9 +871,9 @@ html {
 }
 
 .ctrl-btn.ctrl-active {
-  background: rgba(6, 182, 212, 0.18);
+  background: rgba(255, 149, 0, 0.18);
   border-color: #06b6d4;
-  color: #22d3ee;
+  color: #ffc107;
 }
 
 .ctrl-icon {
@@ -707,7 +936,7 @@ html {
   left: 50%;
   transform: translateX(-50%);
   background: rgba(6, 12, 28, 0.98);
-  border: 1px solid rgba(6, 182, 212, 0.3);
+  border: 1px solid rgba(255, 149, 0, 0.3);
   border-radius: 12px;
   padding: 8px;
   display: flex;
@@ -732,7 +961,7 @@ html {
 }
 
 .reaction-btn:hover {
-  background: rgba(6, 182, 212, 0.18);
+  background: rgba(255, 149, 0, 0.18);
   transform: scale(1.15);
 }
 
@@ -763,14 +992,14 @@ html {
 }
 
 .participants-popup .participant-row:hover {
-  background: rgba(6, 182, 212, 0.08);
+  background: rgba(255, 149, 0, 0.08);
 }
 
 .participants-popup .p-avatar {
   width: 28px;
   height: 28px;
   border-radius: 9999px;
-  background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #06b6d4 0%, #FF9500 100%);
   color: #fff;
   font-weight: 800;
   font-size: 12px;
@@ -844,7 +1073,7 @@ html {
 .chat-side-panel .str-chat__input,
 .chat-side-panel .str-chat__input-flat {
   background: rgba(8, 14, 30, 0.7) !important;
-  border-top: 1px solid rgba(6, 182, 212, 0.12) !important;
+  border-top: 1px solid rgba(255, 149, 0, 0.12) !important;
   color: #f0f6ff;
 }
 
@@ -870,7 +1099,7 @@ html {
     width: 100%;
     height: 220px;
     border-left: none;
-    border-top: 1px solid rgba(6, 182, 212, 0.12);
+    border-top: 1px solid rgba(255, 149, 0, 0.12);
   }
   .chat-side-panel.collapsed {
     display: none;
@@ -900,7 +1129,7 @@ html {
   }
 }
 
-/* ════════════════════════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    iOS / mobile-first polish
    - viewport-fit: cover (set in app/layout.tsx viewport export)
    - safe-area-inset-* variables
@@ -910,7 +1139,7 @@ html {
    - per-iPhone breakpoints (SE → Pro Max)
    - momentum scrolling + click-delay removal
    - replaces maximumScale=1 / userScalable=no removed from layout.tsx
-   ════════════════════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 :root {
   --sat: env(safe-area-inset-top, 0px);
   --sar: env(safe-area-inset-right, 0px);
@@ -930,7 +1159,7 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #04081A;
+  background-color: var(--deep-void);
   overscroll-behavior: none;
 }
 
@@ -1008,9 +1237,9 @@ select,
   -webkit-position: sticky;
 }
 
-/* Cyan focus ring replaces iOS's default blue */
+/* Orange focus ring replaces iOS's default blue */
 *:focus {
-  outline: 2px solid #06B6D4;
+  outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
 *:focus:not(:focus-visible) {
@@ -1086,7 +1315,7 @@ img {
   bottom: max(16px, env(safe-area-inset-bottom));
 }
 
-/* ── iPhone SE 1st gen — 320px wide ─────────────────────────────────────── */
+/* â”€â”€ iPhone SE 1st gen — 320px wide â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media only screen and (max-width: 320px) {
   .hero-title { font-size: 26px; }
   .section-padding { padding: 32px 16px; }
@@ -1116,7 +1345,7 @@ img {
   .feature-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
 }
 
-/* Universal mobile (≤ 430px) */
+/* Universal mobile (â‰¤ 430px) */
 @media only screen and (max-width: 430px) {
   body { overflow-x: hidden; }
   .card { padding: 16px; }
@@ -1174,7 +1403,7 @@ img {
   }
 }
 
-/* ── Edyfra Form UX System ── */
+/* â”€â”€ Edyfra Form UX System â”€â”€ */
 
 .edyfra-form-group {
   position: relative;
@@ -1188,7 +1417,7 @@ img {
   padding: 14px 16px;
   font-size: 16px;
   border-radius: 12px;
-  border: 1.5px solid rgba(6, 182, 212, 0.2);
+  border: 1.5px solid rgba(255, 149, 0, 0.2);
   background: rgba(6, 12, 28, 0.6);
   color: #F0F6FF;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -1200,8 +1429,8 @@ img {
 }
 
 .edyfra-input:focus {
-  border-color: #06B6D4;
-  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
+  border-color: var(--brand-orange);
+  box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.15);
   outline: none;
 }
 
@@ -1227,7 +1456,7 @@ img {
   top: 8px;
   transform: translateY(0);
   font-size: 11px;
-  color: #06B6D4;
+  color: var(--brand-orange);
   letter-spacing: 0.08em;
 }
 
@@ -1270,19 +1499,19 @@ img {
   min-height: 52px;
   width: 100%;
   border-radius: 12px;
-  background-color: #06B6D4;
+  background-color: var(--brand-orange);
   color: #FFFFFF;
   font-weight: 700;
   font-size: 16px;
   transition: all 0.2s ease;
   cursor: pointer;
   border: none;
-  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2);
+  box-shadow: 0 4px 12px rgba(255, 149, 0, 0.2);
 }
 
 .edyfra-btn-primary:hover:not(:disabled) {
-  background-color: #0891B2;
-  box-shadow: 0 6px 16px rgba(6, 182, 212, 0.3);
+  background-color: var(--brand-orange-dark);
+  box-shadow: 0 6px 16px rgba(255, 149, 0, 0.3);
 }
 
 .edyfra-btn-primary:active:not(:disabled) {
@@ -1300,7 +1529,7 @@ img {
   justify-content: center;
   padding: 10px 16px;
   border-radius: 999px;
-  border: 1.5px solid rgba(6, 182, 212, 0.2);
+  border: 1.5px solid rgba(255, 149, 0, 0.2);
   font-size: 14px;
   font-weight: 600;
   color: #94A3B8;
@@ -1312,14 +1541,14 @@ img {
 }
 
 .edyfra-chip:hover:not(.selected) {
-  border-color: rgba(6, 182, 212, 0.5);
+  border-color: rgba(255, 149, 0, 0.5);
   color: #F8FAFC;
 }
 
 .edyfra-chip.selected {
-  background: rgba(6, 182, 212, 0.15);
-  border-color: #06B6D4;
-  color: #06B6D4;
+  background: rgba(255, 149, 0, 0.15);
+  border-color: var(--brand-orange);
+  color: var(--brand-orange);
 }
 
 .edyfra-chip.greyed-out {
@@ -1327,7 +1556,7 @@ img {
   cursor: not-allowed;
 }
 
-/* ── Video Call Styles ───────────────────────────────────────────────────── */
+/* â”€â”€ Video Call Styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 /* Overlay / Modal shared */
 .call-modal-overlay {
@@ -1343,7 +1572,7 @@ img {
 
 .call-modal {
   background: #0c1421;
-  border: 1px solid rgba(6, 182, 212, 0.15);
+  border: 1px solid rgba(255, 149, 0, 0.15);
   border-radius: 16px;
   padding: 32px;
   max-width: 420px;
@@ -1394,7 +1623,7 @@ img {
   padding: 12px 20px;
   border-radius: 10px;
   border: none;
-  background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #06b6d4 0%, #FF9500 100%);
   color: #fff;
   font-size: 14px;
   font-weight: 700;
@@ -1414,7 +1643,7 @@ img {
 
 .audio-only-btn {
   background: transparent;
-  border: 1px solid rgba(6, 182, 212, 0.25);
+  border: 1px solid rgba(255, 149, 0, 0.25);
   color: #94a3b8;
   padding: 10px 20px;
   border-radius: 10px;
@@ -1427,7 +1656,7 @@ img {
 }
 
 .audio-only-btn:hover {
-  border-color: rgba(6, 182, 212, 0.5);
+  border-color: rgba(255, 149, 0, 0.5);
   color: #06b6d4;
 }
 
@@ -1438,8 +1667,8 @@ img {
   gap: 6px;
   padding: 8px 16px;
   border-radius: 10px;
-  border: 1px solid rgba(6, 182, 212, 0.25);
-  background: rgba(6, 182, 212, 0.08);
+  border: 1px solid rgba(255, 149, 0, 0.25);
+  background: rgba(255, 149, 0, 0.08);
   color: #06b6d4;
   font-size: 13px;
   font-weight: 700;
@@ -1449,8 +1678,8 @@ img {
 }
 
 .start-call-btn:hover:not(:disabled) {
-  background: rgba(6, 182, 212, 0.18);
-  border-color: rgba(6, 182, 212, 0.5);
+  background: rgba(255, 149, 0, 0.18);
+  border-color: rgba(255, 149, 0, 0.5);
   transform: translateY(-1px);
 }
 
@@ -1510,7 +1739,7 @@ img {
 .call-error button {
   padding: 8px 20px;
   border-radius: 10px;
-  border: 1px solid rgba(6, 182, 212, 0.25);
+  border: 1px solid rgba(255, 149, 0, 0.25);
   background: transparent;
   color: #06b6d4;
   font-size: 13px;
@@ -1521,7 +1750,7 @@ img {
 }
 
 .call-error button:hover {
-  background: rgba(6, 182, 212, 0.12);
+  background: rgba(255, 149, 0, 0.12);
 }
 
 /* Incoming Call */
@@ -1538,7 +1767,7 @@ img {
 
 .incoming-call-card {
   background: #0c1421;
-  border: 1px solid rgba(6, 182, 212, 0.2);
+  border: 1px solid rgba(255, 149, 0, 0.2);
   border-radius: 20px;
   padding: 36px 32px 28px;
   max-width: 360px;
@@ -1564,7 +1793,7 @@ img {
   width: 72px;
   height: 72px;
   border-radius: 9999px;
-  background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #06b6d4 0%, #FF9500 100%);
   color: #fff;
   font-size: 28px;
   font-weight: 800;
@@ -1572,7 +1801,7 @@ img {
   align-items: center;
   justify-content: center;
   margin: 0 auto 16px;
-  box-shadow: 0 8px 24px rgba(6, 182, 212, 0.25);
+  box-shadow: 0 8px 24px rgba(255, 149, 0, 0.25);
 }
 
 .incoming-ring-1,
@@ -1580,7 +1809,7 @@ img {
   position: absolute;
   inset: -8px;
   border-radius: 9999px;
-  border: 2px solid rgba(6, 182, 212, 0.4);
+  border: 2px solid rgba(255, 149, 0, 0.4);
   animation: incoming-ring 2s ease-out infinite;
 }
 
@@ -1658,7 +1887,7 @@ img {
   padding: 10px 24px;
   border-radius: 10px;
   border: none;
-  background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #06b6d4 0%, #FF9500 100%);
   color: #fff;
   font-size: 14px;
   font-weight: 700;
@@ -1687,7 +1916,7 @@ img {
   justify-content: space-between;
   padding: 12px 20px;
   background: rgba(6, 12, 28, 0.95);
-  border-bottom: 1px solid rgba(6, 182, 212, 0.1);
+  border-bottom: 1px solid rgba(255, 149, 0, 0.1);
   flex-shrink: 0;
 }
 
@@ -1757,14 +1986,14 @@ img {
   width: 56px;
   height: 56px;
   border-radius: 9999px;
-  background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #06b6d4 0%, #FF9500 100%);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 22px;
   font-weight: 800;
-  box-shadow: 0 8px 24px rgba(6, 182, 212, 0.25);
+  box-shadow: 0 8px 24px rgba(255, 149, 0, 0.25);
 }
 
 .no-video-name {
@@ -1801,7 +2030,7 @@ img {
   inset: 0;
   border-radius: 12px;
   border: 2px solid #06b6d4;
-  box-shadow: 0 0 16px rgba(6, 182, 212, 0.35);
+  box-shadow: 0 0 16px rgba(255, 149, 0, 0.35);
   pointer-events: none;
   z-index: 1;
 }
@@ -1814,7 +2043,7 @@ img {
   gap: 6px;
   padding: 12px 16px;
   background: rgba(6, 12, 28, 0.95);
-  border-top: 1px solid rgba(6, 182, 212, 0.12);
+  border-top: 1px solid rgba(255, 149, 0, 0.12);
   flex-shrink: 0;
 }
 
@@ -1825,7 +2054,7 @@ img {
   gap: 3px;
   padding: 8px 12px;
   border-radius: 10px;
-  border: 1px solid rgba(6, 182, 212, 0.15);
+  border: 1px solid rgba(255, 149, 0, 0.15);
   background: rgba(8, 14, 30, 0.8);
   color: #94a3b8;
   cursor: pointer;
@@ -1836,9 +2065,9 @@ img {
 }
 
 .ctrl:hover:not(:disabled) {
-  background: rgba(6, 182, 212, 0.1);
+  background: rgba(255, 149, 0, 0.1);
   color: #06b6d4;
-  border-color: rgba(6, 182, 212, 0.35);
+  border-color: rgba(255, 149, 0, 0.35);
   transform: translateY(-1px);
 }
 
@@ -1860,9 +2089,9 @@ img {
 }
 
 .ctrl.ctrl-active {
-  background: rgba(6, 182, 212, 0.18);
+  background: rgba(255, 149, 0, 0.18);
   border-color: #06b6d4;
-  color: #22d3ee;
+  color: #ffc107;
 }
 
 .ctrl.ctrl-end {
@@ -1893,5 +2122,71 @@ img {
   }
   .ctrl.ctrl-end {
     margin-left: 6px;
+  }
+}
+
+/* --- Solid blob decor (BlobDecor) ----------------------------- */
+@keyframes blob-drift-a {
+  0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  25%      { transform: translate(34px, -40px) scale(1.07) rotate(6deg); }
+  50%      { transform: translate(-22px, 22px) scale(0.94) rotate(-4deg); }
+  75%      { transform: translate(16px, 32px) scale(1.05) rotate(9deg); }
+}
+@keyframes blob-drift-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  30%      { transform: translate(-28px, 34px) scale(1.06); }
+  60%      { transform: translate(20px, -24px) scale(0.95); }
+}
+@keyframes blob-drift-c {
+  0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  33%      { transform: translate(-30px, -20px) scale(1.08) rotate(-7deg); }
+  66%      { transform: translate(24px, 26px) scale(0.93) rotate(5deg); }
+}
+@keyframes blob-morph {
+  0%, 100% { border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%; }
+  25%      { border-radius: 38% 62% 63% 37% / 41% 60% 40% 59%; }
+  50%      { border-radius: 56% 44% 33% 67% / 62% 36% 64% 38%; }
+  75%      { border-radius: 30% 70% 52% 48% / 53% 30% 70% 47%; }
+}
+.blob-anim-a { animation: blob-drift-a 20s ease-in-out infinite, blob-morph 23s ease-in-out infinite; }
+.blob-anim-b { animation: blob-drift-b 26s ease-in-out infinite, blob-morph 27s ease-in-out infinite; }
+.blob-anim-c { animation: blob-drift-c 18s ease-in-out infinite, blob-morph 21s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .blob-anim-a, .blob-anim-b, .blob-anim-c { animation: none !important; }
+}
+
+
+/* --- iOS / mobile Safari experience --------------------------- */
+/* Kill the grey tap flash on taps/presses */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+/* Fast, responsive taps on buttons/links (no 300ms delay, no dbl-tap zoom) */
+button, a, [role='button'], input[type='submit'], select, label[for] {
+  touch-action: manipulation;
+}
+/* Native-feeling momentum scrolling in every scroll container */
+.overflow-y-auto,
+.overflow-auto,
+.overflow-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+/* Stop rubber-band chaining inside chat/message panes */
+[class*='chat'] .overflow-y-auto,
+[data-slot='scroll-area-viewport'] {
+  overscroll-behavior: contain;
+}
+/* iOS Safari zooms any input with font-size < 16px on focus — prevent that
+   without changing desktop design (inputs are h-11+ so 16px fits). */
+@supports (-webkit-touch-callout: none) {
+  input:not([type='checkbox']):not([type='radio']),
+  select,
+  textarea {
+    font-size: max(16px, 0.875rem);
+  }
+  /* Full-bleed fixed layers respect the home-indicator / notch */
+  .fixed {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 }

@@ -1504,3 +1504,14 @@ model CalendarOAuthState {
   @@index([state])
   @@index([userId])
 }
+
+model SiteTestimonial {
+  id          String   @id @default(cuid())
+  authorName  String
+  school      String?
+  quote       String
+  rating      Int      @default(5)
+  approved    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+

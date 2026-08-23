@@ -52,7 +52,7 @@ export function Text({
   as,
   truncate,
 }: TextProps) {
-  const Component = as || elementMap[variant];
+  const Component = (as || elementMap[variant]) as "div";
 
   return (
     <Component

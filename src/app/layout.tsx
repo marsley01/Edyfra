@@ -1,5 +1,5 @@
-import type { Metadata, Viewport } from "next";
-import { Inter, DM_Sans } from "next/font/google";
+﻿import type { Metadata, Viewport } from "next";
+import { Inter, DM_Sans, Syne } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
@@ -18,6 +18,7 @@ import { JsonLd } from "@/components/json-ld";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans" });
+const syne = Syne({ subsets: ["latin"], variable: "--font-syne" });
 
 export const metadata: Metadata = {
   title: {
@@ -87,7 +88,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#2D1FE8",
+  themeColor: "#FF9500",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -135,7 +136,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${dmSans.variable} font-sans antialiased`} suppressHydrationWarning>
+      <body className={`${inter.variable} ${dmSans.variable} ${syne.variable} font-sans antialiased`} suppressHydrationWarning>
         <JsonLd data={organizationJsonLd} />
         <JsonLd data={websiteJsonLd} />
         <ThemeProvider
@@ -162,3 +163,4 @@ export default function RootLayout({
     </html>
   );
 }
+

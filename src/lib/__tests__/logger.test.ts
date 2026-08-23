@@ -3,12 +3,15 @@ import { log, logInfo, logWarn, logError } from "@/lib/logger";
 
 describe("logger", () => {
   beforeEach(() => {
+    // writeLog returns early in test env; stub to development so it actually writes
+    vi.stubEnv("NODE_ENV", "development");
     vi.spyOn(console, "info").mockImplementation(() => {});
     vi.spyOn(console, "warn").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
   afterEach(() => {
+    vi.unstubAllEnvs();
     vi.restoreAllMocks();
   });
 

@@ -130,14 +130,14 @@ export function ReportsClient({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <FileText className="h-4 w-4 text-indigo-600" /> School performance report
+              <FileText className="h-4 w-4 text-primary" /> School performance report
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <p className="text-sm text-gray-600">
               A printable summary covering subject averages, class distribution and the top improvers for the term.
             </p>
-            <Button onClick={openHtmlReport} disabled={busy === "pdf"} className="bg-indigo-600 hover:bg-indigo-700">
+            <Button onClick={openHtmlReport} disabled={busy === "pdf"} className="bg-primary hover:bg-primary">
               {busy === "pdf" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
               Open & print
             </Button>
@@ -184,7 +184,7 @@ export function ReportsClient({
               <a
                 key={s.id}
                 href={`/institution/dashboard/students/${s.id}`}
-                className="flex items-center justify-between rounded-lg border border-gray-200 p-3 transition hover:border-indigo-200 hover:bg-indigo-50/40"
+                className="flex items-center justify-between rounded-lg border border-gray-200 p-3 transition hover:border-primary hover:bg-primary/40"
               >
                 <span className="text-sm font-bold text-gray-900">{s.name}</span>
                 <PerformanceBadge status={s.flag} />

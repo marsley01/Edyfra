@@ -18,9 +18,9 @@ import { FileSpreadsheet } from "lucide-react";
 
 /* ─────────────────────────── Design Tokens ─────────────────────────── */
 const STAT_CARDS = [
-  { icon: Users, gradient: "from-blue-500 to-indigo-600", bg: "bg-blue-500/8", ring: "ring-blue-500/20", text: "text-blue-600 dark:text-blue-400" },
+  { icon: Users, gradient: "from-blue-500 to-blue-500", bg: "bg-blue-500/8", ring: "ring-blue-500/20", text: "text-blue-600 dark:text-blue-400" },
   { icon: GraduationCap, gradient: "from-emerald-500 to-teal-600", bg: "bg-emerald-500/8", ring: "ring-emerald-500/20", text: "text-emerald-600 dark:text-emerald-400" },
-  { icon: MessageSquare, gradient: "from-violet-500 to-purple-600", bg: "bg-violet-500/8", ring: "ring-violet-500/20", text: "text-violet-600 dark:text-violet-400" },
+  { icon: MessageSquare, gradient: "from-brand-orange to-brand-orange-dark", bg: "bg-brand-orange/8", ring: "ring-brand-orange/20", text: "text-brand-orange-dark dark:text-orange-400" },
   { icon: TrendingUp, gradient: "from-amber-500 to-orange-600", bg: "bg-amber-500/8", ring: "ring-amber-500/20", text: "text-amber-600 dark:text-amber-400" },
 ];
 
@@ -172,7 +172,7 @@ export function AdminDashboardClient({
         {[
           { label: "Today", value: acquisitionMetrics.signupsToday, icon: Flame, color: "text-orange-500", bg: "bg-orange-500/8" },
           { label: "This Week", value: acquisitionMetrics.signupsThisWeek, icon: Calendar, color: "text-blue-500", bg: "bg-blue-500/8" },
-          { label: "This Month", value: acquisitionMetrics.signupsThisMonth, icon: UserPlus, color: "text-violet-500", bg: "bg-violet-500/8" },
+          { label: "This Month", value: acquisitionMetrics.signupsThisMonth, icon: UserPlus, color: "text-brand-orange", bg: "bg-brand-orange/8" },
           { label: "Referral Rate", value: acquisitionMetrics.total > 0 ? Math.round((acquisitionMetrics.referral / acquisitionMetrics.total) * 100) : 0, icon: Sparkles, color: "text-emerald-500", bg: "bg-emerald-500/8", suffix: "%" },
         ].map((item, i) => (
           <motion.div
@@ -212,7 +212,7 @@ export function AdminDashboardClient({
             >
               <Card className="border-border/40 hover:border-border/80 overflow-hidden transition-all duration-300 hover:shadow-lg group relative">
                 {/* Subtle gradient glow on hover */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${config?.gradient || "from-blue-500 to-indigo-600"} opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500`} />
+                <div className={`absolute inset-0 bg-gradient-to-br ${config?.gradient || "from-blue-500 to-blue-500"} opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500`} />
                 <CardContent className="p-5 sm:p-6 space-y-4 relative z-10">
                   <div className="flex items-center justify-between">
                     <div className={`${config?.bg || "bg-blue-500/8"} p-2.5 rounded-xl ring-1 ${config?.ring || "ring-blue-500/20"} group-hover:scale-110 transition-transform duration-300`}>
@@ -297,7 +297,7 @@ export function AdminDashboardClient({
                 { label: "Avg Response Rate", value: `${tutorMetrics.avgResponseRate.toFixed(0)}%`, icon: Activity, color: "text-blue-500" },
                 { label: "Avg Rating", value: tutorMetrics.avgRating.toFixed(1), icon: Award, color: "text-amber-500" },
                 { label: "Responded / Assigned", value: `${tutorMetrics.totalResponded}/${tutorMetrics.totalAssigned}`, icon: CheckCircle2, color: "text-emerald-500" },
-                { label: "Available Tutors", value: tutorMetrics.idleTutors.toString(), icon: Users, color: "text-violet-500" },
+                { label: "Available Tutors", value: tutorMetrics.idleTutors.toString(), icon: Users, color: "text-brand-orange" },
               ].map((m) => (
                 <Card key={m.label} className="border-border/40">
                   <CardContent className="p-4 space-y-2">

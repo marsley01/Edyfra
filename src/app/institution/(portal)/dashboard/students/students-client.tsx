@@ -85,7 +85,7 @@ export function StudentsClient({ initialRows }: { initialRows: StudentRow[] }) {
           <Button onClick={() => setShowBulk(true)} variant="outline" className="border-gray-200">
             <Upload className="mr-2 h-4 w-4" /> Bulk upload
           </Button>
-          <Button onClick={() => setShowAdd(true)} className="bg-indigo-600 hover:bg-indigo-700">
+          <Button onClick={() => setShowAdd(true)} className="bg-primary hover:bg-primary">
             <Plus className="mr-2 h-4 w-4" /> Add student
           </Button>
         </div>
@@ -99,7 +99,7 @@ export function StudentsClient({ initialRows }: { initialRows: StudentRow[] }) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name, email or subject…"
-              className="min-h-11 w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3 text-base text-gray-900 placeholder:text-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:text-sm"
+              className="min-h-11 w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3 text-base text-gray-900 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -107,7 +107,7 @@ export function StudentsClient({ initialRows }: { initialRows: StudentRow[] }) {
             <select
               value={formFilter}
               onChange={(e) => setFormFilter(e.target.value)}
-              className="min-h-11 rounded-xl border border-gray-200 bg-white px-3 text-base font-medium text-gray-900 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:text-sm"
+              className="min-h-11 rounded-xl border border-gray-200 bg-white px-3 text-base font-medium text-gray-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm"
             >
               <option value="">All forms</option>
               {forms.map((f) => (
@@ -119,7 +119,7 @@ export function StudentsClient({ initialRows }: { initialRows: StudentRow[] }) {
             <select
               value={perfFilter}
               onChange={(e) => setPerfFilter(e.target.value as "" | OverallStatus)}
-              className="min-h-11 rounded-xl border border-gray-200 bg-white px-3 text-base font-medium text-gray-900 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:text-sm"
+              className="min-h-11 rounded-xl border border-gray-200 bg-white px-3 text-base font-medium text-gray-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm"
             >
               <option value="">All performance</option>
               <option value="GREEN">On track</option>
@@ -291,7 +291,7 @@ function AddStudentDialog({ onClose }: { onClose: () => void }) {
           <Button type="button" variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" disabled={pending} className="bg-indigo-600 hover:bg-indigo-700">
+          <Button type="submit" disabled={pending} className="bg-primary hover:bg-primary">
             {pending ? "Adding…" : "Add student"}
           </Button>
         </div>
@@ -364,12 +364,12 @@ function BulkUploadDialog({ onClose }: { onClose: () => void }) {
             placeholder={`name,email,form,admissionNumber
 Brian Otieno,brian@school.ac.ke,2,ADM/2025/001
 Aisha Wambui,aisha@school.ac.ke,2,ADM/2025/002`}
-            className="w-full rounded-md border border-gray-200 bg-white p-3 font-mono text-base text-gray-900 placeholder:text-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:text-xs"
+            className="w-full rounded-md border border-gray-200 bg-white p-3 font-mono text-base text-gray-900 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary sm:text-xs"
           />
         </Field>
-        <div className="rounded-xl bg-indigo-50/60 p-3 text-xs text-indigo-900">
+        <div className="rounded-xl bg-primary/60 p-3 text-xs text-primary">
           <p className="font-bold">Each student will receive an email invitation.</p>
-          <p className="mt-0.5 text-indigo-900/70">
+          <p className="mt-0.5 text-primary/70">
             They create an Edyfra account (or sign in) and are automatically linked to your institution.
           </p>
         </div>
@@ -377,7 +377,7 @@ Aisha Wambui,aisha@school.ac.ke,2,ADM/2025/002`}
           <Button type="button" variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" disabled={pending} className="bg-indigo-600 hover:bg-indigo-700">
+          <Button type="submit" disabled={pending} className="bg-primary hover:bg-primary">
             {pending ? "Inviting…" : "Send invitations"}
           </Button>
         </div>
@@ -435,7 +435,7 @@ function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...rest}
-      className={`min-h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-base text-gray-900 placeholder:text-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:text-sm ${className}`}
+      className={`min-h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-base text-gray-900 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm ${className}`}
     />
   );
 }

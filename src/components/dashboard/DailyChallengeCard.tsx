@@ -118,7 +118,7 @@ export default function DailyChallengeCard({ userId, educationLevel }: DailyChal
   return (
     <div className="p-6 sm:p-8 rounded-[2rem] sm:rounded-[3rem] bg-gradient-to-br from-foreground to-foreground/95 text-background space-y-6 relative overflow-hidden group shadow-2xl">
       <div className="absolute top-0 right-0 w-48 h-48 bg-primary/20 rounded-full blur-[120px] -mr-16 -mt-16 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-32 h-32 bg-violet-500/10 rounded-full blur-[100px] -ml-12 -mb-12 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-32 h-32 bg-brand-orange/10 rounded-full blur-[100px] -ml-12 -mb-12 pointer-events-none" />
 
       <div className="relative z-10 space-y-2">
         <div className="flex items-center gap-2">

@@ -1,11 +1,11 @@
-{
-  "name": "Edyfra — Study Platform",
+﻿{
+  "name": "Edyfra â€” Study Platform",
   "short_name": "Edyfra",
   "description": "Connect with verified tutors and peers across Kenya. AI-powered matching, live study rooms, and institutional analytics.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#2D1FE8",
+  "theme_color": "#FF9500",
   "orientation": "portrait",
   "scope": "/",
   "icons": [
@@ -38,3 +38,4 @@
   "lang": "en-KE",
   "dir": "ltr"
 }
+

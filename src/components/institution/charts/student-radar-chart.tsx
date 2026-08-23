@@ -39,8 +39,8 @@ export function StudentRadarChart({
         <Radar
           name="Marks"
           dataKey="marks"
-          stroke="#3730A3"
-          fill="#3730A3"
+          stroke="#FF9500"
+          fill="#FF9500"
           fillOpacity={0.35}
           strokeWidth={2}
         />

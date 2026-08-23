@@ -13,7 +13,17 @@ function createRedisClient(): Redis {
   return new Redis({ url, token });
 }
 
-const redis = createRedisClient();
+// Lazy singleton — created on first request, not at module load time.
+// This prevents Next.js static analysis / build from throwing when the
+// Upstash env vars are absent in the build environment.
+let _redis: Redis | null = null;
+
+function getRedis(): Redis {
+  if (!_redis) {
+    _redis = createRedisClient();
+  }
+  return _redis;
+}
 
 export const rateLimits = {
   login: {
@@ -43,8 +53,8 @@ export const rateLimits = {
   },
   upload: {
     prefix: "edyfra:upload",
-    limit: 10,
-    window: "1h",
+    limit: 5,
+    window: "1m",
   },
   booking: {
     prefix: "edyfra:booking",
@@ -60,7 +70,7 @@ export async function checkRateLimit(
 ): Promise<{ allowed: boolean; remaining: number; reset: number }> {
   const key = `rl:${limitKey}`;
 
-  const pipeline = redis.pipeline();
+  const pipeline = getRedis().pipeline();
   pipeline.incr(key);
   pipeline.expire(key, parseWindowToSeconds(window));
   const results = await pipeline.exec() as unknown[];

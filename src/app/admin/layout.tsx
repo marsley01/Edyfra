@@ -86,7 +86,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin/curriculum", label: "Curriculum", icon: BookMarked },
     { href: "/admin/announcements", label: "Announcements", icon: Bell },
     { href: "/admin/news", label: "Knowledge Feed", icon: Newspaper },
-    { href: "/admin/testimonials", label: "Testimonials", icon: Star },
+    { href: "/admin/reviews", label: "Reviews", icon: Star },
     { href: "/admin/feedback", label: "Tutor Feedback", icon: MessageSquare },
     { href: "/admin/feedback-inbox", label: "Feedback Inbox", icon: Inbox },
     { href: "/admin/ai-history", label: "AI History", icon: Bot },

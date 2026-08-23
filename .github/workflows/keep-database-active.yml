@@ -2,39 +2,39 @@ name: Keep Database Active
 
 on:
   schedule:
-    # Runs at 03:00 UTC daily
-    - cron: '0 3 * * *'
-  workflow_dispatch: # Allows manual trigger from the GitHub Actions UI
+    - cron: '0 0 */3 * *'  # Every 3 days at midnight UTC
+  workflow_dispatch:        # Allow manual trigger from the GitHub Actions UI
 
 jobs:
-  ping:
+  keep-alive:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Ping Health Endpoint
+      - name: Ping Supabase REST health endpoint
         run: |
-          # Use user-configured secret if available, otherwise fallback to the default production URLs
-          URL="${{ secrets.APP_URL }}"
-          if [ -z "$URL" ]; then
-            URLS=("https://edyfra-v2.vercel.app" "https://edyfra.com")
+          echo "Pinging Supabase REST endpoint..."
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}")
+          echo "Supabase REST status: $RESPONSE"
+          if [ "$RESPONSE" -ne 200 ]; then
+            echo "Warning: Supabase REST endpoint returned status $RESPONSE"
           else
-            URLS=("$URL")
+            echo "Supabase is alive."
           fi
-          
-          for BASE_URL in "${URLS[@]}"; do
-            HEALTH_URL="${BASE_URL%/}/api/health"
-            echo "Pinging health endpoint at: $HEALTH_URL"
-            
-            # Make the request and output response headers and body
-            RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" "$HEALTH_URL")
-            BODY=$(echo "$RESPONSE" | sed '$d')
-            STATUS=$(echo "$RESPONSE" | tail -n1 | cut -d':' -f2)
-            
-            echo "Status Code: $STATUS"
-            echo "Response Body: $BODY"
-            
-            if [ "$STATUS" -ne 200 ]; then
-              echo "Warning: Pinging $HEALTH_URL returned status code $STATUS"
-            else
-              echo "Successfully kept database awake via $HEALTH_URL"
-            fi
-          done
+
+      - name: Ping app /api/health route
+        run: |
+          HEALTH_URL="${{ secrets.APP_URL }}/api/health"
+          echo "Pinging app health endpoint at: $HEALTH_URL"
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" "$HEALTH_URL")
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          STATUS=$(echo "$RESPONSE" | tail -n1 | cut -d':' -f2)
+          echo "Status: $STATUS"
+          echo "Body: $BODY"
+          if [ "$STATUS" -ne 200 ]; then
+            echo "Warning: App health endpoint returned status $STATUS"
+          else
+            echo "App is alive and database is active."
+          fi

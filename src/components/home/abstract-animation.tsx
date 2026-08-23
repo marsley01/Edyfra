@@ -36,7 +36,7 @@ export function AbstractAnimation() {
             rotate: [0, 180, 0],
           }}
           transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-          className="absolute top-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[200px] h-[200px] md:w-[300px] md:h-[300px] bg-purple-500/10 rounded-full blur-[70px] z-10"
+          className="absolute top-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[200px] h-[200px] md:w-[300px] md:h-[300px] bg-brand-orange/10 rounded-full blur-[70px] z-10"
         />
       </div>
 

@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
+import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getPosts, createPost, likePost, addComment, getTrendingSubjects } from "@/app/actions/feed";
@@ -16,6 +17,7 @@ import { getCommunityScholars, getUserStreak } from "@/app/actions/user";
 import { getFollowingIds, toggleFollow } from "@/app/actions/social";
 
 interface FeedUser {
+  id: string;
   name: string;
   avatar?: string | null;
   educationLevel?: string;
@@ -102,6 +104,7 @@ export function CommunityFeed() {
         subject: post.subject,
         likes: post.likes,
         user: {
+          id: post.user.id,
           name: post.user.name,
           avatar: post.user.avatar,
           educationLevel: post.user.educationLevel || undefined
@@ -355,7 +358,7 @@ export function CommunityFeed() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl lg:text-3xl font-black tracking-tighter">
-              Community <span className="bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">Feed</span>
+              Community <span className="bg-gradient-to-r from-primary to-brand-orange bg-clip-text text-transparent">Feed</span>
             </h1>
             <div className="flex bg-secondary/80 p-1 rounded-xl gap-1 backdrop-blur-sm">
               {["all", "school"].map((f) => (
@@ -375,7 +378,7 @@ export function CommunityFeed() {
             <CardContent className="p-4 lg:p-6 space-y-3">
               <div className="flex gap-3">
                 <Avatar className="h-10 w-10 lg:h-12 lg:w-12 border border-border ring-1 ring-primary/10">
-                  <AvatarFallback className="bg-gradient-to-br from-primary/20 to-purple-500/20 text-lg">
+                  <AvatarFallback className="bg-gradient-to-br from-primary/20 to-brand-orange/20 text-lg">
                     ✏️
                   </AvatarFallback>
                 </Avatar>
@@ -396,7 +399,7 @@ export function CommunityFeed() {
               <Button
                 onClick={handleCreatePost}
                 disabled={!currentUserId || isSubmitting || !newPostContent.trim()}
-                className="rounded-full bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 font-black text-[10px] tracking-widest uppercase px-8 h-10 shadow-lg shadow-primary/20 disabled:opacity-50"
+                className="rounded-full bg-gradient-to-r from-primary to-brand-orange hover:from-primary/90 hover:to-brand-orange/90 font-black text-[10px] tracking-widest uppercase px-8 h-10 shadow-lg shadow-primary/20 disabled:opacity-50"
               >
                 {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <span className="mr-1">📤</span>}
                 Post
@@ -432,13 +435,15 @@ export function CommunityFeed() {
                       <div className="flex items-center gap-3">
                         <Avatar className="h-9 w-9 lg:h-10 lg:w-10 border-2 border-border group-hover:border-primary/30 transition-all ring-1 ring-primary/5">
                           <AvatarImage src={post.user.avatar || undefined} />
-                          <AvatarFallback className="text-[10px] lg:text-xs bg-gradient-to-br from-primary/20 to-purple-500/20">
+                          <AvatarFallback className="text-[10px] lg:text-xs bg-gradient-to-br from-primary/20 to-brand-orange/20">
                             {post.user.name[0]}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-black text-sm lg:text-base tracking-tight">{post.user.name}</h4>
+                        <div className="flex items-center gap-2">
+                          <Link href={`/profile/${post.user.id}`} className="hover:underline underline-offset-4 decoration-primary/50">
+                            <h4 className="font-black text-sm lg:text-base tracking-tight hover:text-primary transition-colors">{post.user.name}</h4>
+                          </Link>
                             <span className="w-1 h-1 bg-muted-foreground/30 rounded-full" />
                             <span className="text-[9px] lg:text-[10px] font-bold text-muted-foreground">{formatDistanceToNow(new Date(post.createdAt))} ago</span>
                           </div>
@@ -568,7 +573,7 @@ export function CommunityFeed() {
               animate={{ opacity: 1, y: 0 }}
               className="text-center py-24 space-y-6"
             >
-              <div className="w-20 h-20 bg-gradient-to-br from-primary/10 to-purple-500/10 rounded-full flex items-center justify-center mx-auto ring-2 ring-primary/20 text-3xl">
+              <div className="w-20 h-20 bg-gradient-to-br from-primary/10 to-brand-orange/10 rounded-full flex items-center justify-center mx-auto ring-2 ring-primary/20 text-3xl">
                 ✨
               </div>
               <div className="space-y-2">
@@ -620,9 +625,9 @@ export function CommunityFeed() {
         </Card>
 
         {/* Trending Topics */}
-        <Card className="border-border/50 rounded-2xl lg:rounded-3xl overflow-hidden shadow-sm bg-gradient-to-br from-purple-500/5 via-transparent to-transparent">
+        <Card className="border-border/50 rounded-2xl lg:rounded-3xl overflow-hidden shadow-sm bg-gradient-to-br from-brand-orange/5 via-transparent to-transparent">
           <CardContent className="p-4 lg:p-6 space-y-4">
-            <div className="flex items-center gap-1.5 lg:gap-2 text-purple-500">
+            <div className="flex items-center gap-1.5 lg:gap-2 text-brand-orange">
               <span className="text-base leading-none">📈</span>
               <h3 className="text-[10px] lg:text-sm font-black uppercase tracking-widest">Trending Topics</h3>
             </div>
@@ -640,11 +645,11 @@ export function CommunityFeed() {
                 trendingTopics.map((topic, i) => (
                   <div
                     key={topic.subject}
-                    className="flex items-center justify-between group p-1.5 rounded-lg hover:bg-purple-500/5 transition-colors"
+                    className="flex items-center justify-between group p-1.5 rounded-lg hover:bg-brand-orange/5 transition-colors"
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-[9px] font-black text-muted-foreground/30 w-4">{i + 1}</span>
-                      <span className="text-[11px] lg:text-sm font-bold text-muted-foreground group-hover:text-purple-500 transition-colors">
+                      <span className="text-[11px] lg:text-sm font-bold text-muted-foreground group-hover:text-brand-orange transition-colors">
                         #{topic.subject}
                       </span>
                     </div>

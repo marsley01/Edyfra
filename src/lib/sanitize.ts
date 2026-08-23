@@ -42,8 +42,10 @@ export function escapeSQLString(input: string): string {
 export function sanitizeFilename(filename: string): string {
   return filename
     .replace(/\.\./g, "")
-    .replace(/[\/\\]/g, "")
+    .replace(/[/\\]/g, "_")
     .replace(/\0/g, "")
     .replace(/[^\w.\-]/g, "_")
+    .replace(/^_+/, "")
+    .replace(/_+/g, "_")
     .slice(0, 100);
 }

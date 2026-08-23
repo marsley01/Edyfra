@@ -30,23 +30,20 @@ const subjects = [
 
 export function SubjectCoverage() {
   return (
-    <section className="py-32 md:py-40 px-6">
-      <div className="container-max space-y-16">
+    <section className="border-t border-glass-stroke px-4 py-20 md:px-16">
+      <div className="mx-auto max-w-screen-2xl space-y-lg">
         {/* Heading */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="space-y-4 text-center max-w-2xl mx-auto"
+          className="mx-auto max-w-2xl space-y-sm text-center"
         >
-          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">
-            Subject Coverage
-          </p>
-          <h2 className="text-4xl md:text-5xl font-black tracking-tightest leading-none">
+          <h2 className="text-headline-lg font-bold md:text-[40px] md:leading-[48px]">
             Your subject is covered.
           </h2>
-          <p className="text-muted-foreground font-medium text-lg">
+          <p className="mx-auto max-w-2xl text-body-md text-on-surface-variant">
             Edyfra supports the full Kenyan curriculum — from KCPE through KCSE,
             University level, and beyond.
           </p>
@@ -58,7 +55,7 @@ export function SubjectCoverage() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="flex flex-wrap justify-center gap-3"
+          className="mx-auto flex max-w-4xl flex-wrap justify-center gap-3"
         >
           {subjects.map((subject, i) => (
             <motion.span
@@ -67,7 +64,7 @@ export function SubjectCoverage() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.04 }}
-              className="px-5 py-2.5 rounded-full border border-border/60 bg-secondary/40 text-sm font-semibold text-foreground hover:border-primary/40 hover:bg-primary/5 hover:text-primary transition-all cursor-default select-none"
+              className="glass-panel cursor-default select-none rounded-full px-4 py-2 text-sm font-medium transition-colors hover:border-brand-orange/50 hover:text-brand-orange"
             >
               {subject}
             </motion.span>
@@ -80,7 +77,7 @@ export function SubjectCoverage() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="text-center text-sm text-muted-foreground font-medium"
+          className="mt-6 text-center text-sm text-outline"
         >
           More subjects added based on community demand.
         </motion.p>

@@ -14,7 +14,7 @@ const CATEGORIES: { key: FeedbackCategory; label: string; icon: any; color: stri
   { key: "idea",        label: "Suggest idea",  icon: Lightbulb,   color: "from-amber-500/15 to-yellow-500/15 border-amber-500/30" },
   { key: "complaint",   label: "Complaint",     icon: Frown,       color: "from-orange-500/15 to-red-500/15 border-orange-500/30" },
   { key: "compliment",  label: "Compliment",    icon: Heart,       color: "from-pink-500/15 to-rose-500/15 border-pink-500/30" },
-  { key: "other",       label: "Something else", icon: HelpCircle, color: "from-cyan-500/15 to-violet-500/15 border-cyan-500/30" },
+  { key: "other",       label: "Something else", icon: HelpCircle, color: "from-cyan-500/15 to-coral/15 border-cyan-500/30" },
 ];
 
 interface FeedbackButtonProps {
@@ -94,7 +94,7 @@ export function FeedbackButton({ context, variant = "floating", label }: Feedbac
         <button
           onClick={() => setOpen(true)}
           aria-label="Send feedback"
-          className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-gradient-to-br from-cyan-500 to-violet-500 text-white shadow-[0_8px_32px_rgba(6,182,212,0.45)] hover:brightness-110 hover:scale-105 transition-all flex items-center justify-center"
+          className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-gradient-to-br from-cyan-500 to-coral text-white shadow-[0_8px_32px_rgba(6,182,212,0.45)] hover:brightness-110 hover:scale-105 transition-all flex items-center justify-center"
         >
           <MessageSquare className="h-6 w-6" />
         </button>
@@ -128,7 +128,7 @@ export function FeedbackButton({ context, variant = "floating", label }: Feedbac
             >
               {/* Decorative blobs */}
               <div className="pointer-events-none absolute -top-20 -right-20 h-60 w-60 rounded-full bg-cyan-500/20 blur-3xl" />
-              <div className="pointer-events-none absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-violet-500/20 blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-brand-orange/20 blur-3xl" />
 
               {sent ? (
                 <div className="relative p-10 text-center space-y-4">
@@ -255,7 +255,7 @@ export function FeedbackButton({ context, variant = "floating", label }: Feedbac
                   <Button
                     onClick={handleSubmit}
                     disabled={sending || !message.trim()}
-                    className="w-full h-12 rounded-xl bg-gradient-to-r from-cyan-500 to-violet-500 text-white font-black text-xs uppercase tracking-widest shadow-[0_0_24px_rgba(6,182,212,0.35)]"
+                    className="w-full h-12 rounded-xl bg-gradient-to-r from-cyan-500 to-coral text-white font-black text-xs uppercase tracking-widest shadow-[0_0_24px_rgba(6,182,212,0.35)]"
                   >
                     {sending ? (
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />

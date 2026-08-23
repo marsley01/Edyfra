@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
@@ -133,7 +133,7 @@ export default function TutorLeaderboardPage() {
           <div className="pointer-events-none absolute -top-12 -right-12 h-48 w-48 rounded-full bg-cyan-400/15 dark:bg-cyan-400/20 blur-3xl" />
           <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
             <div className="flex items-center gap-4">
-              <div className="relative h-14 w-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-violet-500 flex items-center justify-center text-white text-lg font-black shadow-lg ring-2 ring-card">
+              <div className="relative h-14 w-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-coral flex items-center justify-center text-white text-lg font-black shadow-lg ring-2 ring-card">
                 #{myRank}
                 <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-card animate-pulse" />
               </div>
@@ -167,7 +167,7 @@ export default function TutorLeaderboardPage() {
                     width: `${((myEntry.tutorProfile?.rating ?? 0) / Math.max(topRating, 0.01)) * 100}%`,
                   }}
                   transition={{ duration: 1.4, ease: "easeOut" }}
-                  className="h-full bg-gradient-to-r from-cyan-500 via-violet-500 to-fuchsia-500"
+                  className="h-full bg-gradient-to-r from-cyan-500 via-brand-orange to-coral"
                 />
               </div>
             </div>
@@ -197,7 +197,7 @@ export default function TutorLeaderboardPage() {
                   key={leader.id}
                   className={`relative flex items-center justify-between p-4 sm:p-5 transition-all ${
                     isMe
-                      ? "bg-gradient-to-r from-cyan-500/5 via-violet-500/5 to-transparent dark:from-cyan-500/10 dark:via-violet-500/5 border-l-4 border-primary"
+                      ? "bg-gradient-to-r from-cyan-500/5 via-brand-orange/5 to-transparent dark:from-cyan-500/10 dark:via-brand-orange/5 border-l-4 border-primary"
                       : "hover:bg-secondary/40"
                   }`}
                 >
@@ -205,7 +205,7 @@ export default function TutorLeaderboardPage() {
                     <span className="w-8 text-center font-black text-muted-foreground tabular-nums">
                       #{rank}
                     </span>
-                    <div className="relative h-10 w-10 sm:h-12 sm:w-12 rounded-2xl overflow-hidden ring-1 ring-border bg-gradient-to-br from-cyan-500/30 to-violet-500/30 shrink-0">
+                    <div className="relative h-10 w-10 sm:h-12 sm:w-12 rounded-2xl overflow-hidden ring-1 ring-border bg-gradient-to-br from-cyan-500/30 to-coral/30 shrink-0">
                       {leader.avatar ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -240,7 +240,7 @@ export default function TutorLeaderboardPage() {
                   <div className="flex items-center gap-3 sm:gap-4 shrink-0">
                     <div className="hidden sm:block w-28 h-1.5 rounded-full bg-secondary overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-cyan-500/70 to-violet-500/70"
+                        className="h-full bg-gradient-to-r from-cyan-500/70 to-coral/70"
                         style={{
                           width: `${(rating / Math.max(topRating, 0.01)) * 100}%`,
                         }}
@@ -320,7 +320,7 @@ function PodiumCard({ rank, leader, topRating, isCurrentUser, dominant = false }
       />
       <div className="relative flex flex-col items-center text-center space-y-3">
         <div
-          className={`relative h-16 w-16 sm:h-20 sm:w-20 rounded-2xl overflow-hidden ring-2 ring-border bg-gradient-to-br from-cyan-500/30 to-violet-500/30 ${
+          className={`relative h-16 w-16 sm:h-20 sm:w-20 rounded-2xl overflow-hidden ring-2 ring-border bg-gradient-to-br from-cyan-500/30 to-coral/30 ${
             dominant ? "ring-yellow-500/50" : ""
           }`}
         >
@@ -383,3 +383,4 @@ function PodiumCard({ rank, leader, topRating, isCurrentUser, dominant = false }
     </div>
   );
 }
+

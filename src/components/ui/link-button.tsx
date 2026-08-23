@@ -10,7 +10,7 @@ const linkButtonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-indigo-600 text-white hover:bg-indigo-700",
+        default: "bg-primary text-white hover:bg-primary",
         ghost: "hover:bg-gray-100 hover:text-gray-900",
         outline: "border border-gray-200 bg-white hover:bg-gray-50",
         secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200",

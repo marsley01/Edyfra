@@ -11,7 +11,7 @@ import { createCoachingAssignment, cancelCoachingAssignment } from "@/app/action
 import type { CoachingAssignment, CoachingStatus } from "@/generated/client";
 
 const STATUS_STYLES: Record<CoachingStatus, string> = {
-  SCHEDULED: "bg-indigo-50 text-indigo-700 ring-indigo-200",
+  SCHEDULED: "bg-primary text-primary ring-primary",
   ACTIVE: "bg-emerald-50 text-emerald-700 ring-emerald-200",
   COMPLETED: "bg-gray-100 text-gray-600 ring-gray-200",
   CANCELLED: "bg-rose-50 text-rose-700 ring-rose-200",
@@ -59,7 +59,7 @@ export function CoachingClient({
             Assign institution teachers to students for the holiday period.
           </p>
         </div>
-        <Button onClick={() => setShowCreate(true)} className="bg-indigo-600 hover:bg-indigo-700">
+        <Button onClick={() => setShowCreate(true)} className="bg-primary hover:bg-primary">
           <Plus className="mr-2 h-4 w-4" /> New assignment
         </Button>
       </header>
@@ -267,7 +267,7 @@ function CreateDialog({
             <Button type="button" variant="ghost" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={pending} className="bg-indigo-600 hover:bg-indigo-700">
+            <Button type="submit" disabled={pending} className="bg-primary hover:bg-primary">
               {pending ? "Creating…" : "Create assignment"}
             </Button>
           </div>
@@ -294,7 +294,7 @@ function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...rest}
-      className={`h-10 w-full rounded-md border border-gray-200 bg-white px-3 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 ${className}`}
+      className={`h-10 w-full rounded-md border border-gray-200 bg-white px-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary ${className}`}
     />
   );
 }
@@ -312,7 +312,7 @@ function Select({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="h-10 w-full rounded-md border border-gray-200 bg-white px-3 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+      className="h-10 w-full rounded-md border border-gray-200 bg-white px-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
     >
       {options.map((o) => (
         <option key={o.value} value={o.value}>

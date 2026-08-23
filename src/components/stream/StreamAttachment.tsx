@@ -151,7 +151,7 @@ function AudioAttachment({ att }: { att: StreamAttachmentLike }) {
             "h-11 w-11 rounded-lg flex items-center justify-center shrink-0 transition-all",
             errored
               ? "bg-red-500/15 text-red-500 cursor-not-allowed"
-              : "bg-gradient-to-br from-cyan-500 to-violet-500 text-white shadow-lg shadow-cyan-500/30 hover:scale-105 active:scale-95"
+              : "bg-gradient-to-br from-brand-orange to-coral text-white shadow-lg shadow-brand-orange/30 hover:scale-105 active:scale-95"
           )}
         >
           {errored ? <AlertCircle className="h-5 w-5" /> :
@@ -169,7 +169,7 @@ function AudioAttachment({ att }: { att: StreamAttachmentLike }) {
             className="mt-1.5 h-1.5 rounded-lg bg-secondary cursor-pointer overflow-hidden"
           >
             <div
-              className="h-full bg-gradient-to-r from-cyan-500 to-violet-500 transition-[width] duration-100"
+              className="h-full bg-gradient-to-r from-brand-orange to-coral transition-[width] duration-100"
               style={{ width: `${errored ? 0 : progress}%` }}
             />
           </div>
@@ -288,7 +288,7 @@ function VideoAttachment({ att }: { att: StreamAttachmentLike }) {
       </div>
 
       <div className="flex items-center gap-3 p-3">
-        <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 flex items-center justify-center shrink-0">
+        <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-brand-orange/20 to-coral/20 flex items-center justify-center shrink-0">
           <Film className="h-4 w-4 text-cyan-500" />
         </div>
         <div className="flex-1 min-w-0">
@@ -344,7 +344,7 @@ function FileAttachment({ att }: { att: StreamAttachmentLike }) {
       download={att.title || att.name}
       className="flex items-center gap-3 max-w-md rounded-2xl border border-border bg-card p-3 hover:border-primary/50 transition-colors"
     >
-      <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 flex items-center justify-center shrink-0">
+      <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-brand-orange/20 to-coral/20 flex items-center justify-center shrink-0">
         <Icon className="h-5 w-5 text-cyan-500" />
       </div>
       <div className="flex-1 min-w-0">

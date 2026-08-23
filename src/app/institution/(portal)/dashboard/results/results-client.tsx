@@ -49,7 +49,7 @@ export function ResultsClient({
             Upload end-of-term results to see school-wide performance, trends, and AI insights.
           </p>
         </div>
-        <Button onClick={() => setShowUpload(true)} className="bg-indigo-600 hover:bg-indigo-700">
+        <Button onClick={() => setShowUpload(true)} className="bg-primary hover:bg-primary">
           <Upload className="mr-2 h-4 w-4" /> Upload results CSV
         </Button>
       </header>
@@ -63,7 +63,7 @@ export function ResultsClient({
           <CardContent>
             <SubjectBarChart
               data={summary.subjectAverages.map((s) => ({ name: s.subject, average: s.average }))}
-              series={[{ name: "Average", dataKey: "average", color: "#3730A3" }]}
+              series={[{ name: "Average", dataKey: "average", color: "#FF9500" }]}
             />
           </CardContent>
         </Card>
@@ -98,7 +98,7 @@ export function ResultsClient({
                     className="flex items-center justify-between px-5 py-3"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 text-xs font-black text-indigo-700">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-black text-primary">
                         {i + 1}
                       </span>
                       <p className="font-bold text-gray-900">{s.name}</p>
@@ -305,7 +305,7 @@ function UploadDialog({
         <div className="flex items-start justify-between border-b border-gray-100 p-5">
           <div>
             <h2 className="flex items-center gap-2 text-lg font-black text-gray-900">
-              <FileSpreadsheet className="h-5 w-5 text-indigo-500" />
+              <FileSpreadsheet className="h-5 w-5 text-primary" />
               Upload results
             </h2>
             <p className="text-xs text-gray-500">Upload, map columns, validate, then import.</p>
@@ -466,7 +466,7 @@ function UploadDialog({
           </Button>
           <div>
             {step === "map" && (
-              <Button onClick={handleValidate} className="bg-indigo-600 hover:bg-indigo-700">
+              <Button onClick={handleValidate} className="bg-primary hover:bg-primary">
                 Validate <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
             )}
@@ -474,7 +474,7 @@ function UploadDialog({
               <Button
                 onClick={handleImport}
                 disabled={importing || validation?.validCount === 0}
-                className="bg-indigo-600 hover:bg-indigo-700"
+                className="bg-primary hover:bg-primary"
               >
                 {importing ? (
                   <Loader2 className="mr-1 h-4 w-4 animate-spin" />
@@ -485,7 +485,7 @@ function UploadDialog({
               </Button>
             )}
             {step === "upload" && (
-              <Button disabled className="bg-indigo-600 hover:bg-indigo-700">
+              <Button disabled className="bg-primary hover:bg-primary">
                 <Loader2 className="mr-1 h-4 w-4 animate-spin" /> Choose a CSV first
               </Button>
             )}
@@ -513,7 +513,7 @@ function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...rest}
-      className={`h-10 w-full rounded-md border border-gray-200 bg-white px-3 text-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 ${className}`}
+      className={`h-10 w-full rounded-md border border-gray-200 bg-white px-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary ${className}`}
     />
   );
 }

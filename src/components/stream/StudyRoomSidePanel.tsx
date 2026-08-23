@@ -29,7 +29,7 @@ interface StudyRoomSidePanelProps {
 const SUBJECT_RESOURCES: Record<string, { icon: typeof BookOpen; color: string; concepts: string[] }> = {
   Mathematics: {
     icon: Calculator,
-    color: "from-blue-500/20 to-violet-500/10",
+    color: "from-amber-500/20 to-brand-orange/10",
     concepts: ["Formulas & Theorems", "Practice Problems", "Step-by-step solutions"],
   },
   Physics: {
@@ -54,12 +54,12 @@ const SUBJECT_RESOURCES: Record<string, { icon: typeof BookOpen; color: string; 
   },
   History: {
     icon: Landmark,
-    color: "from-rose-500/20 to-pink-500/10",
+    color: "from-brand-orange/20 to-coral/10",
     concepts: ["Chronological events", "Causes & effects", "Key figures"],
   },
   English: {
     icon: Quote,
-    color: "from-purple-500/20 to-fuchsia-500/10",
+    color: "from-brand-orange/20 to-orange-500/10",
     concepts: ["Grammar rules", "Literary devices", "Essay structure"],
   },
   Kiswahili: {
@@ -71,7 +71,7 @@ const SUBJECT_RESOURCES: Record<string, { icon: typeof BookOpen; color: string; 
 
 const SUBJECT_BACKGROUNDS: Record<string, { gradient: string; pattern: string }> = {
   Mathematics: {
-    gradient: "from-blue-500/5 via-violet-500/5 to-transparent",
+    gradient: "from-brand-orange/5 via-orange-500/5 to-transparent",
     pattern: "radial-gradient(circle at 20% 50%, rgba(59,130,246,0.08) 0%, transparent 50%)",
   },
   Physics: {
@@ -183,8 +183,8 @@ export function StudyRoomSidePanel({ subject, topic, className = "" }: StudyRoom
               </p>
               {topic && (
                 <div className="mt-2 flex items-center gap-1.5">
-                  <Bookmark className="h-3 w-3 text-violet-500" />
-                  <span className="text-[9px] font-bold text-violet-500 uppercase tracking-wider">
+                  <Bookmark className="h-3 w-3 text-brand-orange" />
+                  <span className="text-[9px] font-bold text-brand-orange uppercase tracking-wider">
                     Working on
                   </span>
                 </div>
@@ -196,7 +196,7 @@ export function StudyRoomSidePanel({ subject, topic, className = "" }: StudyRoom
         {/* ─── Key Concepts Quick Reference ─── */}
         <motion.div variants={item} className="space-y-2.5">
           <div className="flex items-center gap-2 px-1">
-            <Brain className="h-3.5 w-3.5 text-violet-500" />
+            <Brain className="h-3.5 w-3.5 text-brand-orange" />
             <p className="text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground">
               Key Concepts
             </p>
@@ -254,10 +254,10 @@ export function StudyRoomSidePanel({ subject, topic, className = "" }: StudyRoom
                   </p>
                 </div>
 
-                <div className="flex items-start gap-2.5 rounded-xl bg-violet-500/5 border border-violet-500/10 p-3">
-                  <PenTool className="h-3.5 w-3.5 text-violet-500 shrink-0 mt-0.5" />
+                <div className="flex items-start gap-2.5 rounded-xl bg-brand-orange/5 border border-brand-orange/10 p-3">
+                  <PenTool className="h-3.5 w-3.5 text-brand-orange shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-[9px] font-black uppercase tracking-wider text-violet-500 mb-0.5">
+                    <p className="text-[9px] font-black uppercase tracking-wider text-brand-orange mb-0.5">
                       Collaborative Notes
                     </p>
                     <p className="text-[9px] font-medium text-muted-foreground leading-snug">

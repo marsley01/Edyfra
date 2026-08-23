@@ -35,7 +35,7 @@ export function BubbleBackground() {
         style={{
           width: 180,
           height: 180,
-          backgroundColor: "#7C3AED",
+          backgroundColor: "#FF9500",
           opacity: 0.07,
           top: "8%",
           left: "6%",
@@ -50,7 +50,7 @@ export function BubbleBackground() {
         style={{
           width: 120,
           height: 120,
-          backgroundColor: "#E8521B",
+          backgroundColor: "#FF9500",
           opacity: 0.09,
           top: "12%",
           right: "10%",
@@ -65,7 +65,7 @@ export function BubbleBackground() {
         style={{
           width: 90,
           height: 90,
-          backgroundColor: "#00C07A",
+          backgroundColor: "#10B981",
           opacity: 0.08,
           top: "45%",
           left: "3%",
@@ -80,7 +80,7 @@ export function BubbleBackground() {
         style={{
           width: 140,
           height: 140,
-          backgroundColor: "#FFD600",
+          backgroundColor: "#FFC107",
           opacity: 0.10,
           top: "38%",
           right: "5%",
@@ -95,7 +95,7 @@ export function BubbleBackground() {
         style={{
           width: 70,
           height: 70,
-          backgroundColor: "#FF5DAE",
+          backgroundColor: "#B8A6E0",
           opacity: 0.09,
           bottom: "20%",
           left: "15%",
@@ -110,7 +110,7 @@ export function BubbleBackground() {
         style={{
           width: 160,
           height: 160,
-          backgroundColor: "#7C3AED",
+          backgroundColor: "#FF9500",
           opacity: 0.05,
           bottom: "10%",
           right: "18%",
@@ -125,7 +125,7 @@ export function BubbleBackground() {
         style={{
           width: 100,
           height: 100,
-          backgroundColor: "#E8521B",
+          backgroundColor: "#FF9500",
           opacity: 0.07,
           bottom: "28%",
           left: "42%",
@@ -140,7 +140,7 @@ export function BubbleBackground() {
         style={{
           width: 80,
           height: 80,
-          backgroundColor: "#FFD600",
+          backgroundColor: "#FFC107",
           opacity: 0.08,
           top: "22%",
           left: "55%",

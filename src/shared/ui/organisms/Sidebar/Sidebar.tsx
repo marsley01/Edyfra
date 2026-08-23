@@ -79,7 +79,7 @@ function SidebarLink({ item, collapsed }: { item: SidebarItem; collapsed: boolea
         className={cn(
           "flex items-center gap-[10px] px-[14px] py-[10px] rounded-[10px] text-[0.9rem] font-medium transition-all duration-150 group relative",
           item.active
-            ? "bg-violet-light text-violet font-bold"
+            ? "bg-primary/10 text-primary font-bold"
             : "text-text-200 hover:text-text-100 hover:bg-page-bg",
         )}
         title={collapsed ? item.label : undefined}

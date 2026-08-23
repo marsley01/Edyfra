@@ -1,156 +1,181 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ChevronRight, Library, BookOpen, GraduationCap, CheckCircle2, Building2 } from "lucide-react";
+import { ArrowRight, Newspaper } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { LottieAnimation } from "@/components/lottie-animation";
-import studySpinner from "@/../public/animations/study-spinner.json";
 
-const FeatureVisuals = [
-  <div key="discovery" className="w-full h-full bg-gradient-to-br from-primary/5 to-background flex flex-col items-center justify-center gap-6 p-8">
-    <div className="w-full max-w-xs space-y-3">
-      <div className="h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center px-5 gap-3">
-        <BookOpen className="h-4 w-4 text-primary flex-shrink-0" />
-        <div className="flex-1 h-2 rounded-full bg-primary/20" />
-      </div>
-      {["Revision Notes", "Past Papers", "Study Guides"].map((r, i) => (
-        <motion.div
-          key={i}
-          initial={{ opacity: 0, x: -10 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          transition={{ delay: i * 0.15 }}
-          className="h-14 rounded-2xl bg-secondary border border-border flex items-center px-5 gap-4"
-        >
-          <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
-            <CheckCircle2 className="w-4 h-4 text-primary" />
-          </div>
-          <span className="text-sm font-bold text-foreground/70">{r}</span>
-          <div className="ml-auto w-2 h-2 rounded-full bg-primary/30" />
-        </motion.div>
-      ))}
-    </div>
-  </div>,
+const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
-  <div key="community" className="w-full h-full bg-gradient-to-br from-blue-500/5 to-background flex flex-col gap-4 p-8 justify-center">
-    {[
-      { name: "University Expert", role: "Mentor" },
-      { name: "High School Pro", role: "Peer" },
-      { name: "Mash AI", role: "Intelligence" }
-    ].map((p, i) => (
-      <motion.div key={i} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
-        className="p-4 rounded-2xl border border-border bg-secondary/50 flex items-start gap-3 shadow-sm">
-        <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center font-black text-[11px] flex-shrink-0 text-primary">
-          <GraduationCap className="h-4 w-4" />
-        </div>
-        <div>
-          <p className="text-[10px] font-black text-primary uppercase tracking-widest">{p.role}</p>
-          <p className="text-sm font-bold mt-0.5 text-foreground">{p.name}</p>
-        </div>
-      </motion.div>
-    ))}
-  </div>,
-
-  <div key="analytics" className="w-full h-full bg-gradient-to-br from-emerald-500/5 to-background flex flex-col gap-6 p-8 justify-center">
-    {[
-      { label: "School Adoption", pct: 82, color: "bg-primary" },
-      { label: "Tutor Coverage", pct: 65, color: "bg-blue-500" },
-      { label: "Learner Progress", pct: 91, color: "bg-emerald-500" },
-    ].map((s, i) => (
-      <div key={s.label} className="space-y-2">
-        <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
-          <span className="text-muted-foreground">{s.label}</span>
-          <span className="text-foreground">{s.pct}%</span>
-        </div>
-        <div className="h-2 rounded-full bg-secondary overflow-hidden">
-          <motion.div initial={{ width: 0 }} whileInView={{ width: `${s.pct}%` }} transition={{ duration: 1, delay: i * 0.1 }}
-            className={`h-full rounded-full ${s.color}`} />
-        </div>
-      </div>
-    ))}
-  </div>,
-];
-
-const features = [
-  {
-    title: "Resource Library",
-    description: "Find past papers, notes, and study guides that match what you are learning instead of digging through random files.",
-    icon: Library,
-    link: "/features",
-    visualIndex: 0,
-  },
-  {
-    title: "Verified Mentors",
-    description: "Ask for help from tutors and high-performing peers who understand the Kenyan classroom and the pressure before exams.",
-    icon: GraduationCap,
-    link: "/dashboard/tutors",
-    visualIndex: 1,
-  },
-  {
-    title: "Institution Hubs",
-    description: "Schools can onboard cohorts, manage private tutor rosters, and follow student engagement without leaving the same Edyfra ecosystem.",
-    icon: Building2,
-    link: "/institution",
-    visualIndex: 2,
-  },
-];
+const resourceTags = ["Revision Notes", "Past Papers", "Study Guides"];
 
 export function HomeFeatures() {
   return (
-    <section className="py-32 md:py-48 space-y-32 md:space-y-48 font-sans">
-      <div className="container-max text-center space-y-6">
-        <div className="flex justify-center mb-2">
-          <LottieAnimation
-            animationData={studySpinner}
-            className="w-12 h-12 opacity-80"
-            ariaLabel="Features animation"
-          />
-        </div>
-        <h2 className="text-4xl md:text-6xl font-black tracking-tightest leading-none">
-          Built for the way students, tutors, <br className="hidden md:block" /> and institutions actually grow.
+    <section className="px-4 py-20 md:px-16">
+      {/* Section heading */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.7, ease: EASE }}
+        className="mx-auto mb-20 max-w-screen-2xl md:text-left"
+      >
+        <h2 className="mb-3 max-w-3xl text-balance text-headline-lg font-bold md:text-[40px] md:leading-[48px]">
+          Built for the way students, tutors, and institutions actually grow.
         </h2>
-        <p className="text-muted-foreground text-lg md:text-xl font-medium max-w-2xl mx-auto">
-          Every section is built around a simple question: what do you need next to keep learning moving?
+        <p className="max-w-2xl text-body-md text-on-surface-variant">
+          Every section is built around a simple question: what do you need next to keep learning
+          moving?
         </p>
-      </div>
+      </motion.div>
 
-      <div className="space-y-32 md:space-y-48">
-        {features.map((feature, i) => (
-          <div key={feature.title} className="container-max">
-            <div className={cn("flex flex-col gap-12 md:gap-24 items-center", i % 2 === 1 ? "md:flex-row-reverse" : "md:flex-row")}>
-              <motion.div
-                initial={{ opacity: 0, x: i % 2 === 1 ? 50 : -50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                className="w-full md:w-1/2"
-              >
-                <div className="aspect-[4/3] rounded-[2.5rem] bg-secondary border border-border overflow-hidden shadow-2xl relative">
-                  {FeatureVisuals[feature.visualIndex]}
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="w-full md:w-1/2 space-y-8"
-              >
-                <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center text-primary shadow-sm border border-border">
-                  <feature.icon className="h-8 w-8" />
-                </div>
-                <div className="space-y-4">
-                  <h3 className="text-4xl md:text-5xl font-black tracking-tightest">{feature.title}</h3>
-                  <p className="text-lg md:text-xl text-muted-foreground font-medium leading-relaxed">{feature.description}</p>
-                </div>
-                <Link href={feature.link} aria-label={`Learn more about ${feature.title}`} className="inline-flex items-center gap-2 text-primary font-black uppercase tracking-widest text-[10px] group">
-                  Learn more about {feature.title} <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </motion.div>
+      {/* Bento grid */}
+      <div className="bento-grid mx-auto max-w-screen-2xl">
+        {/* Resource Library */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.7, ease: EASE }}
+          className="glass-card group col-span-12 flex cursor-pointer flex-col justify-between p-12 transition-smooth hover:border-brand-orange/50 md:col-span-8"
+        >
+          <div>
+            <div className="mb-6 flex flex-wrap gap-3">
+              {resourceTags.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full bg-surface-container px-3 py-1 text-label-sm text-brand-orange"
+                >
+                  {tag}
+                </span>
+              ))}
             </div>
+            <h3 className="mb-3 text-title-md font-bold">Resource Library</h3>
+            <p className="text-body-md text-on-surface-variant">
+              Find past papers, notes, and study guides that match what you are learning instead of
+              digging through random files. No cap, it saves hours.
+            </p>
           </div>
-        ))}
+          <div className="mt-12">
+            <Link
+              href="/features"
+              aria-label="Learn more about the Resource Library"
+              className="inline-flex items-center gap-1 text-label-md text-on-surface transition-colors group-hover:text-brand-orange"
+            >
+              Learn more about Resource Library{" "}
+              <ArrowRight className="h-[18px] w-[18px] transition-transform group-hover:translate-x-1" />
+            </Link>
+          </div>
+        </motion.div>
+
+        {/* Verified Mentors */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.7, delay: 0.08, ease: EASE }}
+          className="glass-card group col-span-12 flex cursor-pointer flex-col justify-between p-12 transition-smooth hover:border-brand-orange/50 md:col-span-4"
+        >
+          <div>
+            <div className="mb-6 flex flex-wrap gap-3">
+              {["Mentor", "Peer"].map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full bg-tertiary/10 px-3 py-1 text-label-sm text-tertiary"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+            <h3 className="mb-3 text-title-md font-bold">Verified Mentors</h3>
+            <p className="text-body-md text-on-surface-variant">
+              Ask for help from tutors and high-performing peers who understand the Kenyan
+              classroom.
+            </p>
+          </div>
+          <div className="mt-12">
+            <Link
+              href="/dashboard/tutors"
+              aria-label="Explore verified mentors"
+              className="inline-flex items-center gap-1 text-label-md text-tertiary transition-colors group-hover:text-brand-orange"
+            >
+              Explore Mentors{" "}
+              <ArrowRight className="h-[18px] w-[18px] transition-transform group-hover:translate-x-1" />
+            </Link>
+          </div>
+        </motion.div>
+
+        {/* Institution Hubs */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.7, ease: EASE }}
+          className="glass-card group col-span-12 flex cursor-pointer flex-col justify-between p-12 transition-smooth hover:border-brand-orange/50 md:col-span-4"
+        >
+          <div>
+            <div className="mb-6 flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <span className="text-label-sm text-outline">School Adoption</span>
+                <span className="text-label-md font-bold text-brand-orange">82%</span>
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-container">
+                <motion.div
+                  initial={{ width: 0 }}
+                  whileInView={{ width: "82%" }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1, delay: 0.3, ease: EASE }}
+                  className="h-1.5 rounded-full bg-gradient-to-r from-brand-orange to-brand-orange-dark"
+                />
+              </div>
+            </div>
+            <h3 className="mb-3 text-title-md font-bold">Institution Hubs</h3>
+            <p className="text-body-md text-on-surface-variant">
+              Schools can onboard cohorts, manage tutor rosters, and follow student engagement.
+            </p>
+          </div>
+          <div className="mt-12">
+            <Link
+              href="/institution"
+              aria-label="Learn more about institution hubs"
+              className="inline-flex items-center gap-1 text-label-md text-on-surface transition-colors group-hover:text-brand-orange"
+            >
+              For Institutions{" "}
+              <ArrowRight className="h-[18px] w-[18px] transition-transform group-hover:translate-x-1" />
+            </Link>
+          </div>
+        </motion.div>
+
+        {/* News Room */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.7, delay: 0.08, ease: EASE }}
+          className="glass-card group relative col-span-12 flex cursor-pointer flex-col justify-between gap-6 overflow-hidden p-12 transition-smooth hover:border-brand-orange/50 md:flex-row md:items-center md:col-span-8"
+        >
+          <div
+            aria-hidden="true"
+            className="absolute bottom-0 right-0 -z-10 h-64 w-64 translate-x-1/2 translate-y-1/4 rounded-full bg-brand-orange/10 blur-3xl transition-colors group-hover:bg-brand-orange/10"
+          />
+          <div className="max-w-md">
+            <span className="mb-3 block uppercase tracking-[0.18em] text-label-sm text-brand-orange transition-colors group-hover:text-brand-orange">
+              News Room
+            </span>
+            <h3 className="mb-3 text-headline-lg font-bold">Latest from Edyfra.</h3>
+            <p className="text-body-md text-on-surface-variant">
+              News, platform notes, and study updates worth checking before your next session.
+            </p>
+          </div>
+          <div>
+            <Link
+              href="/news"
+              aria-label="Open the news room"
+              className="glass-panel transition-smooth inline-flex items-center gap-3 rounded-full px-6 py-3 text-label-md font-bold hover:border-brand-orange hover:bg-brand-orange hover:text-deep-void"
+            >
+              Open News Room <Newspaper className="h-[18px] w-[18px]" />
+            </Link>
+          </div>
+        </motion.div>
       </div>
     </section>
   );

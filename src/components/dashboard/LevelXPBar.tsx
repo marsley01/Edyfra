@@ -9,7 +9,7 @@ const tierColors: Record<string, { bg: string; text: string; bar: string; icon: 
   SILVER:   { bg: "from-slate-400/30 to-slate-300/10",  text: "text-slate-400", bar: "bg-slate-400", icon: Zap },
   GOLD:     { bg: "from-yellow-500/30 to-yellow-400/10", text: "text-yellow-500", bar: "bg-yellow-500", icon: Sparkles },
   PLATINUM: { bg: "from-cyan-400/30 to-cyan-300/10",    text: "text-cyan-400",  bar: "bg-cyan-400",  icon: Crown },
-  LEGEND:   { bg: "from-violet-500/30 to-violet-400/10", text: "text-violet-500", bar: "bg-violet-500", icon: Crown },
+  LEGEND:   { bg: "from-amber-500/30 to-amber-400/10", text: "text-amber-500", bar: "bg-amber-500", icon: Crown },
 };
 
 export default function LevelXPBar({ points = 0, streakDays = 0 }: { points: number; streakDays: number }) {
@@ -83,7 +83,7 @@ export default function LevelXPBar({ points = 0, streakDays = 0 }: { points: num
 
         {/* Max tier reached */}
         {!progress.nextTier && (
-          <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-violet-500">
+          <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-amber-500">
             <Crown className="h-4 w-4" /> Maximum tier achieved
           </div>
         )}

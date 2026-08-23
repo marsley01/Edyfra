@@ -113,10 +113,13 @@ function extractKeywords(title: string): string {
 /** Fetch the OG image from an article URL. Returns null on any failure. */
 async function scrapeOgImage(articleUrl: string): Promise<string | null> {
   try {
+    const safeUrl = validateExternalArticleUrl(articleUrl);
+    if (!safeUrl) return null;
+
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 4000);
 
-    const res = await fetch(articleUrl, {
+    const res = await fetch(safeUrl, {
       signal: controller.signal,
       headers: { "User-Agent": BOT_UA },
     });

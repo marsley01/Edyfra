@@ -70,7 +70,7 @@ export function TeachersClient({ initialRows }: { initialRows: TeacherRow[] }) {
             {rows.length} total · {filtered.length} shown
           </p>
         </div>
-        <Button onClick={() => setShowInvite(true)} className="bg-indigo-600 hover:bg-indigo-700">
+        <Button onClick={() => setShowInvite(true)} className="bg-primary hover:bg-primary">
           <UserPlus className="mr-2 h-4 w-4" /> Invite teacher
         </Button>
       </header>
@@ -83,7 +83,7 @@ export function TeachersClient({ initialRows }: { initialRows: TeacherRow[] }) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name, email, or subject…"
-              className="min-h-11 w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3 text-base text-gray-900 placeholder:text-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:text-sm"
+              className="min-h-11 w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3 text-base text-gray-900 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm"
             />
           </div>
         </CardContent>
@@ -284,13 +284,13 @@ function InviteTeacherDialog({ onClose }: { onClose: () => void }) {
                 {subjects.map((s) => (
                   <span
                     key={s}
-                    className="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-bold text-indigo-700"
+                    className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-0.5 text-xs font-bold text-primary"
                   >
                     {s}
                     <button
                       type="button"
                       onClick={() => setSubjects((cur) => cur.filter((x) => x !== s))}
-                      className="text-indigo-400 hover:text-indigo-700"
+                      className="text-primary hover:text-primary"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -306,7 +306,7 @@ function InviteTeacherDialog({ onClose }: { onClose: () => void }) {
             <Button type="button" variant="ghost" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={pending} className="bg-indigo-600 hover:bg-indigo-700">
+            <Button type="submit" disabled={pending} className="bg-primary hover:bg-primary">
               {pending ? "Sending…" : "Send invitation"}
             </Button>
           </div>
@@ -333,7 +333,7 @@ function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...rest}
-      className={`min-h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-base text-gray-900 placeholder:text-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:text-sm ${className}`}
+      className={`min-h-11 w-full rounded-md border border-gray-200 bg-white px-3 text-base text-gray-900 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm ${className}`}
     />
   );
 }

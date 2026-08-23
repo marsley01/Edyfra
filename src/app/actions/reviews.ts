@@ -1,18 +1,14 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { createClient } from "@/utils/supabase/server";
-import { createAdminClient } from "@/utils/supabase/admin";
 import { revalidatePath } from "next/cache";
-import { notifyUser } from "@/app/actions/notifications";
-
-// ─── Landing Page Testimonials (Supabase reviews table) ──────────────
 
 export interface Review {
   id: string;
   author_name: string;
   school: string;
   quote: string;
+  rating: number;
   approved: boolean;
   created_at: string;
 }
@@ -21,6 +17,7 @@ export async function submitReview(data: {
   author_name: string;
   school: string;
   quote: string;
+  rating: number;
 }) {
   if (!data.author_name?.trim() || !data.quote?.trim()) {
     return { error: "Name and review are required." };
@@ -31,204 +28,223 @@ export async function submitReview(data: {
   if (data.quote.length > 500) {
     return { error: "Review must be under 500 characters." };
   }
+  if (data.rating < 1 || data.rating > 5) {
+    return { error: "Rating must be between 1 and 5." };
+  }
 
-  const admin = createAdminClient();
-  const { error } = await admin.from("reviews").insert({
-    author_name: data.author_name.trim(),
-    school: data.school?.trim() || "Edyfra Scholar",
-    quote: data.quote.trim(),
-    approved: false,
-  });
-
-  if (error) {
+  try {
+    await prisma.siteTestimonial.create({
+      data: {
+        authorName: data.author_name.trim(),
+        school: data.school?.trim() || "Edyfra Scholar",
+        quote: data.quote.trim(),
+        rating: data.rating,
+        approved: false,
+      },
+    });
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
     console.error("Review submission error:", error);
     return { error: "Failed to submit review. Please try again." };
   }
-
-  revalidatePath("/");
-  return { success: true };
 }
 
-import { createClient as createSupabaseJsClient } from "@supabase/supabase-js";
-
 export async function getApprovedReviews(): Promise<Review[]> {
-  // Use a plain public client to avoid accessing cookies() during Next.js build caching
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-  const publicClient = createSupabaseJsClient(url, key, {
-    auth: { persistSession: false }
-  });
-
-  const { data, error } = await publicClient
-    .from("reviews")
-    .select("*")
-    .eq("approved", true)
-    .order("created_at", { ascending: false })
-    .limit(10);
-
-  if (error || !data) return [];
-  return data;
+  try {
+    const data = await prisma.siteTestimonial.findMany({
+      where: { approved: true },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    });
+    return data.map((d) => ({
+      id: d.id,
+      author_name: d.authorName,
+      school: d.school || "",
+      quote: d.quote,
+      rating: d.rating,
+      approved: d.approved,
+      created_at: d.createdAt.toISOString(),
+    }));
+  } catch (error) {
+    return [];
+  }
 }
 
 export async function getPendingReviews(): Promise<Review[]> {
-  const admin = createAdminClient();
-  const { data, error } = await admin
-    .from("reviews")
-    .select("*")
-    .eq("approved", false)
-    .order("created_at", { ascending: false });
-
-  if (error || !data) return [];
-  return data;
+  try {
+    const data = await prisma.siteTestimonial.findMany({
+      where: { approved: false },
+      orderBy: { createdAt: "desc" },
+    });
+    return data.map((d) => ({
+      id: d.id,
+      author_name: d.authorName,
+      school: d.school || "",
+      quote: d.quote,
+      rating: d.rating,
+      approved: d.approved,
+      created_at: d.createdAt.toISOString(),
+    }));
+  } catch (error) {
+    return [];
+  }
 }
 
 export async function approveReview(id: string) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const dbUser = user ? await prisma.user.findFirst({
-    where: {
-      OR: [
-        { id: user.id },
-        ...(user.email ? [{ email: user.email }] : [])
-      ]
-    },
-    select: { role: true }
-  }) : null;
-  if (!user || dbUser?.role !== "ADMIN") {
-    return { error: "Unauthorized" };
+  try {
+    await prisma.siteTestimonial.update({
+      where: { id },
+      data: { approved: true },
+    });
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    return { error: "Failed to approve review" };
   }
-  const admin = createAdminClient();
-  const { error } = await admin.from("reviews").update({ approved: true }).eq("id", id);
-  if (error) return { error: error.message };
-  revalidatePath("/");
-  return { success: true };
 }
 
 export async function deleteReview(id: string) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const dbUser = user ? await prisma.user.findFirst({
-    where: {
-      OR: [
-        { id: user.id },
-        ...(user.email ? [{ email: user.email }] : [])
-      ]
-    },
-    select: { role: true }
-  }) : null;
-  if (!user || dbUser?.role !== "ADMIN") {
-    return { error: "Unauthorized" };
+  try {
+    await prisma.siteTestimonial.delete({
+      where: { id },
+    });
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    return { error: "Failed to delete review" };
   }
-  const admin = createAdminClient();
-  const { error } = await admin.from("reviews").delete().eq("id", id);
-  if (error) return { error: error.message };
-  revalidatePath("/");
-  return { success: true };
 }
 
-// ─── Session Reviews (Prisma Review model) ───────────────────────────
+// ─── Admin Feedback Dashboard (tutor-student session reviews) ────────────────
+
+export async function getAllReviewsForAdmin(): Promise<{
+  reviews: Array<{
+    id: string;
+    rating: number;
+    comment: string | null;
+    createdAt: string;
+    reviewer: { name: string | null } | null;
+    reviewee: { name: string | null } | null;
+    session: { subject: string; tier: string } | null;
+  }>;
+  tutorRankings: Array<{
+    userId: string;
+    user: { name: string | null };
+    totalSessions: number;
+    rating: number;
+  }>;
+}> {
+  try {
+    const { checkAdminStatus } = await import("./admin");
+    if (!(await checkAdminStatus())) return { reviews: [], tutorRankings: [] };
+
+    const [reviews, grouped] = await Promise.all([
+      prisma.review.findMany({
+        orderBy: { createdAt: "desc" },
+        include: {
+          reviewer: { select: { name: true } },
+          reviewee: { select: { name: true } },
+          session: { select: { subject: true, tier: true } },
+        },
+      }),
+      prisma.review.groupBy({
+        by: ["revieweeId"],
+        _count: { id: true },
+        _avg: { rating: true },
+        orderBy: { _avg: { rating: "desc" } },
+      }),
+    ]);
+
+    // Resolve names for ranked tutors
+    const rankedUserIds = grouped.map((g) => g.revieweeId);
+    const rankedUsers = await prisma.user.findMany({
+      where: { id: { in: rankedUserIds } },
+      select: { id: true, name: true },
+    });
+    const userMap = new Map(rankedUsers.map((u) => [u.id, u.name]));
+
+    const tutorRankings = grouped
+      .map((g) => ({
+        userId: g.revieweeId,
+        user: { name: userMap.get(g.revieweeId) ?? null },
+        totalSessions: g._count.id,
+        rating: g._avg.rating ?? 0,
+      }))
+      .sort((a, b) => b.rating - a.rating || b.totalSessions - a.totalSessions);
+
+    return {
+      reviews: reviews.map((r) => ({
+        id: r.id,
+        rating: r.rating,
+        comment: r.comment,
+        createdAt: r.createdAt.toISOString(),
+        reviewer: r.reviewer,
+        reviewee: r.reviewee,
+        session: r.session,
+      })),
+      tutorRankings,
+    };
+  } catch (error) {
+    console.error("getAllReviewsForAdmin error:", error);
+    return { reviews: [], tutorRankings: [] };
+  }
+}
+
+// ─── Session Review (tutor-student, written after a live session) ─────────────
 
 export async function createSessionReview(
   sessionId: string,
   rating: number,
   comment?: string
 ) {
+  const { createClient } = await import("@/utils/supabase/server");
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
+  if (!user) throw new Error("Not authenticated");
+
+  // Look up the reviewer's DB id
+  const reviewer = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { id: user.id },
+        ...(user.email ? [{ email: user.email }] : []),
+      ],
+    },
+    select: { id: true },
+  });
+  if (!reviewer) throw new Error("User not found");
+
+  // Fetch the session to find the reviewee (the other participant)
   const session = await prisma.session.findUnique({
     where: { id: sessionId },
-    select: { studentId: true, partnerId: true, tier: true },
+    select: { studentId: true, partnerId: true },
   });
   if (!session) throw new Error("Session not found");
-  if (session.studentId !== user.id) throw new Error("Only the student can review");
-  if (!session.partnerId) throw new Error("No tutor to review");
-  if (session.tier !== "TUTOR") throw new Error("Only tutor sessions can be reviewed");
 
-  const existing = await prisma.review.findUnique({ where: { sessionId } });
-  if (existing) throw new Error("Already reviewed this session");
+  const revieweeId =
+    session.studentId === reviewer.id ? session.partnerId : session.studentId;
+  if (!revieweeId) throw new Error("Session has no partner to review");
 
-  const review = await prisma.review.create({
-    data: {
+  // Upsert so a user can update their review
+  await prisma.review.upsert({
+    where: { sessionId },
+    create: {
       sessionId,
-      reviewerId: user.id,
-      revieweeId: session.partnerId,
+      reviewerId: reviewer.id,
+      revieweeId,
       rating,
-      comment,
+      comment: comment ?? null,
+    },
+    update: {
+      rating,
+      comment: comment ?? null,
     },
   });
 
-  await recalculateTutorRating(session.partnerId);
-
-  await notifyUser(session.partnerId, {
-    type: "REVIEW_RECEIVED",
-    title: "New Review!",
-    body: `You received a ${rating}-star review after your session.`,
-    actionUrl: `/tutor`,
-  });
-
-  revalidatePath("/dashboard");
-  revalidatePath("/tutor");
-  return review;
-}
-
-async function recalculateTutorRating(tutorUserId: string) {
-  const result = await prisma.review.aggregate({
-    where: { revieweeId: tutorUserId },
-    _avg: { rating: true },
-    _count: true,
-  });
-
-  await prisma.tutorProfile.update({
-    where: { userId: tutorUserId },
-    data: {
-      rating: result._avg.rating || 0,
-    },
-  });
-}
-
-export async function getTutorReviews(tutorUserId: string) {
-  return prisma.review.findMany({
-    where: { revieweeId: tutorUserId },
-    include: {
-      reviewer: { select: { name: true, avatar: true } },
-      session: { select: { subject: true, topic: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
-}
-
-export async function getAllReviewsForAdmin() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const admin = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { role: true },
-  });
-  if (admin?.role !== "ADMIN") throw new Error("Admin only");
-
-  const reviews = await prisma.review.findMany({
-    include: {
-      reviewer: { select: { name: true } },
-      reviewee: { select: { name: true } },
-      session: { select: { subject: true, topic: true, tier: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
-
-  const tutorRankings = await prisma.tutorProfile.findMany({
-    where: { isVerified: true },
-    select: {
-      userId: true,
-      rating: true,
-      totalSessions: true,
-      user: { select: { name: true } },
-    },
-    orderBy: { rating: "desc" },
-  });
-
-  return { reviews, tutorRankings };
+  revalidatePath(`/study-room/${sessionId}`);
+  return { success: true };
 }

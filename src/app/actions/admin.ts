@@ -8,9 +8,13 @@ import { TUTOR_CONFIG } from "@/lib/config";
 import { isFounderEmail } from "@/utils/admin-guard";
 import { notifyUser } from "@/app/actions/notifications";
 import { getCached, TTL } from "@/lib/cache";
+import { invalidateAICache, getAIConfig } from "@/lib/ai-config";
+import { syncEnvVarsToVercel } from "@/lib/vercel-env";
 
 export type AdminGlobalSettings = {
   googleAiKey?: string;
+  openRouterKey?: string;
+  aiModel?: string;
   accentColor?: string;
   maintenanceMode?: boolean;
   registrationGate?: boolean;
@@ -651,6 +655,79 @@ export async function saveAdminGlobalSettings(settings: AdminGlobalSettings) {
   } catch (error: any) {
     console.error("Error saving global settings:", error);
     return { error: error.message || "Failed to save settings" };
+  }
+}
+
+/**
+ * Save AI settings (OpenRouter key + model) with instant effect:
+ *   1. Persist to platformSettings → every AI path picks it up within seconds
+ *      via getAIConfig() — no redeploy needed.
+ *   2. Upsert OPENROUTER_API_KEY / AI_MODEL on the Vercel project so future
+ *      deployments inherit the same configuration.
+ */
+export async function saveAISettings(settings: AdminGlobalSettings): Promise<{
+  success: boolean;
+  error?: string;
+  vercelSync?: boolean;
+  vercelMessage?: string;
+}> {
+  const base = await saveAdminGlobalSettings(settings);
+  if (base?.error) return { success: false, error: base.error };
+
+  invalidateAICache();
+
+  const key = typeof settings.openRouterKey === "string" ? settings.openRouterKey.trim() : "";
+  if (!key) return { success: true as const, vercelSync: false as const };
+
+  const sync = await syncEnvVarsToVercel({
+    OPENROUTER_API_KEY: key,
+    ...(typeof settings.aiModel === "string" && settings.aiModel.trim()
+      ? { AI_MODEL: settings.aiModel.trim() }
+      : {}),
+  });
+  return {
+    success: true as const,
+    vercelSync: sync.synced,
+    vercelMessage: sync.synced
+      ? "Environment updated on Vercel for future deployments."
+      : sync.skippedReason || sync.error || "Vercel sync skipped.",
+  };
+}
+
+/** Validate an OpenRouter key against the live API without spending tokens. */
+export async function testOpenRouterKey(key?: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || !(await isAdmin())) {
+    return { ok: false as const, error: "Admin access required" };
+  }
+
+  let apiKey = key?.trim();
+  if (!apiKey) {
+    const config = await getAIConfig();
+    apiKey = config.apiKey ?? undefined;
+  }
+  if (!apiKey) return { ok: false as const, error: "No key provided or saved." };
+
+  try {
+    const res = await fetch("https://openrouter.ai/api/v1/auth/key", {
+      headers: { Authorization: `Bearer ${apiKey}` },
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      return { ok: false as const, error: res.status === 401 ? "Invalid or revoked key." : `OpenRouter returned ${res.status}.` };
+    }
+    const data = await res.json().catch(() => ({}));
+    const info = data?.data ?? {};
+    return {
+      ok: true as const,
+      label: info.label || "OpenRouter key",
+      usage: typeof info.usage === "number" ? info.usage : undefined,
+      limit: typeof info.limit === "number" ? info.limit : undefined,
+      isFreeTier: typeof info.is_free_tier === "boolean" ? info.is_free_tier : undefined,
+    };
+  } catch (err) {
+    return { ok: false as const, error: err instanceof Error ? err.message : "Network error contacting OpenRouter." };
   }
 }
 

@@ -43,7 +43,7 @@ export function HomeNewsletter() {
   return (
     <section className="py-16 border-y border-border/30">
       <div className="container-max space-y-8">
-        <h2 className="text-4xl md:text-6xl font-black tracking-tightest text-center">
+        <h2 className="text-4xl md:text-6xl font-black tracking-tight text-center">
           Get the latest from Edyfra
         </h2>
         <p className="text-muted-foreground text-lg md:text-xl font-medium max-w-2xl mx-auto text-center">

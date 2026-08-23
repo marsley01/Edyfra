@@ -55,7 +55,7 @@ export function AcceptClient({ token }: { token: string | null }) {
   if (loading) {
     return (
       <Center>
-        <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </Center>
     );
   }
@@ -102,13 +102,13 @@ export function AcceptClient({ token }: { token: string | null }) {
   return (
     <Center>
       <div className="max-w-md rounded-3xl border border-gray-200 bg-white p-10 text-center">
-        <CheckCircle2 className="mx-auto h-10 w-10 text-indigo-500" />
+        <CheckCircle2 className="mx-auto h-10 w-10 text-primary" />
         <h1 className="mt-4 text-xl font-black text-gray-900">Open your invitation</h1>
         <p className="mt-2 text-sm text-gray-600">
           Use the link in your email, or paste your invitation token here.
         </p>
         <Button
-          className="mt-6 bg-indigo-600 hover:bg-indigo-700"
+          className="mt-6 bg-primary hover:bg-primary"
           onClick={() => {
             const t = window.prompt("Paste your invitation token");
             if (t) router.push(`/institution/accept?token=${t}`);
@@ -123,7 +123,7 @@ export function AcceptClient({ token }: { token: string | null }) {
 
 function Center({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-slate-50 via-white to-indigo-50/40 p-6">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-slate-50 via-white to-blue-500/40 p-6">
       {children}
     </div>
   );

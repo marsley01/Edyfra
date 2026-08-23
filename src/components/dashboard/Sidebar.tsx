@@ -139,13 +139,13 @@ export default function DashboardSidebar({ user, onClose }: { user: User; onClos
                     className={cn(
                       "flex items-center gap-[10px] px-[14px] py-[10px] rounded-[10px] text-[0.9rem] font-medium transition-all duration-150 group relative",
                       isActive
-                        ? "bg-violet-light text-violet font-bold"
+                        ? "bg-brand-orange/10 text-brand-orange font-bold"
                         : "text-text-200 hover:text-text-100 hover:bg-page-bg"
                     )}
                   >
                     <Icon className={cn(
                       "h-4 w-4 shrink-0 transition-colors",
-                      isActive ? "text-violet" : "text-text-200 group-hover:text-text-100"
+                      isActive ? "text-brand-orange" : "text-text-200 group-hover:text-text-100"
                     )} />
                     <span className="truncate">{itemLabel}</span>
                     {showCount && <NotificationCountBadge />}
@@ -174,7 +174,7 @@ export default function DashboardSidebar({ user, onClose }: { user: User; onClos
           <div className="flex items-center gap-3">
             <Avatar className="h-9 w-9 rounded-xl shadow-sm">
               <AvatarImage src={avatar || undefined} alt={displayName} className="rounded-xl object-cover" />
-              <AvatarFallback className="rounded-xl bg-gradient-to-br from-violet to-bubblegum text-white font-bold text-xs">
+              <AvatarFallback className="rounded-xl bg-gradient-to-br from-brand-orange to-coral text-white font-bold text-xs">
                 {displayName?.[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>

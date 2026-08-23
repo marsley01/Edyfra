@@ -11,7 +11,7 @@ type Props = {
 };
 
 export function AnimatedSection({ children, delay = 0, className, as = "div" }: Props) {
-  const MotionTag = motion[as as keyof typeof motion] as React.ElementType;
+  const MotionTag = motion[as as keyof typeof motion] as typeof motion.div;
 
   return (
     <MotionTag

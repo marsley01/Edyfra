@@ -65,7 +65,7 @@ export function StudentInsightButton({
         size="sm"
         onClick={onGenerate}
         disabled={pending}
-        className="bg-indigo-600 hover:bg-indigo-700"
+        className="bg-primary hover:bg-primary"
       >
         {pending ? (
           <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />

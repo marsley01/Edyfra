@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const nameField = z.string().min(2, "Name must be at least 2 characters").max(100, "Name must be under 100 characters").trim().regex(/^[a-zA-Z\s\-'\.]+$/, "Name contains invalid characters");
-export const emailField = z.string().email("Invalid email address").max(254, "Email too long").toLowerCase().trim();
+export const emailField = z.string().trim().toLowerCase().email("Invalid email address").max(254, "Email too long");
 export const passwordField = z.string().min(8, "Password must be at least 8 characters").max(128, "Password too long").regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Password must contain uppercase, lowercase, and a number");
 export const messageField = z.string().min(1, "Message cannot be empty").max(2000, "Message too long").trim();
 export const subjectField = z.string().min(1, "Subject is required").max(100, "Subject name too long").trim();

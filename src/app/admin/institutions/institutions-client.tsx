@@ -18,6 +18,8 @@ import {
   ExternalLink,
   RefreshCw,
   Trash2,
+  KeyRound,
+  Copy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -71,7 +73,7 @@ const STATUS_STYLES: Record<Status, { bg: string; ring: string; label: string }>
 
 const PLAN_STYLES: Record<NonNullable<PlanTier>, { price: string; tone: string }> = {
   STARTER: { price: "KES 4,500 / mo", tone: "text-zinc-300" },
-  GROWTH: { price: "KES 12,000 / mo", tone: "text-indigo-400" },
+  GROWTH: { price: "KES 12,000 / mo", tone: "text-primary" },
   ENTERPRISE: { price: "Custom", tone: "text-amber-400" },
 };
 
@@ -329,21 +331,14 @@ function ApplicationCard({
                 {plan && <p className="text-[10px] text-muted-foreground">{plan.price}</p>}
               </div>
             )}
-            {app.code && (
-              <div>
-                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-                  Code
-                </p>
-                <p className="font-mono text-xs text-foreground/80">{app.code}</p>
-              </div>
-            )}
           </div>
 
           {/* Body */}
           <div className="flex-1 space-y-4 p-5">
             {/* Title row */}
-            <div>
-              <h2 className="text-lg font-black text-foreground">{app.name}</h2>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 className="text-lg font-black text-foreground">{app.name}</h2>
               <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-muted-foreground">
                 {app.schoolType && (
                   <span className="font-bold text-foreground/80">{TYPE_LABEL[app.schoolType]}</span>
@@ -360,6 +355,8 @@ function ApplicationCard({
                   </span>
                 )}
               </p>
+              </div>
+              {app.code && <SchoolCodeBox code={app.code} />}
             </div>
 
             {/* Stats row */}
@@ -541,4 +538,48 @@ function Stat({
 
 function humanize(s: string) {
   return s.toLowerCase().replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/**
+ * Prominent, copyable school login code. The institution enters this code at
+ * /auth/institution-login as the first step of signing in.
+ */
+function SchoolCodeBox({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      showSuccess("School code copied", { description: "Share it with the school's admin." });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      showError({ title: "Couldn't copy", cause: "Copy the code manually instead." });
+    }
+  };
+
+  return (
+    <div className="shrink-0 rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/10 to-coral/5 p-4 space-y-1.5 sm:min-w-[190px]">
+      <p className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground">
+        <KeyRound className="h-3 w-3 text-primary" />
+        School login code
+      </p>
+      <div className="flex items-center justify-between gap-3">
+        <p className="font-mono text-xl font-black tracking-[0.18em] text-primary">{code}</p>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={copy}
+          aria-label={`Copy school code ${code}`}
+          className="h-8 w-8 shrink-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
+        >
+          {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+        </Button>
+      </div>
+      <p className="text-[10px] font-medium text-muted-foreground leading-snug">
+        Used at institution login.
+      </p>
+    </div>
+  );
 }

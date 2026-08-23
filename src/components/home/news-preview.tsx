@@ -15,7 +15,7 @@ import { BookOpen } from "lucide-react";
 const categoryColors: Record<string, string> = {
   Tech: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
   Education: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
-  "Student Life": "bg-purple-500/10 text-purple-400 border border-purple-500/20",
+  "Student Life": "bg-brand-orange/10 text-orange-400 border border-brand-orange/20",
   Announcements: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
   "Global Updates": "bg-slate-500/10 text-slate-400 border border-slate-500/20",
 };
@@ -73,18 +73,29 @@ function CardThumbnail({ item }: { item: NewsArticle }) {
         {/* Subtle gradient scrim so text on top is always readable */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-        {/* Pexels per-card attribution (required by Pexels API terms) */}
+        {/* Pexels per-card attribution (required by Pexels API terms).
+            Rendered as a span — an <a> nested inside the card's <a> is invalid
+            HTML and causes a hydration error. */}
         {item.thumbnail_source === "pexels" && item.pexels_photographer && item.pexels_photo_page && (
-          <a
-            href={item.pexels_photo_page}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="absolute bottom-2 left-2 text-white/60 hover:text-white/80 transition-colors"
+          <span
+            role="link"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              window.open(item.pexels_photo_page!, "_blank", "noopener,noreferrer");
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.stopPropagation();
+                window.open(item.pexels_photo_page!, "_blank", "noopener,noreferrer");
+              }
+            }}
+            className="absolute bottom-2 left-2 cursor-pointer text-white/60 hover:text-white/80 transition-colors"
             style={{ fontSize: "10px" }}
           >
             Photo by {item.pexels_photographer} on Pexels
-          </a>
+          </span>
         )}
       </div>
     );
@@ -247,11 +258,7 @@ export function HomeNews() {
         {/* Section header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] text-primary">
-              <Newspaper className="h-3.5 w-3.5" />
-              <span>News Room</span>
-            </div>
-            <h2 className="text-4xl md:text-6xl font-black tracking-tightest">Latest from Edyfra.</h2>
+            <h2 className="text-4xl md:text-6xl font-black tracking-tight">Latest from Edyfra.</h2>
             <p className="text-muted-foreground text-lg md:text-xl font-medium max-w-xl">
               News, platform notes, and study updates worth checking before your next session.
             </p>

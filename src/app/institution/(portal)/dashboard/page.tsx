@@ -89,15 +89,15 @@ async function SetupChecklist({ institutionId }: { institutionId: string }) {
               {nextActions.map((action) => {
                 const Icon = action.icon;
                 return (
-                  <Link key={action.title} href={action.href} className="group flex items-start gap-3 rounded-lg border border-gray-100 p-3 transition-colors hover:border-indigo-200 hover:bg-indigo-50/40">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 group-hover:bg-indigo-100 group-hover:text-indigo-600">
+                  <Link key={action.title} href={action.href} className="group flex items-start gap-3 rounded-lg border border-gray-100 p-3 transition-colors hover:border-primary hover:bg-primary/40">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 group-hover:bg-primary group-hover:text-primary">
                       <Icon className="h-4 w-4" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-gray-900 group-hover:text-indigo-700">{action.title}</p>
+                      <p className="text-sm font-bold text-gray-900 group-hover:text-primary">{action.title}</p>
                       <p className="text-xs text-gray-500">{action.body}</p>
                     </div>
-                    <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-gray-300 group-hover:text-indigo-500" />
+                    <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-gray-300 group-hover:text-primary" />
                   </Link>
                 );
               })}
@@ -118,7 +118,7 @@ async function SetupChecklist({ institutionId }: { institutionId: string }) {
             {flagged.slice(0, 5).map((s) => (
               <div key={s.studentUserId} className="flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2.5">
                 <div className="min-w-0 flex-1">
-                  <Link href={`/institution/dashboard/students/${s.studentUserId}`} className="text-sm font-bold text-gray-900 hover:text-indigo-700">
+                  <Link href={`/institution/dashboard/students/${s.studentUserId}`} className="text-sm font-bold text-gray-900 hover:text-primary">
                     {s.studentName}
                   </Link>
                   <p className="text-xs text-gray-500">{s.subject} · {s.form}</p>

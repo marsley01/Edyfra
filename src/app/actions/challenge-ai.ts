@@ -27,89 +27,6 @@ interface GeneratedChallenge {
   date?: string;
 }
 
-/* ── Static fallback challenges (AI-free backup) ── */
-const STATIC_CHALLENGES: GeneratedChallenge[] = [
-  {
-    subject: "Mathematics",
-    level: "HIGH_SCHOOL",
-    question: "If a student scores 80% on a 20-question exam, how many questions did they answer correctly?",
-    options: ["14", "15", "16", "18"],
-    answer: "16",
-    explanation: "80% of 20 is 0.8 × 20 = 16 questions correct.",
-  },
-  {
-    subject: "Mathematics",
-    level: "HIGH_SCHOOL",
-    question: "What is the next number in the sequence: 2, 6, 18, 54, ___?",
-    options: ["108", "162", "72", "90"],
-    answer: "162",
-    explanation: "Each term is multiplied by 3: 54 × 3 = 162.",
-  },
-  {
-    subject: "Physics",
-    level: "HIGH_SCHOOL",
-    question: "Which of the following is NOT a unit of energy?",
-    options: ["Joule", "Watt", "Calorie", "Kilowatt-hour"],
-    answer: "Watt",
-    explanation: "Watt (W) is a unit of power, not energy. Power is energy per unit time (J/s).",
-  },
-  {
-    subject: "Chemistry",
-    level: "HIGH_SCHOOL",
-    question: "What is the chemical symbol for the element Gold?",
-    options: ["Go", "Gd", "Au", "Ag"],
-    answer: "Au",
-    explanation: "Gold's symbol Au comes from the Latin word 'aurum' meaning 'shining dawn'.",
-  },
-  {
-    subject: "Biology",
-    level: "HIGH_SCHOOL",
-    question: "Which organ in the human body is primarily responsible for filtering blood?",
-    options: ["Liver", "Kidneys", "Heart", "Lungs"],
-    answer: "Kidneys",
-    explanation: "The kidneys filter waste products and excess substances from the blood to produce urine.",
-  },
-  {
-    subject: "English",
-    level: "HIGH_SCHOOL",
-    question: "Identify the figure of speech: 'The classroom was a zoo during the teacher's absence.'",
-    options: ["Simile", "Metaphor", "Alliteration", "Personification"],
-    answer: "Metaphor",
-    explanation: "A metaphor directly compares the classroom to a zoo without using 'like' or 'as'.",
-  },
-  {
-    subject: "Mathematics",
-    level: "UNIVERSITY",
-    question: "∫(3x² + 2x + 1)dx evaluated from x=0 to x=2 equals:",
-    options: ["10", "14", "8", "12"],
-    answer: "14",
-    explanation: "∫(3x²+2x+1)dx = x³ + x² + x |₀² = (8 + 4 + 2) − (0) = 14.",
-  },
-  {
-    subject: "Geography",
-    level: "HIGH_SCHOOL",
-    question: "Which is the highest mountain in Africa?",
-    options: ["Mount Kenya", "Kilimanjaro", "Rwenzori Mountains", "Mount Meru"],
-    answer: "Kilimanjaro",
-    explanation: "Mount Kilimanjaro in Tanzania stands at 5,895 m (19,341 ft), making it Africa's tallest peak.",
-  },
-  {
-    subject: "History",
-    level: "HIGH_SCHOOL",
-    question: "The Berlin Conference of 1884–85 is historically significant because it:",
-    options: ["Ended World War I", "Partitioned Africa among European powers", "Formed the United Nations", "Abolished the slave trade"],
-    answer: "Partitioned Africa among European powers",
-    explanation: "European nations divided Africa into colonies at the Berlin Conference without any African representation.",
-  },
-  {
-    subject: "Kiswahili",
-    level: "HIGH_SCHOOL",
-    question: "Neno 'Kiswahili' linamaanisha nini?",
-    options: ["Lugha ya mwambao", "Lugha ya wavuvi", "Lugha ya wenyeji", "Lugha ya wafugaji"],
-    answer: "Lugha ya mwambao",
-    explanation: "'Kiswahili' linatokana na neno Arab 'Sahil' linalomaanisha 'pwani' — lugha ya watu wa pwani ya Afrika Mashariki.",
-  },
-];
 
 function normalizeOptions(raw: unknown): string[] {
   if (!Array.isArray(raw)) return [];
@@ -254,31 +171,6 @@ Make the questions:
   }
 }
 
-async function seedStaticChallenge(level: string, subject?: string) {
-  const pool = subject
-    ? STATIC_CHALLENGES.filter(c => c.subject === subject && c.level === level)
-    : STATIC_CHALLENGES.filter(c => c.level === level);
-
-  const pick = pool.length > 0
-    ? pool[Math.floor(Math.random() * pool.length)]
-    : STATIC_CHALLENGES[Math.floor(Math.random() * STATIC_CHALLENGES.length)];
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  return prisma.dailyChallenge.create({
-    data: {
-      subject: pick.subject,
-      level: level as EduLevel,
-      question: pick.question,
-      options: pick.options,
-      answer: pick.answer,
-      explanation: pick.explanation,
-      date: today,
-    },
-  });
-}
-
 export async function getOrCreateDailyChallenge(level: string, subject?: string) {
   try {
     const today = new Date();
@@ -311,11 +203,10 @@ export async function getOrCreateDailyChallenge(level: string, subject?: string)
         return prisma.dailyChallenge.findUnique({ where: { id: challenges[0].id } });
       }
     } catch (aiErr) {
-      console.warn("[getOrCreateDailyChallenge] AI generation failed, using static fallback:", aiErr);
+      console.warn("[getOrCreateDailyChallenge] AI generation failed:", aiErr);
+      // No demo fallback — challenges are AI-generated only. Caller surfaces a retry.
+      return null;
     }
-
-    // Fallback: static challenge when AI is unavailable
-    return await seedStaticChallenge(level, subject);
   } catch (error) {
     console.error("Error getting/creating daily challenge:", error);
     return null;
@@ -619,54 +510,76 @@ export async function getChallengeStats() {
 
 export async function generatePersonalizedChallenge(userId: string, level: string) {
   try {
-    // Get user's recent performance to personalize difficulty
+    // ── 1. Onboarding profile: the subjects the student picked + weak topics ──
+    const profile = await prisma.studentProfile.findUnique({
+      where: { userId },
+      select: { subjects: true, weakTopics: true },
+    });
+    const selectedSubjects = (profile?.subjects as string[] | null) ?? [];
+    const weakTopics = (profile?.weakTopics as string[] | null) ?? [];
+
+    // ── 2. Attempt history: real performance per subject ──
     const recentAttempts = await prisma.dailyChallengeAttempt.findMany({
       where: { userId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take: 10,
-      include: {
-        challenge: {
-          select: { subject: true, level: true }
-        }
-      }
+      include: { challenge: { select: { subject: true, level: true } } },
     });
 
-    // Analyze performance patterns
     const subjectPerformance: Record<string, { correct: number; total: number }> = {};
-    recentAttempts.forEach(attempt => {
+    recentAttempts.forEach((attempt) => {
       const subject = attempt.challenge.subject;
-      if (!subjectPerformance[subject]) {
-        subjectPerformance[subject] = { correct: 0, total: 0 };
-      }
+      if (!subjectPerformance[subject]) subjectPerformance[subject] = { correct: 0, total: 0 };
       subjectPerformance[subject].total++;
-      if (attempt.correct) {
-        subjectPerformance[subject].correct++;
-      }
+      if (attempt.correct) subjectPerformance[subject].correct++;
     });
 
-    // Find weakest subject for targeted improvement
-    let weakestSubject = "Mathematics";
+    // ── 3. Pick the target subject ──
+    //    a) Weakest performed subject (needs >= 3 attempts for a real signal)
+    //    b) Otherwise rotate through the subjects chosen at onboarding, so the
+    //       challenge always targets something the student actually studies.
+    let targetSubject = "";
+    let targetNote = "";
     let lowestScore = 100;
     Object.entries(subjectPerformance).forEach(([subject, performance]) => {
-      if (performance.total >= 3) { // Only consider subjects with enough data
+      if (performance.total >= 3) {
         const score = (performance.correct / performance.total) * 100;
         if (score < lowestScore) {
           lowestScore = score;
-          weakestSubject = subject;
+          targetSubject = subject;
+          targetNote = `(recent success rate ${Math.round(score)}% — weakest performed subject)`;
         }
       }
     });
 
-    // Generate adaptive challenge based on performance
+    if (!targetSubject && selectedSubjects.length > 0) {
+      // Deterministic daily rotation through the student's own subjects
+      const dayIndex = Math.floor(Date.now() / 86_400_000);
+      targetSubject = selectedSubjects[dayIndex % selectedSubjects.length];
+      targetNote = "(chosen from the subjects you selected during onboarding)";
+    }
+
+    if (!targetSubject) {
+      targetSubject = "Mathematics";
+      targetNote = "(default — set your subjects on your profile for targeted challenges)";
+    }
+
+    // Weak topics from onboarding that map to the target subject get drilled
+    const relevantWeakTopics = weakTopics
+      .map((t) => String(t).trim())
+      .filter(Boolean);
+
+    // ── 4. AI generates the real challenge ──
     const adaptivePrompt = `Create a challenging but achievable multiple-choice question for ${level === "UNIVERSITY" ? "university" : "high school"} level students.
 
-STUDENT PERFORMANCE ANALYSIS:
-- Recent success rate: ${recentAttempts.length > 0 ? Math.round((recentAttempts.filter(a => a.correct).length / recentAttempts.length) * 100) : 0}%
-- Weakest subject: ${weakestSubject} (${lowestScore}% success rate)
-- Subjects attempted: ${Object.keys(subjectPerformance).join(", ")}
+STUDENT ANALYSIS:
+- Target subject: ${targetSubject} ${targetNote}
+- Recent success rate: ${recentAttempts.length > 0 ? Math.round((recentAttempts.filter((a) => a.correct).length / recentAttempts.length) * 100) : 0}%
+- Subjects the student studies: ${selectedSubjects.join(", ") || "not set"}
+${relevantWeakTopics.length > 0 ? `- Weak topics flagged by the student: ${relevantWeakTopics.join(", ")} — aim the question at ONE of these topics.` : ""}
 
 TASK:
-Generate a question for ${weakestSubject} that:
+Generate a question for ${targetSubject} that:
 1. Is slightly challenging (target 60-70% success rate)
 2. Addresses common misconceptions in this subject
 3. Includes real-world Kenyan context
@@ -674,7 +587,7 @@ Generate a question for ${weakestSubject} that:
 
 Format: {"question": "...", "options": ["A", "B", "C", "D"], "answer": "A", "explanation": "..."}`;
 
-    const aiResponse = await generateAIResponse(adaptivePrompt, weakestSubject);
+    const aiResponse = await generateAIResponse(adaptivePrompt, targetSubject);
     if (!aiResponse?.trim()) {
       throw new Error("AI generation failed");
     }
@@ -685,7 +598,7 @@ Format: {"question": "...", "options": ["A", "B", "C", "D"], "answer": "A", "exp
 
     return await prisma.dailyChallenge.create({
       data: {
-        subject: weakestSubject,
+        subject: targetSubject,
         level: level as EduLevel,
         question: parsed.question,
         options: parsed.options,
@@ -695,11 +608,10 @@ Format: {"question": "...", "options": ["A", "B", "C", "D"], "answer": "A", "exp
       },
     });
   } catch (error) {
-    console.warn("Error generating personalized challenge, using fallback:", error);
-    try {
-      return await seedStaticChallenge(level, "Mathematics");
-    } catch (fallbackErr) {
-      throw error instanceof Error ? error : new Error("Failed to generate personalized challenge");
-    }
+    // No demo fallback — if the AI is unavailable the UI shows a retry.
+    console.warn("Error generating personalized challenge:", error);
+    throw error instanceof Error
+      ? error
+      : new Error("Failed to generate personalized challenge");
   }
 }

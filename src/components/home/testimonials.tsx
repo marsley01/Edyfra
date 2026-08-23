@@ -18,7 +18,7 @@ export function HomeTestimonials({ initialReviews }: TestimonialsProps) {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [form, setForm] = useState({ author_name: "", school: "", quote: "" });
+  const [form, setForm] = useState({ author_name: "", school: "", quote: "", rating: 5 });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +39,7 @@ export function HomeTestimonials({ initialReviews }: TestimonialsProps) {
       <div className="container-max space-y-16">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div className="space-y-4">
-            <h2 className="text-4xl md:text-6xl font-black tracking-tightest">Loved by scholars.</h2>
+            <h2 className="text-4xl md:text-6xl font-black tracking-tight">Loved by scholars.</h2>
             <p className="text-muted-foreground text-lg md:text-xl font-medium max-w-xl">
               Authentic feedback from students dominating their fields.
             </p>
@@ -70,7 +70,7 @@ export function HomeTestimonials({ initialReviews }: TestimonialsProps) {
               >
                 <div className="space-y-2">
                   <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Share Your Protocol</p>
-                  <h3 className="text-3xl font-black tracking-tightest">Write a Review</h3>
+                  <h3 className="text-3xl font-black tracking-tight">Write a Review</h3>
                   <p className="text-muted-foreground font-medium">Your review will be moderated before going live.</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -107,7 +107,24 @@ export function HomeTestimonials({ initialReviews }: TestimonialsProps) {
                     rows={4}
                     className="w-full p-6 rounded-2xl border border-border bg-secondary font-medium text-sm leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                   />
-                  <p className="text-right text-[10px] text-muted-foreground font-bold">{form.quote.length}/500</p>
+                  <div className="flex justify-between items-center px-2">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Rating</label>
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4, 5].map(s => (
+                          <button
+                            key={s}
+                            type="button"
+                            onClick={() => setForm({ ...form, rating: s })}
+                            className="focus:outline-none transition-transform hover:scale-110 active:scale-95"
+                          >
+                            <Star className={`h-6 w-6 ${s <= form.rating ? 'fill-primary text-primary' : 'text-muted-foreground/30'}`} />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground font-bold">{form.quote.length}/500</p>
+                  </div>
                 </div>
                 <Button
                   type="submit"
@@ -134,7 +151,9 @@ export function HomeTestimonials({ initialReviews }: TestimonialsProps) {
                 className="min-w-[300px] md:min-w-[450px] snap-center bg-background p-10 rounded-[2.5rem] border border-border shadow-sm space-y-8 flex flex-col justify-between"
               >
                 <div className="flex gap-1">
-                  {[1,2,3,4,5].map(s => <Star key={s} className="h-4 w-4 fill-primary text-primary" />)}
+                  {[1,2,3,4,5].map(s => (
+                    <Star key={s} className={`h-4 w-4 ${s <= (r.rating || 5) ? 'fill-primary text-primary' : 'text-muted-foreground/30'}`} />
+                  ))}
                 </div>
                 <p className="text-xl md:text-2xl font-medium leading-relaxed italic text-foreground/90">&quot;{r.quote}&quot;</p>
                 <div className="flex items-center gap-4">
@@ -153,7 +172,7 @@ export function HomeTestimonials({ initialReviews }: TestimonialsProps) {
               <Star className="h-8 w-8 text-muted-foreground/30" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-2xl font-black tracking-tightest">No reviews yet.</h3>
+              <h3 className="text-2xl font-black tracking-tight">No reviews yet.</h3>
               <p className="text-muted-foreground font-medium max-w-sm">Be the first scholar to share your experience on the platform.</p>
             </div>
             <Button

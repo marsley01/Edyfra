@@ -24,10 +24,12 @@ export function AgentWidget({ agentId }: { agentId: "eddy" | "mash" }) {
 
   const isEddy = agentId === "eddy";
   const agentName = isEddy ? "Eddy" : "Mash";
-  const agentTheme = isEddy ? "from-blue-500 to-indigo-600 shadow-blue-500/50" : "from-amber-500 to-orange-600 shadow-amber-500/50";
-  const agentBg = isEddy ? "bg-blue-500" : "bg-amber-500";
-  const agentText = isEddy ? "text-blue-500" : "text-amber-500";
-  const agentLightBg = isEddy ? "bg-blue-500/10 border-blue-500/20" : "bg-amber-500/10 border-amber-500/20";
+  // Theme-aware tokens so the widget follows the active accent color
+  // (light/dark and admin-selected accent) instead of hardcoded hues.
+  const agentTheme = "from-primary via-primary/90 to-primary/70 shadow-primary/40";
+  const agentBg = "bg-primary";
+  const agentText = "text-primary";
+  const agentLightBg = "bg-primary/[0.07] border-primary/20";
   
   const welcomeTip = isEddy 
     ? "Hey! I'm Eddy, your learning assistant. What are we studying today?"
@@ -115,7 +117,7 @@ export function AgentWidget({ agentId }: { agentId: "eddy" | "mash" }) {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
+    <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+5rem)] right-4 lg:bottom-6 lg:right-6 z-50 flex flex-col items-end pointer-events-none">
       
       {/* Expanded Chat Panel */}
       <AnimatePresence>
@@ -157,7 +159,7 @@ export function AgentWidget({ agentId }: { agentId: "eddy" | "mash" }) {
                 <div className={`w-8 h-8 rounded-full ${agentBg} text-white flex items-center justify-center shrink-0 shadow-lg`}>
                   <Bot className="w-4 h-4" />
                 </div>
-                <div className={`bg-white dark:bg-zinc-800 border ${agentLightBg} p-3 rounded-2xl rounded-tl-sm text-sm shadow-sm`}>
+                <div className={`bg-card border ${agentLightBg} p-3 rounded-2xl rounded-tl-sm text-sm shadow-sm`}>
                   {welcomeTip}
                 </div>
               </motion.div>
@@ -171,9 +173,9 @@ export function AgentWidget({ agentId }: { agentId: "eddy" | "mash" }) {
                     {msg.role === "user" ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                   </div>
                   <div className={`p-3 rounded-2xl text-sm shadow-sm max-w-[80%] whitespace-pre-wrap ${
-                    msg.role === "user" 
-                      ? "bg-primary text-primary-foreground rounded-tr-sm" 
-                      : `bg-white dark:bg-zinc-800 border ${agentLightBg} rounded-tl-sm`
+                    msg.role === "user"
+                      ? "bg-primary text-primary-foreground rounded-tr-sm"
+                      : `bg-card border ${agentLightBg} rounded-tl-sm`
                   }`}>
                     {msg.content}
                   </div>
@@ -186,7 +188,7 @@ export function AgentWidget({ agentId }: { agentId: "eddy" | "mash" }) {
                   <div className={`w-8 h-8 rounded-full ${agentBg} text-white flex items-center justify-center shrink-0 shadow-lg`}>
                     <Bot className="w-4 h-4" />
                   </div>
-                  <div className={`bg-white dark:bg-zinc-800 border ${agentLightBg} p-3 rounded-2xl rounded-tl-sm shadow-sm flex items-center gap-1.5`}>
+                  <div className={`bg-card border ${agentLightBg} p-3 rounded-2xl rounded-tl-sm shadow-sm flex items-center gap-1.5`}>
                     <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce" style={{ animationDelay: "0ms" }} />
                     <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce" style={{ animationDelay: "150ms" }} />
                     <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce" style={{ animationDelay: "300ms" }} />

@@ -538,7 +538,7 @@ export async function inviteTeacher(input: InviteTeacherInput) {
         <p>The admin from <strong>${membership.institution.name}</strong> has invited you to teach on Edyfra under their institution.</p>
         <p>Subjects you'll teach: ${data.subjects.join(", ")}</p>
         <p>Accept the invitation by creating your teacher account:</p>
-        <p><a href="${acceptUrl}" style="display:inline-block;padding:12px 24px;background:#3730A3;color:white;border-radius:8px;text-decoration:none;">Accept invitation</a></p>
+        <p><a href="${acceptUrl}" style="display:inline-block;padding:12px 24px;background:#FF9500;color:white;border-radius:8px;text-decoration:none;">Accept invitation</a></p>
         <p>This link expires in 14 days.</p>
       `,
     });

@@ -77,7 +77,7 @@ export type AppEnv = {
   SUPABASE_SERVICE_ROLE_KEY: string;
   NEXT_PUBLIC_STREAM_KEY: string;
   STREAM_SECRET: string;
-  OPENROUTER_API_KEY: string;
+  OPENROUTER_API_KEY?: string;
   RESEND_API_KEY: string;
   UPSTASH_REDIS_REST_URL: string;
   UPSTASH_REDIS_REST_TOKEN: string;
@@ -104,7 +104,9 @@ export const env = new Environment<AppEnv>()
   .register({ key: "SUPABASE_SERVICE_ROLE_KEY", parse: (s) => s, required: true, hint: "Server-side only. Never expose to the client." })
   .register({ key: "NEXT_PUBLIC_STREAM_KEY", parse: (s) => s, required: true })
   .register({ key: "STREAM_SECRET", parse: (s) => s, required: true })
-  .register({ key: "OPENROUTER_API_KEY", parse: (s) => s, required: true })
+  // Optional: admins can save the key at runtime via Admin → AI Settings
+  // (stored in platformSettings and resolved by src/lib/ai-config.ts).
+  .register({ key: "OPENROUTER_API_KEY", parse: (s) => s, required: false, hint: "Or set it in Admin → AI Settings." })
   .register({ key: "RESEND_API_KEY", parse: (s) => s, required: true })
   .register({ key: "UPSTASH_REDIS_REST_URL", parse: (s) => s, required: true })
   .register({ key: "UPSTASH_REDIS_REST_TOKEN", parse: (s) => s, required: true });

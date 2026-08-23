@@ -6,8 +6,6 @@ import {
   MessageCircle,
   X,
   Send,
-  Bot,
-  User,
   Loader2,
   Trash2,
   Bug,
@@ -189,8 +187,16 @@ export default function EddyChat() {
               }}
             >
               <div className="flex items-center gap-3 border-b px-4 py-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
-                  <Bot className="h-5 w-5 text-primary" />
+                <div
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary"
+                  aria-hidden
+                >
+                  <span
+                    className="text-[15px] font-bold text-primary-foreground select-none"
+                    style={{ fontFamily: "var(--font-dm-sans)" }}
+                  >
+                    M
+                  </span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold">Eddy</p>
@@ -323,22 +329,26 @@ export default function EddyChat() {
                             <div
                               className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
                                 msg.role === "user"
-                                  ? "bg-primary text-primary-foreground"
-                                  : "bg-muted"
+                                  ? "bg-muted"
+                                  : "bg-primary"
                               }`}
                             >
-                              {msg.role === "user" ? (
-                                <User className="h-3.5 w-3.5" />
-                              ) : (
-                                <Bot className="h-3.5 w-3.5" />
-                              )}
+                              <span
+                                className={`text-[11px] font-bold select-none ${
+                                  msg.role === "user" ? "text-foreground" : "text-primary-foreground"
+                                }`}
+                                style={{ fontFamily: "var(--font-dm-sans)" }}
+                              >
+                                {msg.role === "user" ? "U" : "M"}
+                              </span>
                             </div>
                             <div
-                              className={`rounded-2xl px-3.5 py-2 text-sm leading-relaxed whitespace-pre-wrap break-words ${
+                              className={`rounded-2xl px-3.5 py-2 whitespace-pre-wrap break-words ${
                                 msg.role === "user"
                                   ? "bg-primary text-primary-foreground"
-                                  : "bg-muted"
+                                  : "bg-muted border border-border text-foreground"
                               }`}
+                              style={{ fontSize: "14px", lineHeight: "1.6" }}
                             >
                               {msg.content}
                             </div>
@@ -348,10 +358,15 @@ export default function EddyChat() {
                       {isLoading && (
                         <div className="flex justify-start">
                           <div className="flex max-w-[85%] gap-2">
-                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted">
-                              <Bot className="h-3.5 w-3.5" />
+                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary">
+                              <span
+                                className="text-[11px] font-bold text-primary-foreground select-none"
+                                style={{ fontFamily: "var(--font-dm-sans)" }}
+                              >
+                                M
+                              </span>
                             </div>
-                            <div className="rounded-2xl bg-muted px-4 py-3">
+                            <div className="rounded-2xl bg-muted border border-border px-4 py-3">
                               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                             </div>
                           </div>

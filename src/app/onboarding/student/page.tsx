@@ -16,7 +16,7 @@ export default function StudentOnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
+   const [formData, setFormData] = useState({
     role: "STUDENT",
     educationLevel: "",
     curriculum: "8-4-4",
@@ -27,6 +27,26 @@ export default function StudentOnboardingPage() {
     studyStyle: "",
   });
   const [userName, setUserName] = useState<string>("Student");
+
+  // Kenyan school system: 8-4-4 high school = Form 1–4, CBC senior school = Grade 9–12,
+  // university = Year 1–6.
+  const yearOptions =
+    formData.educationLevel === "UNIVERSITY"
+      ? { prefix: "Year", values: [1, 2, 3, 4, 5, 6] }
+      : formData.curriculum === "CBC"
+        ? { prefix: "Grade", values: [9, 10, 11, 12] }
+        : { prefix: "Form", values: [1, 2, 3, 4] };
+
+  // Clear the selected year whenever it's no longer valid for the level/curriculum.
+  useEffect(() => {
+    setFormData((prev) =>
+      prev.formYear && !yearOptions.values.includes(Number(prev.formYear))
+        ? { ...prev, formYear: "" }
+        : prev
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.educationLevel, formData.curriculum]);
+
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -187,13 +207,18 @@ export default function StudentOnboardingPage() {
                             <SelectValue placeholder={formData.educationLevel === "UNIVERSITY" ? "Select Year" : "Select Form/Grade"} />
                           </SelectTrigger>
                           <SelectContent className="rounded-2xl border-border">
-                            {[1,2,3,4,5,6].map(n => (
+                            {yearOptions.values.map(n => (
                               <SelectItem key={n} value={n.toString()} className="font-bold">
-                                {formData.educationLevel === "UNIVERSITY" ? `Year ${n}` : `${formData.curriculum === "CBC" ? "Grade" : "Form"} ${n}`}
+                                {`${yearOptions.prefix} ${n}`}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
+                        {formData.educationLevel === "HIGH_SCHOOL" && formData.curriculum === "CBC" && (
+                          <p className="text-xs text-muted-foreground font-medium ml-1">
+                            CBC senior school runs Grade 9–12 under the Kenyan system.
+                          </p>
+                        )}
                       </div>
                    </div>
                    

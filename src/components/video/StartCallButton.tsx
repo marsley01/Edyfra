@@ -229,7 +229,7 @@ export function StartCallButton({
     <button
       onClick={handleStartCall}
       disabled={!client}
-      className="flex items-center gap-2 h-10 px-4 bg-violet-600 hover:bg-violet-700 text-white rounded-xl shadow-lg shadow-violet-600/20 transition-all text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+      className="flex items-center gap-2 h-10 px-4 bg-brand-orange-dark hover:bg-orange-700 text-white rounded-xl shadow-lg shadow-primary/20 transition-all text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
       title={!client ? 'Video service connecting...' : `Start video call with ${otherUserName}`}
     >
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">

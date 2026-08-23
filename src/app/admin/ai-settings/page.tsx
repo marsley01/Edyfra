@@ -1,10 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Cpu, Eye, EyeOff, RefreshCw, Save, Sparkles } from "lucide-react";
+import {
+  Cpu,
+  Eye,
+  EyeOff,
+  RefreshCw,
+  Save,
+  Sparkles,
+  CheckCircle2,
+  XCircle,
+  CloudUpload,
+  FlaskConical,
+} from "lucide-react";
 import { showError, showSuccess, showUnknownError } from "@/lib/toast";
-import { saveAdminGlobalSettings, getAdminGlobalSettings } from "@/app/actions/admin";
-import type { AdminGlobalSettings } from "@/app/actions/admin";
+import {
+  saveAISettings,
+  getAdminGlobalSettings,
+  testOpenRouterKey,
+  type AdminGlobalSettings,
+} from "@/app/actions/admin";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,22 +27,46 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+const MODEL_OPTIONS = [
+  { id: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash (recommended)" },
+  { id: "openai/gpt-4o-mini", label: "GPT-4o Mini" },
+  { id: "openai/gpt-4o", label: "GPT-4o" },
+  { id: "anthropic/claude-3-haiku", label: "Claude 3 Haiku" },
+  { id: "anthropic/claude-3.5-sonnet", label: "Claude 3.5 Sonnet" },
+  { id: "google/gemma-4-31b-it:free", label: "Gemma 4 31B (free tier)" },
+  { id: "z-ai/glm-5.2:free", label: "GLM 5.2 (free tier)" },
+];
+
+type TestResult =
+  | { state: "idle" }
+  | { state: "testing" }
+  | { state: "ok"; label?: string; usage?: number; limit?: number }
+  | { state: "fail"; error: string };
+
 export default function AdminAISettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showKey, setShowKey] = useState(false);
   const [baseSettings, setBaseSettings] = useState<AdminGlobalSettings>({});
-  const [googleAiKey, setGoogleAiKey] = useState("");
-  const [aiProvider, setAiProvider] = useState("auto");
+  const [openRouterKey, setOpenRouterKey] = useState("");
+  const [aiModel, setAiModel] = useState("google/gemini-2.5-flash");
   const [aiMatchmaking, setAiMatchmaking] = useState(true);
+  const [testResult, setTestResult] = useState<TestResult>({ state: "idle" });
+  const [vercelMessage, setVercelMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const loadSettings = async () => {
       try {
         const settings = await getAdminGlobalSettings();
         setBaseSettings(settings);
-        setGoogleAiKey(typeof settings.googleAiKey === "string" ? settings.googleAiKey : "");
-        setAiProvider(typeof settings.aiProvider === "string" ? settings.aiProvider : "auto");
+        const savedKey =
+          typeof settings.openRouterKey === "string" && settings.openRouterKey
+            ? settings.openRouterKey
+            : typeof settings.googleAiKey === "string"
+              ? settings.googleAiKey
+              : "";
+        setOpenRouterKey(savedKey);
+        setAiModel(typeof settings.aiModel === "string" && settings.aiModel ? settings.aiModel : "google/gemini-2.5-flash");
         setAiMatchmaking(typeof settings.aiMatchmaking === "boolean" ? settings.aiMatchmaking : true);
       } catch (error) {
         console.error("Failed to load AI settings:", error);
@@ -44,25 +83,51 @@ export default function AdminAISettingsPage() {
     void loadSettings();
   }, []);
 
+  const handleTest = async () => {
+    setTestResult({ state: "testing" });
+    try {
+      const res = await testOpenRouterKey(openRouterKey.trim() || undefined);
+      if (res.ok) {
+        setTestResult({ state: "ok", label: res.label, usage: res.usage, limit: res.limit });
+      } else {
+        setTestResult({ state: "fail", error: res.error });
+      }
+    } catch (error) {
+      setTestResult({
+        state: "fail",
+        error: error instanceof Error ? error.message : "Unexpected error testing key.",
+      });
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
+    setVercelMessage(null);
 
     try {
       const nextSettings: AdminGlobalSettings = {
         ...baseSettings,
-        googleAiKey,
-        aiProvider,
+        // Clear the legacy field once a proper OpenRouter key is stored.
+        googleAiKey: openRouterKey.startsWith("sk-or-") ? "" : openRouterKey,
+        openRouterKey,
+        aiModel,
+        aiProvider: "openrouter",
         aiMatchmaking,
         updatedAt: new Date().toISOString(),
       };
 
-      const result = await saveAdminGlobalSettings(nextSettings);
+      const result = await saveAISettings(nextSettings);
       if (result?.error) {
         throw new Error(result.error);
       }
 
       setBaseSettings(nextSettings);
-      showSuccess("AI engine settings saved", { description: "The new model is live across the platform." });
+      setVercelMessage(result.vercelMessage ?? null);
+      showSuccess("AI engine settings saved", {
+        description: result.vercelSync
+          ? "Live instantly — Vercel env updated too."
+          : "Live instantly across the platform.",
+      });
     } catch (error) {
       showError({
         title: "We couldn't save AI settings",
@@ -92,7 +157,7 @@ export default function AdminAISettingsPage() {
           </div>
           <h1 className="text-5xl font-black tracking-tighter">AI Provider Settings</h1>
           <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
-            Manage the provider, key, and core automation behavior behind Mash AI.
+            One OpenRouter key powers Mash, Eddy, insights, challenges, and institution AI.
           </p>
         </div>
 
@@ -102,25 +167,33 @@ export default function AdminAISettingsPage() {
           className="h-14 rounded-2xl bg-primary px-8 font-black uppercase tracking-widest"
         >
           {saving ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-          Save AI Settings
+          Save &amp; Sync
         </Button>
       </div>
+
+      {vercelMessage && (
+        <div className="flex items-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 px-6 py-4 text-sm font-medium text-primary">
+          <CloudUpload className="h-4 w-4 shrink-0" />
+          {vercelMessage}
+        </div>
+      )}
 
       <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
         <Card className="overflow-hidden rounded-[2.5rem] border-border/5 bg-background/[0.02] backdrop-blur-xl">
           <CardHeader className="border-b border-white/5 p-10">
             <div className="mb-2 flex items-center gap-4">
               <Cpu className="h-6 w-6 text-primary" />
-              <CardTitle className="text-2xl font-black">Provider Settings</CardTitle>
+              <CardTitle className="text-2xl font-black">OpenRouter</CardTitle>
             </div>
             <CardDescription>
-              Configure how Edyfra powers AI-generated matching, support, and challenge workflows.
+              Edyfra routes every AI feature through OpenRouter. Paste a key from
+              openrouter.ai/keys — it goes live platform-wide the moment you save.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-8 p-10">
             <div className="space-y-4 rounded-[2rem] border border-primary/20 bg-primary/5 p-6">
               <div className="flex items-center justify-between">
-                <Label className="text-sm font-black uppercase tracking-widest text-primary">OpenRouter API Key</Label>
+                <Label className="text-sm font-black uppercase tracking-widest text-primary">API Key</Label>
                 <Button
                   type="button"
                   variant="ghost"
@@ -133,28 +206,66 @@ export default function AdminAISettingsPage() {
               </div>
               <Input
                 type={showKey ? "text" : "password"}
-                value={googleAiKey}
-                onChange={(event) => setGoogleAiKey(event.target.value)}
-                placeholder="AIzaSy..."
+                value={openRouterKey}
+                onChange={(event) => setOpenRouterKey(event.target.value)}
+                placeholder="sk-or-v1-..."
                 className="h-12 rounded-xl border-border/10 bg-background/40 font-mono text-xs tracking-widest"
               />
+              <div className="flex flex-wrap items-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleTest}
+                  disabled={testResult.state === "testing" || !openRouterKey.trim()}
+                  className="rounded-xl"
+                >
+                  {testResult.state === "testing" ? (
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <FlaskConical className="mr-2 h-4 w-4" />
+                  )}
+                  Test Key
+                </Button>
+
+                {testResult.state === "ok" && (
+                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-500">
+                    <CheckCircle2 className="h-4 w-4" />
+                    Working{testResult.label ? ` — ${testResult.label}` : ""}
+                    {typeof testResult.usage === "number" &&
+                      ` · $${(testResult.usage / 100).toFixed(2)} used${typeof testResult.limit === "number" ? ` of $${(testResult.limit / 100).toFixed(2)}` : ""}`}
+                  </span>
+                )}
+                {testResult.state === "fail" && (
+                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-destructive">
+                    <XCircle className="h-4 w-4" />
+                    {testResult.error}
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground">
-                This key is used for Edyfra AI experiences that rely on the configured OpenRouter pipeline.
+                Saving stores the key securely and pushes it to Vercel automatically when
+                VERCEL_API_TOKEN / VERCEL_PROJECT_ID are configured.
               </p>
             </div>
 
             <div className="space-y-4">
-              <Label className="text-sm font-black uppercase tracking-widest">Primary AI Provider</Label>
-              <Select value={aiProvider} onValueChange={(value) => setAiProvider(value || "auto")}>
+              <Label className="text-sm font-black uppercase tracking-widest">Default Model</Label>
+              <Select value={aiModel} onValueChange={(value) => setAiModel(value || "google/gemini-2.5-flash")}>
                 <SelectTrigger className="h-14 rounded-2xl border-border/10 bg-background/5 font-bold">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="auto">Automatic Routing</SelectItem>
-                  <SelectItem value="gemini">Google Gemini</SelectItem>
-                  <SelectItem value="openai">OpenAI</SelectItem>
+                  {MODEL_OPTIONS.map((m) => (
+                    <SelectItem key={m.id} value={m.id}>
+                      {m.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">
+                Used by chatbots, insights, challenge generation, and institution analytics.
+                If a model hits rate limits, traffic automatically fails over to the free tier.
+              </p>
             </div>
 
             <div className="flex items-center justify-between rounded-[2rem] border border-white/5 bg-white/5 p-6">
@@ -171,16 +282,16 @@ export default function AdminAISettingsPage() {
 
         <Card className="rounded-[2.5rem] border-border/5 bg-background text-foreground">
           <CardHeader className="p-10">
-            <CardTitle className="text-2xl font-black tracking-tight">What this page controls</CardTitle>
-            <CardDescription className="text-white/50">
-              Quick access to the settings behind Edyfra&apos;s AI layer.
+            <CardTitle className="text-2xl font-black tracking-tight">How this works</CardTitle>
+            <CardDescription className="text-muted-foreground">
+              The AI pipeline behind every Edyfra experience.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5 px-10 pb-10">
             {[
-              "AI provider selection for platform-wide workflows",
-              "Secure storage and rotation of the Gemini API key",
-              "Matchmaking behavior for tutor-student recommendations",
+              "Saving applies the new key within seconds — chatbots, insights, and generators read it live from the database.",
+              "With VERCEL_API_TOKEN and VERCEL_PROJECT_ID set, the key is also pushed to your Vercel project for future deploys.",
+              "Rate limits stay protected: per-user throttling and daily budgets keep applying no matter which key is active.",
             ].map((item) => (
               <div key={item} className="rounded-2xl border border-border/10 bg-background/5 p-5 text-sm font-medium text-foreground/80">
                 {item}
