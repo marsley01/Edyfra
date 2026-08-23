@@ -117,7 +117,7 @@ export async function POST(request: Request) {
         break;
       }
       default:
-        console.log(`[StreamWebhook] ${eventType}`, { callId, callType });
+        console.log("[StreamWebhook] %s", eventType, { callId, callType });
     }
 
     return NextResponse.json({ success: true });

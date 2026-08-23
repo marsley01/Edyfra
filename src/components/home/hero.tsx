@@ -123,30 +123,33 @@ export function HomeHero() {
     return () => window.removeEventListener("keydown", onKey);
   }, [activeVideo]);
 
-  const runSearch = async (rawQuery: string) => {
+  const runSearch = async (rawQuery: string, opts?: { silent?: boolean }) => {
     const q = rawQuery.trim();
     if (!q || searching) return;
+    const silent = Boolean(opts?.silent);
 
     setSearching(true);
-    setError(null);
+    if (!silent) setError(null);
 
     try {
+      // Always goes through our own /api/youtube/search proxy, so only the
+      // SERVER-side YOUTUBE_API_KEY needs to be configured in production.
       const res = await fetch(`/api/youtube/search?q=${encodeURIComponent(q)}`);
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        setError(data.error || "Search failed. Please try again.");
-        setSearching(false);
+        if (!silent) setError(data.error || "Search failed. Please try again.");
         return;
       }
 
       const items: VideoResult[] = data.items ?? [];
-      setResults(items);
       if (items.length === 0) {
-        setError("No videos found for that query. Try a different subject.");
+        if (!silent) setError("No videos found for that query. Try a different subject.");
+        return;
       }
+      setResults(items);
     } catch {
-      setError("Something went wrong. Please try again.");
+      if (!silent) setError("Something went wrong. Please try again.");
     } finally {
       setSearching(false);
     }
@@ -157,13 +160,12 @@ export function HomeHero() {
     void runSearch(query);
   };
 
-  const hasApiKey = Boolean(process.env.NEXT_PUBLIC_YOUTUBE_API_KEY);
-
   // Show real study videos straight away — a preview sits under the
-  // search bar before the visitor types anything.
+  // search bar before the visitor types anything. Runs through the server
+  // proxy and fails silently (no error banner for passive content).
   useEffect(() => {
-    if (results === null && hasApiKey) {
-      void runSearch("KCSE Mathematics revision");
+    if (results === null) {
+      void runSearch("KCSE Mathematics revision", { silent: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

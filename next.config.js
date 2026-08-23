@@ -48,11 +48,14 @@ const nextConfig = {
           // stream-io-cdn.com is used by the Video SDK for TURN relay signalling.
           // hint.stream-io-video.com is used by the Video SDK for SFU edge discovery.
           // stream-io-video.com is for SFU WebSocket media connections.
-          "connect-src 'self' *.supabase.co *.vercel-insights.com wss://*.supabase.co *.stream-io-api.com wss://*.stream-io-api.com wss://chat.stream-io-api.com wss://video.stream-io-api.com *.stream-io-cdn.com wss://*.stream-io-cdn.com *.stream-io-video.com wss://*.stream-io-video.com identitytoolkit.googleapis.com securetoken.googleapis.com firebasestorage.googleapis.com *.firebaseio.com huggingface.co *.huggingface.co raw.githubusercontent.com cdn.jsdelivr.net https://www.youtube.com",
+          "connect-src 'self' *.supabase.co *.vercel-insights.com wss://*.supabase.co *.stream-io-api.com wss://*.stream-io-api.com wss://chat.stream-io-api.com wss://video.stream-io-api.com *.stream-io-cdn.com wss://*.stream-io-cdn.com *.stream-io-video.com wss://*.stream-io-video.com identitytoolkit.googleapis.com securetoken.googleapis.com firebasestorage.googleapis.com *.firebaseio.com huggingface.co *.huggingface.co raw.githubusercontent.com cdn.jsdelivr.net https://www.youtube.com https://i.ytimg.com",
           // YouTube embeds (study video player on the landing page + resources).
           // frame-src allows the player iframe; script-src allows react-youtube's
           // IFrame Player API (youtube.com/iframe_api + s.ytimg.com/widget.js).
-          "frame-src https://www.youtube.com https://www.youtube-nocookie.com",
+          // google.com/accounts.google.com are needed because the YouTube player
+          // nests consent / sign-in frames — without them playback shows
+          // "This content is blocked" in production.
+          "frame-src https://www.youtube.com https://www.youtube-nocookie.com https://www.google.com https://accounts.google.com",
           "media-src 'self' https://www.youtube.com",
           "frame-ancestors 'none'",
         ].join("; "),

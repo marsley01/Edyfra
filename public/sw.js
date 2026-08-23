@@ -11,7 +11,7 @@
  * Push notifications and notificationclick are unchanged from the original.
  */
 
-const CACHE_VERSION = "v3";
+const CACHE_VERSION = "v4";
 const STATIC_CACHE  = `edyfra-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `edyfra-runtime-${CACHE_VERSION}`;
 const IMAGE_CACHE   = `edyfra-images-${CACHE_VERSION}`;
@@ -81,14 +81,20 @@ self.addEventListener("fetch", (event) => {
   // Ignore non-http schemes (chrome-extension:, chrome:, etc.)
   if (!url.protocol.startsWith("http")) return;
 
+  // Cross-origin requests (YouTube thumbs, publisher CDNs, …) must pass
+  // through untouched: a fetch() from inside the SW inherits the page CSP
+  // and is evaluated against connect-src, which blocks hosts like i.ytimg.com.
+  // Letting the browser load them normally uses img-src instead.
+  const sameOrigin = url.origin === self.location.origin;
+
   // ── Next.js hashed static assets → Cache-First (safe to cache indefinitely)
-  if (url.pathname.startsWith("/_next/static/")) {
+  if (sameOrigin && url.pathname.startsWith("/_next/static/")) {
     event.respondWith(cacheFirst(request, STATIC_CACHE));
     return;
   }
 
   // ── Public static files (icons, fonts, images, JS in /public)
-  if (isStaticAsset(url.pathname)) {
+  if (sameOrigin && isStaticAsset(url.pathname)) {
     event.respondWith(cacheFirst(request, STATIC_CACHE));
     return;
   }

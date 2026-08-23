@@ -1,6 +1,6 @@
 import { streamWithAI, AIRateLimitError } from "@/lib/ai-rate-limiter";
 import { createClient } from "@/utils/supabase/server";
-import { buildEddySystemPrompt } from "@/utils/eddy-context";
+import { buildEddySystemPrompt, buildEddyUserContextBlock } from "@/utils/eddy-context";
 import { saveAiChatMessage } from "@/app/actions/feedback";
 import prisma from "@/lib/prisma";
 
@@ -48,10 +48,17 @@ export async function POST(request: Request) {
   }
 
   let systemPrompt: string;
+  let fullMessage: string;
   try {
-    systemPrompt = await buildEddySystemPrompt(user, currentPath);
+    systemPrompt = await buildEddySystemPrompt();
+    fullMessage = `${buildEddyUserContextBlock({
+      name: user?.name,
+      role: user?.role,
+      currentPath,
+    })}\n\n${message}`;
   } catch {
     systemPrompt = "You are Eddy, a friendly helper for the Edyfra learning platform.";
+    fullMessage = message;
   }
 
   // Persist the user's message (best-effort, non-blocking)
@@ -71,7 +78,7 @@ export async function POST(request: Request) {
       let reply = "";
       try {
         for await (const chunk of streamWithAI({
-          prompt: message,
+          prompt: fullMessage,
           systemPrompt,
           userId: user?.id ?? null,
           feature: "eddy",

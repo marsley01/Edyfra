@@ -11,6 +11,8 @@
  * server actions — no HTTP round-trips between server and itself.
  */
 
+import dns from "node:dns";
+
 import { createClient as createSupabaseServer } from "@/lib/supabase/server";
 
 // ---------------------------------------------------------------------------
@@ -70,13 +72,14 @@ function isPrivateOrLocalIp(hostname: string): boolean {
   }
 
   if (h === "::1") return true;
+  if (h.startsWith("::ffff:")) return isPrivateOrLocalIp(h.slice(7));
   if (h.startsWith("fc") || h.startsWith("fd")) return true;
   if (h.startsWith("fe80:")) return true;
 
   return false;
 }
 
-export function validateExternalArticleUrl(input: string): string | null {
+export async function validateExternalArticleUrl(input: string): Promise<string | null> {
   let parsed: URL;
   try {
     parsed = new URL(input);
@@ -91,6 +94,15 @@ export function validateExternalArticleUrl(input: string): string | null {
   if (BLOCKED_HOSTNAMES.has(hostname)) return null;
   if (hostname.endsWith(".local")) return null;
   if (isPrivateOrLocalIp(hostname)) return null;
+
+  let addresses: dns.LookupAddress[];
+  try {
+    addresses = await dns.promises.lookup(hostname.replace(/^\[|\]$/g, ""), { all: true });
+  } catch {
+    return null;
+  }
+  if (addresses.length === 0) return null;
+  if (addresses.some(({ address }) => isPrivateOrLocalIp(address))) return null;
 
   return parsed.toString();
 }
@@ -113,7 +125,7 @@ function extractKeywords(title: string): string {
 /** Fetch the OG image from an article URL. Returns null on any failure. */
 async function scrapeOgImage(articleUrl: string): Promise<string | null> {
   try {
-    const safeUrl = validateExternalArticleUrl(articleUrl);
+    const safeUrl = await validateExternalArticleUrl(articleUrl);
     if (!safeUrl) return null;
 
     const controller = new AbortController();
@@ -212,7 +224,7 @@ export async function resolveThumbnail(
   articleUrl: string,
   articleTitle: string
 ): Promise<ThumbnailResult> {
-  const safeArticleUrl = validateExternalArticleUrl(articleUrl);
+  const safeArticleUrl = await validateExternalArticleUrl(articleUrl);
   if (!safeArticleUrl) {
     return { thumbnail_url: null, source: null, photographer: null, photo_page: null };
   }

@@ -54,31 +54,23 @@ export async function POST(request: Request) {
     .replace(/@(?:Mash|AI|mash|ai|mash-ai|MASH)\b/gi, "")
     .trim();
 
-  let studentContextPrompt = "";
+  let systemPrompt: string;
+  let userContextBlock: string;
   try {
-    const { buildMashSystemPrompt } = await import("@/utils/mash-context");
-    studentContextPrompt = await buildMashSystemPrompt(user.id, sessionSubject);
+    const { buildMashPromptBundle } = await import("@/utils/mash-context");
+    const bundle = await buildMashPromptBundle(user.id, sessionSubject, sessionTopic, sessionTier);
+    systemPrompt = bundle.systemPrompt;
+    userContextBlock = bundle.userContext;
   } catch {
-    studentContextPrompt = `The student is studying ${sessionSubject}. Be encouraging and helpful.`;
+    systemPrompt =
+      "You are Mash, a study companion built into Edyfra for Kenyan students. Be encouraging, professional, and clear. Guide the student with questions and hints instead of giving final answers.";
+    userContextBlock = `[Session Context] Subject: ${sessionSubject} | Topic: ${sessionTopic || "General"} | Session type: ${sessionTier === "MASH" ? "One-on-one AI tutoring" : "Study group with human participants"}`;
   }
 
-  const systemPrompt = `
-    ${studentContextPrompt}
-    Session Context:
-    - Subject: ${sessionSubject}
-    - Topic: ${sessionTopic || "General"}
-    - Session Type: ${sessionTier === "MASH" ? "One-on-one AI tutoring" : "Study group with human participants"}
-
-    Guidelines:
-    - Be encouraging, professional, and clear.
-    - Do NOT just give the final answer. Guide the student with questions and hints.
-    - Use standard Kenyan English (professional tone).
-    - If they ask something outside of ${sessionSubject}, gently remind them to stay on topic.
-  `;
-
-  const actualPrompt =
-    prompt ||
-    `Greet me and ask how you can help with ${sessionSubject}${sessionTopic ? ` (${sessionTopic})` : ""}.`;
+  const contextPrefix = `${userContextBlock}\n\n`;
+  const actualPrompt = prompt
+    ? `${contextPrefix}${prompt}`
+    : `${contextPrefix}Greet me and ask how you can help with ${sessionSubject}${sessionTopic ? ` (${sessionTopic})` : ""}.`;
 
   // Persist the user's Mash mention (best-effort, non-blocking)
   void (async () => {

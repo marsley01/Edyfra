@@ -60,8 +60,15 @@ export async function POST(req: NextRequest) {
     }
     const sheetId = match[1];
 
-    // Fetch CSV
-    const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+    // Sheet IDs are opaque tokens of [a-zA-Z0-9-_]; anything else is rejected
+    // so user input can never alter the request host or path structure.
+    if (!/^[a-zA-Z0-9_-]{10,120}$/.test(sheetId)) {
+      return NextResponse.json({ error: "Invalid Google Sheets URL." }, { status: 400 });
+    }
+
+    // Fetch CSV — host is a server-controlled constant
+    const csvUrl = new URL("https://docs.google.com/spreadsheets/d/" + sheetId + "/export");
+    csvUrl.searchParams.set("format", "csv");
     const response = await fetch(csvUrl);
 
     if (!response.ok) {

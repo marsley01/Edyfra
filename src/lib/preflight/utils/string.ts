@@ -130,5 +130,11 @@ export function stripAnsi(str: string): string {
 const HTML_TAG_REGEX = /<[^>]*>/g;
 
 export function stripHtml(str: string): string {
-  return str.replace(HTML_TAG_REGEX, "");
+  let result = str;
+  let previous = result;
+  do {
+    previous = result;
+    result = result.replace(HTML_TAG_REGEX, "");
+  } while (result !== previous);
+  return result;
 }

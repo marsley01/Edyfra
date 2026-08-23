@@ -11,6 +11,15 @@
  */
 const API_BASE = "/api/python";
 
+function assertSafeProxyPath(path: string): void {
+  if (!path.startsWith("/") || !/^\/[A-Za-z0-9._~%!$&'()*+,;=:@/?[\]-]*$/.test(path)) {
+    throw new Error("Invalid API path");
+  }
+  if (/(^|\/)\.\.?(\/|$)/.test(path)) {
+    throw new Error("Invalid API path");
+  }
+}
+
 async function callPython<T>(
   path: string,
   options: {
@@ -19,6 +28,7 @@ async function callPython<T>(
     userId?: string;
   } = {},
 ): Promise<T> {
+  assertSafeProxyPath(path);
   const url = `${API_BASE}${path}`;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -65,7 +75,7 @@ export interface Booking {
 }
 
 export async function pythonGetTutorAvailability(tutorId: string, userId: string) {
-  return callPython<{ availability: any[] }>(`/bookings/availability/${tutorId}`, { userId });
+  return callPython<{ availability: any[] }>(`/bookings/availability/${encodeURIComponent(tutorId)}`, { userId });
 }
 
 export async function pythonSaveTutorAvailability(tutorId: string, slots: any[], userId: string) {
@@ -93,15 +103,15 @@ export async function pythonGetTutorsBySubject(subject: string, level?: string) 
 }
 
 export async function pythonGetIncomingRequests(tutorId: string, userId: string) {
-  return callPython<{ requests: Booking[] }>(`/bookings/incoming/${tutorId}`, { userId });
+  return callPython<{ requests: Booking[] }>(`/bookings/incoming/${encodeURIComponent(tutorId)}`, { userId });
 }
 
 export async function pythonGetUpcomingTutorBookings(tutorId: string, userId: string) {
-  return callPython<{ bookings: Booking[] }>(`/bookings/upcoming/tutor/${tutorId}`, { userId });
+  return callPython<{ bookings: Booking[] }>(`/bookings/upcoming/tutor/${encodeURIComponent(tutorId)}`, { userId });
 }
 
 export async function pythonGetUpcomingStudentBookings(studentId: string, userId: string) {
-  return callPython<{ bookings: Booking[] }>(`/bookings/upcoming/student/${studentId}`, { userId });
+  return callPython<{ bookings: Booking[] }>(`/bookings/upcoming/student/${encodeURIComponent(studentId)}`, { userId });
 }
 
 export async function pythonCreateBooking(
@@ -129,7 +139,7 @@ export async function pythonUpdateBookingStatus(
   userId: string,
   reason?: string,
 ) {
-  return callPython<{ success: boolean; booking: any }>(`/bookings/${bookingId}/status`, {
+  return callPython<{ success: boolean; booking: any }>(`/bookings/${encodeURIComponent(bookingId)}/status`, {
     method: "PUT",
     body: { status, reason },
     userId,
@@ -141,7 +151,7 @@ export async function pythonUpdateBookingMeetingUrl(
   meetingUrl: string | null,
   userId: string,
 ) {
-  return callPython<{ success: boolean }>(`/bookings/${bookingId}/meeting-url`, {
+  return callPython<{ success: boolean }>(`/bookings/${encodeURIComponent(bookingId)}/meeting-url`, {
     method: "PUT",
     body: { meetingUrl },
     userId,
@@ -149,7 +159,7 @@ export async function pythonUpdateBookingMeetingUrl(
 }
 
 export async function pythonGetBookingSessionData(bookingId: string) {
-  return callPython<any>(`/bookings/${bookingId}/session-data`);
+  return callPython<any>(`/bookings/${encodeURIComponent(bookingId)}/session-data`);
 }
 
 export async function pythonConvertBookingToMashAI(
@@ -157,7 +167,7 @@ export async function pythonConvertBookingToMashAI(
   userId: string,
 ) {
   return callPython<{ success: boolean; sessionId: string; roomId: string }>(
-    `/bookings/${bookingId}/convert-to-ai`,
+    `/bookings/${encodeURIComponent(bookingId)}/convert-to-ai`,
     { method: "POST", userId },
   );
 }
@@ -180,7 +190,7 @@ export async function pythonCreateBookingReminders(
 
 export async function pythonGetTutorStats(tutorId: string, userId: string) {
   return callPython<{ activeSessions: number; completedSessions: number; totalEarnings: number }>(
-    `/tutor/stats/${tutorId}`,
+    `/tutor/stats/${encodeURIComponent(tutorId)}`,
     { userId },
   );
 }

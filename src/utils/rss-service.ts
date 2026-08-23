@@ -34,6 +34,19 @@ const CATEGORY_FEEDS: { category: string; name: string; url: string }[] = [
   { category: "Announcements", name: "Science Daily", url: "https://www.sciencedaily.com/rss/all.xml" },
 ];
 
+const HTML_TAG_REGEX = /<[^>]*>?/gm;
+
+/** Removes HTML tags repeatedly until stable so nested payloads cannot survive. */
+function stripHtmlTags(input: string): string {
+  let result = input;
+  let previous = result;
+  do {
+    previous = result;
+    result = result.replace(HTML_TAG_REGEX, "");
+  } while (result !== previous);
+  return result;
+}
+
 function extractImage(itemXml: string): string {
   const enclosureMatch = itemXml.match(/<enclosure[^>]*url="([^"]+)"[^>]*>/);
   if (enclosureMatch) return enclosureMatch[1];
@@ -131,7 +144,7 @@ export class RSSService {
       const itemXml = match[1];
       const title = itemXml.match(titleRegex)?.[1]?.trim() || "";
       const link = itemXml.match(linkRegex)?.[1]?.trim() || "";
-      const description = itemXml.match(descRegex)?.[1]?.trim().replace(/<[^>]*>?/gm, "") || "";
+      const description = stripHtmlTags(itemXml.match(descRegex)?.[1]?.trim() || "");
       const pubDate = itemXml.match(dateRegex)?.[1]?.trim() || "";
       const imageUrl = extractImage(itemXml);
 

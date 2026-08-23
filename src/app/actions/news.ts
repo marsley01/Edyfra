@@ -25,6 +25,20 @@ export interface NewsArticle {
 
 import { fetchOgImage } from "@/utils/og-scraper";
 
+const HTML_TAG_REGEX = /<[^>]*>?/gm;
+const HTML_ENTITY_TAG_REGEX = /&lt;.*?&gt;/g;
+
+/** Strips tags and entity-encoded tags repeatedly until stable. */
+function stripRssExcerpt(input: string): string {
+  let result = input;
+  let previous = result;
+  do {
+    previous = result;
+    result = result.replace(HTML_TAG_REGEX, "").replace(HTML_ENTITY_TAG_REGEX, "");
+  } while (result !== previous);
+  return result;
+}
+
 // Single branded fallback thumbnail — used whenever an article has no real cover image.
 // This keeps the news cards visually consistent instead of scattering random Unsplash photos.
 const GENERIC_FALLBACK = "/og-image.png";
@@ -111,7 +125,7 @@ export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
 
     const newsArticles = await Promise.all(
       sorted.slice(0, limit).map(async (item, index) => {
-        const excerpt = item.description.replace(/<[^>]*>?/gm, '').replace(/&lt;.*?&gt;/g, '').slice(0, 180) + "...";
+        const excerpt = stripRssExcerpt(item.description).slice(0, 180) + "...";
 
 
         return {

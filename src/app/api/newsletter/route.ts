@@ -1,7 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/**
+ * Structural email check — linear time, immune to ReDoS. Replaces the old
+ * backtracking regex /^[^\s@]+@[^\s@]+\.[^\s@]+$/ which CodeQL flagged as
+ * polynomial on crafted input.
+ */
+function isValidEmail(value: string): boolean {
+  const at = value.indexOf("@");
+  if (at <= 0 || at !== value.lastIndexOf("@")) return false;
+  const local = value.slice(0, at);
+  const domain = value.slice(at + 1);
+  const dot = domain.lastIndexOf(".");
+  if (!local || !domain) return false;
+  if (/[\s@]/.test(local) || /[\s@]/.test(domain)) return false;
+  return dot > 0 && dot < domain.length - 1;
+}
 
 function getAdminClient() {
   return createClient(
@@ -22,7 +36,7 @@ export async function POST(request: NextRequest) {
     const { email, source = "landing_page" } = body;
 
     // Validate email format
-    if (!email || typeof email !== "string" || !EMAIL_REGEX.test(email.trim())) {
+    if (!email || typeof email !== "string" || !isValidEmail(email.trim())) {
       return NextResponse.json(
         { error: "Please enter a valid email address." },
         { status: 400 }

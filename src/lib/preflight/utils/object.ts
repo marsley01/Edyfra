@@ -135,8 +135,10 @@ export function set(
     if (isLast) {
       current[key] = value;
     } else {
-      const existing = current[key];
+      const hasOwn = Object.prototype.hasOwnProperty.call(current, key);
+      const existing = hasOwn ? current[key] : undefined;
       if (
+        !hasOwn ||
         typeof existing !== "object" ||
         existing === null
       ) {

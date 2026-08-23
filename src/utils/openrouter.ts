@@ -13,16 +13,19 @@ export async function generateAIResponse(
   topic?: string
 ): Promise<string> {
   const { AIService } = await import("@/utils/ai-service");
-  
-  const systemPrompt = `You are an expert tutor assistant on the Edyfra platform. 
-Subject context: ${subject || "general"}
-Topic context: ${topic || "general"}
 
-Provide clear, educational responses appropriate for the academic level.
-Use simple language and include examples where helpful.`;
+  const systemPrompt = "You are an expert tutor assistant on the Edyfra platform. Provide clear, educational responses appropriate for the academic level. Use simple language and include examples where helpful.";
+
+  const contextLines = [
+    subject ? `Subject context: ${subject}` : null,
+    topic ? `Topic context: ${topic}` : null,
+  ].filter(Boolean);
+  const fullPrompt = contextLines.length > 0
+    ? `${contextLines.join("\n")}\n\n${prompt}`
+    : prompt;
 
   try {
-    const response = await AIService.generateCompletion(prompt, systemPrompt);
+    const response = await AIService.generateCompletion(fullPrompt, systemPrompt);
     if (response && !response.includes("having a bit of trouble thinking")) {
       return response;
     }

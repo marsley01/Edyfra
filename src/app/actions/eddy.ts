@@ -2,7 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { AIService } from "@/utils/ai-service";
-import { buildEddySystemPrompt } from "@/utils/eddy-context";
+import { buildEddySystemPrompt, buildEddyUserContextBlock } from "@/utils/eddy-context";
 import prisma from "@/lib/prisma";
 import { saveAiChatMessage } from "@/app/actions/feedback";
 
@@ -43,7 +43,17 @@ export async function handleEddyQuery(
       };
     }
 
-    const systemPrompt = await buildEddySystemPrompt(userContext, currentPath);
+    const [systemPrompt, userContextBlock] = await Promise.all([
+      buildEddySystemPrompt(),
+      Promise.resolve(
+        buildEddyUserContextBlock({
+          name: userContext?.name,
+          role: userContext?.role,
+          currentPath,
+        })
+      ),
+    ]);
+    const fullMessage = `${userContextBlock}\n\n${message}`;
 
     // Persist the user's message (best-effort, non-blocking via caught promise)
     if (user) {
@@ -56,7 +66,7 @@ export async function handleEddyQuery(
     }
 
     const response = await AIService.generateCompletion(
-      message,
+      fullMessage,
       systemPrompt
     );
 

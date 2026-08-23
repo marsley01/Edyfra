@@ -27,7 +27,7 @@ export async function getStreamToken(userId: string) {
   const client = getServerStreamClient();
   if (!client) throw new Error("Stream not configured");
 
-  console.log(`[Stream] Token generated for user: ${userId}`);
+  console.log("[Stream] Token generated for user: %s", userId);
   
   const [token] = await Promise.all([
     Promise.resolve(client.createToken(userId)),
@@ -97,10 +97,10 @@ export async function createStreamChannel(
     } as any);
 
     await channel.watch();
-    console.log(`[Stream] Channel ready: ${channelId}`);
+    console.log("[Stream] Channel ready: %s", channelId);
     return channelId;
   } catch (err) {
-    console.error(`[Stream] Failed to create/watch channel ${channelId}:`, err);
+    console.error("[Stream] Failed to create/watch channel %s:", channelId, err);
     throw err;
   }
 }
@@ -123,7 +123,7 @@ export async function addMembersToChannel(
   if (!client) throw new Error("Stream not configured");
   const channel = client.channel("messaging", channelId);
   await channel.addMembers(members);
-  console.log(`[Stream] Added members ${members.join(", ")} to ${channelId}`);
+  console.log("[Stream] Added members %s to %s", members.join(", "), channelId);
 }
 
 export async function removeMembersFromChannel(
@@ -179,7 +179,7 @@ export async function createDMChannel(userAId: string, userBId: string) {
   } as any);
 
   await channel.watch();
-  console.log(`[Stream] DM channel ready: ${channelId}`);
+  console.log("[Stream] DM channel ready: %s", channelId);
   return channelId;
 }
 
@@ -234,9 +234,9 @@ export async function deleteStreamChannel(channelId: string) {
   try {
     const channel = client.channel("messaging", channelId);
     await channel.delete();
-    console.log(`[Stream] Deleted channel: ${channelId}`);
+    console.log("[Stream] Deleted channel: %s", channelId);
   } catch (err) {
-    console.error(`[Stream] Failed to delete channel ${channelId}:`, err);
+    console.error("[Stream] Failed to delete channel %s:", channelId, err);
     throw err;
   }
 }
@@ -314,30 +314,29 @@ export async function handleMashMention(
 
   // Import AIService dynamically to avoid circular deps
   const { AIService } = await import("@/utils/ai-service");
-  const { buildMashSystemPrompt } = await import("@/utils/mash-context");
+  const { buildMashPromptBundle } = await import("@/utils/mash-context");
 
-  let studentContextPrompt = "";
+  let systemPrompt: string;
+  let userContextBlock: string;
   try {
-    studentContextPrompt = await buildMashSystemPrompt(user.id, sessionSubject);
+    const bundle = await buildMashPromptBundle(
+      user.id,
+      sessionSubject,
+      sessionTopic,
+      sessionTier
+    );
+    systemPrompt = bundle.systemPrompt;
+    userContextBlock = bundle.userContext;
   } catch {
-    studentContextPrompt = `The student is studying ${sessionSubject}. Be encouraging and helpful.`;
+    systemPrompt =
+      "You are Mash, a study companion built into Edyfra for Kenyan students. Be encouraging, professional, and clear. Guide the student with questions and hints instead of giving final answers.";
+    userContextBlock = `[Session Context] Subject: ${sessionSubject} | Topic: ${sessionTopic || "General"} | Session type: ${sessionTier === "MASH" ? "One-on-one AI tutoring" : "Study group with human participants"}`;
   }
 
-  const systemPrompt = `
-    ${studentContextPrompt}
-    Session Context:
-    - Subject: ${sessionSubject}
-    - Topic: ${sessionTopic || "General"}
-    - Session Type: ${sessionTier === "MASH" ? "One-on-one AI tutoring" : "Study group with human participants"}
-
-    Guidelines:
-    - Be encouraging, professional, and clear.
-    - Do NOT just give the final answer. Guide the student with questions and hints.
-    - Use standard Kenyan English (professional tone).
-    - If they ask something outside of ${sessionSubject}, gently remind them to stay on topic.
-  `;
-
-  const actualPrompt = prompt || `Greet me and ask how you can help with ${sessionSubject}${sessionTopic ? ` (${sessionTopic})` : ""}.`;
+  const contextPrefix = `${userContextBlock}\n\n`;
+  const actualPrompt = prompt
+    ? `${contextPrefix}${prompt}`
+    : `${contextPrefix}Greet me and ask how you can help with ${sessionSubject}${sessionTopic ? ` (${sessionTopic})` : ""}.`;
 
   // Persist the user's Mash mention (best-effort, non-blocking)
   void (async () => {

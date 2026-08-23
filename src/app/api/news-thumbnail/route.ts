@@ -16,7 +16,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const articleUrl = searchParams.get("url");
   const articleTitle = searchParams.get("title") ?? "";
 
-  const safeArticleUrl = articleUrl ? validateExternalArticleUrl(articleUrl) : null;
+  const safeArticleUrl = articleUrl ? await validateExternalArticleUrl(articleUrl) : null;
   if (!safeArticleUrl) {
     return NextResponse.json(
       { error: "Missing or invalid `url` query parameter" },

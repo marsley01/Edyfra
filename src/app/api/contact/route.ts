@@ -1,7 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getResend } from "@/lib/email";
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/**
+ * Structural email check — linear time, immune to ReDoS. Replaces the old
+ * backtracking regex /^[^\s@]+@[^\s@]+\.[^\s@]+$/ which CodeQL flagged as
+ * polynomial on crafted input.
+ */
+function isValidEmail(value: string): boolean {
+  const at = value.indexOf("@");
+  if (at <= 0 || at !== value.lastIndexOf("@")) return false;
+  const local = value.slice(0, at);
+  const domain = value.slice(at + 1);
+  const dot = domain.lastIndexOf(".");
+  if (!local || !domain) return false;
+  if (/[\s@]/.test(local) || /[\s@]/.test(domain)) return false;
+  return dot > 0 && dot < domain.length - 1;
+}
+
 const CONTACT_INBOX = process.env.CONTACT_INBOX_EMAIL || "edyfraplatform@gmail.com";
 
 /**
@@ -30,7 +45,7 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
-    if (!EMAIL_REGEX.test(email)) {
+    if (!isValidEmail(email)) {
       return NextResponse.json(
         { error: "That email address doesn't look right — double-check the spelling." },
         { status: 400 },
