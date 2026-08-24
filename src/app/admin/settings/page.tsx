@@ -24,7 +24,7 @@ import { updateUserPreferences } from "@/app/actions/user";
 import { Palette, Eye, EyeOff } from "lucide-react";
 
 export default function AdminSettingsPage() {
-  const [accentColor, setAccentColor] = useState("#8b5cf6");
+  const [accentColor, setAccentColor] = useState("#FF9500");
   const [googleAiKey, setGoogleAiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [saving, setSaving] = useState(false);

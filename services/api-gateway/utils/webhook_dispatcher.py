@@ -4,10 +4,20 @@ import hashlib
 import json
 import asyncio
 from datetime import datetime, timezone
+from urllib.parse import urlsplit
 from utils.supabase import supabase, execute_async
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def _log_safe_url(url: str) -> str:
+    """Hostname only — never log a full webhook URL (may contain embedded credentials)."""
+    try:
+        return urlsplit(url).hostname or "unknown"
+    except ValueError:
+        return "unknown"
+
 
 async def _send_webhook(url: str, payload_str: str, secret: str):
     """
@@ -18,23 +28,23 @@ async def _send_webhook(url: str, payload_str: str, secret: str):
         "Content-Type": "application/json",
         "X-Edyfra-Signature": f"sha256={signature}"
     }
-    
+
     async with httpx.AsyncClient() as client:
         try:
             resp = await client.post(url, content=payload_str, headers=headers, timeout=5.0)
             resp.raise_for_status()
-            logger.info("Webhook delivered successfully", extra={"url": url})
+            logger.info("Webhook delivered successfully", extra={"url": _log_safe_url(url)})
             return True
         except Exception as e:
-            logger.warning("Webhook delivery failed, retrying in 2s", extra={"url": url, "error": str(e)})
+            logger.warning("Webhook delivery failed, retrying in 2s", extra={"url": _log_safe_url(url), "error": type(e).__name__})
             await asyncio.sleep(2)
             try:
                 resp = await client.post(url, content=payload_str, headers=headers, timeout=5.0)
                 resp.raise_for_status()
-                logger.info("Webhook delivered successfully on retry", extra={"url": url})
+                logger.info("Webhook delivered successfully on retry", extra={"url": _log_safe_url(url)})
                 return True
             except Exception as e2:
-                logger.error("Webhook delivery failed on retry", extra={"url": url, "error": str(e2)})
+                logger.error("Webhook delivery failed on retry", extra={"url": _log_safe_url(url), "error": type(e2).__name__})
                 return False
 
 async def dispatch_event(event_type: str, payload: dict, api_key_id: str):

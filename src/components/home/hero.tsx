@@ -182,24 +182,23 @@ export function HomeHero() {
       <SubjectGraph className="pointer-events-none absolute inset-y-0 right-0 z-0 h-full w-full opacity-35 sm:opacity-50 lg:w-[55%] lg:opacity-100" />
 
       <div className="relative z-10 mx-auto flex w-full max-w-4xl flex-col items-center justify-center px-4 pb-lg pt-16 text-center md:px-16 md:pt-24">
-        <motion.h1
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.1, ease: EASE }}
-          className="mb-6 max-w-4xl bg-gradient-to-r from-brand-orange to-[#ffc107] bg-clip-text text-display-lg font-black tracking-tight text-transparent drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] md:text-[72px] md:leading-[80px]"
+        {/* CSS-only entrance — LCP text must not wait for JS hydration */}
+        <h1
+          className="hero-rise mb-6 max-w-4xl bg-gradient-to-r from-brand-orange to-[#ffc107] bg-clip-text text-display-lg font-black tracking-tight text-transparent drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] md:text-[72px] md:leading-[80px]"
+          style={{ animationDelay: "0.1s" }}
         >
           Study Smarter,
           <br />
           Not Harder.
-        </motion.h1>
+        </h1>
 
-        <motion.p
-          {...fadeUp(0.25)}
-          className="mx-auto mb-12 max-w-3xl text-balance font-medium text-body-lg text-on-surface-variant md:text-2xl md:leading-9"
+        <p
+          className="hero-rise mx-auto mb-12 max-w-3xl text-balance font-medium text-body-lg text-on-surface-variant md:text-2xl md:leading-9"
+          style={{ animationDelay: "0.25s" }}
         >
           Education, reimagined. Your personal study base for school, revision, mentorship, and
           momentum. Mash AI, verified tutors, and real students help you move from stuck to ready.
-        </motion.p>
+        </p>
 
         <motion.div
           {...scaleIn(0.45)}
@@ -301,6 +300,15 @@ export function HomeHero() {
                         src={video.thumbnail}
                         alt={video.title}
                         loading="lazy"
+                        onError={(e) => {
+                          // hqdefault is missing/blocked for some videos — mqdefault always exists
+                          const img = e.currentTarget;
+                          if (img.src.includes("hqdefault")) {
+                            img.src = img.src.replace("hqdefault", "mqdefault");
+                          } else {
+                            img.style.visibility = "hidden";
+                          }
+                        }}
                         className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                       />
                     )}

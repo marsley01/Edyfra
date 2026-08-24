@@ -34,17 +34,14 @@ const CATEGORY_FEEDS: { category: string; name: string; url: string }[] = [
   { category: "Announcements", name: "Science Daily", url: "https://www.sciencedaily.com/rss/all.xml" },
 ];
 
-const HTML_TAG_REGEX = /<[^>]*>?/gm;
+const HTML_TAG_REGEX = /<[^>]*(>|$)/g;
 
-/** Removes HTML tags repeatedly until stable so nested payloads cannot survive. */
+/**
+ * Removes HTML tags and neutralizes any residual "<" so nested/overlapping
+ * payloads cannot reassemble into a live element after sanitization.
+ */
 function stripHtmlTags(input: string): string {
-  let result = input;
-  let previous = result;
-  do {
-    previous = result;
-    result = result.replace(HTML_TAG_REGEX, "");
-  } while (result !== previous);
-  return result;
+  return input.replace(HTML_TAG_REGEX, "").replace(/</g, "&lt;");
 }
 
 function extractImage(itemXml: string): string {

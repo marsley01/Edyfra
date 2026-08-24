@@ -151,6 +151,7 @@ function NewsCard({ item, index }: { item: NewsArticle; index: number }) {
                 day: "numeric",
                 month: "short",
                 year: "numeric",
+                timeZone: "Africa/Nairobi",
               })}
             </span>
           </div>

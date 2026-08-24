@@ -37,7 +37,7 @@ export function SubjectGraph({ className }: { className?: string }) {
     camera.position.set(-2, 0, 30);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setClearColor(0x000000, 0);
     wrap.appendChild(renderer.domElement);
 
@@ -136,6 +136,8 @@ export function SubjectGraph({ className }: { className?: string }) {
       el.textContent = s;
       Object.assign(el.style, {
         position: "absolute",
+        left: "0",
+        top: "0",
         fontFamily: "var(--font-inter), system-ui, sans-serif",
         fontSize: "10px",
         fontWeight: "600",
@@ -145,8 +147,9 @@ export function SubjectGraph({ className }: { className?: string }) {
         padding: "2px 8px",
         borderRadius: "5px",
         whiteSpace: "nowrap",
-        transform: "translate(-50%,-130%)",
+        transform: "translate3d(-100px,-100px,0) translate(-50%,-130%)",
         opacity: "0",
+        willChange: "transform, opacity",
         transition: "opacity 0.4s, color 0.4s, border-color 0.4s",
         pointerEvents: "none",
       } satisfies Partial<CSSStyleDeclaration>);
@@ -219,8 +222,9 @@ export function SubjectGraph({ className }: { className?: string }) {
           return;
         }
         const depth = 1 - (projected.z * 0.5 + 0.5);
-        labels[i].style.left = `${projected.x * hw + hw}px`;
-        labels[i].style.top = `${-projected.y * hh + hh - 20}px`;
+        // transform-only positioning — never touches layout
+        labels[i].style.transform =
+          `translate3d(${(projected.x * hw + hw).toFixed(1)}px, ${(-projected.y * hh + hh - 20).toFixed(1)}px, 0) translate(-50%,-130%)`;
         labels[i].style.opacity = String(Math.min(1, 0.25 + depth * 0.75));
       });
     };

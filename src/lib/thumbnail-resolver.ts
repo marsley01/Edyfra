@@ -56,15 +56,43 @@ const BLOCKED_HOSTNAMES = new Set([
 ]);
 
 // Restrict outbound article scraping to known/trusted publishers.
-// Populate from your RSS/news sources.
+// Mirrors CATEGORY_FEEDS in src/utils/rss-service.ts.
 const ALLOWED_ARTICLE_HOSTS = new Set<string>([
-  "example.com",
-  "www.example.com",
+  // Tech
+  "techcrunch.com",
+  "www.techcrunch.com",
+  "theverge.com",
+  "www.theverge.com",
+  "wired.com",
+  "www.wired.com",
+  // Education
+  "edutopia.org",
+  "www.edutopia.org",
+  "nation.africa",
+  "www.nation.africa",
+  "theguardian.com",
+  "www.theguardian.com",
+  "timeshighereducation.com",
+  "www.timeshighereducation.com",
+  "insidehighered.com",
+  "www.insidehighered.com",
+  "bbc.co.uk",
+  "www.bbc.co.uk",
+  "bbc.com",
+  "www.bbc.com",
+  // Announcements
+  "nasa.gov",
+  "www.nasa.gov",
+  "sciencedaily.com",
+  "www.sciencedaily.com",
+  // Google News RSS links redirect to Google-indexed publishers
+  "news.google.com",
 ]);
 
 // Optional suffix allowlist for publisher subdomains.
 const ALLOWED_ARTICLE_HOST_SUFFIXES = [
-  ".example.com",
+  ".bbc.co.uk",
+  ".bbc.com",
 ];
 
 function isPrivateOrLocalIp(hostname: string): boolean {

@@ -7,6 +7,7 @@ import { ArrowRight, ArrowLeft, Loader2, AlertCircle, ShieldCheck, Eye, EyeOff, 
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import { AmbientBlobBackground } from '@/components/auth/AmbientBlobBackground'
 import { AvatarPicker, type AvatarStyle } from '@/components/ui/avatar-picker'
 
 function isValidEmail(v: string) {
@@ -226,7 +227,8 @@ export default function RegisterPage() {
   const isLastStep = step === STEPS.length - 1
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 pt-0 font-sans">
+    <div className="relative min-h-screen overflow-hidden bg-background flex flex-col items-center justify-center p-6 pt-0 font-sans">
+      <AmbientBlobBackground />
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -426,7 +428,7 @@ export default function RegisterPage() {
                         <button
                           key={value}
                           type="button"
-                          onClick={() => setGender(value as 'MALE' | 'FEMALE')}
+                          onClick={() => { setGender(value as 'MALE' | 'FEMALE'); setError(null) }}
                           className={cn(
                             "flex items-center justify-center gap-3 h-14 rounded-2xl border-2 font-black text-xs uppercase tracking-widest transition-all",
                             gender === value
@@ -445,8 +447,8 @@ export default function RegisterPage() {
                     <label className="text-[10px] font-black uppercase tracking-widest ml-4 text-muted-foreground">Choose your avatar</label>
                     <AvatarPicker
                       selected={avatarStyle}
-                      onSelect={setAvatarStyle}
-                      onSelectUrl={setAvatarUrl}
+                      onSelect={(s) => { setAvatarStyle(s); setError(null) }}
+                      onSelectUrl={(u) => { setAvatarUrl(u); setError(null) }}
                       seed={name || 'user'}
                       gender={gender}
                     />

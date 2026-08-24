@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { ArrowRight, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import { AmbientBlobBackground } from '@/components/auth/AmbientBlobBackground'
 
 const supabaseErrors: Record<string, string> = {
   'Invalid login credentials': 'Wrong email or password. Double-check and try again, or reset your password below.',
@@ -98,7 +99,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 pt-0 font-sans">
+    <div className="relative min-h-screen overflow-hidden bg-background flex flex-col items-center justify-center p-6 pt-0 font-sans">
+      <AmbientBlobBackground />
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}

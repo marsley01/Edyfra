@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { completeOnboarding } from "@/app/actions/onboarding";
-import { Loader2, BookOpen, MapPin, GraduationCap, ArrowRight, CheckCircle2, AlertCircle, Sparkles } from "lucide-react";
+import { Loader2, BookOpen, MapPin, GraduationCap, ArrowRight, CheckCircle2, AlertCircle, Sparkles, Search } from "lucide-react";
 import { EDUCATIONAL_SUBJECTS } from "@/utils/subjects";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
@@ -27,6 +28,7 @@ export default function StudentOnboardingPage() {
     studyStyle: "",
   });
   const [userName, setUserName] = useState<string>("Student");
+  const [subjectSearch, setSubjectSearch] = useState("");
 
   // Kenyan school system: 8-4-4 high school = Form 1–4, CBC senior school = Grade 9–12,
   // university = Year 1–6.
@@ -277,9 +279,23 @@ export default function StudentOnboardingPage() {
 
                    <div className="space-y-6">
                       <div className="space-y-4">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">Select Strong Subjects (Min 1)</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">
+                          Select Strong Subjects (Min 1){formData.subjects.length > 0 && ` — ${formData.subjects.length} selected`}
+                        </label>
+                        <div className="relative">
+                          <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                          <Input
+                            placeholder="Search subjects..."
+                            className="h-16 pl-14 rounded-2xl border-border bg-background font-bold text-lg focus-visible:ring-primary"
+                            value={subjectSearch}
+                            onChange={(e) => setSubjectSearch(e.target.value)}
+                          />
+                        </div>
+                        {(() => {
+                          const filtered = availableSubjects.filter(s => s.toLowerCase().includes(subjectSearch.toLowerCase()));
+                          return filtered.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                          {availableSubjects.map((s) => (
+                          {filtered.map((s) => (
                             <button
                               key={s}
                               onClick={() => toggleSubject(s)}
@@ -300,8 +316,15 @@ export default function StudentOnboardingPage() {
                             </button>
                           ))}
                         </div>
+                          ) : (
+                            <div className="h-[300px] flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                              <Search className="h-8 w-8 opacity-40" />
+                              <p className="text-sm font-bold">No subjects match &quot;{subjectSearch}&quot;</p>
+                            </div>
+                          );
+                        })()}
                       </div>
-                   </div>
+                    </div>
 
                     <div className="pt-8 flex justify-between gap-4">
                       <Button variant="ghost" onClick={prevStep} className="rounded-full h-16 px-10 font-black text-xs tracking-widest uppercase hover:bg-secondary transition-all">Back</Button>
@@ -325,9 +348,23 @@ export default function StudentOnboardingPage() {
 
                    <div className="space-y-6">
                       <div className="space-y-4">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">Select Subjects Needing Help</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">
+                          Select Subjects Needing Help{formData.weakTopics.length > 0 && ` — ${formData.weakTopics.length} selected`}
+                        </label>
+                        <div className="relative">
+                          <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                          <Input
+                            placeholder="Search subjects..."
+                            className="h-16 pl-14 rounded-2xl border-border bg-background font-bold text-lg focus-visible:ring-primary"
+                            value={subjectSearch}
+                            onChange={(e) => setSubjectSearch(e.target.value)}
+                          />
+                        </div>
+                        {(() => {
+                          const filtered = availableSubjects.filter(s => s.toLowerCase().includes(subjectSearch.toLowerCase()));
+                          return filtered.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                          {availableSubjects.map((s) => (
+                          {filtered.map((s) => (
                             <button
                               key={s}
                               onClick={() => toggleWeakTopic(s)}
@@ -348,8 +385,15 @@ export default function StudentOnboardingPage() {
                             </button>
                           ))}
                         </div>
+                          ) : (
+                            <div className="h-[300px] flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                              <Search className="h-8 w-8 opacity-40" />
+                              <p className="text-sm font-bold">No subjects match &quot;{subjectSearch}&quot;</p>
+                            </div>
+                          );
+                        })()}
                       </div>
-                   </div>
+                    </div>
 
                     <div className="pt-8 flex justify-between gap-4">
                       <Button variant="ghost" onClick={prevStep} className="rounded-full h-16 px-10 font-black text-xs tracking-widest uppercase hover:bg-secondary transition-all">Back</Button>

@@ -2125,6 +2125,18 @@ img {
   }
 }
 
+/* --- Hero entrance (CSS-only so LCP text paints without JS) --- */
+@keyframes hero-rise {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hero-rise {
+  animation: hero-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-rise { animation: none; }
+}
+
 /* --- Solid blob decor (BlobDecor) ----------------------------- */
 @keyframes blob-drift-a {
   0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
@@ -2142,15 +2154,20 @@ img {
   33%      { transform: translate(-30px, -20px) scale(1.08) rotate(-7deg); }
   66%      { transform: translate(24px, 26px) scale(0.93) rotate(5deg); }
 }
-@keyframes blob-morph {
-  0%, 100% { border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%; }
-  25%      { border-radius: 38% 62% 63% 37% / 41% 60% 40% 59%; }
-  50%      { border-radius: 56% 44% 33% 67% / 62% 36% 64% 38%; }
-  75%      { border-radius: 30% 70% 52% 48% / 53% 30% 70% 47%; }
+/* Transform-only drift = GPU-composited blobs (no per-frame paint/layout).
+   Organic shapes come from static border-radius set per element in markup. */
+.blob-anim-a {
+  animation: blob-drift-a 20s ease-in-out infinite;
+  will-change: transform;
 }
-.blob-anim-a { animation: blob-drift-a 20s ease-in-out infinite, blob-morph 23s ease-in-out infinite; }
-.blob-anim-b { animation: blob-drift-b 26s ease-in-out infinite, blob-morph 27s ease-in-out infinite; }
-.blob-anim-c { animation: blob-drift-c 18s ease-in-out infinite, blob-morph 21s ease-in-out infinite; }
+.blob-anim-b {
+  animation: blob-drift-b 26s ease-in-out infinite;
+  will-change: transform;
+}
+.blob-anim-c {
+  animation: blob-drift-c 18s ease-in-out infinite;
+  will-change: transform;
+}
 @media (prefers-reduced-motion: reduce) {
   .blob-anim-a, .blob-anim-b, .blob-anim-c { animation: none !important; }
 }
