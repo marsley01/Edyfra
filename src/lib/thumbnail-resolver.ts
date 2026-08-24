@@ -55,6 +55,18 @@ const BLOCKED_HOSTNAMES = new Set([
   "metadata.google.internal",
 ]);
 
+// Restrict outbound article scraping to known/trusted publishers.
+// Populate from your RSS/news sources.
+const ALLOWED_ARTICLE_HOSTS = new Set<string>([
+  "example.com",
+  "www.example.com",
+]);
+
+// Optional suffix allowlist for publisher subdomains.
+const ALLOWED_ARTICLE_HOST_SUFFIXES = [
+  ".example.com",
+];
+
 function isPrivateOrLocalIp(hostname: string): boolean {
   const h = hostname.trim().toLowerCase();
 
@@ -94,6 +106,11 @@ export async function validateExternalArticleUrl(input: string): Promise<string 
   if (BLOCKED_HOSTNAMES.has(hostname)) return null;
   if (hostname.endsWith(".local")) return null;
   if (isPrivateOrLocalIp(hostname)) return null;
+
+  const isAllowedHost =
+    ALLOWED_ARTICLE_HOSTS.has(hostname) ||
+    ALLOWED_ARTICLE_HOST_SUFFIXES.some((suffix) => hostname.endsWith(suffix));
+  if (!isAllowedHost) return null;
 
   let addresses: dns.LookupAddress[];
   try {
