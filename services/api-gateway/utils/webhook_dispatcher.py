@@ -19,6 +19,13 @@ def _log_safe_url(url: str) -> str:
         return "unknown"
 
 
+def _log_safe_api_key_ref(api_key_id: str) -> str:
+    """Non-reversible short fingerprint for log correlation; never log raw API key identifiers."""
+    if not api_key_id:
+        return "unknown"
+    return hashlib.sha256(api_key_id.encode("utf-8")).hexdigest()[:12]
+
+
 async def _send_webhook(url: str, payload_str: str, secret: str):
     """
     Sends the webhook to the endpoint. Retries once on failure with a 2s delay.
@@ -89,4 +96,11 @@ async def dispatch_event(event_type: str, payload: dict, api_key_id: str):
                 )
                 
     except Exception as e:
-        logger.exception("dispatch_event failed", extra={"event_type": event_type, "api_key_id": api_key_id})
+        logger.exception(
+            "dispatch_event failed",
+            extra={
+                "event_type": event_type,
+                "api_key_ref": _log_safe_api_key_ref(api_key_id),
+                "error": type(e).__name__,
+            },
+        )
