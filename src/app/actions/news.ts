@@ -25,18 +25,14 @@ export interface NewsArticle {
 
 import { fetchOgImage } from "@/utils/og-scraper";
 
-const HTML_TAG_REGEX = /<[^>]*>?/gm;
-const HTML_ENTITY_TAG_REGEX = /&lt;.*?&gt;/g;
+const HTML_ANGLE_BRACKET_REGEX = /[<>]/g;
+const HTML_ENTITY_BRACKET_REGEX = /&lt;|&gt;/gi;
 
-/** Strips tags and entity-encoded tags repeatedly until stable. */
+/** Removes literal and entity-encoded HTML angle brackets from RSS excerpts. */
 function stripRssExcerpt(input: string): string {
-  let result = input;
-  let previous = result;
-  do {
-    previous = result;
-    result = result.replace(HTML_TAG_REGEX, "").replace(HTML_ENTITY_TAG_REGEX, "");
-  } while (result !== previous);
-  return result;
+  return input
+    .replace(HTML_ENTITY_BRACKET_REGEX, "")
+    .replace(HTML_ANGLE_BRACKET_REGEX, "");
 }
 
 // Single branded fallback thumbnail — used whenever an article has no real cover image.
