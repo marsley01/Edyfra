@@ -1,187 +1,158 @@
+import { SupabaseClient, PostgrestError } from "@supabase/supabase-js";
 import { logger } from "@/core/logging";
 import { AppError } from "@/core/errors";
-import type { PaginationParams, PaginatedResult } from "./Pagination";
-import { buildPagination, paginateResponse } from "./Pagination";
 
-export type PrismaDelegate = {
-  findUnique: (args: unknown) => Promise<unknown>;
-  findFirst: (args: unknown) => Promise<unknown>;
-  findMany: (args: unknown) => Promise<unknown[]>;
-  count: (args: unknown) => Promise<number>;
-  create: (args: unknown) => Promise<unknown>;
-  update: (args: unknown) => Promise<unknown>;
-  delete: (args: unknown) => Promise<unknown>;
-  upsert: (args: unknown) => Promise<unknown>;
-};
-
-export type WhereInput = Record<string, unknown>;
-export type IncludeInput = Record<string, unknown>;
-export type SelectInput = Record<string, unknown>;
-export type OrderByInput = Record<string, "asc" | "desc">;
-
-export interface FindManyArgs {
-  where?: WhereInput;
-  include?: IncludeInput;
-  select?: SelectInput;
-  orderBy?: OrderByInput | OrderByInput[];
-  skip?: number;
-  take?: number;
-  cursor?: Record<string, string>;
+export interface QueryOptions {
+  select?: string;
+  orderBy?: { column: string; ascending?: boolean };
+  limit?: number;
+  offset?: number;
 }
 
-export interface FindUniqueArgs {
-  where: WhereInput;
-  include?: IncludeInput;
-  select?: SelectInput;
-}
+export abstract class BaseRepository<T extends Record<string, any>> {
+  protected client: SupabaseClient;
+  protected tableName: string;
 
-export interface CreateArgs<T> {
-  data: T;
-  include?: IncludeInput;
-}
-
-export interface UpdateArgs<T> {
-  where: WhereInput;
-  data: Partial<T>;
-  include?: IncludeInput;
-}
-
-export abstract class BaseRepository<T, TCreate = T, TUpdate = Partial<T>> {
-  protected abstract delegate: PrismaDelegate;
-  protected entityName: string;
-
-  constructor(entityName: string) {
-    this.entityName = entityName;
+  constructor(tableName: string, client: SupabaseClient) {
+    this.tableName = tableName;
+    this.client = client;
   }
 
   protected get log() {
-    return logger.child(`repo:${this.entityName}`);
+    return logger.child(`repo:${this.tableName}`);
   }
 
-  async findById(id: string, include?: IncludeInput): Promise<T | null> {
-    try {
-      const result = await this.delegate.findUnique({
-        where: { id },
-        include,
+  protected handleError(error: PostgrestError, context: string): never {
+    // 42501 = PostgreSQL permission_denied (RLS policy violation)
+    if (error.code === "42501" || error.message.includes("permission denied") || error.message.includes("policy")) {
+      this.log.error(`RLS Permission Denied on ${this.tableName} [${context}]`, {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
       });
-      return result as T | null;
-    } catch (err) {
-      this.log.error(`findById failed`, { id, error: String(err) });
-      throw AppError.internal(`Failed to find ${this.entityName}`);
+      throw AppError.forbidden(`Access denied by row security policy on ${this.tableName}`);
     }
+
+    // 23505 = unique_violation
+    if (error.code === "23505") {
+      this.log.warn(`Unique constraint violation on ${this.tableName} [${context}]`, {
+        code: error.code,
+        message: error.message,
+      });
+      throw AppError.conflict(`A record in ${this.tableName} with these details already exists`);
+    }
+
+    this.log.error(`Database error on ${this.tableName} [${context}]`, {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+    });
+    throw AppError.internal(`Database operation failed on ${this.tableName}: ${error.message}`);
   }
 
-  async findFirst(where: WhereInput, include?: IncludeInput): Promise<T | null> {
-    try {
-      const result = await this.delegate.findFirst({ where, include });
-      return result as T | null;
-    } catch (err) {
-      this.log.error(`findFirst failed`, { where, error: String(err) });
-      throw AppError.internal(`Failed to find ${this.entityName}`);
+  async findById(id: string, select = "*"): Promise<T | null> {
+    const { data, error } = await this.client
+      .from(this.tableName)
+      .select(select)
+      .eq("id", id)
+      .maybeSingle();
+
+    if (error) {
+      this.handleError(error, `findById:${id}`);
     }
+    return data as T | null;
   }
 
-  async findMany(args?: FindManyArgs): Promise<T[]> {
-    try {
-      const results = await this.delegate.findMany(args as unknown as Record<string, unknown>);
-      return results as T[];
-    } catch (err) {
-      this.log.error(`findMany failed`, { args, error: String(err) });
-      throw AppError.internal(`Failed to query ${this.entityName}`);
+  async findFirst(match: Record<string, any>, select = "*"): Promise<T | null> {
+    const { data, error } = await this.client
+      .from(this.tableName)
+      .select(select)
+      .match(match)
+      .maybeSingle();
+
+    if (error) {
+      this.handleError(error, "findFirst");
     }
+    return data as T | null;
   }
 
-  async findManyPaginated(params: PaginationParams, where?: WhereInput, orderBy?: OrderByInput): Promise<PaginatedResult<T>> {
-    try {
-      const { page, limit, skip, take } = buildPagination(params);
+  async findMany(match?: Record<string, any>, options?: QueryOptions): Promise<T[]> {
+    let query = this.client.from(this.tableName).select(options?.select || "*");
 
-      const [items, total] = await Promise.all([
-        this.delegate.findMany({
-          where,
-          skip,
-          take,
-          orderBy,
-        } as unknown as Record<string, unknown>),
-        this.delegate.count({ where } as unknown as Record<string, unknown>),
-      ]);
-
-      return paginateResponse(items as T[], total, { page, limit, skip, take });
-    } catch (err) {
-      this.log.error(`findManyPaginated failed`, { where, error: String(err) });
-      throw AppError.internal(`Failed to query ${this.entityName}`);
+    if (match && Object.keys(match).length > 0) {
+      query = query.match(match);
     }
+
+    if (options?.orderBy) {
+      query = query.order(options.orderBy.column, { ascending: options.orderBy.ascending ?? true });
+    }
+
+    if (typeof options?.limit === "number") {
+      const from = options.offset || 0;
+      const to = from + options.limit - 1;
+      query = query.range(from, to);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      this.handleError(error, "findMany");
+    }
+    return ((data || []) as unknown) as T[];
   }
 
-  async create(data: TCreate, include?: IncludeInput): Promise<T> {
-    try {
-      const result = await this.delegate.create({
-        data: data as Record<string, unknown>,
-        include,
-      } as unknown as Record<string, unknown>);
-      return result as T;
-    } catch (err) {
-      this.log.error(`create failed`, { error: String(err) });
-      throw AppError.internal(`Failed to create ${this.entityName}`);
+  async create(payload: Partial<T>, select = "*"): Promise<T> {
+    const { data, error } = await this.client
+      .from(this.tableName)
+      .insert(payload as any)
+      .select(select)
+      .single();
+
+    if (error) {
+      this.handleError(error, "create");
     }
+    return (data as unknown) as T;
   }
 
-  async update(where: WhereInput, data: TUpdate, include?: IncludeInput): Promise<T> {
-    try {
-      const existing = await this.delegate.findUnique({ where } as unknown as Record<string, unknown>);
-      if (!existing) {
-        throw AppError.notFound(`${this.entityName} not found`);
-      }
+  async update(id: string, payload: Partial<T>, select = "*"): Promise<T> {
+    const { data, error } = await this.client
+      .from(this.tableName)
+      .update(payload as any)
+      .eq("id", id)
+      .select(select)
+      .single();
 
-      const result = await this.delegate.update({
-        where,
-        data: data as Record<string, unknown>,
-        include,
-      } as unknown as Record<string, unknown>);
-      return result as T;
-    } catch (err) {
-      if (err instanceof AppError) throw err;
-      this.log.error(`update failed`, { where, error: String(err) });
-      throw AppError.internal(`Failed to update ${this.entityName}`);
+    if (error) {
+      this.handleError(error, `update:${id}`);
     }
+    return (data as unknown) as T;
   }
 
   async delete(id: string): Promise<void> {
-    try {
-      const existing = await this.delegate.findUnique({
-        where: { id },
-      } as unknown as Record<string, unknown>);
-      if (!existing) {
-        throw AppError.notFound(`${this.entityName} not found`);
-      }
+    const { error } = await this.client
+      .from(this.tableName)
+      .delete()
+      .eq("id", id);
 
-      await this.delegate.delete({ where: { id } } as unknown as Record<string, unknown>);
-    } catch (err) {
-      if (err instanceof AppError) throw err;
-      this.log.error(`delete failed`, { id, error: String(err) });
-      throw AppError.internal(`Failed to delete ${this.entityName}`);
+    if (error) {
+      this.handleError(error, `delete:${id}`);
     }
   }
 
-  async exists(where: WhereInput): Promise<boolean> {
-    try {
-      const count = await this.delegate.count({ where } as unknown as Record<string, unknown>);
-      return count > 0;
-    } catch (err) {
-      this.log.error(`exists check failed`, { where, error: String(err) });
-      return false;
+  async count(match?: Record<string, any>): Promise<number> {
+    let query = this.client.from(this.tableName).select("*", { count: "exact", head: true });
+    if (match && Object.keys(match).length > 0) {
+      query = query.match(match);
     }
+    const { count, error } = await query;
+    if (error) {
+      this.handleError(error, "count");
+    }
+    return count || 0;
   }
 
-  async count(where?: WhereInput): Promise<number> {
-    try {
-      return await this.delegate.count({ where } as unknown as Record<string, unknown>);
-    } catch (err) {
-      this.log.error(`count failed`, { where, error: String(err) });
-      throw AppError.internal(`Failed to count ${this.entityName}`);
-    }
-  }
-
-  protected handleNotFound(): never {
-    throw AppError.notFound(`${this.entityName} not found`);
+  async exists(match: Record<string, any>): Promise<boolean> {
+    const total = await this.count(match);
+    return total > 0;
   }
 }

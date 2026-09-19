@@ -13,10 +13,8 @@ serve(async (_req: Request) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { error } = await supabase
-      .from("TutorProfile")
-      .update({ total_assignments_today: 0 })
-      .neq("total_assignments_today", 0);
+    // Call atomic Postgres function via RPC instead of direct client update
+    const { error } = await supabase.rpc("reset_daily_tutor_assignments");
 
     if (error) {
       console.error("Reset error:", error);

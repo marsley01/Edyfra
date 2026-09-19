@@ -232,10 +232,15 @@ export function SubjectGraph({ className }: { className?: string }) {
     const clock = new THREE.Clock();
     let raf = 0;
     let running = true;
+    let lastFrame = 0;
+    const FRAME_MIN_MS = 1000 / 30; // 30fps — plenty for a slow rotation, half the GPU/CPU cost
 
     const animate = () => {
       if (!running) return;
       raf = requestAnimationFrame(animate);
+      const now = performance.now();
+      if (now - lastFrame < FRAME_MIN_MS) return;
+      lastFrame = now;
       const t = clock.getElapsedTime();
       nodeGroup.rotation.y += 0.0013;
       lineGroup.rotation.y += 0.0013;

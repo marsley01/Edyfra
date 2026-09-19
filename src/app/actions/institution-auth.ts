@@ -4,6 +4,8 @@ import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { z } from "zod";
+import { rateLimit } from "@/lib/rate-limit";
+import { headers } from "next/headers";
 
 const applicationSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -13,7 +15,7 @@ const applicationSchema = z.object({
   message: z.string().optional(),
 });
 
-export async function submitInstitutionApplication(formData: FormData) {
+export async function submitInstitutionInquiry(formData: FormData) {
   const raw = {
     name: formData.get("name") as string,
     email: formData.get("email") as string,
@@ -26,6 +28,35 @@ export async function submitInstitutionApplication(formData: FormData) {
   if (!parsed.success) {
     const firstError = parsed.error.issues[0];
     return { error: firstError.message };
+  }
+
+  const normalizedEmail = parsed.data.email.toLowerCase().trim();
+
+  const headerStore = await headers();
+  const ip = headerStore.get("x-forwarded-for")?.split(",")[0]?.trim() || headerStore.get("x-real-ip") || "anonymous";
+
+  try {
+    // 1. IP-level limit: max 5 requests per 15 minutes per IP
+    const ipLimit = await rateLimit(`submitInstitutionInquiry:ip:${ip}`, {
+      interval: 15 * 60_000,
+      maxRequests: 5,
+    });
+    if (!ipLimit.success) {
+      return { error: "Too many submission attempts from this network. Please try again in 15 minutes." };
+    }
+
+    // 2. Email-level limit: max 3 requests per 15 minutes per target email
+    const emailLimit = await rateLimit(`submitInstitutionInquiry:email:${normalizedEmail}`, {
+      interval: 15 * 60_000,
+      maxRequests: 3,
+    });
+    if (!emailLimit.success) {
+      return { error: "An application inquiry for this email was recently submitted. Please wait before trying again." };
+    }
+  } catch (err) {
+    console.error("[submitInstitutionInquiry] Rate limit check failed:", err);
+    // Fail closed to prevent bypassing rate limit on Redis network/service errors
+    return { error: "Service temporarily unavailable. Please try again in a moment." };
   }
 
   const existing = await prisma.institutionApplication.findFirst({

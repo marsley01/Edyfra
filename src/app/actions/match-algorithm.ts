@@ -6,6 +6,7 @@ import { SESSION_CONFIG, TUTOR_CONFIG } from "@/lib/config";
 import { randomBytes } from "crypto";
 import { syncUsersToStream, getServerStreamClient, MASH_AI_USER_ID } from "@/lib/user-sync";
 import { notifyUser } from "@/app/actions/notifications";
+import { LIVE_PEER_SEARCH_MS, selectLivePeerRequest } from "@/lib/matching/peers";
 
 // ─── Atomic Commit Helpers ────────────────────────────────────────────────────
 // Every matching decision is committed via these helpers so that
@@ -23,6 +24,7 @@ interface CommitHumanMatchParams {
   subject: string;
   topic: string | null;
   tier: ResolvedTier;
+  partnerMatchRequestId?: string;
 }
 
 interface CommitHumanMatchResult {
@@ -33,7 +35,7 @@ interface CommitHumanMatchResult {
 export async function commitHumanMatch(
   params: CommitHumanMatchParams,
 ): Promise<CommitHumanMatchResult> {
-  const { matchRequestId, studentId, partnerId, subject, topic, tier } = params;
+  const { matchRequestId, studentId, partnerId, subject, topic, tier, partnerMatchRequestId } = params;
   const roomId = `room-${randomBytes(8).toString("hex")}`;
   const startedAt = new Date();
 
@@ -51,14 +53,31 @@ export async function commitHumanMatch(
       },
     });
 
-    await tx.matchRequest.update({
-      where: { id: matchRequestId },
+    const claimed = await tx.matchRequest.updateMany({
+      where: { id: matchRequestId, sessionId: null },
       data: {
         sessionId: session.id,
         resolvedAs: tier as MatchTier,
         resolvedAt: startedAt,
       },
     });
+    if (claimed.count !== 1) {
+      throw new Error("Match request already resolved");
+    }
+
+    if (partnerMatchRequestId) {
+      const partnerClaimed = await tx.matchRequest.updateMany({
+        where: { id: partnerMatchRequestId, sessionId: null },
+        data: {
+          sessionId: session.id,
+          resolvedAs: tier as MatchTier,
+          resolvedAt: startedAt,
+        },
+      });
+      if (partnerClaimed.count !== 1) {
+        throw new Error("Peer match request already resolved");
+      }
+    }
 
     if (tier === "TUTOR") {
       await tx.tutorProfile.update({

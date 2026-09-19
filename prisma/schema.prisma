@@ -108,6 +108,8 @@ model User {
   sessionFlags             SessionFlag[]           @relation("TutorSessionFlags")
   favorites                FavoriteUser[]          @relation("UserFavorites")
   favoritedBy              FavoriteUser[]          @relation("FavoritedBy")
+  following                Connection[]            @relation("UserFollowing")
+  followers                Connection[]            @relation("UserFollowers")
   calendarConnections      CalendarConnection[]
 
   @@index([role])
@@ -347,6 +349,19 @@ model FavoriteUser {
   favorite  User     @relation("FavoritedBy", fields: [favoriteId], references: [id], onDelete: Cascade)
 
   @@unique([userId, favoriteId])
+}
+
+model Connection {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  follower    User     @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
 }
 
 model Achievement {

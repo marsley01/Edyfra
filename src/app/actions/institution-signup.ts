@@ -54,7 +54,7 @@ export type SubmitApplicationResult =
  *   7. Email the founders a heads-up.
  *   8. Email the admin a "we received your application" message.
  */
-export async function submitInstitutionApplication(
+export async function submitInstitutionSignup(
   input: InstitutionApplicationInput,
 ): Promise<SubmitApplicationResult> {
   const parsed = FullApplicationSchema.safeParse(input);
@@ -146,7 +146,7 @@ export async function submitInstitutionApplication(
     });
   } catch (err) {
     const detail = err instanceof Error ? err.message : String(err);
-    console.error("[submitInstitutionApplication] failed to upsert Prisma user:", err);
+    console.error("[submitInstitutionSignup] failed to upsert Prisma user:", err);
     return {
       ok: false,
       error:
@@ -159,6 +159,7 @@ export async function submitInstitutionApplication(
 
   // ─── 2. Prisma: institution + memberships ───────────────────────────────
   try {
+    // TODO(RLS): new institution creation needs a scoped INSERT policy before this can move to Supabase client — founder has no InstitutionMember row yet at this point in the flow.
     const institution = await prisma.$transaction(async (tx) => {
       // Generate a unique invite code
       const code = await generateInstitutionCode(tx, data.schoolName);
@@ -216,7 +217,7 @@ export async function submitInstitutionApplication(
     revalidatePath("/admin/institutions");
     return { ok: true, institutionId: institution.id, status: institution.isActive ? "ACTIVE" : "PENDING" };
   } catch (err) {
-    console.error("[submitInstitutionApplication] failed:", err);
+    console.error("[submitInstitutionSignup] failed:", err);
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       if (err.code === "P2002") {
         return { ok: false, error: "An institution with similar details already exists." };

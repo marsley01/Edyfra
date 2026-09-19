@@ -101,3 +101,14 @@ MANIFEST
 venv/
 ENV/
 
+
+# Misc junk & Agent artifacts
+/prisma_inventory_report.md
+*inventory_report*
+/git_files.txt
+/hero-screenshot.png
+/create-table.js
+/.claude/
+/.kilo/
+/.agents/
+/CLAUDE.md
