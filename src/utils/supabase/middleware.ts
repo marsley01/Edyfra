@@ -124,7 +124,7 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Role-based access is handled in Prisma-backed layouts/pages.
+    // Role-based access is handled in database-backed layouts/pages.
     // Middleware only protects authenticated routes because Supabase user_metadata can be stale.
   }
 
