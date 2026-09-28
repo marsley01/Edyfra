@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 export async function GET() {
   const startTime = Date.now();
   const checks: Record<string, string> = {};
 
   try {
-    await prisma.$queryRaw`SELECT 1`;
+    const supabase = createAdminClient();
+    await supabase.from("users").select("id").limit(1);
     checks.database = "ok";
   } catch {
     checks.database = "error";
