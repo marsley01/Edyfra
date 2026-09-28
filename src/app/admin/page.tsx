@@ -1,11 +1,10 @@
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { redirect } from "next/navigation";
 import { AdminDashboardClient } from "./dashboard-client";
 import { getAdminDashboardMetrics, getTutorApplications } from "@/app/actions/admin";
 import { getAdminAnalytics } from "@/app/actions/analytics";
-import prisma from "@/lib/prisma";
 import { isFounderEmail } from "@/utils/admin-guard";
-import { Role } from "@/generated/client";
 
 export default async function AdminDashboard() {
   const supabase = await createClient();
@@ -21,130 +20,67 @@ export default async function AdminDashboard() {
     redirect("/login");
   }
 
-  let prismaUser: { role: string } | null = null;
+  const adminSupabase = createAdminClient();
   let isDbAdmin = false;
 
   try {
-    prismaUser = await prisma.user.findUnique({
-      where: { id: user.id },
-      select: { role: true },
-    });
-    if (prismaUser) {
-      isDbAdmin = prismaUser.role === Role.ADMIN;
+    const { data: dbUser } = await adminSupabase
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (dbUser) {
+      isDbAdmin = dbUser.role === "ADMIN" || dbUser.role === "FOUNDER";
     }
   } catch (err) {
     console.error("[Admin] Failed to fetch user role:", err);
-  }
-
-  // If authenticated in Auth but missing from Prisma, create the record
-  if (!prismaUser) {
-    try {
-      await prisma.user.create({
-        data: {
-          id: user.id,
-          email: user.email,
-          name: user.user_metadata?.name || user.email.split("@")[0] || "Admin User",
-          role: Role.ADMIN,
-          county: "Nairobi",
-        },
-      });
-      isDbAdmin = true;
-    } catch (createErr) {
-      console.error("[Admin] Failed to create admin user:", createErr);
-      redirect("/dashboard");
-    }
   }
 
   if (!isFounder && !isDbAdmin) {
     redirect("/dashboard");
   }
 
-  // Fetch all data in parallel with individual error boundaries
-  // This prevents a single failing query from crashing the entire page
   const [metrics, pendingApplications, analytics] = await Promise.all([
     getAdminDashboardMetrics(),
     getTutorApplications(),
     getAdminAnalytics(),
   ]);
 
-  // Run remaining queries in parallel, each with its own try/catch
-  const [tutorMetrics, allTutorsForIdle, sessionMetrics, peakHours, bookingMetrics, recentSignups] =
+  const [tutorProfilesRes, idleTutorsRes, sessionMetricsRes, peakHoursRes, bookingCounts, recentSignupsRes] =
     await Promise.all([
-      // Tutor aggregate metrics
-      prisma.tutorProfile.aggregate({
-        _avg: { responseRate: true, rating: true },
-        _sum: { sessionsAssigned: true, sessionsResponded: true },
-        _count: true,
-      }).catch((err) => {
-        console.error("[Admin] tutorProfile.aggregate failed:", err);
-        return { _avg: { responseRate: null, rating: null }, _sum: { sessionsAssigned: null, sessionsResponded: null }, _count: 0 };
-      }),
-
-      // Idle tutors
-      prisma.user.findMany({
-        where: {
-          role: Role.TUTOR,
-          tutorProfile: {
-            currentActiveSessions: 0,
-            totalAssignmentsToday: 0,
-          },
-        },
-        include: { tutorProfile: true },
-      }).catch((err) => {
-        console.error("[Admin] idle tutors query failed:", err);
-        return [];
-      }),
-
-      // Session groupBy
-      prisma.session.groupBy({
-        by: ["subject"],
-        _count: true,
-        where: { status: "COMPLETED" },
-        orderBy: { _count: { subject: "desc" } },
-        take: 5,
-      }).catch((err) => {
-        console.error("[Admin] session.groupBy failed:", err);
-        return [];
-      }),
-
-      // Peak hours
-      prisma.session.findMany({
-        select: { startedAt: true },
-        where: { status: "COMPLETED", startedAt: { not: null } },
-      }).catch((err) => {
-        console.error("[Admin] peak hours query failed:", err);
-        return [];
-      }),
-
-      // Booking counts (all in one Promise.all with individual catches)
+      adminSupabase.from("tutor_profiles").select("rating, response_rate, total_sessions").then(r => r.data || []),
+      adminSupabase.from("tutor_profiles").select("availability").eq("current_active_sessions", 0).eq("total_assignments_today", 0).then(r => r.data || []),
+      adminSupabase.from("sessions").select("subject").eq("status", "COMPLETED").then(r => r.data || []),
+      adminSupabase.from("sessions").select("started_at").eq("status", "COMPLETED").not("started_at", "is", null).then(r => r.data || []),
       Promise.all([
-        prisma.booking.count({ where: { status: "confirmed" } }).catch(() => 0),
-        prisma.booking.count({ where: { status: "declined" } }).catch(() => 0),
-        prisma.booking.count({ where: { status: "student_no_show" } }).catch(() => 0),
-        prisma.booking.count({ where: { status: "tutor_no_show" } }).catch(() => 0),
-        prisma.booking.count({ where: { date: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } } }).catch(() => 0),
+        adminSupabase.from("bookings").select("*", { count: "exact", head: true }).eq("status", "confirmed").then(r => r.count || 0),
+        adminSupabase.from("bookings").select("*", { count: "exact", head: true }).eq("status", "declined").then(r => r.count || 0),
+        adminSupabase.from("bookings").select("*", { count: "exact", head: true }).eq("status", "student_no_show").then(r => r.count || 0),
+        adminSupabase.from("bookings").select("*", { count: "exact", head: true }).eq("status", "tutor_no_show").then(r => r.count || 0),
+        adminSupabase.from("bookings").select("*", { count: "exact", head: true }).gte("date", new Date(new Date().setHours(0,0,0,0)).toISOString()).then(r => r.count || 0),
       ]),
-
-      // Recent signups
-      prisma.analyticsEvent.findMany({
-        where: { eventType: "signup", createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
-        take: 200,
-        orderBy: { createdAt: "desc" },
-      }).catch((err) => {
-        console.error("[Admin] analytics signups query failed:", err);
-        return [];
-      }),
+      adminSupabase.from("analytics_events").select("metadata").eq("event_type", "signup").gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()).order("created_at", { ascending: false }).limit(200).then(r => r.data || []),
     ]);
 
-  const idleTutors = allTutorsForIdle.filter(t => {
-    const availability = (t as any).tutorProfile?.availability as any;
-    return availability?.isOnline === true;
-  }).length;
+  const avgRating = tutorProfilesRes.length ? tutorProfilesRes.reduce((acc, t) => acc + (t.rating || 0), 0) / tutorProfilesRes.length : 0;
+  const avgResponse = tutorProfilesRes.length ? tutorProfilesRes.reduce((acc, t) => acc + (t.response_rate || 0), 0) / tutorProfilesRes.length : 0;
+
+  const idleTutors = idleTutorsRes.filter(t => (t.availability as any)?.isOnline === true).length;
+
+  const subjectCounts: Record<string, number> = {};
+  sessionMetricsRes.forEach(s => {
+    if (s.subject) subjectCounts[s.subject] = (subjectCounts[s.subject] || 0) + 1;
+  });
+  const topSubjects = Object.entries(subjectCounts)
+    .map(([subject, count]) => ({ subject, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
 
   const hourCounts: Record<number, number> = {};
-  peakHours.forEach(s => {
-    if (s.startedAt) {
-      const hour = s.startedAt.getHours();
+  peakHoursRes.forEach(s => {
+    if (s.started_at) {
+      const hour = new Date(s.started_at).getHours();
       hourCounts[hour] = (hourCounts[hour] || 0) + 1;
     }
   });
@@ -153,11 +89,8 @@ export default async function AdminDashboard() {
     .sort((a, b) => b.count - a.count)
     .slice(0, 6);
 
-  const referralSignups = recentSignups.filter(e => {
-    const meta = e.metadata as any;
-    return meta?.referred === true;
-  }).length;
-  const directSignups = recentSignups.length - referralSignups;
+  const referralSignups = recentSignupsRes.filter(e => (e.metadata as any)?.referred === true).length;
+  const directSignups = recentSignupsRes.length - referralSignups;
 
   return (
     <AdminDashboardClient
@@ -169,28 +102,28 @@ export default async function AdminDashboard() {
       completedSessions={metrics.completedSessions}
       analytics={analytics}
       tutorMetrics={{
-        avgResponseRate: tutorMetrics._avg.responseRate || 0,
-        avgRating: tutorMetrics._avg.rating || 0,
-        totalAssigned: tutorMetrics._sum.sessionsAssigned || 0,
-        totalResponded: tutorMetrics._sum.sessionsResponded || 0,
+        avgResponseRate: avgResponse,
+        avgRating: avgRating,
+        totalAssigned: 0,
+        totalResponded: 0,
         idleTutors,
       }}
       sessionMetrics={{
-        topSubjects: sessionMetrics.map(s => ({ subject: s.subject, count: s._count })),
+        topSubjects,
         peakHours: peakHoursArray,
         totalCompleted: metrics.completedSessions,
       }}
       bookingMetrics={{
-        confirmed: bookingMetrics[0],
-        declined: bookingMetrics[1],
-        studentNoShow: bookingMetrics[2],
-        tutorNoShow: bookingMetrics[3],
-        today: bookingMetrics[4],
+        confirmed: bookingCounts[0],
+        declined: bookingCounts[1],
+        studentNoShow: bookingCounts[2],
+        tutorNoShow: bookingCounts[3],
+        today: bookingCounts[4],
       }}
       acquisitionMetrics={{
         direct: directSignups,
         referral: referralSignups,
-        total: recentSignups.length,
+        total: recentSignupsRes.length,
         signupsToday: analytics.signupsToday,
         signupsThisWeek: analytics.signupsThisWeek,
         signupsThisMonth: analytics.signupsThisMonth,

@@ -1,7 +1,6 @@
-import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
-import { Role } from "@/generated/client";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { listInstitutionApplications } from "@/app/actions/institution-founder";
 import { InstitutionsReviewClient } from "./institutions-client";
 
@@ -14,8 +13,14 @@ export default async function AdminInstitutionsPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
-  if (!dbUser || (dbUser.role !== Role.FOUNDER && dbUser.role !== Role.ADMIN)) {
+  const adminSupabase = createAdminClient();
+  const { data: dbUser } = await adminSupabase
+    .from("users")
+    .select("id, role")
+    .eq("id", user.id)
+    .single();
+
+  if (!dbUser || (dbUser.role !== "FOUNDER" && dbUser.role !== "ADMIN")) {
     redirect("/dashboard");
   }
 

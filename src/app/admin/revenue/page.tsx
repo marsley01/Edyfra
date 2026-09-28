@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 
-import prisma from "@/lib/prisma";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { 
   TrendingUp, 
   Users, 
@@ -22,33 +22,36 @@ async function getRevenueStats() {
   const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-  // Fetch all successful payments for calculation
-  const successfulPayments = await prisma.payment.findMany({
-    where: { status: "completed" }
-  });
+  const supabase = createAdminClient();
 
-  const totalRevenue = successfulPayments.reduce((acc: number, curr) => acc + (curr.amount || 0), 0);
+  const { data: successfulPaymentsData } = await supabase
+    .from("payments")
+    .select("*")
+    .eq("status", "completed");
+
+  const successfulPayments = successfulPaymentsData || [];
+
+  const totalRevenue = successfulPayments.reduce((acc: number, curr) => acc + (Number(curr.amount) || 0), 0);
   const monthlyRevenue = successfulPayments
-    .filter(p => p.paidAt && new Date(p.paidAt) >= startOfMonth)
-    .reduce((acc: number, curr) => acc + (curr.amount || 0), 0);
+    .filter(p => p.paid_at && new Date(p.paid_at) >= startOfMonth)
+    .reduce((acc: number, curr) => acc + (Number(curr.amount) || 0), 0);
   const lastMonthRevenue = successfulPayments
-    .filter(p => p.paidAt && new Date(p.paidAt) >= startOfLastMonth && new Date(p.paidAt) < startOfMonth)
-    .reduce((acc: number, curr) => acc + (curr.amount || 0), 0);
+    .filter(p => p.paid_at && new Date(p.paid_at) >= startOfLastMonth && new Date(p.paid_at) < startOfMonth)
+    .reduce((acc: number, curr) => acc + (Number(curr.amount) || 0), 0);
   const monthDelta = lastMonthRevenue > 0
     ? Math.round(((monthlyRevenue - lastMonthRevenue) / lastMonthRevenue) * 100)
     : monthlyRevenue > 0
       ? 100
       : 0;
 
-  // Stream breakdown
   const breakdown: Record<string, number> = {
     SUBSCRIPTION: 0,
     SESSION: 0,
     RESOURCE: 0
   };
   successfulPayments.forEach((p: any) => {
-    const type = p.paymentType as string;
-    breakdown[type] = (breakdown[type] || 0) + (p.amount || 0);
+    const type = (p.payment_type || "").toUpperCase();
+    breakdown[type] = (breakdown[type] || 0) + (Number(p.amount) || 0);
   });
 
   const streamBreakdown = Object.entries(breakdown).map(([type, amount]) => ({
@@ -56,31 +59,50 @@ async function getRevenueStats() {
     _sum: { amount }
   }));
 
-  const plusSubscribers = await prisma.user.count({
-    where: { plan: "plus" }
-  });
+  const { count: plusSubscribersCount } = await supabase
+    .from("users")
+    .select("*", { count: "exact", head: true })
+    .eq("plan", "plus");
 
-  const totalUsers = await prisma.user.count();
+  const { count: totalUsersCount } = await supabase
+    .from("users")
+    .select("*", { count: "exact", head: true });
+
+  const plusSubscribers = plusSubscribersCount || 0;
+  const totalUsers = totalUsersCount || 0;
   const conversionRate = totalUsers > 0 ? (plusSubscribers / totalUsers) * 100 : 0;
 
-  const recentTransactions = await prisma.payment.findMany({
-    orderBy: { createdAt: 'desc' },
-    take: 10,
-    include: { user: true }
-  });
+  const { data: recentTransactionsData } = await supabase
+    .from("payments")
+    .select("*, user:users!user_id ( id, name, avatar )")
+    .order("created_at", { ascending: false })
+    .limit(10);
 
-  // For pending payouts, we'll also use findMany to avoid similar errors
-  const sessionPayments = await prisma.sessionPayment.findMany({
-    where: { refundedAt: null }
-  });
-  const pendingPayouts = sessionPayments.reduce((acc: number, curr) => acc + (curr.tutorPayout || 0), 0);
-  const pendingTutors = new Set(sessionPayments.filter(p => !p.paidAt).map(p => p.tutorId)).size;
+  const recentTransactions = (recentTransactionsData || []).map(tx => ({
+    ...tx,
+    userId: tx.user_id,
+    paymentType: tx.payment_type,
+    createdAt: tx.created_at,
+    paidAt: tx.paid_at,
+    user: tx.user || { name: "User" },
+  }));
 
-  // Marketplace sales (resource purchases)
-  const todayPurchases = await prisma.resourcePurchase.findMany({
-    where: { paidAt: { gte: startOfToday } }
-  });
-  const marketplaceToday = todayPurchases.reduce((acc: number, curr) => acc + (curr.amount || 0), 0);
+  const { data: sessionPaymentsData } = await supabase
+    .from("session_payments")
+    .select("*")
+    .is("refunded_at", null);
+
+  const sessionPayments = sessionPaymentsData || [];
+  const pendingPayouts = sessionPayments.reduce((acc: number, curr) => acc + (Number(curr.tutor_payout) || 0), 0);
+  const pendingTutors = new Set(sessionPayments.filter(p => !p.paid_at).map(p => p.tutor_id)).size;
+
+  const { data: todayPurchasesData } = await supabase
+    .from("resource_purchases")
+    .select("*")
+    .gte("paid_at", startOfToday.toISOString());
+
+  const todayPurchases = todayPurchasesData || [];
+  const marketplaceToday = todayPurchases.reduce((acc: number, curr) => acc + (Number(curr.amount) || 0), 0);
 
   return {
     total: totalRevenue,
