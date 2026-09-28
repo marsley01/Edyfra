@@ -23,8 +23,9 @@ interface SessionWithMessages {
   subject?: string | null;
   topic?: string | null;
   status?: string;
-  startedAt?: string | null;
-  endedAt?: string | null;
+  tier?: string;
+  startedAt?: string | Date | null;
+  endedAt?: string | Date | null;
   _count?: { messages: number };
   student?: { name: string };
   partner?: { name: string } | null;
@@ -49,10 +50,10 @@ export default function SessionsPage() {
       try {
         const { getUserSessions } = await import("@/app/actions/match");
          const data = await getUserSessions(user.id);
-         setSessions(data.map(s => ({
+         setSessions((data as any[]).map(s => ({
            ...s,
            partner: s.partner || undefined,
-           createdAt: s.startedAt?.toISOString() || new Date().toISOString()
+           createdAt: typeof s.startedAt === "string" ? s.startedAt : s.startedAt?.toISOString() || new Date().toISOString()
          })));
        } catch (err) {
          console.error("Failed to fetch sessions:", err);

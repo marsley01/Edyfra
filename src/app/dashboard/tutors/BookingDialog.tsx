@@ -69,7 +69,8 @@ function buildTimeSlots(
       (a) => a.dayOfWeek === dayOfWeek && !a.isBlocked,
     );
 
-    for (const slot of daySlots) {
+    for (const slotItem of daySlots) {
+      const slot = slotItem as unknown as { startTime: string; dayOfWeek: number; isBlocked?: boolean };
       const [h, m] = slot.startTime.split(":").map(Number);
       if (Number.isNaN(h) || Number.isNaN(m)) continue;
 

@@ -22,13 +22,15 @@ export function TutorCard({ tutor }: TutorCardProps) {
   const visibleSubjects = subjects.slice(0, 3);
   const remainingSubjects = Math.max(subjects.length - visibleSubjects.length, 0);
 
+  const avatarUrl = tutor.avatar ? String(tutor.avatar) : undefined;
+
   return (
     <Card className="border-border/50 bg-secondary/30 backdrop-blur-3xl hover:border-primary/50 transition-all duration-500 rounded-[2.5rem] overflow-hidden group shadow-xl hover:shadow-primary/5 flex flex-col h-full">
       <CardContent className="p-8 flex flex-col h-full gap-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="relative">
-              <AvatarPremium seed={tutor.name} src={tutor.avatar ?? ""} size="lg" />
+              <AvatarPremium seed={tutor.name ?? undefined} src={avatarUrl} size="lg" />
               {isOnline && (
                 <span
                   className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 rounded-full border-2 border-background animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"
@@ -39,7 +41,7 @@ export function TutorCard({ tutor }: TutorCardProps) {
             <div>
               <h3 className="text-xl font-black tracking-tightest flex flex-wrap items-center gap-2">
                 {tutor.name}
-                {profile?.isVerified && <VerifiedBadge showText={false} className="h-5 w-5 rounded-full p-0 border-0 bg-transparent text-primary" />}
+                {Boolean(profile?.isVerified) && <VerifiedBadge showText={false} className="h-5 w-5 rounded-full p-0 border-0 bg-transparent text-primary" />}
               </h3>
               <div className="flex items-center gap-1 text-yellow-500 mt-1">
                 <Star className="h-3 w-3 fill-current" />
@@ -56,7 +58,7 @@ export function TutorCard({ tutor }: TutorCardProps) {
           )}
         </div>
 
-        {profile?.isVerified && (
+        {Boolean(profile?.isVerified) && (
           <div className="flex items-center gap-2">
             <VerifiedBadge />
           </div>
