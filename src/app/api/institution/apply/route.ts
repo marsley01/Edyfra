@@ -1,56 +1,48 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
+import { createAdminClient } from '@/utils/supabase/admin'
 
 export async function POST(request: Request) {
   try {
     const body = await request.json()
+    const supabase = createAdminClient()
 
-    const institution = await prisma.institution.create({
-      data: {
-        supabaseId: body.supabaseId,
+    const { data: institution, error: instErr } = await supabase
+      .from('institutions')
+      .insert({
+        supabase_id: body.supabaseId,
         name: body.institutionName,
         type: body.institutionType,
         county: body.county,
         address: body.address,
         website: body.website,
-        adminName: body.contactName,
-        adminEmail: body.contactEmail,
-        adminPhone: body.contactPhone,
+        admin_name: body.contactName,
+        admin_email: body.contactEmail,
+        admin_phone: body.contactPhone,
         status: 'PENDING',
-      }
-    })
+      })
+      .select()
+      .single()
 
-    await prisma.user.upsert({
-      where: { id: body.supabaseId },
-      update: {
-        name: body.contactName,
-        email: body.contactEmail,
-        role: 'STUDENT',
-      },
-      create: {
+    if (instErr) throw instErr
+
+    await supabase
+      .from('users')
+      .upsert({
         id: body.supabaseId,
         email: body.contactEmail,
         name: body.contactName,
         role: 'STUDENT',
         county: body.county || 'Nairobi',
-      }
-    })
+      }, { onConflict: 'id' })
 
-    await prisma.institutionMember.upsert({
-      where: {
-        institutionId_userId: {
-          institutionId: institution.id,
-          userId: body.supabaseId,
-        }
-      },
-      update: { role: 'INSTITUTION_ADMIN', status: 'ACTIVE' },
-      create: {
-        institutionId: institution.id,
-        userId: body.supabaseId,
+    await supabase
+      .from('institution_members')
+      .upsert({
+        institution_id: institution.id,
+        user_id: body.supabaseId,
         role: 'INSTITUTION_ADMIN',
         status: 'ACTIVE',
-      }
-    })
+      }, { onConflict: 'institution_id,user_id' })
 
     return NextResponse.json({ success: true, institution })
   } catch (error) {

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { isFounderEmail } from "@/utils/admin-guard";
-import prisma from "@/lib/prisma";
-import { Role, EduLevel, VerifPath } from "@/generated/client";
 import { z } from "zod";
 import Papa from "papaparse";
 
@@ -35,12 +34,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const prismaUser = await prisma.user.findUnique({
-      where: { id: user.id },
-      select: { role: true },
-    });
+    const adminSupabase = createAdminClient();
 
-    const isDbAdmin = prismaUser?.role === Role.ADMIN || prismaUser?.role === Role.FOUNDER;
+    const { data: dbUser } = await adminSupabase
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    const isDbAdmin = dbUser?.role === "ADMIN" || dbUser?.role === "FOUNDER";
     const isFounder = isFounderEmail(user.email);
 
     if (!isFounder && !isDbAdmin) {
@@ -60,13 +62,10 @@ export async function POST(req: NextRequest) {
     }
     const sheetId = match[1];
 
-    // Sheet IDs are opaque tokens of [a-zA-Z0-9-_]; anything else is rejected
-    // so user input can never alter the request host or path structure.
     if (!/^[a-zA-Z0-9_-]{10,120}$/.test(sheetId)) {
       return NextResponse.json({ error: "Invalid Google Sheets URL." }, { status: 400 });
     }
 
-    // Fetch CSV — host is a server-controlled constant
     const csvUrl = new URL("https://docs.google.com/spreadsheets/d/" + sheetId + "/export");
     csvUrl.searchParams.set("format", "csv");
     const response = await fetch(csvUrl);
@@ -78,7 +77,7 @@ export async function POST(req: NextRequest) {
     const csvText = await response.text();
 
     if (csvText.includes("<html")) {
-        return NextResponse.json({ error: "Google returned HTML instead of CSV. Please check sharing permissions." }, { status: 400 });
+      return NextResponse.json({ error: "Google returned HTML instead of CSV. Please check sharing permissions." }, { status: 400 });
     }
 
     // Parse CSV
@@ -97,87 +96,88 @@ export async function POST(req: NextRequest) {
 
     for (let i = 0; i < parsed.data.length; i++) {
       const row: any = parsed.data[i];
-      const rowNum = i + 2; // 1-based + header
+      const rowNum = i + 2;
 
       try {
         if (import_type === "students") {
           const validRow = studentSchema.parse(row);
           
-          await prisma.user.upsert({
-            where: { email: validRow.email },
-            create: {
+          const { data: upsertedUser, error: uErr } = await adminSupabase
+            .from("users")
+            .upsert({
               email: validRow.email,
               name: validRow.name,
               phone: validRow.phone || null,
-              role: Role.STUDENT,
+              role: "STUDENT",
               county: "Imported",
-              studentProfile: {
-                create: {
-                  subjects: [],
-                  weakTopics: [],
-                  studyStyle: "Visual",
-                  preferredTimes: {},
-                  goals: []
-                }
-              }
-            },
-            update: {
-              name: validRow.name,
-              phone: validRow.phone || undefined,
-            },
-          });
+            }, { onConflict: "email" })
+            .select("id")
+            .single();
+
+          if (uErr) throw uErr;
+
+          if (upsertedUser) {
+            await adminSupabase
+              .from("student_profiles")
+              .upsert({
+                user_id: upsertedUser.id,
+                subjects: [],
+                weak_topics: [],
+                study_style: "Visual",
+                preferred_times: {},
+                goals: [],
+              }, { onConflict: "user_id" });
+          }
+
           imported++;
 
         } else if (import_type === "tutors") {
           const validRow = tutorSchema.parse(row);
           
-          const user = await prisma.user.upsert({
-            where: { email: validRow.email },
-            create: {
+          const { data: upsertedUser, error: uErr } = await adminSupabase
+            .from("users")
+            .upsert({
               email: validRow.email,
               name: validRow.name,
               phone: validRow.phone || null,
-              role: Role.TUTOR,
+              role: "TUTOR",
               county: "Imported",
-            },
-            update: {
-              name: validRow.name,
-              phone: validRow.phone || undefined,
-              role: Role.TUTOR, // ensure role is tutor
-            },
-          });
+            }, { onConflict: "email" })
+            .select("id")
+            .single();
+
+          if (uErr) throw uErr;
 
           const subjectsArr = validRow.subjects ? validRow.subjects.split(",").map(s => s.trim()) : [];
 
-          await prisma.tutorProfile.upsert({
-            where: { userId: user.id },
-            create: {
-              userId: user.id,
-              subjects: subjectsArr,
-              levelsTaught: [],
-              verificationPath: VerifPath.GRADES,
-              hourlyRate: validRow.hourly_rate || 200,
-              bio: "Tutor imported from Google Sheets",
-              availability: {},
-            },
-            update: {
-              subjects: subjectsArr.length > 0 ? subjectsArr : undefined,
-              hourlyRate: validRow.hourly_rate !== undefined ? validRow.hourly_rate : undefined,
-            }
-          });
+          if (upsertedUser) {
+            await adminSupabase
+              .from("tutor_profiles")
+              .upsert({
+                user_id: upsertedUser.id,
+                subjects: subjectsArr,
+                levels_taught: [],
+                verification_path: "GRADES",
+                hourly_rate: validRow.hourly_rate || 200,
+                bio: "Tutor imported from Google Sheets",
+                availability: {},
+              }, { onConflict: "user_id" });
+          }
           imported++;
 
         } else if (import_type === "subjects") {
           const validRow = subjectSchema.parse(row);
           
-          await prisma.curriculumTopic.create({
-            data: {
+          const { error: cErr } = await adminSupabase
+            .from("curriculum_topics")
+            .insert({
               subject: validRow.id,
-              topicName: validRow.name,
+              topic_name: validRow.name,
               description: validRow.description || null,
-              level: EduLevel.HIGH_SCHOOL
-            }
-          });
+              level: "HIGH_SCHOOL",
+            });
+
+          if (cErr) throw cErr;
           imported++;
         }
       } catch (err: any) {

@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/utils/supabase/admin'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import prisma from '@/lib/prisma'
 import { parse } from 'csv-parse/sync'
 import { validateUploadFile, sanitizeFileName } from '@/lib/supabase-storage'
 import { validateUpload } from '@/lib/upload-filter'
@@ -33,13 +32,15 @@ export async function POST(request: Request) {
       )
     }
 
-    const dbUser = await prisma.user.findUnique({
-      where: { id: user.id },
-      include: { institutionMembers: true }
-    })
-    
-    // Check institution membership and role authorization
-    const member = dbUser?.institutionMembers?.find(m => m.status === 'ACTIVE')
+    const adminSupabase = createAdminClient()
+    const { data: dbUser } = await adminSupabase
+      .from('users')
+      .select('role, institution_members(*)')
+      .eq('id', user.id)
+      .single()
+
+    const members = (dbUser as any)?.institution_members || []
+    const member = members.find((m: any) => m.status === 'ACTIVE')
     if (!member && dbUser?.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Active institution membership required' }, { status: 403 })
     }
@@ -49,7 +50,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Insufficient permission to upload institution CSVs' }, { status: 403 })
     }
 
-    const institutionId = member?.institutionId;
+    const institutionId = member?.institution_id;
     if (!institutionId && dbUser?.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Institution not found' }, { status: 404 })
     }
@@ -59,7 +60,6 @@ export async function POST(request: Request) {
     
     if (!file) return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
 
-    // Server-side validation using validateUpload
     const uploadValidation = validateUpload(file)
     if (!uploadValidation.valid) {
       return NextResponse.json(
@@ -68,7 +68,6 @@ export async function POST(request: Request) {
       )
     }
 
-    // Validate file size and extension
     const validation = validateUploadFile(file, {
       maxSizeBytes: MAX_CSV_SIZE_BYTES,
       allowedExtensions: ['csv'],
@@ -78,26 +77,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    // 1. Upload to Supabase Storage for archival using Service Role
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
-    
     const timestamp = Date.now()
     const safeName = sanitizeFileName(file.name)
     const filePath = `${institutionId || 'admin'}/${timestamp}-${safeName}`
     
     let storagePath = null;
     
-    const { error: uploadError } = await supabaseAdmin.storage
+    const { error: uploadError } = await adminSupabase.storage
       .from('institution-csvs')
       .upload(filePath, file)
       
     if (uploadError) {
       if (uploadError.message.toLowerCase().includes('not found')) {
-        await supabaseAdmin.storage.createBucket('institution-csvs', { public: false })
-        const retry = await supabaseAdmin.storage.from('institution-csvs').upload(filePath, file)
+        await adminSupabase.storage.createBucket('institution-csvs', { public: false })
+        const retry = await adminSupabase.storage.from('institution-csvs').upload(filePath, file)
         if (!retry.error) {
           storagePath = filePath
         } else {
@@ -110,7 +103,6 @@ export async function POST(request: Request) {
       storagePath = filePath
     }
 
-    // 2. Parse CSV
     const text = await file.text()
     const records: Record<string, string>[] = parse(text, {
       columns: true,
@@ -126,17 +118,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: `CSV exceeds maximum limit of ${MAX_CSV_ROWS} rows` }, { status: 400 })
     }
 
-    // 3. Create the CsvUpload record
-    const upload = await prisma.csvUpload.create({
-      data: {
-        institutionId: institutionId!,
-        fileName: file.name,
-        totalRows: records.length,
+    const { data: upload, error: uErr } = await adminSupabase
+      .from('csv_uploads')
+      .insert({
+        institution_id: institutionId!,
+        file_name: file.name,
+        total_rows: records.length,
         status: "COMPLETED"
-      }
-    })
+      })
+      .select('id')
+      .single()
 
-    // 4. Batch insert into database for performance with safe parsing
+    if (uErr || !upload) throw uErr || new Error('Failed to create upload record')
+
     const resultsData = records.map(row => {
       const rawMarks = parseFloat(row.score ?? row.marks ?? '0')
       const marks = isNaN(rawMarks) ? 0 : Math.min(Math.max(rawMarks, 0), 100)
@@ -152,28 +146,30 @@ export async function POST(request: Request) {
       const grade = row.grade ? String(row.grade).trim().substring(0, 10) : null
 
       return {
-        csvUploadId: upload.id,
-        institutionId: institutionId!,
-        studentName,
-        studentEmail,
+        csv_upload_id: upload.id,
+        institution_id: institutionId!,
+        student_name: studentName,
+        student_email: studentEmail,
         subject,
         score: marks,
         marks,
         grade,
         term,
         year,
-        uploadedById: user.id
+        uploaded_by_id: user.id
       }
     })
 
-    const inserted = await prisma.studentResult.createMany({
-      data: resultsData,
-      skipDuplicates: false
-    })
+    const { data: inserted, error: iErr } = await adminSupabase
+      .from('student_results')
+      .insert(resultsData)
+      .select('id')
+
+    if (iErr) throw iErr
 
     return NextResponse.json({ 
       success: true, 
-      processedRows: inserted.count,
+      processedRows: inserted?.length || 0,
       storagePath
     })
   } catch (error: any) {

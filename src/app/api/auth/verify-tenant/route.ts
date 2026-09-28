@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
+import { createAdminClient } from '@/utils/supabase/admin'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -9,10 +9,12 @@ export async function GET(request: Request) {
     return NextResponse.json({ found: false, error: 'Missing code' }, { status: 400 })
   }
 
-  const institution = await prisma.institution.findUnique({
-    where: { code },
-    select: { id: true, name: true, logo: true, type: true, location: true },
-  })
+  const supabase = createAdminClient()
+  const { data: institution } = await supabase
+    .from('institutions')
+    .select('id, name, logo, type, location')
+    .eq('code', code)
+    .single()
 
   if (!institution) {
     return NextResponse.json({ found: false })

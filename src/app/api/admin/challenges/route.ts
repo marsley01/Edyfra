@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { checkAdminStatus } from "@/app/actions/admin";
 
 // List all challenges (for admin)
@@ -11,15 +11,20 @@ export async function GET() {
     }
 
     const now = new Date();
-    const challenges = await prisma.dailyChallenge.findMany({
-      orderBy: { date: "desc" },
-      take: 100
-    });
+    const supabase = createAdminClient();
+    const { data: challenges, error } = await supabase
+      .from("daily_challenges")
+      .select("*")
+      .order("date", { ascending: false })
+      .limit(100);
+
+    if (error) throw error;
 
     return NextResponse.json({
-      challenges: challenges.map((challenge) => ({
+      challenges: (challenges || []).map((challenge) => ({
         ...challenge,
-        scheduled: challenge.date > now,
+        formYear: challenge.form_year,
+        scheduled: new Date(challenge.date) > now,
       })),
     });
   } catch (error) {
@@ -46,18 +51,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "At least two options are required" }, { status: 400 });
     }
 
-    const challenge = await prisma.dailyChallenge.create({
-      data: {
+    const supabase = createAdminClient();
+    const { data: challenge, error } = await supabase
+      .from("daily_challenges")
+      .insert({
         subject,
         level: level || "HIGH_SCHOOL",
-        formYear: body.formYear ?? null,
+        form_year: body.formYear ?? null,
         question,
         options,
         answer,
         explanation: explanation || "",
-        date: new Date(date),
-      },
-    });
+        date: new Date(date).toISOString(),
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
 
     return NextResponse.json({ challenge }, { status: 201 });
   } catch (error) {
@@ -84,7 +94,7 @@ export async function PUT(req: NextRequest) {
     const data: Record<string, unknown> = {};
     if (body.subject !== undefined) data.subject = body.subject;
     if (body.level !== undefined) data.level = body.level;
-    if (body.formYear !== undefined) data.formYear = body.formYear;
+    if (body.formYear !== undefined) data.form_year = body.formYear;
     if (body.question !== undefined) data.question = body.question;
     if (body.options !== undefined) {
       if (!Array.isArray(body.options) || body.options.length < 2) {
@@ -94,12 +104,17 @@ export async function PUT(req: NextRequest) {
     }
     if (body.answer !== undefined) data.answer = body.answer;
     if (body.explanation !== undefined) data.explanation = body.explanation;
-    if (body.date !== undefined) data.date = new Date(body.date);
+    if (body.date !== undefined) data.date = new Date(body.date).toISOString();
 
-    const challenge = await prisma.dailyChallenge.update({
-      where: { id },
-      data,
-    });
+    const supabase = createAdminClient();
+    const { data: challenge, error } = await supabase
+      .from("daily_challenges")
+      .update(data)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
 
     return NextResponse.json({ challenge });
   } catch (error) {
@@ -123,15 +138,21 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Challenge ID required" }, { status: 400 });
     }
 
+    const supabase = createAdminClient();
+
     // Delete related attempts first
-    await prisma.dailyChallengeAttempt.deleteMany({
-      where: { challengeId: id }
-    });
+    await supabase
+      .from("daily_challenge_attempts")
+      .delete()
+      .eq("challenge_id", id);
 
     // Delete the challenge
-    await prisma.dailyChallenge.delete({
-      where: { id }
-    });
+    const { error } = await supabase
+      .from("daily_challenges")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
 
     return NextResponse.json({ success: true });
   } catch (error) {
