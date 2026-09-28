@@ -81,7 +81,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "https://edyfra-v2.vercel.app",
+        "https://edyfra.online",
         "https://edyfra.com",
         "https://www.edyfra.com",
         *_extra_origins,

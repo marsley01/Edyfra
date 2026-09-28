@@ -55,7 +55,7 @@ export function generateICSContent(booking: IcalBookingData): string {
     }`,
   );
 
-  const location = booking.meetingUrl || "https://edyfra-v2.vercel.app/study-room/" + booking.id;
+  const location = booking.meetingUrl || "https://edyfra.online/study-room/" + booking.id;
 
   const lines = [
     "BEGIN:VCALENDAR",

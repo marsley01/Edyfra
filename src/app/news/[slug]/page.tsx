@@ -3,7 +3,7 @@ import { createClient } from "@/utils/supabase/server";
 import { JsonLd } from "@/components/json-ld";
 import NewsArticleClient from "./NewsArticleClient";
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://edyfra-v2.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://edyfra.online";
 
 type Props = {
   params: Promise<{ slug: string }>;

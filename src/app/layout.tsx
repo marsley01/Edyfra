@@ -31,13 +31,13 @@ export const metadata: Metadata = {
     "edyfra", "study platform kenya", "tutors kenya", "AI learning", "university tutors",
     "high school tutors", "online study", "peer learning", "education kenya",
   ],
-  authors: [{ name: "Edyfra", url: "https://edyfra-v2.vercel.app" }],
+  authors: [{ name: "Edyfra", url: "https://edyfra.online" }],
   creator: "Edyfra",
-  metadataBase: new URL("https://edyfra-v2.vercel.app"),
+  metadataBase: new URL("https://edyfra.online"),
    openGraph: {
   type: "website",
   locale: "en_KE",
-  url: "https://edyfra-v2.vercel.app",
+  url: "https://edyfra.online",
   siteName: "Edyfra",
   title: "Edyfra — Kenya's Institutional Study Platform",
   description: "AI-powered tutor matching, live study rooms, and institutional analytics for Kenyan scholars.",
@@ -93,7 +93,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
 };
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://edyfra-v2.vercel.app';
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://edyfra.online';
 
 const organizationJsonLd = {
   "@context": "https://schema.org",

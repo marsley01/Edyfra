@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     IS_DEV: bool = False
 
     # Comma-separated allowed origins
-    ALLOWED_ORIGINS: str = "https://edyfra-v2.vercel.app,https://kenyalibrary.app"
+    ALLOWED_ORIGINS: str = "https://edyfra.online,https://kenyalibrary.app"
     
     @property
     def cors_origins(self) -> List[str]:

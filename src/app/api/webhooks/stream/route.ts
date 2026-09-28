@@ -15,7 +15,7 @@ const STREAM_SECRET = process.env.STREAM_SECRET!;
  *
  * Configure in Stream Dashboard:
  *   Dashboard → Video & Audio → Webhooks → Add webhook URL
- *   URL: https://edyfra-v2.vercel.app/api/webhooks/stream
+ *   URL: https://edyfra.online/api/webhooks/stream`
  *   Events: call.* (all call-related events)
  */
 export async function POST(request: Request) {
