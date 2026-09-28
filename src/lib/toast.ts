@@ -84,7 +84,7 @@ export function showLoading(title: string, opts?: { description?: string; id?: s
 }
 
 /**
- * Translate raw error shapes (Error / string / Supabase / Stream / Prisma) into
+ * Translate raw error shapes (Error / string / Supabase / Stream / database) into
  * a friendly ErrorToastInput. Use this as a fallback when you really don't
  * know what went wrong — but prefer hand-written copy when you do.
  */
