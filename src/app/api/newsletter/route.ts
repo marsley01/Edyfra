@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/utils/supabase/server";
 
 /**
  * Structural email check — linear time, immune to ReDoS. Replaces the old
@@ -17,13 +17,6 @@ function isValidEmail(value: string): boolean {
   return dot > 0 && dot < domain.length - 1;
 }
 
-function getAdminClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
-}
 
 /**
  * POST /api/newsletter
@@ -45,8 +38,9 @@ export async function POST(request: NextRequest) {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    // Insert to newsletter_subscribers table (upsert to avoid duplicate errors)
-    const { error } = await getAdminClient()
+    // Anon client — RLS policy grants INSERT-only to anon on newsletter_subscribers.
+    const supabase = await createClient();
+    const { error } = await supabase
       .from("newsletter_subscribers")
       .upsert(
         {
