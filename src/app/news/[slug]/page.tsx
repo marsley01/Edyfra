@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import prisma from "@/lib/prisma";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { JsonLd } from "@/components/json-ld";
 import NewsArticleClient from "./NewsArticleClient";
 
@@ -12,7 +12,12 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
 
-  const article = await prisma.newsArticle.findUnique({ where: { slug } });
+  const supabase = createAdminClient();
+  const { data: article } = await supabase
+    .from("news_articles")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
 
   if (!article) {
     return { title: "Article Not Found", robots: { index: false } };
@@ -40,7 +45,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 async function getArticleJsonLd(slug: string) {
-  const article = await prisma.newsArticle.findUnique({ where: { slug } });
+  const supabase = createAdminClient();
+  const { data: article } = await supabase
+    .from("news_articles")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
 
   if (!article) return null;
 

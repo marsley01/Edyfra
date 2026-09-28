@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 /**
  * Central AI configuration resolver.
@@ -39,10 +39,12 @@ async function readSettingsFromDB(): Promise<{
   aiModel: string | null;
 }> {
   try {
-    const entry = await prisma.platformSettings.findUnique({
-      where: { key: "global" },
-      select: { value: true },
-    });
+    const supabase = createAdminClient();
+    const { data: entry } = await supabase
+      .from("platform_settings")
+      .select("value")
+      .eq("key", "global")
+      .maybeSingle();
     const value = entry?.value as Record<string, unknown> | undefined;
     return {
       openRouterKey:

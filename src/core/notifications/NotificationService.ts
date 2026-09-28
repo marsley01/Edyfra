@@ -37,16 +37,15 @@ export interface NotificationChannel {
 export class InAppNotificationChannel implements NotificationChannel {
   async send(payload: NotificationPayload): Promise<void> {
     try {
-      const prisma = (await import("@/lib/prisma")).default;
-      await prisma.notification.create({
-        data: {
-          userId: payload.userId,
-          type: payload.type,
-          title: payload.title,
-          body: payload.body,
-          actionUrl: payload.actionUrl,
-          read: false,
-        },
+      const { createAdminClient } = await import("@/utils/supabase/admin");
+      const supabase = createAdminClient();
+      await supabase.from("notifications").insert({
+        userId: payload.userId,
+        type: payload.type,
+        title: payload.title,
+        body: payload.body,
+        actionUrl: payload.actionUrl,
+        read: false,
       });
       eventBus.emit("notification:created", payload, "notifications", payload.userId);
     } catch (err) {

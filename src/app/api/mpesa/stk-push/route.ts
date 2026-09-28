@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { initiateStkPush } from "@/lib/mpesa";
-import prisma from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
   try {
@@ -36,17 +36,16 @@ export async function POST(req: NextRequest) {
     });
 
     // Log the pending payment
-    await prisma.payment.create({
-      data: {
-        userId: user.id,
-        amount,
-        phone,
-        paymentType: type.toLowerCase(),
-        status: "pending",
-        planType: type === "subscription" ? id : null,
-        targetId: type !== "subscription" ? id : null,
-        checkoutRequestId: response.CheckoutRequestID,
-      },
+    const adminSupabase = createAdminClient();
+    await adminSupabase.from("payments").insert({
+      user_id: user.id,
+      amount,
+      phone,
+      payment_type: type.toLowerCase(),
+      status: "pending",
+      plan_type: type === "subscription" ? id : null,
+      target_id: type !== "subscription" ? id : null,
+      checkout_request_id: response.CheckoutRequestID,
     });
 
     return NextResponse.json({ 

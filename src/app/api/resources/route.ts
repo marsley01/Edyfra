@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { z } from "zod";
-import prisma from "@/lib/prisma";
 
 const resourceSchema = z.object({
   title: z.string().min(1).max(200),
@@ -17,7 +16,6 @@ const resourceSchema = z.object({
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
 
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || "";
@@ -30,63 +28,49 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "12");
     const skip = (page - 1) * limit;
 
-    // Build where clause
-    const where: any = {
-      status: "approved",
-    };
+    let query = supabase
+      .from("resources")
+      .select(`
+        *,
+        seller:users!seller_id ( id, name )
+      `, { count: "exact" })
+      .eq("status", "approved")
+      .order("created_at", { ascending: false })
+      .range(skip, skip + limit - 1);
 
     if (search) {
-      where.OR = [
-        { title: { contains: search, mode: "insensitive" } },
-        { subject: { contains: search, mode: "insensitive" } },
-        { description: { contains: search, mode: "insensitive" } },
-      ];
+      query = query.or(`title.ilike.%${search}%,subject.ilike.%${search}%,description.ilike.%${search}%`);
     }
 
     if (subject) {
-      where.subject = { contains: subject, mode: "insensitive" };
+      query = query.ilike("subject", `%${subject}%`);
     }
 
     if (level) {
-      where.educationLevel = level;
+      query = query.eq("education_level", level);
     }
 
     if (type) {
-      where.resourceType = type;
+      query = query.eq("resource_type", type);
     }
 
     if (topic) {
-      where.topic = { contains: topic, mode: "insensitive" };
+      query = query.ilike("topic", `%${topic}%`);
     }
 
-    if (price) {
-      if (price === "free") {
-        where.price = 0;
-      } else if (price === "paid") {
-        where.price = { gt: 0 };
-      }
+    if (price === "free") {
+      query = query.eq("price", 0);
+    } else if (price === "paid") {
+      query = query.gt("price", 0);
     }
 
-    const [resources, total] = await Promise.all([
-      prisma.resource.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: "desc" },
-        include: {
-          seller: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-      }),
-      prisma.resource.count({ where }),
-    ]);
+    const { data: resources, count, error } = await query;
+    if (error) throw error;
+
+    const total = count || 0;
 
     return NextResponse.json({
-      resources,
+      resources: resources || [],
       pagination: {
         page,
         limit,
@@ -119,20 +103,24 @@ export async function POST(request: NextRequest) {
 
     const { title, subject, education_level, resource_type, topic, description, price, file_path } = parsed.data;
 
-    const resource = await prisma.resource.create({
-      data: {
-        sellerId: user.id,
+    const { data: resource, error } = await supabase
+      .from("resources")
+      .insert({
+        seller_id: user.id,
         title,
         subject,
-        educationLevel: education_level,
-        resourceType: resource_type,
+        education_level,
+        resource_type,
         topic: topic || null,
         description: description || null,
         price: price || 0,
-        filePath: file_path,
+        file_path,
         status: "pending",
-      },
-    });
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
 
     return NextResponse.json({ success: true, resource });
   } catch (error: any) {

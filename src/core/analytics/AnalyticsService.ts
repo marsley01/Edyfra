@@ -65,14 +65,13 @@ export class VercelAnalyticsProvider implements AnalyticsProvider {
 export class DatabaseAnalyticsProvider implements AnalyticsProvider {
   async track(event: AnalyticsEvent): Promise<void> {
     try {
-      const prisma = (await import("@/lib/prisma")).default;
-      await (prisma as any).analyticsEvent.create({
-        data: {
-          userId: event.userId || "anonymous",
-          eventType: event.event,
-          metadata: event.properties || {},
-          createdAt: event.timestamp,
-        },
+      const { createAdminClient } = await import("@/utils/supabase/admin");
+      const supabase = createAdminClient();
+      await supabase.from("analytics_events").insert({
+        userId: event.userId || "anonymous",
+        eventType: event.event,
+        metadata: event.properties || {},
+        createdAt: event.timestamp,
       });
     } catch {
       logger.warn("Database analytics failed", { event: event.event });

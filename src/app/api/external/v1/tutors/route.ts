@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireApiKey } from "@/lib/api-auth";
-import prisma from "@/lib/prisma";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 export async function GET(request: NextRequest) {
   const auth = await requireApiKey(request, "tutors");
@@ -12,30 +12,32 @@ export async function GET(request: NextRequest) {
     const level = searchParams.get("level") || "";
     const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50);
 
-    const where: any = { isVerified: true };
+    const supabase = createAdminClient();
+    let query = supabase
+      .from("tutor_profiles")
+      .select(`
+        userId:user_id,
+        bio,
+        hourlyRate:hourly_rate,
+        rating,
+        totalSessions:total_sessions,
+        subjects,
+        levelsTaught:levels_taught,
+        user:users!user_id ( id, name, avatar )
+      `)
+      .eq("is_verified", true)
+      .order("rating", { ascending: false })
+      .limit(limit);
 
-    if (subject) where.subjects = { has: subject };
-    if (level) where.levelsTaught = { has: level };
+    if (subject) query = query.contains("subjects", [subject]);
+    if (level) query = query.contains("levels_taught", [level]);
 
-    const tutors = await prisma.tutorProfile.findMany({
-      where,
-      take: limit,
-      orderBy: { rating: "desc" },
-      select: {
-        userId: true,
-        bio: true,
-        hourlyRate: true,
-        rating: true,
-        totalSessions: true,
-        subjects: true,
-        levelsTaught: true,
-        user: { select: { id: true, name: true, avatar: true } },
-      },
-    });
+    const { data: tutors, error } = await query;
+    if (error) throw error;
 
     return NextResponse.json({
-      tutors,
-      count: tutors.length,
+      tutors: tutors || [],
+      count: tutors?.length || 0,
     });
   } catch (error) {
     console.error("[External Tutors] Error:", error);

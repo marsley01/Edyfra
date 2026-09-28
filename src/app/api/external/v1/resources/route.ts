@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireApiKey } from "@/lib/api-auth";
-import prisma from "@/lib/prisma";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 export async function GET(request: NextRequest) {
   const auth = await requireApiKey(request, "resources");
@@ -13,40 +13,38 @@ export async function GET(request: NextRequest) {
     const level = searchParams.get("level") || "";
     const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50);
 
-    const where: any = { status: "approved" };
+    const supabase = createAdminClient();
+    let query = supabase
+      .from("resources")
+      .select(`
+        id,
+        title,
+        subject,
+        educationLevel:education_level,
+        resourceType:resource_type,
+        topic,
+        description,
+        price,
+        filePath:file_path,
+        createdAt:created_at,
+        seller:users!seller_id ( id, name )
+      `)
+      .eq("status", "approved")
+      .order("created_at", { ascending: false })
+      .limit(limit);
 
     if (search) {
-      where.OR = [
-        { title: { contains: search, mode: "insensitive" } },
-        { subject: { contains: search, mode: "insensitive" } },
-        { description: { contains: search, mode: "insensitive" } },
-      ];
+      query = query.or(`title.ilike.%${search}%,subject.ilike.%${search}%,description.ilike.%${search}%`);
     }
-    if (subject) where.subject = { contains: subject, mode: "insensitive" };
-    if (level) where.educationLevel = level;
+    if (subject) query = query.ilike("subject", `%${subject}%`);
+    if (level) query = query.eq("education_level", level);
 
-    const resources = await prisma.resource.findMany({
-      where,
-      take: limit,
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        title: true,
-        subject: true,
-        educationLevel: true,
-        resourceType: true,
-        topic: true,
-        description: true,
-        price: true,
-        filePath: true,
-        createdAt: true,
-        seller: { select: { id: true, name: true } },
-      },
-    });
+    const { data: resources, error } = await query;
+    if (error) throw error;
 
     return NextResponse.json({
-      resources,
-      count: resources.length,
+      resources: resources || [],
+      count: resources?.length || 0,
     });
   } catch (error) {
     console.error("[External Resources] Error:", error);

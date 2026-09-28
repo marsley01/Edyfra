@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { notifyUser } from "@/app/actions/notifications";
 
 export async function POST(req: NextRequest) {
@@ -15,7 +15,11 @@ export async function POST(req: NextRequest) {
       console.warn(`M-Pesa callback rejected from IP: ${clientIp}`);
     }
 
-    const stkCallback = body.Body.stkCallback;
+    const stkCallback = body?.Body?.stkCallback;
+    if (!stkCallback) {
+      return NextResponse.json({ ResultCode: 1, ResultDesc: "Invalid callback payload" });
+    }
+
     const { 
       MerchantRequestID, 
       CheckoutRequestID, 
@@ -24,12 +28,16 @@ export async function POST(req: NextRequest) {
       CallbackMetadata 
     } = stkCallback;
 
-    // Find the pending payment
-    const payment = await prisma.payment.findUnique({
-      where: { checkoutRequestId: CheckoutRequestID },
-    });
+    const supabase = createAdminClient();
 
-    if (!payment) {
+    // Find the pending payment
+    const { data: payment, error: pErr } = await supabase
+      .from("payments")
+      .select("*")
+      .eq("checkout_request_id", CheckoutRequestID)
+      .single();
+
+    if (pErr || !payment) {
       console.warn("[Mpesa Callback] Payment not found for CheckoutRequestID:", CheckoutRequestID);
       return NextResponse.json({ ResultCode: 0, ResultDesc: "Accepted" });
     }
@@ -38,7 +46,7 @@ export async function POST(req: NextRequest) {
     const callbackAmount = Number(body?.Body?.stkCallback?.CallbackMetadata?.Item?.find(
       (i: any) => i.Name === "Amount"
     )?.Value);
-    if (payment && callbackAmount && Math.abs(callbackAmount - payment.amount) > 1) {
+    if (payment && callbackAmount && Math.abs(callbackAmount - Number(payment.amount)) > 1) {
       console.error(`Amount mismatch for payment ${payment.id}: expected ${payment.amount}, got ${callbackAmount}`);
       return NextResponse.json({ ResultCode: 1, ResultDesc: "Amount mismatch" });
     }
@@ -51,113 +59,117 @@ export async function POST(req: NextRequest) {
       }
 
       // Success
-      const metadata = CallbackMetadata.Item;
+      const metadata = CallbackMetadata?.Item || [];
       const mpesaReceipt = metadata.find((item: any) => item.Name === "MpesaReceiptNumber")?.Value;
-      const amount = metadata.find((item: any) => item.Name === "Amount")?.Value;
 
       // Update payment
-      await prisma.payment.update({
-        where: { id: payment.id },
-        data: {
+      await supabase
+        .from("payments")
+        .update({
           status: "completed",
-          mpesaReceiptNumber: mpesaReceipt,
-          paidAt: new Date(),
-        },
-      });
+          mpesa_receipt_number: mpesaReceipt,
+          paid_at: new Date().toISOString(),
+        })
+        .eq("id", payment.id);
+
+      const paymentType = payment.payment_type;
+      const userId = payment.user_id;
 
       // Handle specific payment types
-      if (payment.paymentType === "subscription") {
-        const plan = payment.planType === "plus_yearly" ? "plus" : "plus";
-        const durationDays = payment.planType === "plus_yearly" ? 365 : 30;
-        const billingCycle = payment.planType === "plus_yearly" ? "yearly" : "monthly";
+      if (paymentType === "subscription") {
+        const planType = payment.plan_type;
+        const durationDays = planType === "plus_yearly" ? 365 : 30;
+        const billingCycle = planType === "plus_yearly" ? "yearly" : "monthly";
 
-        await prisma.user.update({
-          where: { id: payment.userId },
-          data: {
+        await supabase
+          .from("users")
+          .update({
             plan: "plus",
-            planStartedAt: new Date(),
-            planExpiresAt: new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000),
-            planBillingCycle: billingCycle,
-          },
-        });
+            plan_started_at: new Date().toISOString(),
+            plan_expires_at: new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString(),
+            plan_billing_cycle: billingCycle,
+          })
+          .eq("id", userId);
 
         // Notify user (In-app notification)
-        await notifyUser(payment.userId, {
+        await notifyUser(userId, {
           type: "SYSTEM",
           title: "Welcome to Edyfra Plus!",
           body: `Your account has been upgraded to Edyfra Plus. Enjoy unlimited Mash AI and more!`,
         });
-      } else if (payment.paymentType === "session") {
+      } else if (paymentType === "session") {
         // Handle Session Payment
-        const session = await prisma.session.findUnique({
-          where: { id: payment.targetId! },
-          include: { student: true, partner: true }
-        });
+        const { data: session } = await supabase
+          .from("sessions")
+          .select("*, student:users!student_id ( name ), partner:users!partner_id ( name )")
+          .eq("id", payment.target_id)
+          .single();
 
         if (session) {
-          const gross = payment.amount;
+          const gross = Number(payment.amount);
           const platformFee = Math.round(gross * 0.20);
           const tutorPayout = gross - platformFee;
 
-          await prisma.session.update({
-            where: { id: session.id },
-            data: { status: "ACTIVE", paymentStatus: "HELD" }
-          });
+          await supabase
+            .from("sessions")
+            .update({ status: "ACTIVE", payment_status: "HELD" })
+            .eq("id", session.id);
 
-          await prisma.sessionPayment.create({
-            data: {
-              sessionId: session.id,
-              studentId: session.studentId,
-              tutorId: session.partnerId!,
-              grossAmount: gross,
-              platformFee,
-              tutorPayout,
-              mpesaReceipt,
-              paidAt: new Date(),
-            }
-          });
+          await supabase
+            .from("session_payments")
+            .insert({
+              session_id: session.id,
+              student_id: session.student_id,
+              tutor_id: session.partner_id,
+              gross_amount: gross,
+              platform_fee: platformFee,
+              tutor_payout: tutorPayout,
+              mpesa_receipt: mpesaReceipt,
+              paid_at: new Date().toISOString(),
+            });
 
-          // Notify Tutor
-          await notifyUser(session.partnerId!, {
-            type: "SESSION",
-            title: "Session Paid",
-            body: `${session.student.name} has paid for your ${session.subject} session. You can now start the call.`,
-            actionUrl: `/study-room/${session.id}`,
-          });
+          if (session.partner_id) {
+            await notifyUser(session.partner_id, {
+              type: "SESSION",
+              title: "Session Paid",
+              body: `${session.student?.name || "A student"} has paid for your ${session.subject} session. You can now start the call.`,
+              actionUrl: `/study-room/${session.id}`,
+            });
+          }
 
-          // Notify Student
-          await notifyUser(session.studentId, {
+          await notifyUser(session.student_id, {
             type: "SESSION",
             title: "Payment Confirmed",
             body: `Your payment of KES ${gross} has been received. Your tutor has been notified.`,
             actionUrl: `/study-room/${session.id}`,
           });
         }
-      } else if (payment.paymentType === "resource") {
+      } else if (paymentType === "resource") {
         // Handle Resource Payment
-        const resource = await prisma.resource.findUnique({
-          where: { id: payment.targetId! }
-        });
+        const { data: resource } = await supabase
+          .from("resources")
+          .select("*")
+          .eq("id", payment.target_id)
+          .single();
 
         if (resource) {
-          const gross = payment.amount;
+          const gross = Number(payment.amount);
           const platformFee = Math.round(gross * 0.30);
           const sellerPayout = gross - platformFee;
 
-          await prisma.resourcePurchase.create({
-            data: {
-              userId: payment.userId,
-              resourceId: resource.id,
+          await supabase
+            .from("resource_purchases")
+            .insert({
+              user_id: userId,
+              resource_id: resource.id,
               amount: gross,
-              platformFee,
-              sellerPayout,
-              mpesaReceipt,
-              paidAt: new Date(),
-            }
-          });
+              platform_fee: platformFee,
+              seller_payout: sellerPayout,
+              mpesa_receipt: mpesaReceipt,
+              paid_at: new Date().toISOString(),
+            });
 
-          // Notify Buyer
-          await notifyUser(payment.userId, {
+          await notifyUser(userId, {
             type: "MARKETPLACE",
             title: "Resource Purchased",
             body: `You have successfully purchased "${resource.title}". You can now download it from the marketplace.`,
@@ -166,15 +178,14 @@ export async function POST(req: NextRequest) {
         }
       }
       
-      console.log(`[Mpesa Callback] Payment SUCCESS: ${CheckoutRequestID} (${payment.paymentType})`);
+      console.log(`[Mpesa Callback] Payment SUCCESS: ${CheckoutRequestID} (${paymentType})`);
     } else {
       // Failure
-      await prisma.payment.update({
-        where: { id: payment.id },
-        data: {
-          status: "failed",
-        },
-      });
+      await supabase
+        .from("payments")
+        .update({ status: "failed" })
+        .eq("id", payment.id);
+
       console.log(`[Mpesa Callback] Payment FAILED: ${CheckoutRequestID} - ${ResultDesc}`);
     }
 
@@ -182,7 +193,6 @@ export async function POST(req: NextRequest) {
 
   } catch (error: any) {
     console.error("[Mpesa Callback] Error processing:", error.message);
-    // Always return 0 to Safaricom to acknowledge receipt, even if processing failed
     return NextResponse.json({ ResultCode: 0, ResultDesc: "Accepted" });
   }
 }

@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { cache, TTL } from "@/lib/cache";
 
 const CACHE_KEY = "api:plans";
-
 
 interface PlanFeatures {
   description?: string;
@@ -22,16 +21,20 @@ export async function GET() {
       });
     }
 
-    const plans = await prisma.plan.findMany({
-      orderBy: { monthlyPrice: "asc" },
-    });
+    const supabase = createAdminClient();
+    const { data: plans } = await supabase
+      .from("plans")
+      .select("*")
+      .order("monthly_price", { ascending: true });
 
-    const transformed = plans.map((plan) => {
+    const transformed = (plans || []).map((plan) => {
       const features = plan.features as PlanFeatures;
+      const monthlyPrice = Number(plan.monthly_price || 0);
+      const yearlyPrice = plan.yearly_price ? Number(plan.yearly_price) : monthlyPrice * 10;
       return {
         name: plan.name,
-        price: plan.monthlyPrice.toString(),
-        yearlyPrice: (plan.yearlyPrice || plan.monthlyPrice * 10).toString(),
+        price: monthlyPrice.toString(),
+        yearlyPrice: yearlyPrice.toString(),
         description: features?.description || "",
         features: features?.list || [],
         popular: features?.popular || false,

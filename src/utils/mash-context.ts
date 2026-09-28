@@ -1,12 +1,12 @@
-import prisma from "@/lib/prisma";
-import { Prisma } from "@/generated/client";
+import { createAdminClient } from "@/utils/supabase/admin";
+import { MashContextRepository } from "@/core/database/repositories";
 
 export interface MashContextData {
   subjectsStruggled: string[];
   topicsCovered: string[];
   lastSessionSummary: string | null;
-  weakAreas: Prisma.InputJsonValue;
-  strongAreas: Prisma.InputJsonValue;
+  weakAreas: Record<string, unknown>;
+  strongAreas: Record<string, unknown>;
 }
 
 /**
@@ -14,22 +14,19 @@ export interface MashContextData {
  */
 export async function getMashContext(userId: string): Promise<MashContextData> {
   try {
-    let context = await prisma.mashContext.findUnique({
-      where: { userId },
-    });
+    const repo = new MashContextRepository(createAdminClient());
+    let context = await repo.findByUserId(userId);
 
     if (!context) {
-      context = await prisma.mashContext.create({
-        data: { userId },
-      });
+      context = await repo.create({ userId, subjectsStruggled: [], topicsCovered: [] });
     }
 
     return {
       subjectsStruggled: context.subjectsStruggled || [],
       topicsCovered: context.topicsCovered || [],
-      lastSessionSummary: context.lastSessionSummary,
-      weakAreas: (context.weakAreas as Prisma.InputJsonValue) || {},
-      strongAreas: (context.strongAreas as Prisma.InputJsonValue) || {},
+      lastSessionSummary: context.lastSessionSummary ?? null,
+      weakAreas: (context.weakAreas as Record<string, unknown>) || {},
+      strongAreas: (context.strongAreas as Record<string, unknown>) || {},
     };
   } catch (error) {
     console.error("Error getting Mash context:", error);
@@ -51,28 +48,31 @@ export async function updateMashContext(
   data: Partial<MashContextData>
 ) {
   try {
-    await prisma.mashContext.upsert({
-      where: { userId },
-      update: {
-        ...(data.subjectsStruggled && {
-          subjectsStruggled: { push: data.subjectsStruggled },
-        }),
-        ...(data.topicsCovered && {
-          topicsCovered: { push: data.topicsCovered },
-        }),
-        ...(data.lastSessionSummary && { lastSessionSummary: data.lastSessionSummary }),
-        ...(data.weakAreas && { weakAreas: data.weakAreas as Prisma.InputJsonValue }),
-        ...(data.strongAreas && { strongAreas: data.strongAreas as Prisma.InputJsonValue }),
-      },
-      create: {
+    const supabase = createAdminClient();
+    const repo = new MashContextRepository(supabase);
+    const existing = await repo.findByUserId(userId);
+
+    if (existing) {
+      // Append arrays instead of replacing them (mirrors Prisma's { push: [...] })
+      const updated: Record<string, unknown> = {};
+      if (data.subjectsStruggled)
+        updated.subjectsStruggled = [...(existing.subjectsStruggled || []), ...data.subjectsStruggled];
+      if (data.topicsCovered)
+        updated.topicsCovered = [...(existing.topicsCovered || []), ...data.topicsCovered];
+      if (data.lastSessionSummary) updated.lastSessionSummary = data.lastSessionSummary;
+      if (data.weakAreas) updated.weakAreas = data.weakAreas;
+      if (data.strongAreas) updated.strongAreas = data.strongAreas;
+      await repo.update(existing.id, updated);
+    } else {
+      await repo.create({
         userId,
         subjectsStruggled: data.subjectsStruggled || [],
         topicsCovered: data.topicsCovered || [],
         lastSessionSummary: data.lastSessionSummary,
-        weakAreas: (data.weakAreas || {}) as Prisma.InputJsonValue,
-        strongAreas: (data.strongAreas || {}) as Prisma.InputJsonValue,
-      },
-    });
+        weakAreas: data.weakAreas || {},
+        strongAreas: data.strongAreas || {},
+      });
+    }
   } catch (error) {
     console.error("Error updating Mash context:", error);
   }

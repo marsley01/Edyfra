@@ -9,19 +9,32 @@ import { getUserData } from "@/app/actions/user";
 import Link from "next/link";
 import { format } from "date-fns";
 
-import { User as PrismaUser, Session } from "@/generated/client";
+interface AppUser {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  avatar?: string | null;
+  role?: string;
+  [key: string]: unknown;
+}
 
-interface SessionWithMessages extends Session {
+interface SessionWithMessages {
+  id: string;
+  subject?: string | null;
+  topic?: string | null;
+  status?: string;
+  startedAt?: string | null;
+  endedAt?: string | null;
   _count?: { messages: number };
   student?: { name: string };
-  partner?: { name: string };
+  partner?: { name: string } | null;
   createdAt: string;
 }
 
 export default function SessionsPage() {
   const [sessions, setSessions] = useState<SessionWithMessages[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userData, setUserData] = useState<PrismaUser | null>(null);
+  const [userData, setUserData] = useState<AppUser | null>(null);
 
   useEffect(() => {
     fetchSessions();

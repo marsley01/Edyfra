@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 export interface CalendarEventInput {
   userId: string;
@@ -12,14 +12,17 @@ export interface CalendarEventInput {
 }
 
 export async function createCalendarEvent(input: CalendarEventInput) {
-  const connection = await prisma.calendarConnection.findUnique({
-    where: { userId: input.userId },
-  });
+  const supabase = createAdminClient();
+  const { data: connection } = await supabase
+    .from("calendar_connections")
+    .select("*")
+    .eq("userId", input.userId)
+    .maybeSingle();
 
   if (!connection?.accessToken) return null;
 
   const now = Date.now();
-  const expiresAt = connection.expiresAt?.getTime() || 0;
+  const expiresAt = connection.expiresAt ? new Date(connection.expiresAt).getTime() : 0;
   let accessToken = connection.accessToken;
 
   // Refresh token if expired
@@ -31,13 +34,13 @@ export async function createCalendarEvent(input: CalendarEventInput) {
       if (!refreshed) return null;
 
       accessToken = refreshed.accessToken;
-      await prisma.calendarConnection.update({
-        where: { userId: input.userId },
-        data: {
+      await supabase
+        .from("calendar_connections")
+        .update({
           accessToken: refreshed.accessToken,
-          expiresAt: new Date(refreshed.expiresAt),
-        },
-      });
+          expiresAt: new Date(refreshed.expiresAt).toISOString(),
+        })
+        .eq("userId", input.userId);
     } catch {
       return null;
     }
