@@ -1,7 +1,7 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { BaseRepository } from "../BaseRepository";
 
-/** Mirrors the scalar fields from the Prisma User model (relations excluded). */
+/** Scalar fields for the User table (relations excluded). */
 export interface UserRecord {
   id: string;
   email: string;
@@ -105,4 +105,15 @@ export class UserRepository extends BaseRepository<UserRecord> {
   ): Promise<UserRecord> {
     return this.update(id, { plan, planStartedAt, planExpiresAt, planBillingCycle });
   }
+
+  /** Fetch multiple users by their IDs using an IN query. */
+  async findManyByIds(ids: string[], select?: string): Promise<UserRecord[]> {
+    const { data, error } = await this.client
+      .from(this.tableName)
+      .select(select || "*")
+      .in("id", ids);
+    if (error) throw error;
+    return (data as unknown) as UserRecord[] ?? [];
+  }
 }
+

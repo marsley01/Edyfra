@@ -36,9 +36,7 @@ export class InstitutionStudentRepository extends BaseRepository<InstitutionStud
     return this.count({ institutionId });
   }
 
-  /**
-   * Upsert a student's institution link. Mirrors the Prisma
-   * `institutionStudent.upsert({ where: { userId }, create: ..., update: ... })` pattern.
+   * Upsert a student's institution link (find-then-create-or-update pattern).
    */
   async upsertByUserId(
     userId: string,
