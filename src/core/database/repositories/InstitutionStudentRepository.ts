@@ -36,6 +36,7 @@ export class InstitutionStudentRepository extends BaseRepository<InstitutionStud
     return this.count({ institutionId });
   }
 
+  /**
    * Upsert a student's institution link (find-then-create-or-update pattern).
    */
   async upsertByUserId(
