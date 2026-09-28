@@ -7,12 +7,16 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     console.log("[Mpesa Callback] Received:", JSON.stringify(body, null, 2));
 
-    // Verify the request originates from Safaricom
+    // Verify the request originates from Safaricom.
+    // IMPORTANT: this block only activates when MPESA_ALLOWED_IPS is set in Vercel env vars.
+    // Current Safaricom egress IPs: 196.201.214.200, 196.201.214.206 (verify with your
+    // Daraja portal — add them to MPESA_ALLOWED_IPS as a comma-separated list).
     const SAFARICOM_IPS = (process.env.MPESA_ALLOWED_IPS || "").split(",").filter(Boolean);
     const forwarded = req.headers.get("x-forwarded-for") || "";
     const clientIp = forwarded.split(",")[0]?.trim() || "";
     if (SAFARICOM_IPS.length > 0 && !SAFARICOM_IPS.includes(clientIp)) {
       console.warn(`M-Pesa callback rejected from IP: ${clientIp}`);
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const stkCallback = body?.Body?.stkCallback;
