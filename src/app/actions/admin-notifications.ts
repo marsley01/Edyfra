@@ -1,8 +1,7 @@
 // Admin error notification system
 "use server";
 
-import prisma from "@/lib/prisma";
-import { Role } from "@/generated/client";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 interface ErrorNotificationParams {
   type: string;
@@ -17,13 +16,13 @@ export async function sendErrorNotification(params: ErrorNotificationParams) {
   try {
     const { type, message, stack, endpoint, userId } = params;
 
-    // Get all admin users
-    const admins = await prisma.user.findMany({
-      where: { role: Role.ADMIN },
-      select: { id: true }
-    });
+    const supabase = createAdminClient();
+    const { data: admins } = await supabase
+      .from("users")
+      .select("id")
+      .eq("role", "ADMIN");
 
-    if (admins.length === 0) {
+    if (!admins || admins.length === 0) {
       console.error("No admins found to notify about error:", message);
       return;
     }
@@ -48,13 +47,20 @@ export async function sendErrorNotification(params: ErrorNotificationParams) {
 // Get all notifications for admin
 export async function getAdminNotifications(adminId: string) {
   try {
-    const notifications = await prisma.notification.findMany({
-      where: { userId: adminId },
-      orderBy: { createdAt: "desc" },
-      take: 50
-    });
+    const supabase = createAdminClient();
+    const { data: notifications } = await supabase
+      .from("notifications")
+      .select("*")
+      .eq("user_id", adminId)
+      .order("created_at", { ascending: false })
+      .limit(50);
 
-    return notifications;
+    return (notifications || []).map(n => ({
+      ...n,
+      createdAt: n.created_at,
+      userId: n.user_id,
+      actionUrl: n.action_url,
+    }));
   } catch (error) {
     console.error("Error fetching admin notifications:", error);
     return [];
@@ -64,10 +70,11 @@ export async function getAdminNotifications(adminId: string) {
 // Mark notification as read
 export async function markNotificationRead(notificationId: string) {
   try {
-    await prisma.notification.update({
-      where: { id: notificationId },
-      data: { read: true }
-    });
+    const supabase = createAdminClient();
+    await supabase
+      .from("notifications")
+      .update({ read: true })
+      .eq("id", notificationId);
     return { success: true };
   } catch (error) {
     console.error("Error marking notification as read:", error);
@@ -78,11 +85,13 @@ export async function markNotificationRead(notificationId: string) {
 // Mark every notification in the platform log as read
 export async function markAllNotificationsRead() {
   try {
-    const result = await prisma.notification.updateMany({
-      where: { read: false },
-      data: { read: true }
-    });
-    return { success: true, count: result.count };
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("notifications")
+      .update({ read: true })
+      .eq("read", false)
+      .select("id");
+    return { success: true, count: data?.length || 0 };
   } catch (error) {
     console.error("Error marking all notifications as read:", error);
     return { success: false, error: "Failed to mark all as read" };
@@ -92,8 +101,13 @@ export async function markAllNotificationsRead() {
 // Clear (delete) all notifications from the platform log
 export async function clearAllNotifications() {
   try {
-    const result = await prisma.notification.deleteMany({});
-    return { success: true, count: result.count };
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("notifications")
+      .delete()
+      .not("id", "is", null)
+      .select("id");
+    return { success: true, count: data?.length || 0 };
   } catch (error) {
     console.error("Error clearing notifications:", error);
     return { success: false, error: "Failed to clear notifications" };

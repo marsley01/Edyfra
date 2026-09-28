@@ -1,9 +1,9 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { AIService } from "@/utils/ai-service";
 import { buildEddySystemPrompt, buildEddyUserContextBlock } from "@/utils/eddy-context";
-import prisma from "@/lib/prisma";
 import { saveAiChatMessage } from "@/app/actions/feedback";
 
 async function persistMessage(
@@ -87,12 +87,11 @@ export async function handleEddyQuery(
       });
       // Also bump the legacy AiConversation counter for the institution dashboard
       try {
-        await prisma.aiConversation.create({
-          data: {
-            userId: user.id,
-            modelUsed: "eddy",
-            subject: currentPath || null,
-          },
+        const adminSupabase = createAdminClient();
+        await adminSupabase.from("ai_conversations").insert({
+          user_id: user.id,
+          model_used: "eddy",
+          subject: currentPath || null,
         });
       } catch {
         // Silent — non-critical counter

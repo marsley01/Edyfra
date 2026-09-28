@@ -1,6 +1,5 @@
 "use server";
 
-import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 
@@ -9,11 +8,17 @@ export async function getAchievements() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
 
-  
-  return await prisma.achievement.findMany({
-    where: { userId: user.id },
-    orderBy: { unlockedAt: 'desc' }
-  });
+  const { data: achievements } = await supabase
+    .from("achievements")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("unlocked_at", { ascending: false });
+
+  return (achievements || []).map(a => ({
+    ...a,
+    userId: a.user_id,
+    unlockedAt: a.unlocked_at,
+  }));
 }
 
 export async function checkAndAwardAchievements() {
@@ -21,18 +26,18 @@ export async function checkAndAwardAchievements() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
-  const userData = await prisma.user.findUnique({
-    where: { id: user.id },
-    include: {
-      sessionsAsStudent: true,
-      sessionsAsTutor: true,
-      challenges: true
-    }
-  });
+  const [
+    { count: studentSessions },
+    { count: tutorSessions },
+    { count: challengeAttempts },
+  ] = await Promise.all([
+    supabase.from("sessions").select("*", { count: "exact", head: true }).eq("student_id", user.id),
+    supabase.from("sessions").select("*", { count: "exact", head: true }).eq("partner_id", user.id),
+    supabase.from("daily_challenge_attempts").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+  ]);
 
-  if (!userData) return;
-
-  const sessionCount = userData.sessionsAsStudent.length + userData.sessionsAsTutor.length;
+  const sessionCount = (studentSessions || 0) + (tutorSessions || 0);
+  const challengeCount = challengeAttempts || 0;
 
   const possibleAchievements = [
     {
@@ -54,29 +59,21 @@ export async function checkAndAwardAchievements() {
       title: "Daily Warrior",
       description: "Completed your first daily quest.",
       icon: "Flame",
-      check: () => userData.challenges.length >= 1
+      check: () => challengeCount >= 1
     }
   ];
 
   for (const ach of possibleAchievements) {
     if (ach.check()) {
-      
-      await prisma.achievement.upsert({
-        where: {
-          userId_type: {
-            userId: user.id,
-            type: ach.type
-          }
-        },
-        update: {},
-        create: {
-          userId: user.id,
+      await supabase
+        .from("achievements")
+        .upsert({
+          user_id: user.id,
           type: ach.type,
           title: ach.title,
           description: ach.description,
-          icon: ach.icon
-        }
-      });
+          icon: ach.icon,
+        }, { onConflict: "user_id,type" });
     }
   }
 

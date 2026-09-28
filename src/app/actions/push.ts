@@ -1,7 +1,7 @@
 "use server";
 
-import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 import webpush from "web-push";
 
 function getVapidConfig() {
@@ -25,9 +25,11 @@ export async function sendNotificationPush(
 
     const vapidConfigured = getVapidConfig();
     if (vapidConfigured) {
-      const subscriptions = await prisma.pushSubscription.findMany({
-        where: { userId },
-      });
+      const adminSupabase = createAdminClient();
+      const { data: subscriptions } = await adminSupabase
+        .from("push_subscriptions")
+        .select("*")
+        .eq("user_id", userId);
 
       const data = JSON.stringify({
         title: payload.title,
@@ -38,7 +40,7 @@ export async function sendNotificationPush(
 
       const expiredEndpoints: string[] = [];
 
-      for (const sub of subscriptions) {
+      for (const sub of (subscriptions || [])) {
         try {
           await webpush.sendNotification(
             {
@@ -63,9 +65,10 @@ export async function sendNotificationPush(
       }
 
       if (expiredEndpoints.length > 0) {
-        await prisma.pushSubscription.deleteMany({
-          where: { endpoint: { in: expiredEndpoints } },
-        });
+        await adminSupabase
+          .from("push_subscriptions")
+          .delete()
+          .in("endpoint", expiredEndpoints);
         webPushExpired = expiredEndpoints.length;
       }
     }
@@ -87,10 +90,10 @@ export async function getUserPushSubscriptions() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
-  const subscriptions = await prisma.pushSubscription.findMany({
-    where: { userId: user.id },
-    select: { endpoint: true },
-  });
+  const { data: subscriptions } = await supabase
+    .from("push_subscriptions")
+    .select("endpoint")
+    .eq("user_id", user.id);
 
-  return subscriptions.map(s => s.endpoint);
+  return (subscriptions || []).map(s => s.endpoint);
 }

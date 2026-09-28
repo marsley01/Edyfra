@@ -1,27 +1,25 @@
 // Admin Setup and Verification
 "use server";
 
-import prisma from "@/lib/prisma";
-import { Role } from "@/generated/client";
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { revalidatePath } from "next/cache";
 
-// Check if a user is admin (checks both Prisma and Supabase)
+// Check if a user is admin
 async function isAdmin(userId: string) {
   try {
     const supabase = await createClient();
     const { data } = await supabase.auth.getUser();
 
-    const user = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { id: userId },
-          ...(data.user?.email ? [{ email: data.user.email }] : [])
-        ]
-      }
-    });
-    
-    if (user && user.role === Role.ADMIN) {
+    const adminSupabase = createAdminClient();
+    const { data: user } = await adminSupabase
+      .from("users")
+      .select("role")
+      .or(`id.eq.${userId}${data.user?.email ? `,email.eq.${data.user.email}` : ""}`)
+      .limit(1)
+      .maybeSingle();
+
+    if (user && (user.role === "ADMIN" || user.role === "FOUNDER")) {
       return true;
     }
 
@@ -33,29 +31,23 @@ async function isAdmin(userId: string) {
 }
 
 // Setup admin user (call this once to register the admin)
-//
-// SECURITY: This function grants ADMIN role. It must NEVER be exposed
-// to non-admins. The auth check below refuses to run if the caller is
-// not already an admin, OR if no admins exist yet AND the env-var
-// bootstrap secret is not provided. This is the only safe way to
-// bootstrap the very first admin without an auth bypass.
 export async function setupAdminUser(email: string) {
   try {
     const supabase = await createClient();
     const { data: { user: caller } } = await supabase.auth.getUser();
 
-    // Auth check: caller must already be an admin, OR
-    // this must be the very first admin (no existing admins) AND
-    // the env-bootstrap secret must match.
     const callerIsAdmin = caller ? await isAdmin(caller.id) : false;
-    const existingAdminCount = await prisma.user.count({ where: { role: Role.ADMIN } });
+    const adminSupabase = createAdminClient();
+
+    const { count: existingAdminCount } = await adminSupabase
+      .from("users")
+      .select("*", { count: "exact", head: true })
+      .eq("role", "ADMIN");
+
     const bootstrapSecret = process.env.ADMIN_BOOTSTRAP_SECRET;
     const isBootstrap =
-      existingAdminCount === 0 &&
+      (existingAdminCount || 0) === 0 &&
       bootstrapSecret &&
-      // Optional: also require an explicit env-var match against caller email
-      // to avoid random unauthenticated bootstrap. If `ADMIN_BOOTSTRAP_EMAIL`
-      // is set, it must match the email being promoted.
       (process.env.ADMIN_BOOTSTRAP_EMAIL
         ? process.env.ADMIN_BOOTSTRAP_EMAIL === email
         : true);
@@ -67,20 +59,18 @@ export async function setupAdminUser(email: string) {
       return { error: "Unauthorized: only an existing admin can promote another user." };
     }
 
-    // Get user by email from Supabase
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!serviceRoleKey) {
       return { error: "Service role key not configured" };
     }
 
-    const { createClient: createAdminClient } = await import("@supabase/supabase-js");
-    const adminClient = createAdminClient(
+    const { createClient: createSupabaseJs } = await import("@supabase/supabase-js");
+    const adminClient = createSupabaseJs(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       serviceRoleKey,
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    // List users and find by email
     const { data: { users }, error } = await adminClient.auth.admin.listUsers();
 
     if (error) {
@@ -93,21 +83,21 @@ export async function setupAdminUser(email: string) {
       return { error: "User not found in Supabase" };
     }
 
-    // Create or update in Prisma
-    const user = await prisma.user.upsert({
-      where: { id: supabaseUser.id },
-      create: {
+    const { data: user, error: uErr } = await adminSupabase
+      .from("users")
+      .upsert({
         id: supabaseUser.id,
         email: supabaseUser.email!,
         name: supabaseUser.user_metadata?.name || "Admin",
-        role: Role.ADMIN,
-        educationLevel: "UNIVERSITY",
-        county: "Nairobi"
-      },
-      update: { role: Role.ADMIN }
-    });
+        role: "ADMIN",
+        education_level: "UNIVERSITY",
+        county: "Nairobi",
+      }, { onConflict: "id" })
+      .select("id")
+      .single();
 
-    // Update Supabase metadata
+    if (uErr || !user) throw uErr || new Error("Failed to upsert user");
+
     await adminClient.auth.admin.updateUserById(supabaseUser.id, {
       user_metadata: { role: "ADMIN" }
     });
@@ -129,19 +119,23 @@ export async function getAllUsers() {
       throw new Error("Unauthorized: No user found");
     }
     
-    // Check if user is admin
     const adminStatus = await isAdmin(user.id);
     if (!adminStatus) {
       throw new Error("Unauthorized: Admin access required");
     }
     
-    return await prisma.user.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        studentProfile: true,
-        tutorProfile: true
-      }
-    });
+    const adminSupabase = createAdminClient();
+    const { data: users } = await adminSupabase
+      .from("users")
+      .select("*, studentProfile:student_profiles(*), tutorProfile:tutor_profiles(*)")
+      .order("created_at", { ascending: false });
+
+    return (users || []).map(u => ({
+      ...u,
+      createdAt: u.created_at,
+      studentProfile: u.studentProfile?.[0] || null,
+      tutorProfile: u.tutorProfile?.[0] || null,
+    }));
   } catch (error) {
     console.error("Error in getAllUsers:", error);
     throw new Error("Failed to fetch users");
@@ -158,21 +152,19 @@ export async function deleteUser(userId: string) {
       throw new Error("Unauthorized: No user found");
     }
     
-    // Check if user is admin
     const adminStatus = await isAdmin(user.id);
     if (!adminStatus) {
       throw new Error("Unauthorized: Admin access required");
     }
     
-    // Delete from Prisma first
-    await prisma.user.delete({ where: { id: userId } });
+    const adminSupabase = createAdminClient();
+    await adminSupabase.from("users").delete().eq("id", userId);
     
-    // Try to delete from Supabase Auth
     try {
       const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
       if (serviceRoleKey) {
-        const { createClient: createAdminClient } = await import("@supabase/supabase-js");
-        const adminClient = createAdminClient(
+        const { createClient: createSupabaseJs } = await import("@supabase/supabase-js");
+        const adminClient = createSupabaseJs(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
           serviceRoleKey,
           { auth: { autoRefreshToken: false, persistSession: false } }
@@ -192,7 +184,7 @@ export async function deleteUser(userId: string) {
 }
 
 // Update user role (with proper admin check)
-export async function updateUserRoleAdmin(userId: string, role: Role) {
+export async function updateUserRoleAdmin(userId: string, role: string) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -201,16 +193,16 @@ export async function updateUserRoleAdmin(userId: string, role: Role) {
       throw new Error("Unauthorized: No user found");
     }
     
-    // Check if user is admin
     const adminStatus = await isAdmin(user.id);
     if (!adminStatus) {
       throw new Error("Unauthorized: Admin access required");
     }
     
-    await prisma.user.update({
-      where: { id: userId },
-      data: { role }
-    });
+    const adminSupabase = createAdminClient();
+    await adminSupabase
+      .from("users")
+      .update({ role })
+      .eq("id", userId);
     
     revalidatePath("/admin/users");
     return { success: true };

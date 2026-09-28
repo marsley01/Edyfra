@@ -1,7 +1,7 @@
 "use server";
 
-import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { revalidatePath } from "next/cache";
 
 export async function getNotifications() {
@@ -10,11 +10,19 @@ export async function getNotifications() {
   if (!user) return [];
 
   try {
-    return await prisma.notification.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: "desc" },
-      take: 50,
-    });
+    const { data: notifications } = await supabase
+      .from("notifications")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    return (notifications || []).map(n => ({
+      ...n,
+      createdAt: n.created_at,
+      userId: n.user_id,
+      actionUrl: n.action_url,
+    }));
   } catch {
     return [];
   }
@@ -26,10 +34,21 @@ export async function getLatestNotification() {
   if (!user) return null;
 
   try {
-    return await prisma.notification.findFirst({
-      where: { userId: user.id },
-      orderBy: { createdAt: "desc" },
-    });
+    const { data: notification } = await supabase
+      .from("notifications")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!notification) return null;
+    return {
+      ...notification,
+      createdAt: notification.created_at,
+      userId: notification.user_id,
+      actionUrl: notification.action_url,
+    };
   } catch {
     return null;
   }
@@ -41,9 +60,13 @@ export async function getUnreadCount() {
   if (!user) return 0;
 
   try {
-    return await prisma.notification.count({
-      where: { userId: user.id, read: false },
-    });
+    const { count } = await supabase
+      .from("notifications")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("read", false);
+
+    return count || 0;
   } catch {
     return 0;
   }
@@ -55,9 +78,12 @@ export async function getNotificationSettings(): Promise<Record<string, boolean>
   if (!user) return {};
 
   try {
-    const settings = await prisma.notificationSettings.findUnique({
-      where: { userId: user.id },
-    });
+    const { data: settings } = await supabase
+      .from("notification_settings")
+      .select("preferences")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
     return (settings?.preferences as Record<string, boolean>) || {};
   } catch {
     return {};
@@ -69,10 +95,11 @@ export async function markAllRead() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
-  await prisma.notification.updateMany({
-    where: { userId: user.id, read: false },
-    data: { read: true },
-  });
+  await supabase
+    .from("notifications")
+    .update({ read: true })
+    .eq("user_id", user.id)
+    .eq("read", false);
 
   revalidatePath("/dashboard/notifications");
   revalidatePath("/tutor/notifications");
@@ -83,10 +110,11 @@ export async function markNotificationRead(id: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
-  await prisma.notification.update({
-    where: { id, userId: user.id },
-    data: { read: true },
-  });
+  await supabase
+    .from("notifications")
+    .update({ read: true })
+    .eq("id", id)
+    .eq("user_id", user.id);
 
   revalidatePath("/dashboard/notifications");
   revalidatePath("/tutor/notifications");
@@ -119,11 +147,14 @@ async function shouldSendPush(userId: string, type: string, preloadedPrefs?: Rec
     if (!prefKey) return true;
     return prefs[prefKey] !== false;
   } catch {
-    // fallback: fetch individually
     try {
-      const settings = await prisma.notificationSettings.findUnique({
-        where: { userId },
-      });
+      const adminSupabase = createAdminClient();
+      const { data: settings } = await adminSupabase
+        .from("notification_settings")
+        .select("preferences")
+        .eq("user_id", userId)
+        .maybeSingle();
+
       const prefs = (settings?.preferences as Record<string, boolean>) || {};
       const prefKey = PUSH_PREF_BY_TYPE[type];
       if (!prefKey) return true;
@@ -143,20 +174,28 @@ export async function notifyUser(
     actionUrl?: string;
   }
 ) {
-  const notification = await prisma.notification.create({
-    data: {
-      userId,
+  const adminSupabase = createAdminClient();
+  const { data: notification, error } = await adminSupabase
+    .from("notifications")
+    .insert({
+      user_id: userId,
       type: data.type,
       title: data.title,
       body: data.body,
-      actionUrl: data.actionUrl,
-    },
-  });
+      action_url: data.actionUrl,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
 
   try {
-    const settings = await prisma.notificationSettings.findUnique({
-      where: { userId },
-    });
+    const { data: settings } = await adminSupabase
+      .from("notification_settings")
+      .select("preferences")
+      .eq("user_id", userId)
+      .maybeSingle();
+
     const prefs = (settings?.preferences as Record<string, boolean>) || {};
     if (await shouldSendPush(userId, data.type, prefs)) {
       const { sendNotificationPush } = await import("./push");
@@ -173,7 +212,6 @@ export async function notifyUser(
   return notification;
 }
 
-/** Fan-out in-app + push for bulk announcements and admin alerts. */
 export async function notifyManyUsers(
   userIds: string[],
   data: {
@@ -185,23 +223,25 @@ export async function notifyManyUsers(
 ) {
   if (userIds.length === 0) return [];
 
-  await prisma.notification.createMany({
-    data: userIds.map((userId) => ({
-      userId,
+  const adminSupabase = createAdminClient();
+  await adminSupabase.from("notifications").insert(
+    userIds.map((userId) => ({
+      user_id: userId,
       type: data.type,
       title: data.title,
       body: data.body,
-      actionUrl: data.actionUrl,
-    })),
-  });
+      action_url: data.actionUrl,
+    }))
+  );
 
   const { sendNotificationPush } = await import("./push");
-  // Batch-load notification preferences for all users
-  const allSettings = await prisma.notificationSettings.findMany({
-    where: { userId: { in: userIds } },
-  });
+  const { data: allSettings } = await adminSupabase
+    .from("notification_settings")
+    .select("user_id, preferences")
+    .in("user_id", userIds);
+
   const prefsMap = new Map(
-    allSettings.map(s => [s.userId, s.preferences as Record<string, boolean> || {}])
+    (allSettings || []).map(s => [s.user_id, (s.preferences as Record<string, boolean>) || {}])
   );
 
   await Promise.allSettled(
