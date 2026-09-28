@@ -40,19 +40,14 @@ export async function POST(request: NextRequest) {
 
     // Anon client — RLS policy grants INSERT-only to anon on newsletter_subscribers.
     const supabase = await createClient();
-    const { error } = await supabase
-      .from("newsletter_subscribers")
-      .upsert(
-        {
-          email: normalizedEmail,
-          subscribed_at: new Date().toISOString(),
-          source,
-        },
-        { onConflict: "email", ignoreDuplicates: true }
-      );
+    const { error } = await supabase.from("newsletter_subscribers").insert({
+      email: normalizedEmail,
+      subscribed_at: new Date().toISOString(),
+      source,
+    });
 
-    if (error) {
-      // Never expose the database error to the client
+    if (error && error.code !== "23505") {
+      // Never expose the database error to the client (23505 is unique violation / already subscribed, treat as success)
       console.error("[Newsletter] Supabase insert error:", error);
       return NextResponse.json(
         { error: "Something went wrong. Please try again." },
