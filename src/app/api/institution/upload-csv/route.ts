@@ -34,12 +34,12 @@ export async function POST(request: Request) {
 
     const adminSupabase = createAdminClient()
     const { data: dbUser } = await adminSupabase
-      .from('users')
-      .select('role, institution_members(*)')
+      .from('User')
+      .select('role, InstitutionMember(*)')
       .eq('id', user.id)
       .single()
 
-    const members = (dbUser as any)?.institution_members || []
+    const members = (dbUser as any)?.InstitutionMember || []
     const member = members.find((m: any) => m.status === 'ACTIVE')
     if (!member && dbUser?.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Active institution membership required' }, { status: 403 })
