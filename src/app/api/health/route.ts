@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/utils/supabase/admin";
+import { createClient } from "@/utils/supabase/server";
 
 export async function GET() {
   const startTime = Date.now();
   const checks: Record<string, string> = {};
 
   try {
-    const supabase = createAdminClient();
-    await supabase.from("users").select("id").limit(1);
-    checks.database = "ok";
+    const supabase = await createClient();
+    const { error } = await supabase.from("plans").select("id").limit(1);
+    checks.database = error ? "error" : "ok";
   } catch {
     checks.database = "error";
   }

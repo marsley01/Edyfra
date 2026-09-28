@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { createAdminClient } from "@/utils/supabase/admin";
+import { createClient } from "@/utils/supabase/server";
 import { JsonLd } from "@/components/json-ld";
 import NewsArticleClient from "./NewsArticleClient";
 
@@ -12,9 +12,9 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
 
-  const supabase = createAdminClient();
+  const supabase = await createClient();
   const { data: article } = await supabase
-    .from("news_articles")
+    .from("NewsArticle")
     .select("*")
     .eq("slug", slug)
     .maybeSingle();
@@ -45,9 +45,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 async function getArticleJsonLd(slug: string) {
-  const supabase = createAdminClient();
+  const supabase = await createClient();
   const { data: article } = await supabase
-    .from("news_articles")
+    .from("NewsArticle")
     .select("*")
     .eq("slug", slug)
     .maybeSingle();
