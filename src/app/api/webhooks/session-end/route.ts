@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { AIService } from "@/utils/ai-service";
-import prisma from "@/lib/prisma";
 import { StreamChat } from "stream-chat";
 import { notifyUser } from "@/app/actions/notifications";
 

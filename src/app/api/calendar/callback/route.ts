@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
@@ -14,11 +14,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard/settings?calendar=invalid", request.url));
   }
 
-  const oauthState = await prisma.calendarOAuthState.findUnique({
-    where: { state },
-  });
+  const supabase = createAdminClient();
 
-  if (!oauthState || oauthState.expiresAt < new Date()) {
+  const { data: oauthState } = await supabase
+    .from("calendar_oauth_states")
+    .select("*")
+    .eq("state", state)
+    .single();
+
+  if (!oauthState || new Date(oauthState.expires_at) < new Date()) {
     return NextResponse.redirect(new URL("/dashboard/settings?calendar=expired", request.url));
   }
 
@@ -70,28 +74,21 @@ export async function GET(request: NextRequest) {
       calendarId = calendarData.id;
     }
 
-    await prisma.calendarConnection.upsert({
-      where: { userId: oauthState.userId },
-      update: {
-        accessToken,
-        refreshToken: refreshToken || undefined,
-        expiresAt,
+    await supabase
+      .from("calendar_connections")
+      .upsert({
+        user_id: oauthState.user_id,
+        access_token: accessToken,
+        refresh_token: refreshToken || "",
+        expires_at: expiresAt.toISOString(),
         scope,
-        calendarId,
-      },
-      create: {
-        userId: oauthState.userId,
-        accessToken,
-        refreshToken: refreshToken || "",
-        expiresAt,
-        scope,
-        calendarId,
-      },
-    });
+        calendar_id: calendarId,
+      }, { onConflict: "user_id" });
 
-    await prisma.calendarOAuthState.delete({
-      where: { id: oauthState.id },
-    });
+    await supabase
+      .from("calendar_oauth_states")
+      .delete()
+      .eq("id", oauthState.id);
 
     return NextResponse.redirect(new URL("/dashboard/settings?calendar=connected", request.url));
   } catch (err) {

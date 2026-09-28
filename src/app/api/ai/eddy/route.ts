@@ -2,7 +2,7 @@ import { streamWithAI, AIRateLimitError } from "@/lib/ai-rate-limiter";
 import { createClient } from "@/utils/supabase/server";
 import { buildEddySystemPrompt, buildEddyUserContextBlock } from "@/utils/eddy-context";
 import { saveAiChatMessage } from "@/app/actions/feedback";
-import prisma from "@/lib/prisma";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 export const runtime = "nodejs";
 
@@ -114,12 +114,11 @@ export async function POST(request: Request) {
           content: reply,
         }).catch(() => {});
         try {
-          await prisma.aiConversation.create({
-            data: {
-              userId: user.id,
-              modelUsed: "eddy",
-              subject: currentPath || null,
-            },
+          const supabaseAdmin = createAdminClient();
+          await supabaseAdmin.from("ai_conversations").insert({
+            user_id: user.id,
+            model_used: "eddy",
+            subject: currentPath || null,
           });
         } catch {
           // Silent — non-critical counter
