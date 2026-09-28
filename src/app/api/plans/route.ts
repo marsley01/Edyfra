@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/utils/supabase/admin";
+import { createClient } from "@/utils/supabase/server";
 import { cache, TTL } from "@/lib/cache";
 
 const CACHE_KEY = "api:plans";
@@ -21,7 +21,9 @@ export async function GET() {
       });
     }
 
-    const supabase = createAdminClient();
+    // Use the anon client — RLS policy grants anon SELECT on plans (public pricing data).
+    // Service-role must never be used for unauthenticated public routes.
+    const supabase = await createClient();
     const { data: plans } = await supabase
       .from("plans")
       .select("*")

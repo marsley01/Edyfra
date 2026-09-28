@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { createClient } from "@/utils/supabase/server";
+import { UserRepository } from "@/core/database/repositories/UserRepository";
 import { cache, TTL } from "@/lib/cache";
-
 
 const CACHE_KEY = "api:stats";
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     // Serve from cache when available
     const cached = cache.get<object>(CACHE_KEY);
@@ -15,11 +15,17 @@ export async function GET(request: Request) {
       });
     }
 
+    // Use the anon client — RLS policies on "User", "Session", "TutorProfile",
+    // and "resources" are scoped to return only what this public endpoint needs.
+    // Service-role must never be used for unauthenticated public routes.
+    const supabase = await createClient();
+    const userRepo = new UserRepository(supabase);
+
     const [studentCount, sessionCount, tutorCount, resourceCount] = await Promise.all([
-      prisma.user.count({ where: { role: "STUDENT" } }),
-      prisma.session.count(),
-      prisma.tutorProfile.count({ where: { isVerified: true } }),
-      prisma.resource.count({ where: { status: "approved" } }),
+      userRepo.count({ role: "STUDENT" }),
+      supabase.from("Session").select("*", { count: "exact", head: true }).then(r => r.count || 0),
+      supabase.from("TutorProfile").select("*", { count: "exact", head: true }).eq("isVerified", true).then(r => r.count || 0),
+      supabase.from("resources").select("*", { count: "exact", head: true }).eq("status", "approved").then(r => r.count || 0),
     ]);
 
     const payload = {
