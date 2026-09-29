@@ -24,6 +24,7 @@ export interface NewsArticle {
 }
 
 import { fetchOgImage } from "@/utils/og-scraper";
+import { buildBrandedPlaceholder } from "@/lib/news-placeholder";
 
 const HTML_ENTITIES: Record<string, string> = {
   "&lt;": "<",
@@ -90,8 +91,8 @@ const KE_KEYWORDS = [
   "nairobi", "mombasa", "kisumu", "eldoret", "nakuru",
 ];
 
-function getFallbackImage(_category?: string, _title?: string, _source?: string): string {
-  return GENERIC_FALLBACK;
+function getFallbackImage(category?: string, _title?: string, source?: string): string {
+  return buildBrandedPlaceholder(source || "Edyfra", category || "News");
 }
 
 function isKenyanArticle(source: string, title: string): boolean {

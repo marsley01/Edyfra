@@ -5,6 +5,7 @@ import { Search, Calendar, Sparkles, RefreshCw, ArrowUpRight, ChevronRight } fro
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getLatestNews, NewsArticle } from "@/app/actions/news";
+import { isBrandedPlaceholder } from "@/lib/news-placeholder";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -190,16 +191,28 @@ export default function NewsPage() {
                 <Link href={featured.slug.startsWith("rss") ? featured.content : `/news/${featured.slug}`} className="group block" target={featured.slug.startsWith("rss") ? "_blank" : "_self"} rel="noopener noreferrer">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                     <div className="relative aspect-[16/10] lg:aspect-auto lg:min-h-[420px] rounded-3xl overflow-hidden border border-border shadow-lg group-hover:shadow-2xl transition-all">
-                      <Image
-                        src={featured.cover_image || FALLBACK_IMAGE}
-                        alt={featured.title}
-                        fill
-                        onError={(e) => {
-                          e.currentTarget.srcset = "";
-                          e.currentTarget.src = FALLBACK_IMAGE;
-                        }}
-                        className="object-cover group-hover:scale-105 transition-transform duration-700"
-                      />
+            {/* Branded placeholders are data-URI SVGs, which next/image rejects
+                unless dangerouslyAllowSVG is enabled. Render those as a plain
+                <img>; real remote images still go through the optimizer. */}
+            {isBrandedPlaceholder(featured.cover_image) ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={featured.cover_image}
+                alt={featured.title}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            ) : (
+              <Image
+                src={featured.cover_image || FALLBACK_IMAGE}
+                alt={featured.title}
+                fill
+                onError={(e) => {
+                  e.currentTarget.srcset = "";
+                  e.currentTarget.src = FALLBACK_IMAGE;
+                }}
+                className="object-cover group-hover:scale-105 transition-transform duration-700"
+              />
+            )}
                     </div>
                     <div className="space-y-6 p-4 lg:p-8">
                       <div className="flex items-center gap-3">
@@ -256,16 +269,25 @@ export default function NewsPage() {
                     >
                       <Link href={href} className="block space-y-4" target={isExternal ? "_blank" : "_self"} rel="noopener noreferrer">
                         <div className="aspect-[16/10] rounded-3xl overflow-hidden border border-border shadow-sm group-hover:shadow-xl group-hover:translate-y-[-2px] transition-all duration-500 relative">
-                          <Image
-                            src={imgSrc}
-                            alt={item.title}
-                            fill
-                            onError={(e) => {
-                              e.currentTarget.srcset = "";
-                              e.currentTarget.src = FALLBACK_IMAGE;
-                            }}
-                            className="object-cover group-hover:scale-105 transition-transform duration-700"
-                          />
+                          {isBrandedPlaceholder(imgSrc) ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={imgSrc}
+                              alt={item.title}
+                              className="absolute inset-0 h-full w-full object-cover"
+                            />
+                          ) : (
+                            <Image
+                              src={imgSrc}
+                              alt={item.title}
+                              fill
+                              onError={(e) => {
+                                e.currentTarget.srcset = "";
+                                e.currentTarget.src = FALLBACK_IMAGE;
+                              }}
+                              className="object-cover group-hover:scale-105 transition-transform duration-700"
+                            />
+                          )}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                           <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity">
                             <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white text-[8px] font-black uppercase tracking-widest">
