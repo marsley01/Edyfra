@@ -167,6 +167,37 @@ function extractKeywords(title: string): string {
     .join(" ");
 }
 
+/**
+ * Google-hosted image hosts.
+ *
+ * Google News RSS links (news.google.com/rss/articles/...) do NOT redirect to
+ * the publisher — they serve a Google interstitial whose og:image is Google's
+ * own branding icon. Scraping it "succeeds", so the item looks like it has a
+ * real thumbnail and the branded per-source placeholder is never reached, and
+ * every Google News card ends up showing the same Google News icon.
+ *
+ * These are platform chrome, never the article's image, so they are discarded
+ * and resolution falls through to Pexels and then to the branded placeholder.
+ */
+const GOOGLE_IMAGE_HOST = /(^|\.)googleusercontent\.com$/i;
+
+function isGoogleOwnedImage(url: string): boolean {
+  try {
+    return GOOGLE_IMAGE_HOST.test(new URL(url).hostname);
+  } catch {
+    return false;
+  }
+}
+
+/** True when the article link is a Google News RSS redirect wrapper. */
+function isGoogleNewsLink(articleUrl: string): boolean {
+  try {
+    return new URL(articleUrl).hostname === "news.google.com";
+  } catch {
+    return false;
+  }
+}
+
 /** Fetch the OG image from an article URL. Returns null on any failure. */
 async function scrapeOgImage(articleUrl: string): Promise<string | null> {
   try {
@@ -192,7 +223,12 @@ async function scrapeOgImage(articleUrl: string): Promise<string | null> {
       html.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i);
 
     const url = match?.[1]?.replace(/&amp;/g, "&").trim() ?? null;
-    return url?.startsWith("http") ? url : null;
+    if (!url || !url.startsWith("http")) return null;
+
+    // Google's interstitial image is not the article's image.
+    if (isGoogleOwnedImage(url)) return null;
+
+    return url;
   } catch {
     return null;
   }
