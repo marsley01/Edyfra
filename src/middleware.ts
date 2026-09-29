@@ -31,7 +31,7 @@ function setCorsHeaders(response: NextResponse, origin: string | null) {
 }
 
 function getAppUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://edyfra.com';
+  return process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://www.edyfra.online';
 }
 
 function validateCsrf(request: NextRequest): boolean {
