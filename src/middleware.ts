@@ -16,8 +16,43 @@ const SERVER_ACTION_LIMIT = { interval: 60_000, maxRequests: 20 };
 // Mutation methods that require CSRF protection
 const MUTATION_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
+/**
+ * Canonicalize an origin so that `www.example.com` and `example.com` compare
+ * equal.
+ *
+ * Browsers treat the two as *distinct* origins, so a literal string allowlist
+ * silently rejects whichever form is not listed — 403ing every /api route and
+ * returning an empty 204 on every server action, with no error surfaced to the
+ * user. Stripping a single leading `www.` label removes that whole class of
+ * failure.
+ *
+ * Security: this is exact-equality comparison on the normalized form, never
+ * substring or suffix matching. `https://www.evil.com` normalizes to
+ * `https://evil.com`, which still has to match an allowlist entry exactly to be
+ * accepted, and `https://edyfra.online.evil.com` never matches. Protocol and
+ * port are preserved, so `http://localhost:3000` does not match
+ * `https://localhost:3000`.
+ */
+function normalizeOrigin(value: string): string | null {
+  try {
+    const url = new URL(value);
+    const hostname = url.hostname.replace(/^www\./i, '');
+    return `${url.protocol}//${hostname}${url.port ? `:${url.port}` : ''}`;
+  } catch {
+    return null;
+  }
+}
+
+/** True only when `value` exactly matches an allowlist entry after normalization. */
+function isOriginAllowed(value: string | null, allowlist: string[]): boolean {
+  if (!value) return false;
+  const normalized = normalizeOrigin(value);
+  if (!normalized) return false;
+  return allowlist.some((entry) => normalizeOrigin(entry) === normalized);
+}
+
 function setCorsHeaders(response: NextResponse, origin: string | null) {
-  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]
+  const allowedOrigin = isOriginAllowed(origin, ALLOWED_ORIGINS) ? origin! : ALLOWED_ORIGINS[0]
   response.headers.set('Access-Control-Allow-Origin', allowedOrigin)
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
   response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
@@ -45,14 +80,7 @@ function validateCsrf(request: NextRequest): boolean {
   const appUrl = getAppUrl();
   const allowedUrls = [appUrl, ...ALLOWED_ORIGINS];
 
-  const isValidOrigin = !!origin && allowedUrls.some(u => {
-    try { return new URL(origin).origin === new URL(u).origin; } catch { return false; }
-  });
-  const isValidReferer = !!referer && allowedUrls.some(u => {
-    try { return new URL(referer).origin === new URL(u).origin; } catch { return false; }
-  });
-
-  return isValidOrigin || isValidReferer;
+  return isOriginAllowed(origin, allowedUrls) || isOriginAllowed(referer, allowedUrls);
 }
 
 export async function middleware(request: NextRequest) {
@@ -86,7 +114,7 @@ export async function middleware(request: NextRequest) {
 
   // CORS + rate limiting for API routes
   if (isApiRoute) {
-    if (origin && !ALLOWED_ORIGINS.includes(origin)) {
+    if (origin && !isOriginAllowed(origin, ALLOWED_ORIGINS)) {
       const response = NextResponse.json(
         { error: 'Forbidden' },
         { status: 403 }
