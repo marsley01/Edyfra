@@ -11,3 +11,5 @@ export * from "./SessionRepository";
 export * from "./TutorProfileRepository";
 export * from "./StudentProfileRepository";
 export * from "./MatchRequestRepository";
+export * from "./ApiKeyRepository";
+export * from "./MashContextRepository";
