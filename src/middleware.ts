@@ -3,7 +3,8 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { rateLimit, getRateLimitKey, getConfig } from '@/lib/rate-limit'
 
 const ALLOWED_ORIGINS = [
-  'https://edyfra-v2.vercel.app',
+  'https://www.edyfra.online',
+  'https://edyfra.online',
   'https://edyfra.com',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
