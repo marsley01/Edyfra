@@ -49,16 +49,28 @@ export async function GET(_req: NextRequest) {
 
     const userName = profile?.name || user.email?.split('@')[0] || 'Edyfra User';
 
-    const client = new StreamClient(apiKey, secret);
+    // Stream's default HTTP timeout is 3000ms. On Vercel serverless the first
+    // request of a cold start also pays module-load + TLS setup, so upsertUsers
+    // regularly exceeded 3s and threw, which failed the whole request even
+    // though token generation itself is a local JWT operation and needs no
+    // network call at all.
+    const client = new StreamClient(apiKey, secret, { timeout: 10_000 });
 
-    // Upsert the user in Stream first so they exist before token is issued
-    await client.upsertUsers([
-      {
-        id: userId,
-        name: userName,
-        role: 'user',
-      },
-    ]);
+    // Ensure the user exists server-side before a token is issued. This is
+    // best-effort: the token is a locally-signed JWT and remains valid whether
+    // or not the upsert lands, so a slow or failing Stream API must not block
+    // the user from joining a call.
+    try {
+      await client.upsertUsers([
+        {
+          id: userId,
+          name: userName,
+          role: 'user',
+        },
+      ]);
+    } catch (upsertError: any) {
+      console.warn('[stream/video-token] upsertUsers failed, continuing:', upsertError?.message);
+    }
 
     // Generate token valid for 1 hour
     const token = client.generateUserToken({
