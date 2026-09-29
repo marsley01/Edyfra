@@ -14,6 +14,15 @@ interface RateLimitConfig {
 }
 
 export function getConfig(pathname: string): RateLimitConfig {
+  // Supabase Auth Send Email hook. Every signup, password reset, magiclink and
+  // invite lands here, all originating from Supabase's own servers, so they
+  // share a single IP. The generic /api/auth budget below is per IP+UA, which
+  // would 429 a burst of legitimate auth email and silently drop it. Real
+  // abuse protection on this route is the Standard Webhooks signature check;
+  // this limit is only defence in depth against a flood.
+  if (pathname.startsWith("/api/auth/send-email")) {
+    return { interval: 60_000, maxRequests: 60 };
+  }
   if (pathname.startsWith("/api/auth")) {
     return { interval: 60_000, maxRequests: 5 };
   }
