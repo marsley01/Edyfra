@@ -25,14 +25,50 @@ export interface NewsArticle {
 
 import { fetchOgImage } from "@/utils/og-scraper";
 
-const HTML_ANGLE_BRACKET_REGEX = /[<>]/g;
-const HTML_ENTITY_BRACKET_REGEX = /&lt;|&gt;/gi;
+const HTML_ENTITIES: Record<string, string> = {
+  "&lt;": "<",
+  "&gt;": ">",
+  "&quot;": '"',
+  "&apos;": "'",
+  "&#39;": "'",
+  "&#039;": "'",
+  "&nbsp;": " ",
+  "&amp;": "&",
+};
 
-/** Removes literal and entity-encoded HTML angle brackets from RSS excerpts. */
-function stripRssExcerpt(input: string): string {
+const NUMERIC_ENTITY = /&#(x?)([0-9a-f]+);/gi;
+
+function decodeEntities(input: string): string {
   return input
-    .replace(HTML_ENTITY_BRACKET_REGEX, "")
-    .replace(HTML_ANGLE_BRACKET_REGEX, "");
+    .replace(NUMERIC_ENTITY, (_, hex: string, digits: string) => {
+      const code = parseInt(digits, hex ? 16 : 10);
+      if (!Number.isFinite(code) || code < 0 || code > 0x10ffff) return _;
+      try {
+        return String.fromCodePoint(code);
+      } catch {
+        return _;
+      }
+    })
+    .replace(/&(lt|gt|quot|apos|nbsp|amp);/g, (m) => HTML_ENTITIES[m] ?? m);
+}
+
+/**
+ * Excerpts render as plain text (JSX interpolation, never
+ * dangerouslySetInnerHTML), so they must be display-safe before they get here.
+ * RSS descriptions are cleaned during parsing in rss-service; summaries coming
+ * from the database are cleaned here, because an editor or the AI writer can
+ * put markup in them.
+ */
+function toPlainText(input: string): string {
+  return decodeEntities(input).replace(/\s+/g, " ").trim();
+}
+
+/** Truncate on a word boundary so cards do not end mid-word. */
+function truncate(text: string, max: number): string {
+  if (text.length <= max) return text;
+  const clipped = text.slice(0, max);
+  const lastSpace = clipped.lastIndexOf(" ");
+  return `${(lastSpace > max * 0.6 ? clipped.slice(0, lastSpace) : clipped).trimEnd()}…`;
 }
 
 // Single branded fallback thumbnail — used whenever an article has no real cover image.
@@ -90,7 +126,7 @@ export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
       id: a.id,
       title: a.title,
       slug: a.slug,
-      excerpt: a.summary || "",
+      excerpt: toPlainText(a.summary || ""),
       content: a.body || "",
       cover_image: a.coverImage || getFallbackImage(a.category, a.title, a.authorId ? "Author" : "Edyfra Desk"),
       category: a.category,
@@ -121,7 +157,8 @@ export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
 
     const newsArticles = await Promise.all(
       sorted.slice(0, limit).map(async (item, index) => {
-        const excerpt = stripRssExcerpt(item.description).slice(0, 180) + "...";
+        // Already plain text and de-duplicated against the title by the parser.
+        const excerpt = truncate(item.description, 180);
 
 
         return {

@@ -1,3 +1,4 @@
+import DOMPurify from "isomorphic-dompurify";
 import { resolveThumbnail, type ThumbnailResult } from "@/lib/thumbnail-resolver";
 
 export interface RSSItem {
@@ -34,14 +35,80 @@ const CATEGORY_FEEDS: { category: string; name: string; url: string }[] = [
   { category: "Announcements", name: "Science Daily", url: "https://www.sciencedaily.com/rss/all.xml" },
 ];
 
-const HTML_TAG_REGEX = /<[^>]*(>|$)/g;
+const HTML_ENTITIES: Record<string, string> = {
+  "&lt;": "<",
+  "&gt;": ">",
+  "&quot;": '"',
+  "&apos;": "'",
+  "&#39;": "'",
+  "&#039;": "'",
+  "&nbsp;": " ",
+  "&amp;": "&",
+};
+
+/** Numeric character references, e.g. `&#8217;` or `&#x2019;`. */
+const NUMERIC_ENTITY = /&#(x?)([0-9a-f]+);/gi;
+
+function decodeEntities(input: string): string {
+  return input
+    .replace(NUMERIC_ENTITY, (_, hex: string, digits: string) => {
+      const code = parseInt(digits, hex ? 16 : 10);
+      if (!Number.isFinite(code) || code < 0 || code > 0x10ffff) return _;
+      try {
+        return String.fromCodePoint(code);
+      } catch {
+        return _;
+      }
+    })
+    .replace(/&(lt|gt|quot|apos|nbsp|amp);/g, (m) => HTML_ENTITIES[m] ?? m);
+}
 
 /**
- * Removes HTML tags and neutralizes any residual "<" so nested/overlapping
- * payloads cannot reassemble into a live element after sanitization.
+ * Turns a feed description into display-safe plain text.
+ *
+ * Order is load-bearing and was the source of the visible-HTML bug: several
+ * feeds (Google News especially) deliver an HTML-*escaped* description, so
+ * `<a href="...">` arrives as the literal text `&lt;a href="..."&gt;`. Stripping
+ * tags from that removes nothing, and naively deleting the `&lt;`/`&gt;`
+ * entities instead leaves the tag's attributes behind as visible text.
+ *
+ * So: decode first so the sanitizer has real tags to match, then read
+ * `textContent` off the sanitized fragment.
+ *
+ * The result is deliberately NOT decoded again. Sanitizing re-escapes `&`, `<`
+ * and `>`; decoding a second time would undo that escaping and let a stray `>`
+ * back into the output. Reading textContent gives the real characters directly
+ * with no extra round trip.
+ *
+ * Uses a real HTML parser rather than a regex, so malformed or nested feed
+ * markup cannot break the strip.
  */
-function stripHtmlTags(input: string): string {
-  return input.replace(HTML_TAG_REGEX, "").replace(/</g, "&lt;");
+function toPlainText(input: string): string {
+  const decoded = decodeEntities(input);
+  const fragment = DOMPurify.sanitize(decoded, {
+    ALLOWED_TAGS: [],
+    ALLOWED_ATTR: [],
+    KEEP_CONTENT: true,
+    RETURN_DOM_FRAGMENT: true,
+  });
+  return (fragment?.textContent ?? "").replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Google News descriptions are not summaries. They are a link whose anchor text
+ * is the headline, two non-breaking spaces, then the publisher inside a <font>.
+ * Once cleaned the excerpt is just the title again plus the source, so drop it
+ * rather than printing a duplicate of the headline on every card.
+ */
+function isRedundantWithTitle(description: string, title: string): boolean {
+  if (!description) return true;
+  const normalise = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const body = normalise(description);
+  const headline = normalise(title);
+  if (!body) return true;
+  if (headline && body.startsWith(headline.slice(0, Math.min(40, headline.length)))) return true;
+  // After cleaning, Google News leaves only "<headline> <publisher>".
+  return body.split(/\s{2,}/).length <= 1;
 }
 
 function extractImage(itemXml: string): string {
@@ -53,6 +120,19 @@ function extractImage(itemXml: string): string {
 
   const mediaThumbnail = itemXml.match(/<media:thumbnail[^>]*url="([^"]+)"[^>]*>/);
   if (mediaThumbnail) return mediaThumbnail[1];
+
+  // Atom <content:encoded> and some publishers only carry the image inline.
+  const encoded = itemXml.match(/<content:encoded>([\s\S]*?)<\/content:encoded>/);
+  if (encoded) {
+    const inline = encoded[1].match(/<img[^>]+src="([^"]+)"[^>]*>/);
+    if (inline) return inline[1];
+  }
+
+  const description = itemXml.match(/<description>([\s\S]*?)<\/description>/);
+  if (description) {
+    const inline = decodeEntities(description[1]).match(/<img[^>]+src="([^"]+)"[^>]*>/);
+    if (inline) return inline[1];
+  }
 
   const imgTag = itemXml.match(/<img[^>]+src="([^"]+)"[^>]*>/);
   if (imgTag) return imgTag[1];
@@ -141,7 +221,9 @@ export class RSSService {
       const itemXml = match[1];
       const title = itemXml.match(titleRegex)?.[1]?.trim() || "";
       const link = itemXml.match(linkRegex)?.[1]?.trim() || "";
-      const description = stripHtmlTags(itemXml.match(descRegex)?.[1]?.trim() || "");
+      const rawDescription = itemXml.match(descRegex)?.[1]?.trim() || "";
+      const cleaned = toPlainText(rawDescription);
+      const description = isRedundantWithTitle(cleaned, title) ? "" : cleaned;
       const pubDate = itemXml.match(dateRegex)?.[1]?.trim() || "";
       const imageUrl = extractImage(itemXml);
 

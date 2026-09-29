@@ -218,9 +218,11 @@ export default function NewsPage() {
                       <h2 className="text-3xl md:text-4xl font-black tracking-tightest leading-tight group-hover:text-primary transition-colors">
                         {featured.title}
                       </h2>
-                      <p className="text-lg text-muted-foreground font-medium leading-relaxed line-clamp-3">
-                        {featured.excerpt}
-                      </p>
+                      {featured.excerpt && (
+                        <p className="text-lg text-muted-foreground font-medium leading-relaxed line-clamp-3">
+                          {featured.excerpt}
+                        </p>
+                      )}
                       <div className="flex items-center gap-2 pt-4">
                         <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-primary font-bold text-xs">
                           {featured.author?.[0] ?? "E"}
@@ -293,9 +295,11 @@ export default function NewsPage() {
                           <h3 className="text-xl font-black tracking-tight leading-tight group-hover:text-primary transition-colors line-clamp-2">
                             {item.title}
                           </h3>
-                          <p className="text-sm text-muted-foreground font-medium leading-relaxed line-clamp-2">
-                            {item.excerpt}
-                          </p>
+                          {item.excerpt && (
+                            <p className="text-sm text-muted-foreground font-medium leading-relaxed line-clamp-2">
+                              {item.excerpt}
+                            </p>
+                          )}
                           <div className="flex items-center gap-2 pt-1">
                             <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-primary font-bold text-[8px]">
                               {item.author?.[0] ?? "E"}
