@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     const { error } = await supabase.auth.resetPasswordForEmail(
       parsed.data.email,
       {
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "https://edyfra-v2.vercel.app"}/auth/callback?next=/update-password`,
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "https://www.edyfra.online"}/auth/callback?next=/update-password`,
       },
     );
 
