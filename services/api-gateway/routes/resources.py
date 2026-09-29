@@ -140,14 +140,14 @@ async def match_resources(payload: BookMatchRequest, request: Request):
                     "hourly_rate_kes": t.get("hourly_rate_kes"),
                     "subjects": t.get("subjects"),
                     "next_available_slot": t.get("next_available_slot"),
-                    "profile_url": f"https://edyfra-v2.vercel.app/tutors/{t['id']}"
+                    "profile_url": f"https://www.edyfra.online/tutors/{t['id']}"
                 })
         except Exception:
             # If Supabase profile query fails, graceful fallback to empty tutors list
             pass
 
         # 3. Deep link
-        base_url = "https://edyfra-v2.vercel.app/book-match"
+        base_url = "https://www.edyfra.online/book-match"
         params = {
             "subject": payload.subject,
             "source": "kls",
@@ -173,7 +173,7 @@ async def match_resources(payload: BookMatchRequest, request: Request):
                     "id": s["id"],
                     "name": s.get("topic") or f"{s.get('subject')} Session",
                     "active_members": 2, # standard 1-on-1 session active size
-                    "join_url": f"https://edyfra-v2.vercel.app/rooms/{s['id']}"
+                    "join_url": f"https://www.edyfra.online/rooms/{s['id']}"
                 })
         except Exception:
             pass

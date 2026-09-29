@@ -131,7 +131,7 @@ export async function updateBookingStatus(bookingId: string, status: string, rea
               description: eventDescription,
               start: startDate,
               end: endDate,
-              location: "https://edyfra-v2.vercel.app/study-room/" + bookingId,
+              location: "https://www.edyfra.online/study-room/" + bookingId,
               attendees: booking.studentEmail && booking.tutorEmail
                 ? [
                     { email: booking.studentEmail, displayName: booking.studentName },
@@ -147,7 +147,7 @@ export async function updateBookingStatus(bookingId: string, status: string, rea
                   description: eventDescription,
                   start: startDate,
                   end: endDate,
-                  location: "https://edyfra-v2.vercel.app/study-room/" + bookingId,
+                  location: "https://www.edyfra.online/study-room/" + bookingId,
                   attendees: booking.studentEmail && booking.tutorEmail
                     ? [
                         { email: booking.studentEmail, displayName: booking.studentName },
@@ -166,7 +166,7 @@ export async function updateBookingStatus(bookingId: string, status: string, rea
               description: eventDescription,
               start: startDate,
               end: endDate,
-              location: "https://edyfra-v2.vercel.app/study-room/" + bookingId,
+              location: "https://www.edyfra.online/study-room/" + bookingId,
               attendees: booking.studentEmail && booking.tutorEmail
                 ? [
                     { email: booking.studentEmail, displayName: booking.studentName },

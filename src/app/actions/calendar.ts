@@ -90,7 +90,7 @@ export async function generateICalFile(bookingId: string) {
     durationMinutes: booking.durationMinutes,
     tutorName: booking.tutor?.name || booking.tutorName,
     studentName: booking.student?.name || booking.studentName,
-    meetingUrl: booking.meetingUrl || `https://edyfra-v2.vercel.app/study-room/${bookingId}`,
+    meetingUrl: booking.meetingUrl || `https://www.edyfra.online/study-room/${bookingId}`,
   };
 
   const content = generateICSContent(icalData);
