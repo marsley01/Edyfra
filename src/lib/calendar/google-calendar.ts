@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/utils/supabase/admin";
+import { isDbTimestampExpired } from "@/lib/calendar/db-timestamp";
 
 export interface CalendarEventInput {
   userId: string;
@@ -14,7 +15,7 @@ export interface CalendarEventInput {
 export async function createCalendarEvent(input: CalendarEventInput) {
   const supabase = createAdminClient();
   const { data: connection } = await supabase
-    .from("calendar_connections")
+    .from("CalendarConnection")
     .select("*")
     .eq("userId", input.userId)
     .maybeSingle();
@@ -22,11 +23,10 @@ export async function createCalendarEvent(input: CalendarEventInput) {
   if (!connection?.accessToken) return null;
 
   const now = Date.now();
-  const expiresAt = connection.expiresAt ? new Date(connection.expiresAt).getTime() : 0;
   let accessToken = connection.accessToken;
 
   // Refresh token if expired
-  if (expiresAt < now) {
+  if (isDbTimestampExpired(connection.expiresAt, now)) {
     if (!connection.refreshToken) return null;
 
     try {
@@ -35,7 +35,7 @@ export async function createCalendarEvent(input: CalendarEventInput) {
 
       accessToken = refreshed.accessToken;
       await supabase
-        .from("calendar_connections")
+        .from("CalendarConnection")
         .update({
           accessToken: refreshed.accessToken,
           expiresAt: new Date(refreshed.expiresAt).toISOString(),

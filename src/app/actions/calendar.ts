@@ -5,6 +5,7 @@ import { randomBytes } from "crypto";
 import prisma from "@/lib/prisma";
 import { pythonGetBookingSessionData } from "@/lib/booking-client";
 import { generateICSContent, type IcalBookingData } from "@/lib/calendar/ics";
+import { getCalendarCallbackUrl } from "@/lib/calendar/oauth-config";
 import { getAppUrl } from "@/lib/app-url";
 
 export async function getGoogleCalendarAuthUrl() {
@@ -29,8 +30,9 @@ export async function getGoogleCalendarAuthUrl() {
   });
 
   const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
-  const callbackUrl = process.env.GOOGLE_OAUTH_CALLBACK_URL;
-  if (!clientId || !callbackUrl) return { error: "Google Calendar OAuth is not configured" };
+  if (!clientId) return { error: "Google Calendar OAuth is not configured" };
+
+  const callbackUrl = await getCalendarCallbackUrl();
 
   const params = new URLSearchParams({
     client_id: clientId,

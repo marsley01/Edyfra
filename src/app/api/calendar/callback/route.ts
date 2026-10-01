@@ -1,39 +1,53 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/utils/supabase/admin";
+import { NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
-  const code = request.nextUrl.searchParams.get("code");
-  const state = request.nextUrl.searchParams.get("state");
-  const error = request.nextUrl.searchParams.get("error");
+import { createAdminClient } from "@/utils/supabase/admin";
+import { getCalendarCallbackUrl } from "@/lib/calendar/oauth-config";
+import { isDbTimestampExpired } from "@/lib/calendar/db-timestamp";
+
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const code = url.searchParams.get("code");
+  const state = url.searchParams.get("state");
+  const error = url.searchParams.get("error");
 
   if (error) {
-    return NextResponse.redirect(new URL("/dashboard/settings?calendar=denied", request.url));
+    return NextResponse.redirect(new URL("/dashboard/settings?calendar=denied", url.origin));
   }
 
   if (!code || !state) {
-    return NextResponse.redirect(new URL("/dashboard/settings?calendar=invalid", request.url));
+    return NextResponse.redirect(new URL("/dashboard/settings?calendar=invalid", url.origin));
   }
 
   const supabase = createAdminClient();
 
-  const { data: oauthState } = await supabase
-    .from("calendar_oauth_states")
+  const { data: oauthState, error: stateError } = await supabase
+    .from("CalendarOAuthState")
     .select("*")
     .eq("state", state)
     .single();
 
-  if (!oauthState || new Date(oauthState.expires_at) < new Date()) {
-    return NextResponse.redirect(new URL("/dashboard/settings?calendar=expired", request.url));
+  if (stateError) {
+    console.error("Calendar OAuth state lookup failed:", stateError.code, stateError.message);
+  }
+
+  if (!oauthState) {
+    return NextResponse.redirect(new URL("/dashboard/settings?calendar=expired", url.origin));
+  }
+
+  if (isDbTimestampExpired(oauthState.expiresAt)) {
+    console.error("Calendar OAuth state expired:", oauthState.id);
+    return NextResponse.redirect(new URL("/dashboard/settings?calendar=expired", url.origin));
   }
 
   try {
     const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
-    const callbackUrl = process.env.GOOGLE_OAUTH_CALLBACK_URL;
 
-    if (!clientId || !clientSecret || !callbackUrl) {
-      return NextResponse.redirect(new URL("/dashboard/settings?calendar=error", request.url));
+    if (!clientId || !clientSecret) {
+      return NextResponse.redirect(new URL("/dashboard/settings?calendar=error", url.origin));
     }
+
+    const callbackUrl = await getCalendarCallbackUrl();
 
     const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
@@ -48,17 +62,19 @@ export async function GET(request: NextRequest) {
     });
 
     if (!tokenRes.ok) {
-      throw new Error("Failed to exchange token");
+      const body = await tokenRes.text();
+      console.error("Calendar token exchange failed:", tokenRes.status, body);
+      return NextResponse.redirect(new URL("/dashboard/settings?calendar=error", url.origin));
     }
 
     const tokens = await tokenRes.json();
     const accessToken = tokens.access_token;
     const refreshToken = tokens.refresh_token;
-    const expiresIn = tokens.expires_in;
+    const expiresIn = tokens.expires_in ?? 3600;
     const scope = tokens.scope;
 
     if (!accessToken) {
-      throw new Error("No access token received");
+      return NextResponse.redirect(new URL("/dashboard/settings?calendar=error", url.origin));
     }
 
     const expiresAt = new Date(Date.now() + expiresIn * 1000);
@@ -74,25 +90,36 @@ export async function GET(request: NextRequest) {
       calendarId = calendarData.id;
     }
 
-    await supabase
-      .from("calendar_connections")
-      .upsert({
-        user_id: oauthState.user_id,
-        access_token: accessToken,
-        refresh_token: refreshToken || "",
-        expires_at: expiresAt.toISOString(),
-        scope,
-        calendar_id: calendarId,
-      }, { onConflict: "user_id" });
+    // Google only returns a refresh token on the first consent. Reconnecting an
+    // already-authorized account must not wipe the stored one, otherwise event
+    // sync dies as soon as the access token expires.
+    const { data: existing } = await supabase
+      .from("CalendarConnection")
+      .select("refreshToken")
+      .eq("userId", oauthState.userId)
+      .maybeSingle();
+
+    const storedRefreshToken = refreshToken || existing?.refreshToken || null;
 
     await supabase
-      .from("calendar_oauth_states")
-      .delete()
-      .eq("id", oauthState.id);
+      .from("CalendarConnection")
+      .upsert(
+        {
+          userId: oauthState.userId,
+          accessToken,
+          refreshToken: storedRefreshToken,
+          expiresAt: expiresAt.toISOString(),
+          scope: scope ?? null,
+          calendarId: calendarId ?? null,
+        },
+        { onConflict: "userId" },
+      );
 
-    return NextResponse.redirect(new URL("/dashboard/settings?calendar=connected", request.url));
+    await supabase.from("CalendarOAuthState").delete().eq("id", oauthState.id);
+
+    return NextResponse.redirect(new URL("/dashboard/settings?calendar=connected", url.origin));
   } catch (err) {
     console.error("Calendar OAuth callback error:", err);
-    return NextResponse.redirect(new URL("/dashboard/settings?calendar=error", request.url));
+    return NextResponse.redirect(new URL("/dashboard/settings?calendar=error", url.origin));
   }
 }

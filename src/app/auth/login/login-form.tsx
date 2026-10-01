@@ -4,9 +4,10 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowRight, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/utils/supabase/client'
 import Link from 'next/link'
 import { AmbientBlobBackground } from '@/components/auth/AmbientBlobBackground'
+import { AuthDivider, GoogleButton } from '@/components/auth/GoogleButton'
 
 const supabaseErrors: Record<string, string> = {
   'Invalid login credentials': 'Wrong email or password. Double-check and try again, or reset your password below.',
@@ -43,30 +44,10 @@ export default function LoginForm({
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(initialError)
   const [loading, setLoading] = useState(false)
-  const [googleLoading, setGoogleLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
   const isEmail = input.includes('@')
-
-  async function handleGoogleSignIn() {
-    setError(null)
-    setGoogleLoading(true)
-
-    const { error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent('/dashboard')}` },
-    })
-
-    if (oauthError) {
-      setError(
-        oauthError.message.toLowerCase().includes('provider')
-          ? 'Google sign-in is not enabled yet. Use your email and password.'
-          : 'Could not start Google sign-in. Try again in a moment.',
-      )
-      setGoogleLoading(false)
-    }
-  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
@@ -141,27 +122,8 @@ export default function LoginForm({
 
         {googleEnabled && (
           <div className="space-y-6">
-            <button
-              type="button"
-              onClick={handleGoogleSignIn}
-              disabled={googleLoading || loading}
-              className="flex h-16 w-full items-center justify-center gap-3 rounded-full border border-border bg-secondary font-black text-xs uppercase tracking-widest text-foreground transition-all hover:border-primary hover:ring-4 hover:ring-primary/20 active:scale-95 disabled:opacity-50"
-            >
-              {googleLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <>
-                  <GoogleMark className="h-5 w-5" />
-                  Continue with Google
-                </>
-              )}
-            </button>
-
-            <div className="flex items-center gap-4">
-              <span className="h-px flex-1 bg-border" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">or</span>
-              <span className="h-px flex-1 bg-border" />
-            </div>
+            <GoogleButton next="/dashboard" onError={setError} disabled={loading} />
+            <AuthDivider>or continue with email</AuthDivider>
           </div>
         )}
 
@@ -240,16 +202,5 @@ export default function LoginForm({
         </p>
       </motion.div>
     </div>
-  )
-}
-
-function GoogleMark({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className={className}>
-      <path fill="#4285F4" d="M23.52 12.27c0-.79-.07-1.54-.2-2.27H12v4.51h6.47a5.53 5.53 0 0 1-2.4 3.63v3.02h3.88c2.27-2.09 3.57-5.17 3.57-8.89Z" />
-      <path fill="#34A853" d="M12 24c3.24 0 5.96-1.08 7.95-2.91l-3.88-3.02c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.12A12 12 0 0 0 12 24Z" />
-      <path fill="#FBBC05" d="M5.27 14.27a7.21 7.21 0 0 1 0-4.54V6.61H1.29a12 12 0 0 0 0 10.78l3.98-3.12Z" />
-      <path fill="#EA4335" d="M12 4.77c1.76 0 3.35.61 4.6 1.8l3.44-3.44C17.95 1.19 15.24 0 12 0A12 12 0 0 0 1.29 6.61l3.98 3.12C6.22 6.88 8.87 4.77 12 4.77Z" />
-    </svg>
   )
 }

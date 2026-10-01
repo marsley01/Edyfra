@@ -54,6 +54,7 @@ export default function SettingsPage() {
   const [passwordData, setPasswordData] = useState({ current: "", newPass: "", confirm: "" });
   const [newEmail, setNewEmail] = useState("");
   const [emailPassword, setEmailPassword] = useState("");
+  const [changingEmail, setChangingEmail] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [downloading, setDownloading] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -185,10 +186,22 @@ export default function SettingsPage() {
 
   const handleChangeEmail = async () => {
     if (!newEmail.includes("@")) { toast.error("Invalid email"); return; }
+    setChangingEmail(true);
     try {
-      await changeEmail(emailPassword, newEmail);
-      toast.success("Verification email sent to " + newEmail);
+      const result = await changeEmail(emailPassword, newEmail);
+      if (result.requiresConfirmation) {
+        // The address is unchanged until the link is clicked — saying "sent"
+        // alone previously implied the switch had already happened.
+        toast.success(`Confirm the link sent to ${result.pendingEmail} to finish changing your email`);
+        setNewEmail("");
+        setEmailPassword("");
+      } else {
+        toast.success("Email address updated");
+        setNewEmail("");
+        setEmailPassword("");
+      }
     } catch (e: any) { toast.error(e.message); }
+    finally { setChangingEmail(false); }
   };
 
   const handleDownloadData = async () => {
@@ -699,7 +712,14 @@ export default function SettingsPage() {
                     <Label>Current Password</Label>
                     <Input type="password" value={emailPassword} onChange={(e) => setEmailPassword(e.target.value)} className="rounded-xl border-primary/10" />
                   </div>
-                  <Button onClick={handleChangeEmail} className="rounded-xl bg-primary"><Mail className="h-4 w-4 mr-2" /> Send Verification</Button>
+                  <Button onClick={handleChangeEmail} disabled={changingEmail} className="rounded-xl bg-primary disabled:opacity-60">
+                    {changingEmail
+                      ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sending…</>
+                      : <><Mail className="h-4 w-4 mr-2" /> Send Verification</>}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Your address only changes after you click the confirmation link we email you.
+                  </p>
                 </CardContent>
               </Card>
 

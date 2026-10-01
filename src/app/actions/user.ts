@@ -621,22 +621,58 @@ export async function changePassword(currentPassword: string, newPassword: strin
   }
 }
 
+/**
+ * Request an email change.
+ *
+ * `updateUser({ email })` does not change the address — it starts a
+ * confirmation flow, and the new address only becomes active once the user
+ * clicks the link. Returning a bare `{ success: true }` made the UI claim the
+ * address was already changed while nothing had happened, and with email
+ * delivery broken the user had no way to complete or diagnose it.
+ *
+ * Returns the pending address so the caller can explain the next step.
+ */
 export async function changeEmail(currentPassword: string, newEmail: string) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.email) throw new Error("Unauthorized");
-    
+
     // Re-authenticate before allowing email change
     const { error: authError } = await supabase.auth.signInWithPassword({
       email: user.email,
       password: currentPassword,
     });
     if (authError) throw new Error("Current password is incorrect");
-    
-    const { error } = await supabase.auth.updateUser({ email: newEmail });
-    if (error) throw new Error(error.message);
-    return { success: true };
+
+    if (newEmail.toLowerCase() === user.email.toLowerCase()) {
+      throw new Error("That is already your email address");
+    }
+
+    const { data, error } = await supabase.auth.updateUser({ email: newEmail });
+    if (error) {
+      // Rate limits and SMTP failures both surface here. The email hook answers
+      // 500 when delivery fails, which GoTrue reports as unexpected_failure, so
+      // translate that into something the user can act on.
+      if (/rate|limit|seconds/i.test(error.message)) {
+        throw new Error("Too many attempts. Wait a minute and try again.");
+      }
+      if (/unexpected_failure|hook|smtp/i.test(error.message)) {
+        throw new Error(
+          "We couldn't send the confirmation email. Please try again shortly.",
+        );
+      }
+      throw new Error(error.message);
+    }
+
+    // `new_email` is only populated while the change is unconfirmed.
+    const pending = data.user?.new_email;
+
+    return {
+      success: true,
+      pendingEmail: pending ?? null,
+      requiresConfirmation: Boolean(pending),
+    };
   } catch (error) {
     console.error(error, { action: "changeEmail" });
     throw error;

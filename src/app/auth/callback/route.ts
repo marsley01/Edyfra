@@ -59,7 +59,33 @@ export async function GET(request: NextRequest) {
     await ensurePrismaUser(data.user);
   }
 
-  return response;
+  // Google users (or any incomplete profile) may not have chosen a role yet.
+  // Route them to /onboarding/choice to pick Student/Tutor before accessing
+  // protected dashboards.
+  let finalNext = next;
+  if (!isRecovery(request)) {
+    try {
+      const user = data.user;
+      if (user) {
+        const existing = await prisma.user.findFirst({
+          where: { id: user.id },
+          include: { studentProfile: true, tutorProfile: true },
+        });
+        const hasProfile = Boolean(existing?.studentProfile || existing?.tutorProfile);
+        if (!hasProfile) {
+          finalNext = "/onboarding/choice";
+        }
+      }
+    } catch (e) {
+      console.error("[auth/callback] onboarding check failed:", e);
+    }
+  }
+
+  const out = NextResponse.redirect(new URL(finalNext, request.url), 302);
+  for (const cookie of response.cookies.getAll()) {
+    out.cookies.set(cookie);
+  }
+  return out;
 }
 
 /**
