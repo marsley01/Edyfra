@@ -1,8 +1,10 @@
+import { getAppUrl } from "@/lib/app-url";
+
 export const APP_NAME = "Edyfra";
 export const APP_TAGLINE = "Kenya's Institutional Study Platform";
 export const APP_DESCRIPTION = "Connect with verified tutors and peers. AI-powered matching, live study rooms, and institutional analytics.";
-export const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://edyfra.com";
-export const APP_EMAIL = "hello@edyfra.com";
+export const APP_URL = getAppUrl();
+export const APP_EMAIL = "hello@edyfra.online";
 
 export const PAGINATION = {
   DEFAULT_LIMIT: 20,

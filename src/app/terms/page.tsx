@@ -289,7 +289,7 @@ export default function TermsPage() {
                 For questions about these Terms, please contact us at:
               </p>
               <p>
-                <strong>Email:</strong> legal@edyfra.com<br />
+                <strong>Email:</strong> legal@edyfra.online<br />
                 <strong>Address:</strong> Nairobi, Kenya
               </p>
               <p className="text-xs italic bg-secondary p-4 rounded-xl border border-border">

@@ -298,7 +298,7 @@ async function notifyFoundersOfApplication(
     );
     if (recipients.length === 0) return;
     await resend.emails.send({
-      from: "Edyfra <noreply@edyfra.com>",
+      from: "Edyfra <noreply@edyfra.online>",
       to: recipients,
       subject: `New institution application — ${schoolName}`,
       html: `
@@ -321,7 +321,7 @@ async function emailApplicantConfirmation(
 ) {
   const resend = getResend();
   await resend.emails.send({
-    from: "Edyfra Institutions <institutions@edyfra.com>",
+    from: "Edyfra Institutions <institutions@edyfra.online>",
     to: email,
     subject: `Application received — ${schoolName}`,
     html: `

@@ -1,6 +1,8 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
+import { isShellUsable } from "@/lib/profile-completion";
 import DashboardSidebar from "@/components/dashboard/Sidebar";
 import MatchNotification from "@/components/dashboard/MatchNotification";
 import MobileNav from "@/components/dashboard/MobileNav";
@@ -71,8 +73,17 @@ export default async function DashboardLayout({
     include: { institutionMembers: true, studentProfile: true, tutorProfile: true },
   });
 
-  const hasOnboarded = dbUser?.studentProfile || dbUser?.tutorProfile || dbUser?.role === "ADMIN" || dbUser?.role === "FOUNDER";
-  if (!hasOnboarded) {
+  // /dashboard/settings is the one page an account with no profile row must be
+  // able to reach, because it is where a half-finished signup finishes setting
+  // up. Everything else under /dashboard needs a profile to render against.
+  const pathname = (await headers()).get("x-pathname");
+  const isSettingsRoute = pathname === "/dashboard/settings";
+
+  if (!isSettingsRoute && !isShellUsable({
+    role: dbUser?.role ?? user.user_metadata?.role,
+    studentProfile: dbUser?.studentProfile,
+    tutorProfile: dbUser?.tutorProfile,
+  })) {
     redirect("/onboarding/choice");
   }
 

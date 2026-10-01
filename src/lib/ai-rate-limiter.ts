@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { getAIConfig, invalidateAICache, DEFAULT_AI_MODEL } from "@/lib/ai-config";
+import { getAppUrl } from "@/lib/app-url";
 
 /**
  * Server-side rate limiter + usage logging for AI calls via OpenRouter.
@@ -49,7 +50,7 @@ async function getOpenAIClient(): Promise<OpenAI | null> {
       baseURL: "https://openrouter.ai/api/v1",
       apiKey: config.apiKey,
       defaultHeaders: {
-        "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "https://edyfra.com",
+        "HTTP-Referer": getAppUrl(),
         "X-Title": "Edyfra",
       },
     });

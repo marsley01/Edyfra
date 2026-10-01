@@ -74,16 +74,16 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Allowed origins: local dev + all production Vercel deployments + custom domain.
-# Add any new preview/staging URLs here or set CORS_ORIGINS env var (comma-separated).
+# Allowed origins: local dev + the live domain. The apex and www labels are
+# distinct origins to a browser, so both are listed. Add any new preview/staging
+# URLs here or set CORS_ORIGINS env var (comma-separated).
 _extra_origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "https://edyfra-v2.vercel.app",
-        "https://edyfra.com",
-        "https://www.edyfra.com",
+        "https://www.edyfra.online",
+        "https://edyfra.online",
         *_extra_origins,
     ],
     allow_credentials=True,

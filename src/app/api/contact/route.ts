@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
 
     try {
       await getResend().emails.send({
-        from: "Edyfra Contact <hello@edyfra.com>",
+        from: "Edyfra Contact <hello@edyfra.online>",
         to: CONTACT_INBOX,
         replyTo: email,
         subject: `[Contact] ${safeSubject}`,

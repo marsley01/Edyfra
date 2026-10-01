@@ -5,7 +5,6 @@ import { rateLimit, getRateLimitKey, getConfig } from '@/lib/rate-limit'
 const ALLOWED_ORIGINS = [
   'https://www.edyfra.online',
   'https://edyfra.online',
-  'https://edyfra.com',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
   ...(process.env.EXTERNAL_ALLOWED_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean) || []),
@@ -145,6 +144,16 @@ export async function middleware(request: NextRequest) {
       return setCorsHeaders(response, origin)
     }
   }
+
+  // Forward the pathname to server components. Layouts have no access to the
+  // route they are rendering, but the dashboard layout needs to know whether the
+  // current request is for /dashboard/settings so an account that has not
+  // finished onboarding can still reach the page that lets them finish.
+  // `set` (not `append`) deliberately overwrites any client-supplied value so
+  // the header can only ever describe the real path. This is a UX gate, never
+  // an authorization boundary — every page and server action re-checks the
+  // session independently.
+  request.headers.set('x-pathname', request.nextUrl.pathname)
 
   let supabaseResponse = NextResponse.next({ request })
 

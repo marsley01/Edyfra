@@ -15,6 +15,7 @@ import { OverlayManagerProvider } from "@/lib/overlay-manager";
 import { ClickFeedback } from "@/components/click-feedback";
 import { MaintenanceGate } from "@/components/maintenance-gate";
 import { JsonLd } from "@/components/json-ld";
+import { CANONICAL_ORIGIN, getAppUrl } from "@/lib/app-url";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans" });
@@ -31,13 +32,13 @@ export const metadata: Metadata = {
     "edyfra", "study platform kenya", "tutors kenya", "AI learning", "university tutors",
     "high school tutors", "online study", "peer learning", "education kenya",
   ],
-  authors: [{ name: "Edyfra", url: "https://edyfra-v2.vercel.app" }],
+  authors: [{ name: "Edyfra", url: CANONICAL_ORIGIN }],
   creator: "Edyfra",
-  metadataBase: new URL("https://edyfra-v2.vercel.app"),
+  metadataBase: new URL(CANONICAL_ORIGIN),
    openGraph: {
   type: "website",
   locale: "en_KE",
-  url: "https://edyfra-v2.vercel.app",
+  url: CANONICAL_ORIGIN,
   siteName: "Edyfra",
   title: "Edyfra — Kenya's Institutional Study Platform",
   description: "AI-powered tutor matching, live study rooms, and institutional analytics for Kenyan scholars.",
@@ -93,7 +94,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
 };
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://edyfra-v2.vercel.app';
+const siteUrl = getAppUrl();
 
 const organizationJsonLd = {
   "@context": "https://schema.org",
@@ -108,7 +109,7 @@ const organizationJsonLd = {
   contactPoint: {
     "@type": "ContactPoint",
     contactType: "support",
-    email: "help@edyfra.com",
+    email: "help@edyfra.online",
   },
 };
 

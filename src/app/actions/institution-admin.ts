@@ -530,7 +530,7 @@ export async function inviteTeacher(input: InviteTeacherInput) {
     const resend = getResend();
     const acceptUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/institution/accept?token=${token}`;
     await resend.emails.send({
-      from: "Edyfra Institutions <institutions@edyfra.com>",
+      from: "Edyfra Institutions <institutions@edyfra.online>",
       to: data.email,
       subject: `You're invited to join ${membership.institution.name} on Edyfra`,
       html: `

@@ -1,7 +1,8 @@
 import { MetadataRoute } from 'next';
+import { getAppUrl } from '@/lib/app-url';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://edyfra-v2.vercel.app';
+  const baseUrl = getAppUrl();
 
   return [
     { url: `${baseUrl}/`, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },

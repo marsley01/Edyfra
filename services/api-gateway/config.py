@@ -15,12 +15,25 @@ class Settings(BaseSettings):
     # Must be explicitly opted-in; defaults to False (production-safe).
     IS_DEV: bool = False
 
-    # Comma-separated allowed origins
-    ALLOWED_ORIGINS: str = "https://edyfra-v2.vercel.app,https://kenyalibrary.app"
+    # Comma-separated allowed origins. Defaults to the live domain plus the
+    # apex/www pair — browsers treat those as distinct origins, so both are
+    # listed; override via ALLOWED_ORIGINS for staging deployments.
+    ALLOWED_ORIGINS: str = (
+        "https://www.edyfra.online,https://edyfra.online,https://kenyalibrary.app"
+    )
     
     @property
     def cors_origins(self) -> List[str]:
         return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",") if origin.strip()]
+
+    # Public origin used to build user-facing deep links (profile URLs, room
+    # join links, booking links). Kept separate from ALLOWED_ORIGINS because
+    # this one is a single origin, not an access-control list.
+    SITE_URL: str = "https://www.edyfra.online"
+
+    @property
+    def site_url(self) -> str:
+        return self.SITE_URL.rstrip("/")
 
     class Config:
         env_file = ".env"

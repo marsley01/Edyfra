@@ -1,5 +1,6 @@
 import { getAI } from "@/lib/preflight/instance";
 import { getAIConfig } from "@/lib/ai-config";
+import { getAppUrl } from "@/lib/app-url";
 import OpenAI from "openai";
 
 let openaiInstance: OpenAI | null = null;
@@ -34,7 +35,7 @@ async function getOpenAI() {
       defaultHeaders:
         provider === "openrouter"
           ? {
-              "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "https://edyfra.com",
+              "HTTP-Referer": getAppUrl(),
               "X-Title": "Edyfra",
             }
           : undefined,

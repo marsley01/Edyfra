@@ -3,6 +3,7 @@ import { createEdyfraMemory } from "./memory-setup";
 import { createEdyfraAgentSystem } from "./agents";
 import type { EdyfraAgentSystem } from "./agents";
 import { getAIConfig } from "@/lib/ai-config";
+import { getAppUrl } from "@/lib/app-url";
 
 let aiInstance: EdyfraAIService | null = null;
 let instanceKey: string | null = null;
@@ -14,7 +15,7 @@ async function getConfig() {
   return {
     openrouterKey: config.apiKey ?? undefined,
     googleKey: process.env.GOOGLE_AI_KEY,
-    appUrl: process.env.NEXT_PUBLIC_APP_URL || "https://edyfra.com",
+    appUrl: getAppUrl(),
     appName: "Edyfra",
   };
 }

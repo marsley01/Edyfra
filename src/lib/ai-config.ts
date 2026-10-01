@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/utils/supabase/admin";
+import { getAppUrl } from "@/lib/app-url";
 
 /**
  * Central AI configuration resolver.
@@ -97,7 +98,7 @@ export function openRouterHeaders(apiKey: string): Record<string, string> {
   return {
     Authorization: `Bearer ${apiKey}`,
     "Content-Type": "application/json",
-    "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "https://edyfra.com",
+    "HTTP-Referer": getAppUrl(),
     "X-Title": "Edyfra",
   };
 }

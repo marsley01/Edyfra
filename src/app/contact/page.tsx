@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { JsonLd } from "@/components/json-ld";
+import { getAppUrl } from "@/lib/app-url";
 import ContactClient from "./ContactClient";
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://edyfra-v2.vercel.app";
+const siteUrl = getAppUrl();
 
 export const metadata: Metadata = {
   title: "Contact",

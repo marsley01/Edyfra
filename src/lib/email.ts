@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { getAppUrl } from "@/lib/app-url";
 
 function getResendApiKey(): string {
   const key = process.env.RESEND_API_KEY;
@@ -15,7 +16,7 @@ export function getResend(): Resend {
 export async function sendWelcomeEmail(email: string, name: string) {
   try {
     await getResend().emails.send({
-      from: "Edyfra <welcome@edyfra.com>",
+      from: "Edyfra <welcome@edyfra.online>",
       to: email,
       subject: "Welcome to the Edyfra Scholar Community!",
       html: `
@@ -32,7 +33,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
               <li>Climb the <strong>Leaderboard</strong> and earn rewards.</li>
             </ul>
           </div>
-          <a href="https://edyfra.com/dashboard" style="display: inline-block; background: #0f172a; color: #ffffff; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 14px;">Access Your Dashboard</a>
+          <a href="${getAppUrl()}/dashboard" style="display: inline-block; background: #0f172a; color: #ffffff; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 14px;">Access Your Dashboard</a>
           <hr style="margin: 40px 0; border: 0; border-top: 1px solid #e2e8f0;" />
           <p style="font-size: 12px; color: #94a3b8; text-align: center;">
             &copy; 2024 Edyfra Platforms. All rights reserved.
@@ -48,7 +49,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
 export async function sendTutorWelcomeEmail(email: string, name: string) {
   try {
     await getResend().emails.send({
-      from: "Edyfra Experts <experts@edyfra.com>",
+      from: "Edyfra Experts <experts@edyfra.online>",
       to: email,
       subject: "Your Edyfra Expert Application Received",
       html: `

@@ -5,6 +5,7 @@
  *   npx tsx scripts/create-api-key.ts --name "Kenya Library System" --platform kenyalibrarysystem --scopes resources,tutors,stats
  */
 import { PrismaClient } from "@/generated/client";
+import { getAppUrl } from "../src/lib/app-url";
 import crypto from "crypto";
 
 const prisma = new PrismaClient();
@@ -59,7 +60,7 @@ async function main() {
   console.log(`\nYour API key (store it safely, shown once):`);
   console.log(`\n${rawKey}\n`);
   console.log("Usage:");
-  console.log(`  curl -H "Authorization: Bearer ${rawKey}" ${process.env.NEXT_PUBLIC_APP_URL || "https://edyfra.com"}/api/external/v1/stats`);
+  console.log(`  curl -H "Authorization: Bearer ${rawKey}" ${getAppUrl()}/api/external/v1/stats`);
 }
 
 main()

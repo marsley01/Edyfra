@@ -5,6 +5,7 @@ import { randomBytes } from "crypto";
 import prisma from "@/lib/prisma";
 import { pythonGetBookingSessionData } from "@/lib/booking-client";
 import { generateICSContent, type IcalBookingData } from "@/lib/calendar/ics";
+import { getAppUrl } from "@/lib/app-url";
 
 export async function getGoogleCalendarAuthUrl() {
   const supabase = await createClient();
@@ -90,7 +91,7 @@ export async function generateICalFile(bookingId: string) {
     durationMinutes: booking.durationMinutes,
     tutorName: booking.tutor?.name || booking.tutorName,
     studentName: booking.student?.name || booking.studentName,
-    meetingUrl: booking.meetingUrl || `https://edyfra-v2.vercel.app/study-room/${bookingId}`,
+    meetingUrl: booking.meetingUrl || `${getAppUrl()}/study-room/${bookingId}`,
   };
 
   const content = generateICSContent(icalData);

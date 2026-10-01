@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { getAppUrl } from "@/lib/app-url";
 import { z } from "zod";
 
 const forgotPasswordSchema = z.object({
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
     const { error } = await supabase.auth.resetPasswordForEmail(
       parsed.data.email,
       {
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "https://edyfra-v2.vercel.app"}/auth/callback?next=/update-password`,
+        redirectTo: `${getAppUrl()}/auth/callback?next=/update-password`,
       },
     );
 

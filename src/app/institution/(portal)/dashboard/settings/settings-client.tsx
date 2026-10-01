@@ -193,7 +193,7 @@ export function SettingsClient({
               ))}
             </div>
             <p className="mt-3 text-xs text-gray-500">
-              To upgrade, change plan, or update billing, contact founders@edyfra.com — direct upgrade wiring is coming soon.
+              To upgrade, change plan, or update billing, contact founders@edyfra.online — direct upgrade wiring is coming soon.
             </p>
           </CardContent>
         </Card>

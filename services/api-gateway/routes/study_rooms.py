@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request, Query, HTTPException
 from typing import Optional
 from utils.supabase import supabase, execute_async
+from config import settings
 from models.responses import StandardResponse, ResponseMeta
 
 router = APIRouter(prefix="/v1/study-rooms", tags=["Study Rooms"])
@@ -108,7 +109,7 @@ async def get_room_details(room_id: str, request: Request):
                 host_name = s["student"].get("name", host_name)
                 
             is_live = s.get("status") == "ACTIVE"
-            join_url = f"https://edyfra-v2.vercel.app/rooms/{room_id}" if is_live else None
+            join_url = f"{settings.site_url}/rooms/{room_id}" if is_live else None
             
             room_detail = {
                 "id": s["id"],
@@ -153,7 +154,7 @@ async def get_room_details(room_id: str, request: Request):
                 "max_participants": 2,
                 "starts_at": starts_at,
                 "is_live": is_live,
-                "join_url": f"https://edyfra-v2.vercel.app/rooms/{room_id}" if is_live else None
+                "join_url": f"{settings.site_url}/rooms/{room_id}" if is_live else None
             }
             
             rate_remaining = getattr(request.state, "rate_limit_remaining", 0)

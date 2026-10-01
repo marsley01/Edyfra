@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { JsonLd } from "@/components/json-ld";
+import { getAppUrl } from "@/lib/app-url";
 import NewsArticleClient from "./NewsArticleClient";
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://edyfra-v2.vercel.app";
+const siteUrl = getAppUrl();
 
 type Props = {
   params: Promise<{ slug: string }>;

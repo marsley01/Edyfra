@@ -1,6 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { getMyProfileStatus } from "@/app/actions/profile-status";
+import { ProfileCompletionPanel } from "@/components/profile/profile-completion-panel";
+import type { ProfileStatus } from "@/lib/profile-completion";
+import { getSubjectsByLevel } from "@/lib/subjects";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -20,7 +24,6 @@ import {
   Eye, EyeOff, Languages, Bot, Search, AlertTriangle, Smartphone, X,
   Calendar as CalendarIcon
 } from "lucide-react";
-import { getSubjectsByLevel } from "@/lib/subjects";
 import { useTheme } from "next-themes";
 import { getUserData, updateProfile, updateUserPreferences, updateNotificationSettings, updateStudentProfile, changePassword, changeEmail, downloadUserData, deleteUserAccount, updateAvatar } from "@/app/actions/user";
 import { getCalendarConnection, getGoogleCalendarAuthUrl, disconnectGoogleCalendar } from "@/app/actions/calendar";
@@ -38,8 +41,6 @@ const ACCENT_COLORS = [
   { name: "Royal Purple", value: "#6d28d9" },
   { name: "Warm Amber", value: "#b45309" },
 ];
-
-const SUBJECTS = ["Mathematics", "Physics", "Chemistry", "Biology", "English", "Kiswahili", "Geography", "History", "Computer Science", "Business"];
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -63,6 +64,7 @@ export default function SettingsPage() {
   const [calendarLoading, setCalendarLoading] = useState(true);
   const [calendarConnected, setCalendarConnected] = useState(false);
   const [calendarId, setCalendarId] = useState<string | null>(null);
+  const [profileStatus, setProfileStatus] = useState<ProfileStatus | null>(null);
 
   useEffect(() => {
     loadUserData();
@@ -91,7 +93,11 @@ export default function SettingsPage() {
   }, []);
 
   const loadUserData = async () => {
-    const data = await getUserData() as any;
+    const [data, status] = await Promise.all([
+      getUserData() as Promise<any>,
+      getMyProfileStatus(),
+    ]);
+    setProfileStatus(status);
     if (data) {
       setUserData(data);
       setCurrentAvatar(data.avatar || null);
@@ -268,7 +274,22 @@ export default function SettingsPage() {
 
           <main className="lg:col-span-3 space-y-8">
             {/* ======== PROFILE ======== */}
-            <TabsContent value="profile" className="mt-0">
+            <TabsContent value="profile" className="mt-0 space-y-6">
+              {profileStatus && !profileStatus.isComplete && (
+                <ProfileCompletionPanel
+                  status={profileStatus}
+                  defaults={{
+                    name: userData?.name || formData.name || "",
+                    educationLevel: userData?.educationLevel || formData.educationLevel,
+                    curriculum: userData?.curriculum || "8-4-4",
+                    formYear: userData?.formYear ?? null,
+                    county: userData?.county || "",
+                    subjects: userData?.studentProfile?.subjects || [],
+                    weakTopics: userData?.studentProfile?.weakTopics || [],
+                    studyStyle: userData?.studentProfile?.studyStyle || "",
+                  }}
+                />
+              )}
               <Card className="border-2 border-primary/5 shadow-sm rounded-2xl">
                 <CardHeader>
                   <CardTitle>Profile</CardTitle>

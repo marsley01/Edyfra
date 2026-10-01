@@ -36,7 +36,7 @@ def send_booking_confirmation(booking: dict) -> None:
                     <td style="padding: 8px; border-bottom: 1px solid #eee;">{booking.get('preferred_datetime', '-')}</td></tr>
               </table>
               <p>A tutor will confirm your session shortly. You can manage your bookings anytime at
-                 <a href="https://edyfra-v2.vercel.app" style="color: #6d28d9;">edyfra.app</a>.</p>
+                 <a href="{settings.site_url}" style="color: #6d28d9;">edyfra.online</a>.</p>
               <p style="color: #888; font-size: 12px; margin-top: 24px;">You received this email because a booking was made
                  on your behalf on an Edyfra partner platform. If this wasn't you, ignore this message.</p>
             </div>

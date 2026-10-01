@@ -219,6 +219,7 @@ export async function updateUserRole(role: "STUDENT" | "TUTOR") {
     });
     if (authError) throw authError;
 
+    let finalUserId: string;
     if (existingUser) {
       // CRITICAL FIX: DO NOT update the 'id' field as it's the primary key and immutable
       await prisma.user.update({
@@ -231,9 +232,10 @@ export async function updateUserRole(role: "STUDENT" | "TUTOR") {
           points: existingUser.points ?? 0,
         }
       });
+      finalUserId = existingUser.id;
     } else {
       const metaGender = user.user_metadata?.gender;
-      await prisma.user.create({
+      const created = await prisma.user.create({
         data: {
           id: user.id,
           email: user.email || `${user.id}@placeholder.edyfra.com`,
@@ -247,14 +249,45 @@ export async function updateUserRole(role: "STUDENT" | "TUTOR") {
           referralCode: generateReferralCode(user.user_metadata?.name || user.user_metadata?.full_name || "New User"),
         }
       });
+      finalUserId = created.id;
     }
 
-    // Fix critical infinite redirect loop
-    if (role === "STUDENT") {
-      revalidatePath("/dashboard");
+    // Materialise a role-appropriate profile row the moment the role is chosen.
+    // Without it the dashboard layout has nothing to gate on, so an account that
+    // abandoned the wizard afterwards could never reach /dashboard/settings to
+    // finish — it would be bounced back to /onboarding/choice forever. The row is
+    // a deliberate stub; getProfileStatus() is what decides "finished", and it
+    // treats empty subjects/weakTopics/studyStyle as incomplete.
+    if (prismaRole === Role.TUTOR) {
+      await prisma.tutorProfile.upsert({
+        where: { userId: finalUserId },
+        create: {
+          userId: finalUserId,
+          subjects: [],
+          levelsTaught: [],
+          verificationPath: VerifPath.POINTS,
+          bio: "",
+          availability: { isOnline: false },
+        },
+        update: {},
+      });
     } else {
-      revalidatePath("/tutor/dashboard");
+      await prisma.studentProfile.upsert({
+        where: { userId: finalUserId },
+        create: {
+          userId: finalUserId,
+          subjects: [],
+          weakTopics: [],
+          studyStyle: "",
+          preferredTimes: {},
+          goals: [],
+        },
+        update: {},
+      });
     }
+
+    revalidatePath("/dashboard");
+    revalidatePath("/tutor/dashboard");
     return { success: true };
   } catch (error: any) {
     console.error(error, { action: "updateUserRole" });
@@ -408,7 +441,12 @@ export async function updateStudentProfile(data: {
   name?: string;
   bio?: string;
   educationLevel?: string;
+  curriculum?: string;
+  formYear?: number;
+  county?: string;
   subjects?: string[];
+  weakTopics?: string[];
+  studyStyle?: string;
   studyHoursPerWeek?: number;
 }) {
   try {
@@ -416,22 +454,68 @@ export async function updateStudentProfile(data: {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Unauthorized");
 
-    const updateData: any = {};
-    if (data.name) updateData.name = data.name;
-    if (data.bio !== undefined) updateData.bio = data.bio;
-    if (data.educationLevel) updateData.educationLevel = data.educationLevel as EduLevel;
+    // Resolve (or heal) the Prisma row first. Every write below targets it, and
+    // `prisma.user.update` throws P2025 when it is missing — which is exactly the
+    // state a brand-new Google sign-up is in before onboarding runs.
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { id: user.id },
+          ...(user.email ? [{ email: user.email }] : []),
+        ],
+      },
+    });
 
-    if (Object.keys(updateData).length > 0) {
-      await prisma.user.update({ where: { id: user.id }, data: updateData });
+    const finalUserId = existingUser?.id ?? user.id;
+
+    if (!existingUser) {
+      await prisma.user.create({
+        data: {
+          id: user.id,
+          email: user.email || `${user.id}@placeholder.edyfra.com`,
+          name: data.name || user.user_metadata?.name || user.user_metadata?.full_name || "New User",
+          role: Role.STUDENT,
+          educationLevel: (data.educationLevel as EduLevel) || EduLevel.HIGH_SCHOOL,
+          county: data.county || "Nairobi",
+          tier: Tier.BRONZE,
+          avatar: user.user_metadata?.avatar || null,
+          referralCode: generateReferralCode(
+            data.name || user.user_metadata?.name || "New User",
+          ),
+        },
+      });
+    } else {
+      const updateData: Prisma.UserUpdateInput = {};
+      if (data.name) updateData.name = data.name;
+      if (data.bio !== undefined) updateData.bio = data.bio;
+      if (data.educationLevel) updateData.educationLevel = data.educationLevel as EduLevel;
+      if (data.curriculum) updateData.curriculum = data.curriculum;
+      if (typeof data.formYear === "number") updateData.formYear = data.formYear;
+      if (data.county) updateData.county = data.county;
+
+      if (Object.keys(updateData).length > 0) {
+        await prisma.user.update({ where: { id: finalUserId }, data: updateData });
+      }
     }
 
-    if (data.subjects) {
-      const existingProfile = await prisma.studentProfile.findUnique({ where: { userId: user.id } });
-      if (existingProfile) {
-        await prisma.studentProfile.update({ where: { userId: user.id }, data: { subjects: data.subjects } });
-      } else {
-        await prisma.studentProfile.create({ data: { userId: user.id, subjects: data.subjects, studyStyle: "", preferredTimes: {}, goals: [], weakTopics: [] } });
-      }
+    const profileData: Prisma.StudentProfileUpdateInput = {};
+    if (data.subjects !== undefined) profileData.subjects = data.subjects;
+    if (data.weakTopics !== undefined) profileData.weakTopics = data.weakTopics;
+    if (data.studyStyle !== undefined) profileData.studyStyle = data.studyStyle;
+
+    if (Object.keys(profileData).length > 0) {
+      await prisma.studentProfile.upsert({
+        where: { userId: finalUserId },
+        create: {
+          userId: finalUserId,
+          subjects: data.subjects || [],
+          weakTopics: data.weakTopics || [],
+          studyStyle: data.studyStyle || "",
+          preferredTimes: {},
+          goals: [],
+        },
+        update: profileData,
+      });
     }
 
     if (data.studyHoursPerWeek !== undefined) {

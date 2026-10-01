@@ -4,6 +4,7 @@ import { getUserData } from "./user";
 import { revalidatePath } from "next/cache";
 import { notifyUser } from "@/app/actions/notifications";
 import { decrementTutorActiveSessions } from "./match-algorithm";
+import { getAppUrl } from "@/lib/app-url";
 import {
   pythonGetTutorAvailability,
   pythonSaveTutorAvailability,
@@ -131,7 +132,7 @@ export async function updateBookingStatus(bookingId: string, status: string, rea
               description: eventDescription,
               start: startDate,
               end: endDate,
-              location: "https://edyfra-v2.vercel.app/study-room/" + bookingId,
+              location: `${getAppUrl()}/study-room/${bookingId}`,
               attendees: booking.studentEmail && booking.tutorEmail
                 ? [
                     { email: booking.studentEmail, displayName: booking.studentName },
@@ -147,7 +148,7 @@ export async function updateBookingStatus(bookingId: string, status: string, rea
                   description: eventDescription,
                   start: startDate,
                   end: endDate,
-                  location: "https://edyfra-v2.vercel.app/study-room/" + bookingId,
+                  location: `${getAppUrl()}/study-room/${bookingId}`,
                   attendees: booking.studentEmail && booking.tutorEmail
                     ? [
                         { email: booking.studentEmail, displayName: booking.studentName },
@@ -166,7 +167,7 @@ export async function updateBookingStatus(bookingId: string, status: string, rea
               description: eventDescription,
               start: startDate,
               end: endDate,
-              location: "https://edyfra-v2.vercel.app/study-room/" + bookingId,
+              location: `${getAppUrl()}/study-room/${bookingId}`,
               attendees: booking.studentEmail && booking.tutorEmail
                 ? [
                     { email: booking.studentEmail, displayName: booking.studentName },

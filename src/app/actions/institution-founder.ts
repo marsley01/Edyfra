@@ -75,7 +75,7 @@ export async function decideInstitutionApplication(input: z.infer<typeof Decisio
       const resend = getResend();
       if (inst.email) {
         await resend.emails.send({
-          from: "Edyfra Institutions <institutions@edyfra.com>",
+          from: "Edyfra Institutions <institutions@edyfra.online>",
           to: inst.email,
           subject: `Welcome to Edyfra — ${inst.name} is approved`,
           html: `

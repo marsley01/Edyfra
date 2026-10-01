@@ -124,7 +124,7 @@ export async function emailInsightToTeacher(
   try {
     const resend = getResend();
     await resend.emails.send({
-      from: "Edyfra Institutions <institutions@edyfra.com>",
+      from: "Edyfra Institutions <institutions@edyfra.online>",
       to: teachers.map((t) => t.user.email),
       subject: `AI insight — ${student.name} (Term ${term} ${year})`,
       html: `

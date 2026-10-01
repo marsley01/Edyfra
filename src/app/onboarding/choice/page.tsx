@@ -27,9 +27,12 @@ export default function RoleChoicePage() {
       const profile = await getUserData();
 
       if (profile) {
-        const hasProfile = profile.studentProfile || profile.tutorProfile;
-        const hasRole = profile.role === "TUTOR" || profile.role === "ADMIN" || profile.role === "FOUNDER";
-        if (hasProfile || (hasRole && !["STUDENT"].includes(profile.role))) {
+        // Only bounce out of onboarding once there is a profile row to render
+        // against. Previously a TUTOR-role user with no profile was sent to
+        // /dashboard, whose layout sent them straight back here — an infinite
+        // full-page redirect loop that locked them out of the entire app.
+        const hasProfileRow = Boolean(profile.studentProfile || profile.tutorProfile);
+        if (hasProfileRow) {
           window.location.href = "/dashboard";
           return;
         }

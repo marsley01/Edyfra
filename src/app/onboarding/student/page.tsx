@@ -12,11 +12,13 @@ import { Loader2, BookOpen, MapPin, GraduationCap, ArrowRight, CheckCircle2, Ale
 import { EDUCATIONAL_SUBJECTS } from "@/utils/subjects";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
+import Link from "next/link";
 
 export default function StudentOnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
    const [formData, setFormData] = useState({
     role: "STUDENT",
     educationLevel: "",
@@ -84,13 +86,20 @@ export default function StudentOnboardingPage() {
 
   const handleSubmit = async () => {
     setLoading(true);
+    setError(null);
     try {
       const result = await completeOnboarding(formData);
       if (result.success) {
         window.location.href = "/dashboard";
+        return;
       }
+      // Previously a `false` result left the button spinning forever with no
+      // message and no way to retry.
+      setError(result.error || "We couldn't save your profile. Please try again.");
     } catch (e) {
       console.error(e);
+      setError("We couldn't save your profile. Please try again.");
+    } finally {
       setLoading(false);
     }
   };
@@ -455,7 +464,16 @@ export default function StudentOnboardingPage() {
                       >
                         {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Start My Journey"}
                       </Button>
-                   </div>
+                    </div>
+                    {error && (
+                      <div className="mt-4 flex items-center gap-3 rounded-2xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-red-500 text-sm font-bold">
+                        <AlertCircle className="h-5 w-5 shrink-0" />
+                        <span>{error}</span>
+                        <Link href="/dashboard/settings" className="ml-auto shrink-0 underline underline-offset-2 whitespace-nowrap">
+                          Finish later in settings
+                        </Link>
+                      </div>
+                    )}
                 </motion.div>
               )}
             </AnimatePresence>

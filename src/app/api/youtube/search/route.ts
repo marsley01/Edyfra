@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getAppUrl } from "@/lib/app-url";
 
 /**
  * Server-side proxy for YouTube Data API search.
@@ -70,7 +71,7 @@ export async function GET(request: Request) {
 
   try {
     const res = await fetch(`https://www.googleapis.com/youtube/v3/search?${params.toString()}`, {
-      headers: { Referer: process.env.NEXT_PUBLIC_APP_URL || "https://edyfra-v2.vercel.app/" },
+      headers: { Referer: `${getAppUrl()}/` },
       next: { revalidate: CACHE_SECONDS },
     });
 

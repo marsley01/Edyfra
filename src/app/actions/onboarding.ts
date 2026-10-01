@@ -157,27 +157,29 @@ export async function completeOnboarding(data: OnboardingData) {
       kycSchoolIdUrl: kycSchoolIdUrl || ""
     });
 
+    // Re-running onboarding must not silently undo an admin decision. An
+    // APPROVED tutor re-submitting used to be reset to PENDING with no notice,
+    // which revoked a live tutor's access. APPROVED is left untouched; REJECTED
+    // is allowed back in so a tutor can fix their documents.
+    const existingApplication = await prisma.tutorApplication.findUnique({
+      where: { userId: finalUserId },
+      select: { status: true },
+    });
+    const nextStatus = existingApplication?.status === "APPROVED" ? "APPROVED" : "PENDING";
+
+    const applicationData = {
+      path: verificationPath === "GRADES" ? VerifPath.GRADES : VerifPath.POINTS,
+      gradesUrl: kycIdPhotoUrl || "", // We use gradesUrl for primary ID document as a fallback
+      subjects: subjects || [],
+      notes: kycNotes,
+      idPhotoUrl: kycIdPhotoUrl || null,
+      selfieUrl: kycSelfieUrl || null,
+    };
+
     await prisma.tutorApplication.upsert({
       where: { userId: finalUserId },
-      create: {
-        userId: finalUserId,
-        path: verificationPath === "GRADES" ? VerifPath.GRADES : VerifPath.POINTS,
-        gradesUrl: kycIdPhotoUrl || "", // We use gradesUrl for primary ID document as a fallback
-        subjects: subjects || [],
-        status: "PENDING",
-        notes: kycNotes,
-        idPhotoUrl: kycIdPhotoUrl || null,
-        selfieUrl: kycSelfieUrl || null,
-      },
-      update: {
-        path: verificationPath === "GRADES" ? VerifPath.GRADES : VerifPath.POINTS,
-        gradesUrl: kycIdPhotoUrl || "",
-        subjects: subjects || [],
-        status: "PENDING",
-        notes: kycNotes,
-        idPhotoUrl: kycIdPhotoUrl || null,
-        selfieUrl: kycSelfieUrl || null,
-      }
+      create: { userId: finalUserId, status: "PENDING", ...applicationData },
+      update: { ...applicationData, status: nextStatus },
     });
 
     await prisma.tutorProfile.upsert({
@@ -225,6 +227,14 @@ export async function completeOnboarding(data: OnboardingData) {
   return { success: true };
   } catch (error: any) {
     console.error("Onboarding failed:", error);
-    return { success: false, error: "Internal server error" };
+    // Surface a usable reason. The wizard used to get a bare `false` here and
+    // leave its submit button spinning forever with no way out.
+    const message =
+      error?.message === "Unauthorized"
+        ? "Your session expired. Please sign in again."
+        : error?.message?.includes("Registration is currently closed")
+          ? "Registration is temporarily closed. Please try again later."
+          : "We couldn't save your profile. Please try again in a moment.";
+    return { success: false, error: message };
   }
 }

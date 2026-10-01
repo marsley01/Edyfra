@@ -13,10 +13,13 @@ import {
   User, BookOpen, Loader2, Save, Bell, Clock, Shield, Palette,
   Moon, Sun, Monitor, Bot, Lock, Mail, Download, Trash2, AlertTriangle,
   Wallet, Phone, Calendar, Check, Settings as SettingsIcon, Globe,
-  ChevronRight, Sparkles, Star, Video, X, CalendarClock, RefreshCw
+  ChevronRight, Sparkles, Star, Video, X, CalendarClock, RefreshCw,
+  ShieldCheck, Upload, FileCheck
 } from "lucide-react";
 import { getSubjectsByLevel } from "@/lib/subjects";
 import { getUserData, updateProfile, updateTutorProfile, changePassword, changeEmail, downloadUserData, deleteUserAccount, updateAvatar, updateNotificationSettings } from "@/app/actions/user";
+import { saveTutorVerification, getTutorVerification } from "@/app/actions/tutor-kyc";
+import { toast } from "sonner";
 import { getTutorCalendarSettings, updateTutorCalendarSettings } from "@/app/actions/calendar-sync";
 import { getNotificationSettings } from "@/app/actions/notifications";
 import { PushNotificationManager } from "@/components/PushNotificationManager";
@@ -47,6 +50,7 @@ const ACCENT_COLORS = [
 
 const SIDEBAR_ITEMS = [
   { id: "profile", label: "Profile", icon: User },
+  { id: "verification", label: "Verification", icon: ShieldCheck },
   { id: "availability", label: "Availability", icon: Calendar },
   { id: "calendar", label: "Calendar Sync", icon: CalendarClock },
   { id: "sessions", label: "Sessions", icon: Clock },
@@ -77,6 +81,20 @@ export default function TutorSettingsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [downloading, setDownloading] = useState(false);
   const [currentAvatar, setCurrentAvatar] = useState<string | null>(null);
+  const [verification, setVerification] = useState<{
+    status: string | null;
+    hasIdPhoto: boolean;
+    hasSelfie: boolean;
+    hasGrades: boolean;
+    notes: string | null;
+  } | null>(null);
+  const [kycFiles, setKycFiles] = useState<{ idPhoto: File | null; selfie: File | null; grades: File | null }>({
+    idPhoto: null,
+    selfie: null,
+    grades: null,
+  });
+  const [savingKyc, setSavingKyc] = useState(false);
+  const [kycError, setKycError] = useState<string | null>(null);
   const [avatarDialogOpen, setAvatarDialogOpen] = useState(false);
   const [selectedAvatarStyle, setSelectedAvatarStyle] = useState<AvatarStyle | null>(null);
   const [savingAvatar, setSavingAvatar] = useState(false);
@@ -135,7 +153,36 @@ export default function TutorSettingsPage() {
         }
       } catch {}
     }
+    try {
+      setVerification(await getTutorVerification());
+    } catch {}
     setLoading(false);
+  };
+
+  const handleSaveVerification = async () => {
+    setSavingKyc(true);
+    setKycError(null);
+    try {
+      const formData = new FormData();
+      if (kycFiles.idPhoto) formData.append("idPhoto", kycFiles.idPhoto);
+      if (kycFiles.selfie) formData.append("selfie", kycFiles.selfie);
+      if (kycFiles.grades) formData.append("grades", kycFiles.grades);
+
+      const result = await saveTutorVerification(formData);
+      if (!result.success) {
+        setKycError(result.error);
+        return;
+      }
+      setKycFiles({ idPhoto: null, selfie: null, grades: null });
+      setVerification(await getTutorVerification());
+      toast.success("Documents submitted", {
+        description: "We'll review them and get back to you shortly.",
+      });
+    } catch {
+      setKycError("Something went wrong. Please try again.");
+    } finally {
+      setSavingKyc(false);
+    }
   };
 
   const handleSave = async () => {
@@ -562,6 +609,100 @@ export default function TutorSettingsPage() {
                       <Input value={formData.mpesaNumber} onChange={(e) => setFormData({ ...formData, mpesaNumber: e.target.value })} placeholder="07XX XXX XXX" className="h-11 rounded-xl border-border/50 bg-secondary/30" />
                     </div>
                   </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* VERIFICATION */}
+            {activeTab === "verification" && (
+              <Card className="border-border/30 bg-background/60 backdrop-blur-xl shadow-xl shadow-primary/5 overflow-hidden rounded-[2rem] transition-all duration-500 hover:shadow-2xl hover:border-primary/20">
+                <CardHeader className="p-6 sm:p-8 border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <ShieldCheck className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl font-black tracking-tight">Verification</CardTitle>
+                      <CardDescription className="mt-1">
+                        Upload your documents so we can verify you and start matching you with students.
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6 sm:p-8 space-y-6">
+                  {verification?.status === "APPROVED" && (
+                    <div className="flex items-center gap-3 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600">
+                      <FileCheck className="h-5 w-5 shrink-0" />
+                      <p className="text-sm font-bold">You&apos;re verified. Nice work — you&apos;re visible to students.</p>
+                    </div>
+                  )}
+
+                  {verification?.status === "PENDING" && (
+                    <div className="flex items-start gap-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600">
+                      <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
+                      <div className="text-sm">
+                        <p className="font-bold">Your documents are under review.</p>
+                        <p className="opacity-80">You can still upload a replacement if something looks wrong.</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {verification?.status === "REJECTED" && (
+                    <div className="flex items-start gap-3 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500">
+                      <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
+                      <div className="text-sm">
+                        <p className="font-bold">We couldn&apos;t verify these documents.</p>
+                        <p className="opacity-90">{verification.notes || "Please upload clearer images and resubmit."}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {kycError && (
+                    <div className="flex items-center gap-3 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-sm font-bold">
+                      <AlertTriangle className="h-5 w-5 shrink-0" />
+                      {kycError}
+                    </div>
+                  )}
+
+                  <div className="space-y-4">
+                    <KycField
+                      label="ID photo"
+                      hint="A clear photo of your national ID or passport"
+                      file={kycFiles.idPhoto}
+                      alreadyOnFile={verification?.hasIdPhoto ?? false}
+                      onChange={(f) => setKycFiles((p) => ({ ...p, idPhoto: f }))}
+                    />
+                    <KycField
+                      label="Selfie"
+                      hint="A clear photo of your face"
+                      file={kycFiles.selfie}
+                      alreadyOnFile={verification?.hasSelfie ?? false}
+                      onChange={(f) => setKycFiles((p) => ({ ...p, selfie: f }))}
+                    />
+                    <KycField
+                      label="Grades or proof (optional)"
+                      hint="KCSE/KCSE transcript, university transcript, or proof of points"
+                      file={kycFiles.grades}
+                      alreadyOnFile={verification?.hasGrades ?? false}
+                      onChange={(f) => setKycFiles((p) => ({ ...p, grades: f }))}
+                    />
+                  </div>
+
+                  <Button
+                    onClick={handleSaveVerification}
+                    disabled={savingKyc || verification?.status === "APPROVED"}
+                    className="w-full h-12 rounded-xl bg-primary text-white font-bold"
+                  >
+                    {savingKyc ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" /> Uploading…
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4 mr-2" /> Submit for review
+                      </>
+                    )}
+                  </Button>
                 </CardContent>
               </Card>
             )}
@@ -1010,6 +1151,42 @@ export default function TutorSettingsPage() {
           </Button>
         </div>
       </div>
+    </div>
+  );
+}
+function KycField({
+  label,
+  hint,
+  file,
+  alreadyOnFile,
+  onChange,
+}: {
+  label: string;
+  hint: string;
+  file: File | null;
+  alreadyOnFile: boolean;
+  onChange: (file: File | null) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label className="text-xs font-semibold text-muted-foreground">{label}</Label>
+      <label className="flex items-center gap-3 p-4 rounded-xl border border-dashed border-border/60 hover:border-primary/50 transition-colors cursor-pointer">
+        <div className="w-10 h-10 rounded-xl bg-secondary/60 flex items-center justify-center shrink-0">
+          {file ? <FileCheck className="h-5 w-5 text-emerald-500" /> : <Upload className="h-5 w-5 text-muted-foreground" />}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-bold truncate">
+            {file ? file.name : alreadyOnFile ? "Already on file" : "Choose a file"}
+          </p>
+          <p className="text-xs text-muted-foreground truncate">{hint}</p>
+        </div>
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/webp,application/pdf"
+          className="hidden"
+          onChange={(e) => onChange(e.target.files?.[0] ?? null)}
+        />
+      </label>
     </div>
   );
 }

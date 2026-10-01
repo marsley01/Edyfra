@@ -49,7 +49,7 @@ export default function PrivacyPage() {
                 Edyfra is an educational technology platform based in Nairobi, Kenya. We provide AI-assisted learning, tutor matching, study rooms, and community features for students and tutors.
               </p>
               <p>
-                <strong>Contact:</strong> privacy@edyfra.com<br />
+                <strong>Contact:</strong> privacy@edyfra.online<br />
                 <strong>Address:</strong> Nairobi, Kenya
               </p>
             </div>
@@ -194,7 +194,7 @@ export default function PrivacyPage() {
                 <li><strong>Portability:</strong> Export your data in a usable format</li>
                 <li><strong>Objection:</strong> Object to certain processing activities</li>
               </ul>
-              <p>To exercise these rights, contact us at privacy@edyfra.com.</p>
+              <p>To exercise these rights, contact us at privacy@edyfra.online.</p>
             </div>
           </section>
 
@@ -256,7 +256,7 @@ export default function PrivacyPage() {
                 For privacy-related questions or requests, contact us at:
               </p>
               <p>
-                <strong>Email:</strong> privacy@edyfra.com<br />
+                <strong>Email:</strong> privacy@edyfra.online<br />
                 <strong>Address:</strong> Nairobi, Kenya
               </p>
             </div>
