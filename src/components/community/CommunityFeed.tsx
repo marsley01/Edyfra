@@ -21,10 +21,15 @@ export function CommunityFeed({
   initialTopic = null,
   initialTab = "for-you",
   showNews = true,
+  showHeader = true,
+  topicParam = "topic",
 }: {
   initialTopic?: string | null;
   initialTab?: FeedTab;
   showNews?: boolean;
+  showHeader?: boolean;
+  /** Query-string key that mirrors the subject filter (the forum owns ?topic= on hub pages). */
+  topicParam?: string;
 }) {
   const [topic, setTopicState] = useState<string | null>(initialTopic);
 
@@ -32,8 +37,8 @@ export function CommunityFeed({
     setTopicState(t);
     try {
       const url = new URL(window.location.href);
-      if (t) url.searchParams.set("topic", t);
-      else url.searchParams.delete("topic");
+      if (t) url.searchParams.set(topicParam, t);
+      else url.searchParams.delete(topicParam);
       window.history.replaceState(null, "", url.toString());
     } catch {
       /* non-fatal */
@@ -42,7 +47,7 @@ export function CommunityFeed({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-4 lg:px-8 lg:py-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div className="max-w-7xl mx-auto px-4 py-4 lg:px-8 lg:py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
       <aside className="hidden lg:block lg:col-span-3">
         <div className="sticky top-20 space-y-4">
           <MyCard />
@@ -50,10 +55,16 @@ export function CommunityFeed({
       </aside>
 
       <main className="lg:col-span-6 min-w-0">
-        <h1 className="text-2xl lg:text-3xl font-black tracking-tighter mb-1">
-          Community <span className="text-primary">Feed</span>
-        </h1>
-        <p className="text-sm text-muted-foreground mb-3">Questions, wins and study tips from Edyfra students and tutors.</p>
+        {showHeader && (
+          <>
+            <h1 className="text-2xl lg:text-3xl font-black tracking-tighter mb-1">
+              Community <span className="text-primary">Feed</span>
+            </h1>
+            <p className="text-sm text-muted-foreground mb-3">
+              Questions, wins and study tips from Edyfra students and tutors.
+            </p>
+          </>
+        )}
         <SocialFeed topic={topic} onTopicChange={setTopic} initialTab={initialTab} />
       </main>
 

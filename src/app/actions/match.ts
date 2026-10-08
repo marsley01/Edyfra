@@ -1,22 +1,20 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { SESSION_CONFIG } from "@/lib/config";
 import { recalibrateTier } from "./user";
-import { MatchTier, Role, EduLevel, Tier } from "@generated/client";
+import { Role, EduLevel, Tier } from "@generated/client";
 import {
   executeSmartMatching,
   sweepAndAIFallback,
   decrementTutorActiveSessions,
-  commitHumanMatch,
   commitAISession,
+  acceptRequestAs,
+  declineOfferAs,
 } from "./match-engine";
-import { syncUsersToStream } from "@/lib/user-sync";
 import { notifyUser } from "@/app/actions/notifications";
-import { getUserData } from "@/app/actions/user";
+import { MATCH_TIMINGS } from "@/lib/matching/match-flow";
 import { withRateLimit } from "@/lib/rate-limit";
 
 /**
@@ -75,11 +73,37 @@ export async function createMatchRequest(data: { subject: string; topic: string 
         });
       }
 
+      if (prismaUser.banned || prismaUser.suspended) {
+        return { error: "Your account can't start matches right now." };
+      }
+
+      const subject = (data.subject ?? "").trim().slice(0, 80);
+      if (!subject) return { error: "Please pick a subject." };
+      const topic = (data.topic ?? "").trim().slice(0, 200);
+
+      // One live request per student: a double click or a second tab used to
+      // create parallel requests that could each get matched.
+      const existing = await prisma.matchRequest.findFirst({
+        where: {
+          studentId: prismaUser.id,
+          sessionId: null,
+          createdAt: { gte: new Date(Date.now() - MATCH_TIMINGS.AI_FALLBACK_MS) },
+        },
+        orderBy: { createdAt: "desc" },
+        select: { id: true, subject: true },
+      });
+      if (existing && existing.subject === subject) {
+        return { matchRequestId: existing.id };
+      }
+      if (existing) {
+        await prisma.matchRequest.deleteMany({ where: { id: existing.id, sessionId: null } });
+      }
+
       const matchRequest = await prisma.matchRequest.create({
         data: {
           studentId: prismaUser.id,
-          subject: data.subject,
-          topic: data.topic,
+          subject,
+          topic: topic || null,
         },
       });
 
@@ -90,6 +114,9 @@ export async function createMatchRequest(data: { subject: string; topic: string 
     if (!limited.success) {
       return { success: false, error: limited.error };
     }
+    if ("error" in limited.data) {
+      return { success: false, error: limited.data.error };
+    }
 
     return { success: true, matchRequestId: limited.data.matchRequestId };
   } catch (err: any) {
@@ -99,90 +126,34 @@ export async function createMatchRequest(data: { subject: string; topic: string 
 }
 
 export async function acceptMatchRequest(requestId: string) {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll(cookiesToSet: any) {
-          try { cookiesToSet.forEach(({ name, value, options }: any) => cookieStore.set(name, value, options)); } catch {}
-        },
-      },
-    }
-  );
+  const me = await getAuthedPrismaUserId();
+  if (!me) return { success: false as const, error: "Please sign in to accept a match." };
 
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { success: false, error: "Please sign in to accept a match." };
-  }
-
-  const matchRequest = await prisma.matchRequest.findUnique({
-    where: { id: requestId },
+  const limited = await withRateLimit("acceptMatchRequest", me, () => acceptRequestAs(requestId, me), {
+    interval: 60_000,
+    maxRequests: 20,
   });
+  if (!limited.success) return { success: false as const, error: limited.error };
+  const result = limited.data;
 
-  if (!matchRequest || matchRequest.sessionId) {
-    return { success: false, error: "Match request no longer available." };
+  if (result.success) {
+    revalidatePath("/tutor/requests");
+    revalidatePath("/dashboard/study");
+    revalidatePath("/dashboard/sessions");
   }
+  return result;
+}
 
-  if (matchRequest.studentId === user.id) {
-    return { success: false, error: "You can't accept your own request." };
-  }
-
-  const userData = await prisma.user.findUnique({
-    where: { id: user.id },
-  });
-  
-  const tier = userData?.role === Role.TUTOR ? "TUTOR" : "PEER";
-
-  // Ensure both users exist in Stream Chat via the centralized sync pipeline.
-  // Prisma is the source of truth for names + avatars, so we don't pass them in.
-  try {
-    await syncUsersToStream([matchRequest.studentId, user.id]);
-  } catch {}
-
-  // Atomic commit: Session create + MatchRequest resolve (+ tutor load increment
-  // for TUTOR tier) all in one transaction. A crash anywhere here rolls back the
-  // whole thing, so the request never ends up "half-matched".
-  let session;
-  try {
-    const committed = await commitHumanMatch({
-      matchRequestId: requestId,
-      studentId: matchRequest.studentId,
-      partnerId: user.id,
-      subject: matchRequest.subject,
-      topic: matchRequest.topic,
-      tier: tier === "TUTOR" ? "TUTOR" : "PEER",
-    });
-    session = { id: committed.sessionId };
-  } catch (error: any) {
-    // If the student user record was deleted (P2003 Foreign Key constraint failed)
-    if (error.code === 'P2003') {
-      // Clean up the orphaned match request
-      await prisma.matchRequest.delete({ where: { id: requestId } });
-      return { success: false, error: "This student is no longer available. Request removed from feed." };
-    }
-    return { success: false, error: "Failed to create session. Please try again." };
-  }
-
-  try {
-    await notifyUser(matchRequest.studentId, {
-      type: "MATCH_FOUND",
-      title: "Help is here!",
-      body: `${userData?.name || 'An expert'} has accepted your request. Entering room...`,
-      actionUrl: `/study-room/${session.id}`,
-    });
-  } catch (e) {
-    console.error("Failed to notify student:", e);
-  }
-
+/**
+ * Tutor passes on the exclusive offer they hold; the student's next poll
+ * offers the request to the next-best tutor.
+ */
+export async function declineMatchOffer(requestId: string) {
+  const me = await getAuthedPrismaUserId();
+  if (!me) return { success: false };
+  const result = await declineOfferAs(requestId, me);
   revalidatePath("/tutor/requests");
-  revalidatePath("/dashboard/study");
-  revalidatePath("/dashboard/sessions");
-  
-  return { success: true, sessionId: session.id };
+  return result;
 }
 
 /**
@@ -203,34 +174,35 @@ export async function initiateAutoMatch(requestId: string, options?: { skipAI?: 
     }
 
     const result = await executeSmartMatching(requestId, options);
-    
+
     if (!result.success) {
-      return { success: false, error: result.error };
+      return {
+        success: false,
+        error: result.error,
+        phase: result.phase,
+        offerExpiresAt: result.offerExpiresAt ?? null,
+        gone: result.gone ?? false,
+      };
     }
 
-    // Notify student of match result
-    if (result.sessionId) {
+    // Notify the student only when THIS call created the session; repeat polls
+    // (and tutor accepts, which notify on their own) used to send duplicates.
+    if (result.sessionId && !result.alreadyResolved) {
       try {
-        const matchRequest = await prisma.matchRequest.findUnique({
-          where: { id: requestId },
-        });
-
         const tierName = result.tier === "TUTOR" ? "tutor" : result.tier === "PEER" ? "study partner" : "Mash AI";
-        
         if (result.partnerId) {
           const partner = await prisma.user.findUnique({
             where: { id: result.partnerId },
-            select: { name: true }
+            select: { name: true },
           });
-
-          await notifyUser(matchRequest?.studentId || "", {
+          await notifyUser(me, {
             type: "MATCH_FOUND",
             title: "Connected!",
-            body: `You've been matched with ${partner?.name || tierName}! Starting session...`,
+            body: `You've been matched with ${partner?.name || `a ${tierName}`}! Starting session...`,
             actionUrl: `/study-room/${result.sessionId}`,
           });
         } else {
-          await notifyUser(matchRequest?.studentId || "", {
+          await notifyUser(me, {
             type: "MATCH_FOUND",
             title: "Ready to learn!",
             body: "Mash AI is ready to help. Entering room...",
