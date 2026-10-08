@@ -71,8 +71,20 @@ export async function getApprovedReviews(): Promise<Review[]> {
   }
 }
 
+// Admin-only moderation actions. These had no auth check at all, so anyone
+// could list, approve or delete site testimonials.
+async function isAdmin(): Promise<boolean> {
+  try {
+    const { checkAdminStatus } = await import("./admin");
+    return await checkAdminStatus();
+  } catch {
+    return false;
+  }
+}
+
 export async function getPendingReviews(): Promise<Review[]> {
   try {
+    if (!(await isAdmin())) return [];
     const data = await prisma.siteTestimonial.findMany({
       where: { approved: false },
       orderBy: { createdAt: "desc" },
@@ -93,6 +105,7 @@ export async function getPendingReviews(): Promise<Review[]> {
 
 export async function approveReview(id: string) {
   try {
+    if (!(await isAdmin())) return { error: "Unauthorized" };
     await prisma.siteTestimonial.update({
       where: { id },
       data: { approved: true },
@@ -106,6 +119,7 @@ export async function approveReview(id: string) {
 
 export async function deleteReview(id: string) {
   try {
+    if (!(await isAdmin())) return { error: "Unauthorized" };
     await prisma.siteTestimonial.delete({
       where: { id },
     });
@@ -206,6 +220,10 @@ export async function createSessionReview(
 
   if (!user) throw new Error("Not authenticated");
 
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+    throw new Error("Rating must be between 1 and 5");
+  }
+
   // Look up the reviewer's DB id
   const reviewer = await prisma.user.findFirst({
     where: {
@@ -224,10 +242,25 @@ export async function createSessionReview(
     select: { studentId: true, partnerId: true },
   });
   if (!session) throw new Error("Session not found");
+  // Only participants may review a session.
+  if (session.studentId !== reviewer.id && session.partnerId !== reviewer.id) {
+    throw new Error("Session not found");
+  }
 
   const revieweeId =
     session.studentId === reviewer.id ? session.partnerId : session.studentId;
   if (!revieweeId) throw new Error("Session has no partner to review");
+
+  // Review is unique per session. Without this check the *other* participant's
+  // upsert silently overwrote the existing review's rating — e.g. a tutor could
+  // replace the student's rating of them.
+  const existing = await prisma.review.findUnique({
+    where: { sessionId },
+    select: { reviewerId: true },
+  });
+  if (existing && existing.reviewerId !== reviewer.id) {
+    throw new Error("This session has already been reviewed");
+  }
 
   // Upsert so a user can update their review
   await prisma.review.upsert({

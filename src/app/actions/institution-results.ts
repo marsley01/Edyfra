@@ -4,9 +4,8 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { requireInstitutionAdmin } from "./institution-guard";
-import { logActivity } from "./institution-admin";
-import { deriveFlag, deriveOverallStatus, deriveTrend } from "@/lib/institution-plans";
-import type { ValidatedRow } from "./institution-results-helpers";
+import { assertInstitutionAdminAccess, logInstitutionActivity as logActivity } from "./_institution-access";
+import { importResultRows } from "./_institution-results-import";
 
 // ─── Import ─────────────────────────────────────────────────────────────
 
@@ -17,13 +16,13 @@ const ImportSchema = z.object({
     .array(
       z.object({
         admissionNumber: z.string().min(1).max(60),
-        studentName: z.string().min(1).max(120),
+        studentName: z.string().min(1).max(160),
         subject: z.string().min(1).max(60),
         marks: z.number().min(0).max(100),
         grade: z.string().max(8).nullish(),
         term: z.number().int().min(1).max(3),
         year: z.number().int().min(2020).max(2099),
-        form: z.string().min(1).max(20),
+        form: z.string().min(1).max(40),
       }),
     )
     .min(1)
@@ -42,175 +41,47 @@ export async function importStudentResults(input: ImportResultsInput) {
   const institutionId = membership.institution.id;
   const uploaderId = membership.member.userId;
 
-  // Pre-compute per-student term averages
-  const studentAvg = new Map<string, number>();
-  for (const r of data.rows) {
-    const key = r.admissionNumber || r.studentName;
-    if (!key) continue;
-    const cur = studentAvg.get(key) ?? 0;
-    studentAvg.set(key, cur + r.marks);
-  }
-  const studentCount = new Map<string, number>();
-  for (const r of data.rows) {
-    const key = r.admissionNumber || r.studentName;
-    studentCount.set(key, (studentCount.get(key) ?? 0) + 1);
-  }
-  for (const [k, sum] of studentAvg.entries()) {
-    studentAvg.set(k, sum / (studentCount.get(k) ?? 1));
-  }
-
-  // Pre-compute last-term marks per (student, subject)
-  const lastTerm = data.term === 1 ? 3 : data.term - 1;
-  const lastYear = data.term === 1 ? data.year - 1 : data.year;
-  const studentIdsByName = await findStudentIdsByAdmission(data.rows);
-  const lastTermKeys = new Set<string>();
-  for (const r of data.rows) {
-    const sid = studentIdsByName.get(r.admissionNumber || r.studentName);
-    if (!sid) continue;
-    lastTermKeys.add(`${sid}|${r.subject}`);
-  }
-  const lastTermMap = new Map<string, number>();
-  if (lastTermKeys.size > 0) {
-    const lastRows = await prisma.studentResult.findMany({
-      where: {
-        term: lastTerm,
-        year: lastYear,
-        studentUserId: { in: Array.from(lastTermKeys).map((k) => k.split("|")[0]) },
-      },
-      select: { studentUserId: true, subject: true, marks: true },
+  let outcome;
+  try {
+    // Idempotent: re-importing the same term replaces the matching
+    // (student, subject, term) results instead of duplicating them, and no
+    // longer wipes subjects that are not in this file.
+    outcome = await importResultRows({
+      institutionId,
+      uploaderId,
+      term: data.term,
+      year: data.year,
+      rows: data.rows,
     });
-    for (const r of lastRows) {
-      lastTermMap.set(`${r.studentUserId}|${r.subject}`, r.marks);
-    }
+  } catch (err) {
+    console.error("[importStudentResults] failed:", err);
+    return { ok: false as const, error: "We couldn't save those results. Please try again." };
   }
 
-  // Insert
-  let inserted = 0;
-  await prisma.$transaction(async (tx) => {
-    // Delete any existing results for this (institution, term, year) so re-imports are clean
-    await tx.studentResult.deleteMany({
-      where: { institutionId, term: data.term, year: data.year },
-    });
-    await tx.studentResultsAnalysis.deleteMany({
-      where: { institutionId, term: data.term, year: data.year },
-    });
-
-    for (const r of data.rows) {
-      const studentUserId = studentIdsByName.get(r.admissionNumber || r.studentName);
-      if (!studentUserId) continue;
-
-      const lastMarks = lastTermMap.get(`${studentUserId}|${r.subject}`) ?? null;
-      const flag = deriveFlag(r.marks);
-      const trend = deriveTrend(r.marks, lastMarks);
-      const subjectFlag = flag;
-
-      const created = await tx.studentResult.create({
-        data: {
-          institutionId,
-          studentUserId,
-          admissionNumber: r.admissionNumber,
-          studentName: r.studentName,
-          subject: r.subject,
-          marks: r.marks,
-          grade: r.grade,
-          term: data.term,
-          year: data.year,
-          form: r.form,
-          uploadedById: uploaderId,
-        },
-      });
-
-      await tx.studentResultsAnalysis.create({
-        data: {
-          studentResultId: created.id,
-          studentUserId,
-          institutionId,
-          subject: r.subject,
-          term: data.term,
-          year: data.year,
-          marks: r.marks,
-          lastTermMarks: lastMarks,
-          trend,
-          flag: subjectFlag,
-          overallStatus: "GREEN", // re-evaluated below per student
-          aiInsight: null,
-        },
-      });
-      inserted++;
-    }
-
-    // Recompute overallStatus per student
-    const studentGrouped = await tx.studentResultsAnalysis.findMany({
-      where: { institutionId, term: data.term, year: data.year },
-      select: { id: true, studentUserId: true, flag: true },
-    });
-    const byS = new Map<string, typeof studentGrouped>();
-    for (const s of studentGrouped) {
-      if (!byS.has(s.studentUserId)) byS.set(s.studentUserId, []);
-      byS.get(s.studentUserId)!.push(s);
-    }
-    for (const [studentUserId, group] of byS.entries()) {
-      const status = deriveOverallStatus(group.map((g) => ({ flag: g.flag as "CRITICAL" | "AT_RISK" | "MONITORING" | "ON_TRACK" | "EXCELLENT" })));
-      await tx.studentResultsAnalysis.updateMany({
-        where: { id: { in: group.map((g) => g.id) } },
-        data: { overallStatus: status },
-      });
-    }
-  });
+  if (outcome.inserted + outcome.updated === 0) {
+    return {
+      ok: false as const,
+      error: `None of the ${data.rows.length} rows matched a student enrolled in your institution. Add the students (with their admission numbers) first, then re-import.`,
+    };
+  }
 
   await logActivity(institutionId, {
     type: "RESULTS_UPLOADED",
     actorUserId: uploaderId,
     title: "Results uploaded",
-    body: `${inserted} result rows for Term ${data.term} ${data.year}.`,
+    body: `Term ${data.term} ${data.year}: ${outcome.inserted} new, ${outcome.updated} updated, ${outcome.skipped} unmatched.`,
   });
 
-  revalidatePath("/institution/dashboard/results");
-  revalidatePath("/institution/dashboard");
-  revalidatePath("/institution/dashboard/students");
+  revalidatePath("/institution/dashboard", "layout");
 
-  return { ok: true as const, inserted };
-}
-
-async function findStudentIdsByAdmission(
-  rows: ValidatedRow[],
-): Promise<Map<string, string>> {
-  const map = new Map<string, string>();
-  const admissionNumbers = Array.from(new Set(rows.map((r) => r.admissionNumber).filter(Boolean)));
-  const names = Array.from(new Set(rows.map((r) => r.studentName).filter(Boolean)));
-
-  // First, try InstitutionStudent.studentIdStr match
-  const instStudents = admissionNumbers.length
-    ? await prisma.institutionStudent.findMany({
-        where: { studentIdStr: { in: admissionNumbers } },
-        select: { userId: true, studentIdStr: true },
-      })
-    : [];
-  for (const s of instStudents) {
-    if (s.studentIdStr) map.set(s.studentIdStr, s.userId);
-  }
-
-  // Then fall back to name match for any remaining
-  const unmatched = rows.filter((r) => !map.has(r.admissionNumber));
-  if (unmatched.length > 0) {
-    const searchNames = Array.from(new Set(unmatched.map((r) => r.studentName)));
-    const users = await prisma.user.findMany({
-      where: { name: { in: searchNames, mode: "insensitive" } },
-      select: { id: true, name: true },
-    });
-    for (const u of users) {
-      map.set(u.name.toLowerCase(), u.id);
-    }
-  }
-  // Build a unified lookup keyed by admission OR name
-  const out = new Map<string, string>();
-  for (const r of rows) {
-    const byAdm = r.admissionNumber ? map.get(r.admissionNumber) : undefined;
-    const byName = map.get(r.studentName.toLowerCase());
-    const id = byAdm ?? byName;
-    if (id) out.set(r.admissionNumber || r.studentName, id);
-  }
-  return out;
+  return {
+    ok: true as const,
+    inserted: outcome.inserted,
+    updated: outcome.updated,
+    skipped: outcome.skipped,
+    duplicatesInFile: outcome.duplicatesInFile,
+    unmatchedNames: outcome.unmatchedNames,
+  };
 }
 
 // ─── Analysis queries ────────────────────────────────────────────────────
@@ -257,6 +128,7 @@ export interface ResultsSummary {
 }
 
 export async function getResultsSummary(institutionId: string): Promise<ResultsSummary> {
+  await assertInstitutionAdminAccess(institutionId);
   const analyses = await prisma.studentResultsAnalysis.findMany({
     where: { institutionId },
     include: { result: { select: { form: true, studentName: true, admissionNumber: true } } },
@@ -338,6 +210,7 @@ export async function getResultsSummary(institutionId: string): Promise<ResultsS
 }
 
 export async function getStudentResultsHistory(studentUserId: string, institutionId: string) {
+  await assertInstitutionAdminAccess(institutionId);
   const rows = await prisma.studentResult.findMany({
     where: { studentUserId, institutionId },
     orderBy: [{ year: "asc" }, { term: "asc" }],
@@ -351,6 +224,7 @@ export async function getStudentAnalyses(
   term: number,
   year: number,
 ) {
+  await assertInstitutionAdminAccess(institutionId);
   return prisma.studentResultsAnalysis.findMany({
     where: { studentUserId, institutionId, term, year },
     orderBy: { subject: "asc" },

@@ -29,7 +29,15 @@ async function callPython<T>(
   } = {},
 ): Promise<T> {
   assertSafeProxyPath(path);
-  const url = `${API_BASE}${path}`;
+  // On the server (server actions / route handlers) a relative URL cannot be
+  // fetched, and the /api/python proxy would not receive the user's cookies
+  // anyway. Call the backend directly and forward the already-authenticated
+  // user id; in the browser go through the authenticated proxy.
+  const isServer = typeof window === "undefined";
+  const base = isServer
+    ? (process.env.PYTHON_BACKEND_URL || "http://127.0.0.1:8000").replace(/\/+$/, "")
+    : API_BASE;
+  const url = `${base}${path}`;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };

@@ -1,6 +1,9 @@
 export const dynamic = 'force-dynamic';
 
 import { createAdminClient } from "@/utils/supabase/admin";
+import { redirect } from "next/navigation";
+import prisma from "@/lib/prisma";
+import { getAdminCaller } from "@/app/actions/_admin-guard";
 import { 
   TrendingUp, 
   Users, 
@@ -59,42 +62,38 @@ async function getRevenueStats() {
     _sum: { amount }
   }));
 
-  const { count: plusSubscribersCount } = await supabase
-    .from("users")
-    .select("*", { count: "exact", head: true })
-    .eq("plan", "plus");
-
-  const { count: totalUsersCount } = await supabase
-    .from("users")
-    .select("*", { count: "exact", head: true });
-
-  const plusSubscribers = plusSubscribersCount || 0;
-  const totalUsers = totalUsersCount || 0;
+  // Users live in the Prisma "User" table — there is no "users" table, so the
+  // old supabase-js counts were always 0 and the payments->users embed made the
+  // whole transactions query fail (empty list).
+  const [plusSubscribers, totalUsers] = await Promise.all([
+    prisma.user.count({ where: { plan: "plus" } }),
+    prisma.user.count(),
+  ]);
   const conversionRate = totalUsers > 0 ? (plusSubscribers / totalUsers) * 100 : 0;
 
-  const { data: recentTransactionsData } = await supabase
-    .from("payments")
-    .select("*, user:users!user_id ( id, name, avatar )")
-    .order("created_at", { ascending: false })
-    .limit(10);
+  const recentTransactionsData = await prisma.payment.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 10,
+    include: { user: { select: { id: true, name: true, avatar: true } } },
+  });
 
-  const recentTransactions = (recentTransactionsData || []).map(tx => ({
+  const recentTransactions = recentTransactionsData.map(tx => ({
     ...tx,
-    userId: tx.user_id,
-    paymentType: tx.payment_type,
-    createdAt: tx.created_at,
-    paidAt: tx.paid_at,
+    createdAt: tx.createdAt ? tx.createdAt.toISOString() : null,
+    paidAt: tx.paidAt ? tx.paidAt.toISOString() : null,
     user: tx.user || { name: "User" },
   }));
 
+  // Only payouts that have not been settled yet ("Pay All Tutors" sets paidAt).
   const { data: sessionPaymentsData } = await supabase
     .from("session_payments")
     .select("*")
-    .is("refunded_at", null);
+    .is("refunded_at", null)
+    .is("paid_at", null);
 
   const sessionPayments = sessionPaymentsData || [];
   const pendingPayouts = sessionPayments.reduce((acc: number, curr) => acc + (Number(curr.tutor_payout) || 0), 0);
-  const pendingTutors = new Set(sessionPayments.filter(p => !p.paid_at).map(p => p.tutor_id)).size;
+  const pendingTutors = new Set(sessionPayments.map(p => p.tutor_id)).size;
 
   const { data: todayPurchasesData } = await supabase
     .from("resource_purchases")
@@ -120,6 +119,9 @@ async function getRevenueStats() {
 }
 
 export default async function AdminRevenuePage() {
+  // Server component: the client admin layout's check does not stop this
+  // page's RSC payload (revenue + transactions) from reaching non-admins.
+  if (!(await getAdminCaller())) redirect("/dashboard");
   const stats = await getRevenueStats();
 
   return (

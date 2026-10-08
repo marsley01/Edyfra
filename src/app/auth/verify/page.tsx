@@ -27,8 +27,14 @@ function VerifyInner() {
 
   const tokenHash = params.get("token_hash");
   const type = params.get("type");
-  // Email-change links should land back on the settings page that started it.
-  const next = type === "email_change" ? "/dashboard/settings?email=confirmed" : null;
+  // Only recovery and invite links need a new password. Email-change links go
+  // back to settings; signup/magic links are ordinary sign-ins.
+  const next =
+    type === "recovery" || type === "invite"
+      ? "/update-password"
+      : type === "email_change"
+        ? "/dashboard/settings?email=confirmed"
+        : "/dashboard";
 
   useEffect(() => {
     if (ran.current) return;

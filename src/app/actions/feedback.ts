@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { requireAdminCaller } from "@/app/actions/_admin-guard";
 
 // ─── User feedback (tutor + student) ─────────────────────────────────────────
 
@@ -69,7 +70,7 @@ export async function submitFeedback(
         context: input.context?.slice(0, 500) || null,
       },
     });
-    revalidatePath("/admin/feedback");
+    revalidatePath("/admin/feedback-inbox");
     return { success: true };
   } catch (err) {
     console.error("[submitFeedback] insert error:", err);
@@ -80,15 +81,8 @@ export async function submitFeedback(
 // ─── Admin: read + manage feedback ───────────────────────────────────────────
 
 async function requireAdmin() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
-  const dbUser = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { role: true },
-  });
-  if (dbUser?.role !== "ADMIN") throw new Error("Unauthorized: admin only");
-  return user;
+  // Prisma role ADMIN/FOUNDER (or founder env email) — same gate as /admin.
+  return requireAdminCaller();
 }
 
 export async function getAllFeedback(filter?: {
@@ -124,7 +118,7 @@ export async function updateFeedbackStatus(
   await requireAdmin();
   try {
     await prisma.feedback.update({ where: { id: feedbackId }, data: { status } });
-    revalidatePath("/admin/feedback");
+    revalidatePath("/admin/feedback-inbox");
     return { success: true };
   } catch (err) {
     console.error("[updateFeedbackStatus] error:", err);
@@ -142,7 +136,7 @@ export async function setFeedbackAdminNote(
       where: { id: feedbackId },
       data: { adminNote: adminNote.trim() || null },
     });
-    revalidatePath("/admin/feedback");
+    revalidatePath("/admin/feedback-inbox");
     return { success: true };
   } catch (err) {
     console.error("[setFeedbackAdminNote] error:", err);
@@ -156,7 +150,7 @@ export async function deleteFeedback(
   await requireAdmin();
   try {
     await prisma.feedback.delete({ where: { id: feedbackId } });
-    revalidatePath("/admin/feedback");
+    revalidatePath("/admin/feedback-inbox");
     return { success: true };
   } catch (err) {
     console.error("[deleteFeedback] error:", err);
@@ -209,11 +203,15 @@ export async function getMyAiChatHistory(
   if (!user) return [];
 
   try {
-    return await prisma.aiChatMessage.findMany({
+    // Take the most recent `limit` messages, then return them oldest-first.
+    // (Ordering asc + take returned the OLDEST messages, so resumed chats
+    // never showed the latest conversation.)
+    const rows = await prisma.aiChatMessage.findMany({
       where: { userId: user.id, bot },
-      orderBy: { createdAt: "asc" },
-      take: limit,
+      orderBy: { createdAt: "desc" },
+      take: Math.min(Math.max(1, Math.floor(limit) || 100), 500),
     });
+    return rows.reverse();
   } catch (err) {
     console.error("[getMyAiChatHistory] error:", err);
     return [];
@@ -276,9 +274,10 @@ export async function getAiConversationThread(
 ) {
   await requireAdmin();
   try {
-    return await prisma.aiChatMessage.findMany({
+    // Latest 500 messages, returned oldest-first for display.
+    const rows = await prisma.aiChatMessage.findMany({
       where: { userId, bot },
-      orderBy: { createdAt: "asc" },
+      orderBy: { createdAt: "desc" },
       take: 500,
       include: {
         user: {
@@ -286,6 +285,7 @@ export async function getAiConversationThread(
         },
       },
     });
+    return rows.reverse();
   } catch (err) {
     console.error("[getAiConversationThread] error:", err);
     return [];

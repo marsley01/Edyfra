@@ -24,15 +24,23 @@ export default function TutorSessionsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Ignore responses for a tab the user has already switched away from
+    let cancelled = false;
+    const fetchSessions = async () => {
+      setLoading(true);
+      try {
+        const data = await getTutorSessions(activeTab === "active" ? "ACTIVE" : "COMPLETED");
+        if (!cancelled) setSessions(data as SessionWithStudent[]);
+      } catch (err) {
+        console.error("Failed to load sessions:", err);
+        if (!cancelled) setSessions([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
     fetchSessions();
+    return () => { cancelled = true; };
   }, [activeTab]);
-
-  const fetchSessions = async () => {
-    setLoading(true);
-    const data = await getTutorSessions(activeTab === "active" ? "ACTIVE" : "COMPLETED");
-    setSessions(data);
-    setLoading(false);
-  };
 
   return (
     <div className="space-y-12 animate-in fade-in duration-700 font-sans pb-20">

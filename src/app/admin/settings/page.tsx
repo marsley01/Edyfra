@@ -32,7 +32,7 @@ export default function AdminSettingsPage() {
   const [userToDelete, setUserToDelete] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
-  const [registrationGate, setRegistrationGate] = useState(true);
+  const [registrationGate, setRegistrationGate] = useState(false);
   const [dataCluster, setDataCluster] = useState("eu-central");
   const [aiProvider, setAiProvider] = useState("auto");
   const [aiMatchmaking, setAiMatchmaking] = useState(true);
@@ -81,7 +81,8 @@ export default function AdminSettingsPage() {
     
     setIsDeleting(true);
     try {
-      await deleteUser(userToDelete);
+      const result = await deleteUser(userToDelete);
+      if (result?.error) throw new Error(result.error);
       showSuccess("User deleted", { description: "The account and its data are gone from the database." });
       setUserToDelete("");
     } catch (err) {
@@ -102,7 +103,7 @@ export default function AdminSettingsPage() {
       await updateUserPreferences({ accentColor });
       
       // 2. Save to Global Settings (API Keys, etc)
-      await saveAdminGlobalSettings({ 
+      const result = await saveAdminGlobalSettings({ 
         googleAiKey,
         accentColor,
         maintenanceMode,
@@ -114,6 +115,7 @@ export default function AdminSettingsPage() {
         tutorEarnings,
         updatedAt: new Date().toISOString()
       });
+      if (result?.error) throw new Error(result.error);
       
       // Dispatch event for instant preview
       if (typeof window !== "undefined") {
@@ -329,7 +331,8 @@ export default function AdminSettingsPage() {
                   onClick={async () => {
                     try {
                       const { reindexDatabase } = await import("@/app/actions/admin");
-                      await reindexDatabase();
+                      const result = await reindexDatabase();
+                      if (result?.error) throw new Error(result.error);
                       showSuccess("Database reindexed", { description: "Search and filters should feel snappier now." });
                     } catch (error) {
                       showError({
@@ -346,9 +349,13 @@ export default function AdminSettingsPage() {
                 <Button 
                   variant="outline" 
                   onClick={async () => {
-                    if (confirm("Are you sure you want to log out all users?")) {
-                      await resetAllSessions();
-                      showSuccess("All users logged out", { description: "Every active session has been cleared." });
+                    if (confirm("End every active study session now?")) {
+                      const result = await resetAllSessions().catch(() => ({ error: "Request failed" }));
+                      if (result?.error) {
+                        showError({ title: "We couldn't reset sessions", cause: result.error, fix: "Try again, or refresh the page." });
+                        return;
+                      }
+                      showSuccess("Active sessions ended", { description: "Every live study session has been closed." });
                     }
                   }}
                   className="rounded-2xl h-20 border-white/5 bg-white/5 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 font-black text-xs tracking-widest flex flex-col gap-2"
@@ -358,7 +365,11 @@ export default function AdminSettingsPage() {
                 <Button 
                   variant="outline" 
                   onClick={async () => {
-                    await clearGlobalCache();
+                    const result = await clearGlobalCache().catch(() => ({ error: "Request failed" }));
+                    if (result?.error) {
+                      showError({ title: "We couldn't flush the cache", cause: result.error, fix: "Try again, or refresh the page." });
+                      return;
+                    }
                     showSuccess("Global cache flushed", { description: "Fresh data will be fetched on the next request." });
                   }}
                   className="rounded-2xl h-20 border-white/5 bg-white/5 hover:bg-primary/10 hover:text-primary hover:border-primary/20 font-black text-xs tracking-widest flex flex-col gap-2"
@@ -370,7 +381,8 @@ export default function AdminSettingsPage() {
                   onClick={async () => {
                     try {
                       const { bootstrapSeeds } = await import("@/app/actions/admin");
-                      await bootstrapSeeds();
+                      const result = await bootstrapSeeds();
+                      if (result?.error) throw new Error(result.error);
                       showSuccess("Seeds bootstrapped", { description: "Demo data is now in place." });
                     } catch (error) {
                       showError({
@@ -428,8 +440,16 @@ export default function AdminSettingsPage() {
                </div>
                <div className="flex gap-2">
                   <Button onClick={() => {
-                    if (confirm("Are you sure you want to force logout all users?")) {
-                      resetAllSessions().then(() => showSuccess("All users logged out", { description: "Every active session has been cleared." }));
+                    if (confirm("End every active study session now?")) {
+                      resetAllSessions()
+                        .catch(() => ({ error: "Request failed" }))
+                        .then((result) => {
+                          if (result?.error) {
+                            showError({ title: "We couldn't reset sessions", cause: result.error, fix: "Try again, or refresh the page." });
+                            return;
+                          }
+                          showSuccess("Active sessions ended", { description: "Every live study session has been closed." });
+                        });
                     }
                   }} variant="outline" className="flex-1 rounded-xl border-red-500/30 text-red-500 hover:bg-red-500/10 font-black">
                    <Lock className="h-4 w-4 mr-2" /> FORCE LOGOUT

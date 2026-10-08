@@ -114,12 +114,22 @@ export async function joinGroup(groupId: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
 
-  await prisma.struggleGroup.update({
+  const group = await prisma.struggleGroup.findUnique({
     where: { id: groupId },
-    data: {
-      members: { push: user.id }
-    }
+    select: { members: true, status: true },
   });
+  if (!group) throw new Error("Group not found");
+
+  // Don't push a duplicate id when the user is already a member
+  if (!group.members.includes(user.id)) {
+    if (group.status !== "ACTIVE") throw new Error("This group is no longer active");
+    await prisma.struggleGroup.update({
+      where: { id: groupId },
+      data: {
+        members: { push: user.id }
+      }
+    });
+  }
 
   // Add member to Stream channel
   try {
@@ -129,6 +139,7 @@ export async function joinGroup(groupId: string) {
   }
 
   revalidatePath("/dashboard/groups");
+  revalidatePath(`/dashboard/groups/${groupId}`);
   return { success: true };
 }
 
@@ -142,6 +153,8 @@ export async function sendGroupMessage(groupId: string, content: string) {
   });
 
   if (!group) throw new Error("Group not found");
+  if (!group.members.includes(user.id)) throw new Error("Join this group to send messages");
+  if (!content || !content.trim()) throw new Error("Message cannot be empty");
 
   const message = await prisma.groupMessage.create({
     data: {

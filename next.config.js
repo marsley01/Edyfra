@@ -8,6 +8,12 @@ const nextConfig = {
   images: {
     minimumCacheTTL: 2592000,
     formats: ["image/avif", "image/webp"],
+    // Avatars are DiceBear SVGs; without this the optimizer answers 400 and the
+    // avatar is blank. The CSP/attachment pair is the documented safe setting
+    // (scripts inside an SVG can never run from /_next/image).
+    dangerouslyAllowSVG: true,
+    contentDispositionType: "attachment",
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     // News articles embed thumbnails from arbitrary publisher CDNs, so allow
     // any HTTPS source instead of whitelisting hosts one by one.
     remotePatterns: [

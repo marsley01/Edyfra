@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { createAdminClient } from "@/utils/supabase/admin";
+import prisma from "@/lib/prisma";
 import {
   generateWithAI,
   AIRateLimitError,
@@ -41,47 +41,36 @@ export async function POST(request: Request) {
   }
   const { studentUserId, term, year } = parsed.data;
 
-  const supabase = createAdminClient();
-
-  const { data: student } = await supabase
-    .from("users")
-    .select("name")
-    .eq("id", studentUserId)
-    .single();
-
+  // StudentResult / StudentResultsAnalysis / User are Prisma tables without
+  // @@map; the supabase-js queries against "users"/"student_results*" always
+  // returned nothing, so this endpoint could only ever 404.
+  const student = await prisma.user.findUnique({
+    where: { id: studentUserId },
+    select: { name: true },
+  });
   if (!student) {
     return NextResponse.json({ ok: false, error: "Student not found" }, { status: 404 });
   }
 
-  const { data: current } = await supabase
-    .from("student_results_analysis")
-    .select("*")
-    .eq("student_user_id", studentUserId)
-    .eq("institution_id", membership.institution.id)
-    .eq("term", term)
-    .eq("year", year);
-
-  if (!current || current.length === 0) {
+  const current = await prisma.studentResultsAnalysis.findMany({
+    where: { studentUserId, institutionId: membership.institution.id, term, year },
+  });
+  if (current.length === 0) {
     return NextResponse.json({ ok: false, error: "No results to analyse for this term" }, { status: 400 });
   }
 
-  const { data: formRow } = await supabase
-    .from("student_results")
-    .select("form")
-    .eq("student_user_id", studentUserId)
-    .eq("institution_id", membership.institution.id)
-    .eq("term", term)
-    .eq("year", year)
-    .limit(1)
-    .maybeSingle();
+  const formRow = await prisma.studentResult.findFirst({
+    where: { studentUserId, institutionId: membership.institution.id, term, year },
+    select: { form: true },
+  });
 
-  const strongest = [...current].sort((a, b) => Number(b.marks) - Number(a.marks))[0];
-  const weakest = [...current].sort((a, b) => Number(a.marks) - Number(b.marks))[0];
+  const strongest = [...current].sort((a, b) => b.marks - a.marks)[0];
+  const weakest = [...current].sort((a, b) => a.marks - b.marks)[0];
   const thisTerm = current
-    .map((c) => `${c.subject}: ${Number(c.marks).toFixed(0)}% (${(c.trend || "").toLowerCase()})`)
+    .map((c) => `${c.subject}: ${c.marks.toFixed(0)}% (${(c.trend || "").toLowerCase()})`)
     .join(", ");
   const lastTerm = current
-    .map((c) => `${c.subject}: ${c.last_term_marks != null ? Number(c.last_term_marks).toFixed(0) + "%" : "n/a"}`)
+    .map((c) => `${c.subject}: ${c.lastTermMarks != null ? c.lastTermMarks.toFixed(0) + "%" : "n/a"}`)
     .join(", ");
 
   const prompt = `Student ${student.name}, Form ${formRow?.form ?? "?"}, has these results this term: ${thisTerm}.
@@ -110,13 +99,10 @@ Write a 3-sentence insight about this student's academic performance, their stro
     return NextResponse.json({ ok: false, error: "AI service unavailable. Try again." }, { status: 500 });
   }
 
-  await supabase
-    .from("student_results_analysis")
-    .update({ ai_insight: insight, ai_generated_at: new Date().toISOString() })
-    .eq("student_user_id", studentUserId)
-    .eq("institution_id", membership.institution.id)
-    .eq("term", term)
-    .eq("year", year);
+  await prisma.studentResultsAnalysis.updateMany({
+    where: { studentUserId, institutionId: membership.institution.id, term, year },
+    data: { aiInsight: insight, aiGeneratedAt: new Date() },
+  });
 
   revalidatePath(`/institution/dashboard/students/${studentUserId}`);
   return NextResponse.json({

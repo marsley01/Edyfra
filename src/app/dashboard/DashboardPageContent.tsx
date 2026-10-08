@@ -133,7 +133,10 @@ export default function DashboardPageContent() {
   const handleRetry = () => setRetryCount((prev) => prev + 1);
 
   if (userDataError) return <DashboardError error={userDataError} onRetry={handleRetry} />;
-  if (userDataLoading || sessionsLoading) return <DashboardLoadingState />;
+  // useSessionCounter never leaves its initial loading state when it has no id,
+  // so only wait on it once there is a user — otherwise a null userData kept
+  // the dashboard on the skeleton forever instead of showing the retry below.
+  if (userDataLoading || (userData?.id && sessionsLoading)) return <DashboardLoadingState />;
   if (!userData) return (
     <div className="p-12 text-center">
       <p className="text-muted-foreground">Unable to load dashboard data. Please try again.</p>

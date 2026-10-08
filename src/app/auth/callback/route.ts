@@ -93,8 +93,12 @@ export async function GET(request: NextRequest) {
  * row during that flow would be pointless work at best.
  */
 function isRecovery(request: NextRequest): boolean {
+  // The reset email's PKCE redirect carries only `code` and `next`, so `next`
+  // is the reliable signal; without it a user with no profile row was sent to
+  // onboarding instead of the page that sets the new password.
   return (
     request.nextUrl.searchParams.get("type") === "recovery" ||
+    request.nextUrl.searchParams.get("next") === "/update-password" ||
     request.nextUrl.searchParams.get("error_code") === "otp_expired"
   );
 }

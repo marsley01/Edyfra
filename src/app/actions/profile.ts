@@ -1,20 +1,12 @@
 "use server";
 
+import { cache } from "react";
 import prisma from "@/lib/prisma";
-import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { createDMChannel } from "@/app/actions/stream";
-import { toggleFollow } from "@/app/actions/social";
+import { setFollow, type SocialUserDTO } from "@/app/actions/social";
 import { notifyUser } from "@/app/actions/notifications";
-
-export interface ProfilePost {
-  id: string;
-  content: string;
-  subject: string | null;
-  likes: number;
-  createdAt: string;
-  commentCount: number;
-}
+import { getSocialViewer, getViewerFollowingIds, getFollowersAmong } from "@/lib/social-viewer";
 
 export interface ProfileData {
   id: string;
@@ -28,17 +20,15 @@ export interface ProfileData {
   points: number;
   tier: string;
   streakDays: number;
-  plan: string;
   createdAt: string;
   subjects: string[];
   goals: string[];
-  studyStyle: string | null;
   tutorSubjects: string[];
+  isVerifiedTutor: boolean;
   hourlyRate: number | null;
   rating: number | null;
   sessionsCompleted: number;
   achievements: { type: string; title: string; icon: string }[];
-  posts: ProfilePost[];
   postCount: number;
   followersCount: number;
   followingCount: number;
@@ -80,14 +70,30 @@ async function connectionExists(followerId: string, followingId: string): Promis
   }
 }
 
-export async function getProfile(
-  profileId: string,
-): Promise<{ profile: ProfileData; viewer: ViewerContext } | null> {
+// Memoised per request: generateMetadata and the page both ask for it.
+const loadProfile = cache(async (profileId: string) => {
+  if (typeof profileId !== "string" || !profileId || profileId.length > 64) return null;
+
   const user = await prisma.user.findUnique({
     where: { id: profileId },
-    include: {
-      studentProfile: { select: { subjects: true, goals: true, studyStyle: true } },
-      tutorProfile: { select: { subjects: true, hourlyRate: true, rating: true } },
+    // Public fields only — never email / phone / payout numbers.
+    select: {
+      id: true,
+      name: true,
+      username: true,
+      avatar: true,
+      bio: true,
+      role: true,
+      county: true,
+      educationLevel: true,
+      points: true,
+      tier: true,
+      streakDays: true,
+      createdAt: true,
+      banned: true,
+      studentProfile: { select: { subjects: true, goals: true } },
+      tutorProfile: { select: { subjects: true, hourlyRate: true, rating: true, isVerified: true } },
+      achievements: { orderBy: { unlockedAt: "desc" }, take: 8, select: { type: true, title: true, icon: true } },
       _count: {
         select: {
           feedPosts: true,
@@ -97,130 +103,140 @@ export async function getProfile(
       },
     },
   });
+  if (!user || user.banned) return null;
 
-  if (!user) return null;
-
-  // Supabase auth session (may be null — public profiles are viewable signed out)
-  let authId: string | null = null;
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user: authUser },
-    } = await supabase.auth.getUser();
-    authId = authUser?.id ?? null;
-  } catch {
-    authId = null;
-  }
-
-  const isSelf = !!authId && (authId === user.id || authId === user.email);
+  // Public profiles are viewable signed out; follows use Prisma ids.
+  const me = await getSocialViewer();
+  const viewerId = me?.id ?? null;
+  const isSelf = !!viewerId && viewerId === user.id;
 
   const [followersCount, followingCount, isFollowing, followsYou] = await Promise.all([
     countConnections("following_id", user.id),
     countConnections("follower_id", user.id),
-    authId ? connectionExists(authId, user.id) : Promise.resolve(false),
-    authId && !isSelf ? connectionExists(user.id, authId) : Promise.resolve(false),
+    viewerId && !isSelf ? connectionExists(viewerId, user.id) : Promise.resolve(false),
+    viewerId && !isSelf ? connectionExists(user.id, viewerId) : Promise.resolve(false),
   ]);
 
-  const [posts, achievements] = await Promise.all([
-    prisma.feedPost.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: "desc" },
-      take: 6,
-      include: { _count: { select: { comments: true } } },
-    }),
-    prisma.achievement.findMany({
-      where: { userId: user.id },
-      orderBy: { unlockedAt: "desc" },
-      take: 8,
-    }),
-  ]);
-
+  const isTutor = String(user.role) === "TUTOR";
   const profile: ProfileData = {
     id: user.id,
     name: user.name,
-    username: user.username || user.name.toLowerCase().replace(/\s+/g, "_"),
+    username: user.username || null,
     avatar: user.avatar,
     bio: user.bio,
-    role: user.role as string,
+    role: String(user.role),
     county: user.county,
-    educationLevel: user.educationLevel ?? null,
+    educationLevel: user.educationLevel ? String(user.educationLevel) : null,
     points: user.points,
-    tier: user.tier as string,
+    tier: String(user.tier),
     streakDays: user.streakDays,
-    plan: user.plan,
     createdAt: user.createdAt.toISOString(),
-    subjects: (user.studentProfile?.subjects as string[]) || [],
-    goals: user.studentProfile?.goals || [],
-    studyStyle: user.studentProfile?.studyStyle || null,
-    tutorSubjects: user.tutorProfile?.subjects || [],
-    hourlyRate: user.tutorProfile?.hourlyRate ?? null,
-    rating: user.tutorProfile?.rating ?? null,
-    sessionsCompleted:
-      (user._count.sessionsAsTutor ?? 0) + (user._count.sessionsAsStudent ?? 0),
-    achievements: achievements.map((a) => ({
-      type: a.type,
-      title: a.title,
-      icon: a.icon,
-    })),
-    posts: posts.map((p) => ({
-      id: p.id,
-      content: p.content,
-      subject: p.subject,
-      likes: p.likes,
-      createdAt: p.createdAt.toISOString(),
-      commentCount: p._count.comments,
-    })),
+    subjects: user.studentProfile?.subjects ?? [],
+    goals: user.studentProfile?.goals ?? [],
+    tutorSubjects: user.tutorProfile?.subjects ?? [],
+    isVerifiedTutor: isTutor && !!user.tutorProfile?.isVerified,
+    hourlyRate: isTutor ? user.tutorProfile?.hourlyRate ?? null : null,
+    rating: isTutor ? user.tutorProfile?.rating ?? null : null,
+    sessionsCompleted: (user._count.sessionsAsTutor ?? 0) + (user._count.sessionsAsStudent ?? 0),
+    achievements: user.achievements,
     postCount: user._count.feedPosts ?? 0,
     followersCount,
     followingCount,
   };
 
-  const viewer: ViewerContext = {
-    isSelf,
-    isFollowing,
-    followsYou,
-    signedIn: !!authId,
-  };
-
+  const viewer: ViewerContext = { isSelf, isFollowing, followsYou, signedIn: !!viewerId };
   return { profile, viewer };
+});
+
+export async function getProfile(
+  profileId: string,
+): Promise<{ profile: ProfileData; viewer: ViewerContext } | null> {
+  try {
+    return await loadProfile(profileId);
+  } catch (error) {
+    console.error("getProfile error:", error);
+    return null;
+  }
 }
 
+const FOLLOW_PAGE = 20;
+
 /**
- * Followers / Following lists for the profile stat modals.
- * Resolves connection rows to real user profiles.
+ * Followers / Following of a profile, newest first, keyset-paginated on
+ * (created_at, id). Each row carries the viewer's relationship to that person
+ * so the list can show Follow / Following / "Follows you" without N+1.
  */
 export async function getFollowList(
   profileId: string,
-  type: "followers" | "following"
-): Promise<{ id: string; name: string; avatar: string | null; tier: string }[]> {
+  type: "followers" | "following",
+  cursor?: string | null,
+): Promise<{ users: SocialUserDTO[]; nextCursor: string | null }> {
+  const empty = { users: [], nextCursor: null };
+  if (typeof profileId !== "string" || !profileId) return empty;
+  if (type !== "followers" && type !== "following") return empty;
   try {
     const admin = createAdminClient();
     const column = type === "followers" ? "following_id" : "follower_id";
     const other = type === "followers" ? "follower_id" : "following_id";
 
-    const { data, error } = await admin
+    let q = admin
       .from("connections")
-      .select(other)
+      .select(`id, created_at, ${other}`)
       .eq(column, profileId)
-      .limit(100);
-    if (error || !data) return [];
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(FOLLOW_PAGE + 1);
 
-    const ids = (data as Array<Record<string, string>>).map((row) => row[other]).filter(Boolean);
-    if (ids.length === 0) return [];
+    if (cursor) {
+      const [ts, id] = String(cursor).split("|");
+      const validTs = ts && !Number.isNaN(Date.parse(ts));
+      const validId = id && /^[0-9a-f-]{36}$/i.test(id);
+      if (validTs && validId) {
+        q = q.or(`created_at.lt.${ts},and(created_at.eq.${ts},id.lt.${id})`);
+      }
+    }
 
-    const users = await prisma.user.findMany({
-      where: { id: { in: ids } },
-      select: { id: true, name: true, avatar: true, tier: true },
-    });
+    const { data, error } = await q;
+    if (error || !data) return empty;
+    const rows = data as unknown as Array<Record<string, string>>;
+    const hasMore = rows.length > FOLLOW_PAGE;
+    const page = hasMore ? rows.slice(0, FOLLOW_PAGE) : rows;
+    const ids = page.map((r) => r[other]).filter(Boolean);
+    if (ids.length === 0) return empty;
 
-    // Preserve connection recency order
+    const viewer = await getSocialViewer();
+    const [users, viewerFollowing, followsViewer] = await Promise.all([
+      prisma.user.findMany({
+        where: { id: { in: ids }, banned: false },
+        select: { id: true, name: true, avatar: true, username: true, role: true, educationLevel: true },
+      }),
+      viewer ? getViewerFollowingIds(viewer.id) : Promise.resolve([] as string[]),
+      viewer ? getFollowersAmong(viewer.id, ids) : Promise.resolve(new Set<string>()),
+    ]);
+    const followingSet = new Set(viewerFollowing);
     const byId = new Map(users.map((u) => [u.id, u]));
-    return ids
-      .map((id) => byId.get(id))
-      .filter((u): u is NonNullable<typeof u> => Boolean(u))
-      .map((u) => ({ id: u.id, name: u.name, avatar: u.avatar, tier: u.tier as string }));
-  } catch {
-    return [];
+    const last = page[page.length - 1];
+
+    return {
+      users: ids
+        .map((id) => byId.get(id))
+        .filter((u): u is NonNullable<typeof u> => Boolean(u))
+        .map((u) => ({
+          id: u.id,
+          name: u.name,
+          avatar: u.avatar,
+          username: u.username,
+          role: String(u.role),
+          educationLevel: u.educationLevel ? String(u.educationLevel) : null,
+          isFollowing: followingSet.has(u.id),
+          followsYou: followsViewer.has(u.id),
+          isSelf: viewer?.id === u.id,
+        })),
+      nextCursor: hasMore && last ? `${last.created_at}|${last.id}` : null,
+    };
+  } catch (error) {
+    console.error("getFollowList error:", error);
+    return empty;
   }
 }
 
@@ -233,36 +249,37 @@ export async function connectWithUser(targetUserId: string): Promise<{
   channelId?: string;
   error?: string;
 }> {
-  if (!targetUserId) return { ok: false, error: "Missing user" };
+  if (!targetUserId || typeof targetUserId !== "string") return { ok: false, error: "Missing user" };
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Please sign in to connect." };
-  if (user.id === targetUserId) return { ok: false, error: "That's you!" };
-
-  // Resolve the Prisma id for the current user (they can differ from auth ids
-  // for some OAuth accounts). Stream channels are keyed by Prisma ids.
-  const me = await prisma.user.findFirst({
-    where: { OR: [{ id: user.id }, ...(user.email ? [{ email: user.email }] : [])] },
-    select: { id: true },
-  });
-  if (!me) return { ok: false, error: "Account not found." };
+  // Prisma id (can differ from the auth id for older/OAuth accounts). Stream
+  // channels are keyed by Prisma ids.
+  const me = await getSocialViewer();
+  if (!me) return { ok: false, error: "Please sign in to connect." };
   if (me.id === targetUserId) return { ok: false, error: "That's you!" };
 
-  const channelId = await createDMChannel(me.id, targetUserId);
-
-  // Follow is best-effort — DM should still open if the follow write fails.
+  let channelId: string;
   try {
-    await toggleFollow(targetUserId);
-  } catch {
-    /* non-fatal */
+    channelId = await createDMChannel(me.id, targetUserId);
+  } catch (error) {
+    console.error("[connectWithUser] DM channel failed:", error);
+    const message = error instanceof Error ? error.message : "";
+    return {
+      ok: false,
+      error: /not configured/i.test(message)
+        ? "Messaging is temporarily unavailable."
+        : /not found/i.test(message)
+          ? "This user no longer exists."
+          : "We couldn't open the chat. Please try again.",
+    };
   }
+
+  // Messaging someone also follows them. setFollow is idempotent, so an
+  // existing follow is left alone (never silently unfollowed).
+  await setFollow(targetUserId, true).catch(() => null);
 
   notifyUser(targetUserId, {
     type: "CONNECTION",
-    title: "Someone wants to connect!",
+    title: `${me.name} wants to connect`,
     body: "They sent you a message — say hi back.",
     actionUrl: `/dashboard/messages?channel=${channelId}`,
   }).catch(() => {});

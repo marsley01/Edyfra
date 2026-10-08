@@ -78,6 +78,12 @@ export default function AdminTutorsPage() {
       if (result.success) {
         showSuccess("Expert dashboard activated", { description: "That tutor can now go live on Edyfra." });
         fetchData();
+      } else {
+        showError({
+          title: "We couldn't approve that tutor",
+          cause: result.error || "Approval failed due to an unknown error.",
+          fix: "Try again, or refresh the page.",
+        });
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Approval failed due to an unknown error.";
@@ -93,13 +99,22 @@ export default function AdminTutorsPage() {
   };
 
   const handleReject = async (id: string) => {
+    // Cancelling the prompt returns null — treat that as "don't reject".
+    const input = prompt("Enter rejection reason (optional):");
+    if (input === null) return;
     setProcessingId(id);
     try {
-      const reason = prompt("Enter rejection reason (optional):") || undefined;
+      const reason = input || undefined;
       const result = await rejectTutorApplication(id, reason);
       if (result.success) {
         showSuccess("Application rejected", { description: "That tutor has been notified." });
         fetchData();
+      } else {
+        showError({
+          title: "We couldn't reject that application",
+          cause: result.error || "Rejection failed due to an unknown error.",
+          fix: "Try again, or refresh the page.",
+        });
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Rejection failed due to an unknown error.";

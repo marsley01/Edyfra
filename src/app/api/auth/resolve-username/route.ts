@@ -3,25 +3,27 @@ import prisma from '@/lib/prisma'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  const q = searchParams.get('q')
+  const q = searchParams.get('q')?.trim().replace(/^@/, '')
 
   if (!q) {
     return NextResponse.json({ error: 'Missing query' }, { status: 400 })
   }
 
+  // Usernames are stored lowercase by the signup form, but older rows may not
+  // be, so match case-insensitively instead of failing a correct username.
   const user = await prisma.user.findFirst({
     where: {
       OR: [
-        { username: q },
-        ...(q.includes('@') ? [{ email: q }] : []),
+        { username: { equals: q, mode: 'insensitive' } },
+        ...(q.includes('@') ? [{ email: { equals: q, mode: 'insensitive' as const } }] : []),
       ],
     },
-    select: { email: true, username: true, name: true },
+    select: { email: true },
   })
 
   if (!user) {
     return NextResponse.json({ found: false })
   }
 
-  return NextResponse.json({ found: true, email: user.email, username: user.username, name: user.name })
+  return NextResponse.json({ found: true, email: user.email })
 }

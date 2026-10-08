@@ -8,6 +8,30 @@ import {
   syncUsersToStream,
   MASH_AI_USER_ID,
 } from "@/lib/user-sync";
+import prisma from "@/lib/prisma";
+import { createHash } from "crypto";
+
+/**
+ * The server Stream client uses the API secret and bypasses all channel
+ * permissions, so every action must check the caller's membership itself.
+ * Returns true/false for an existing channel, or null if it doesn't exist.
+ */
+async function isChannelMember(channelId: string, userId: string): Promise<boolean | null> {
+  const client = getServerStreamClient();
+  if (!client) throw new Error("Stream not configured");
+  try {
+    const res = await client.channel("messaging", channelId).queryMembers({ user_id: userId });
+    return res.members.length > 0;
+  } catch (err: any) {
+    if (/does not exist|not found|404/i.test(String(err?.message || ""))) return null;
+    throw err;
+  }
+}
+
+async function isAdmin(userId: string): Promise<boolean> {
+  const u = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+  return u?.role === "ADMIN" || u?.role === "FOUNDER";
+}
 
 // ─── Token Generation ─────────────────────────────────────────────────────────
 /**
@@ -83,6 +107,9 @@ export async function createStreamChannel(
   } = await supabase.auth.getUser();
 
   if (!user) throw new Error("Unauthorized");
+  if (!members.includes(user.id)) throw new Error("Unauthorized");
+  // Don't let a caller "create" (and thereby watch) somebody else's channel
+  if ((await isChannelMember(channelId, user.id)) === false) throw new Error("Unauthorized");
 
   await syncUsersToStream(members);
 
@@ -117,6 +144,17 @@ export async function addMembersToChannel(
 
   if (!user) throw new Error("Unauthorized");
 
+  // Allowed if the caller is already in the channel, or is joining a study
+  // group channel they are a member of in the database (see joinGroup).
+  if ((await isChannelMember(channelId, user.id)) !== true) {
+    const isSelfJoin = members.length === 1 && members[0] === user.id;
+    const groupId = channelId.startsWith("group_") ? channelId.slice("group_".length) : null;
+    const group = isSelfJoin && groupId
+      ? await prisma.struggleGroup.findUnique({ where: { id: groupId }, select: { members: true } })
+      : null;
+    if (!group || !group.members.includes(user.id)) throw new Error("Unauthorized");
+  }
+
   await syncUsersToStream(members);
 
   const client = getServerStreamClient();
@@ -136,6 +174,9 @@ export async function removeMembersFromChannel(
   } = await supabase.auth.getUser();
 
   if (!user) throw new Error("Unauthorized");
+  // Users may remove themselves; removing others requires an admin
+  const onlySelf = members.length > 0 && members.every((m) => m === user.id);
+  if (!onlySelf && !(await isAdmin(user.id))) throw new Error("Unauthorized");
 
   const client = getServerStreamClient();
   if (!client) throw new Error("Stream not configured");
@@ -156,7 +197,12 @@ export async function getDMChannelId(
   userB: string
 ): Promise<string> {
   const sorted = [userA, userB].sort();
-  return `dm_${sorted[0]}_${sorted[1]}`;
+  const legacy = `dm_${sorted[0]}_${sorted[1]}`;
+  // Stream rejects channel ids over 64 characters. Two cuid ids fit (and
+  // existing chats use that form), but two 36-char UUIDs make 76, so every DM
+  // between newer accounts failed. Those get a stable hash instead.
+  if (legacy.length <= 64) return legacy;
+  return `dm_${createHash("sha256").update(`${sorted[0]}:${sorted[1]}`).digest("hex").slice(0, 40)}`;
 }
 
 export async function createDMChannel(userAId: string, userBId: string) {
@@ -166,6 +212,21 @@ export async function createDMChannel(userAId: string, userBId: string) {
   } = await supabase.auth.getUser();
 
   if (!user) throw new Error("Unauthorized");
+  // Stream users are keyed by Prisma id, which differs from the auth id for
+  // some older/OAuth accounts — compare against both.
+  const me = await prisma.user.findFirst({
+    where: { OR: [{ id: user.id }, ...(user.email ? [{ email: user.email }] : [])] },
+    select: { id: true },
+  });
+  const callerId = me?.id ?? user.id;
+  if (callerId !== userAId && callerId !== userBId) throw new Error("Unauthorized");
+  if (userAId === userBId) throw new Error("Cannot message yourself");
+
+  const target = await prisma.user.findUnique({
+    where: { id: callerId === userAId ? userBId : userAId },
+    select: { id: true },
+  });
+  if (!target) throw new Error("User not found");
 
   const channelId = await getDMChannelId(userAId, userBId);
 
@@ -175,7 +236,7 @@ export async function createDMChannel(userAId: string, userBId: string) {
   if (!client) throw new Error("Stream not configured");
   const channel = client.channel("messaging", channelId, {
     members: [userAId, userBId],
-    created_by_id: userAId,
+    created_by_id: callerId,
   } as any);
 
   await channel.watch();
@@ -199,6 +260,8 @@ export async function createGroupChannel(
   } = await supabase.auth.getUser();
 
   if (!user) throw new Error("Unauthorized");
+  if (!memberIds.includes(user.id)) throw new Error("Unauthorized");
+  if ((await isChannelMember(`group_${sessionId}`, user.id)) === false) throw new Error("Unauthorized");
 
   await syncUsersToStream([...memberIds, user.id, MASH_AI_USER_ID]);
 
@@ -227,6 +290,7 @@ export async function deleteStreamChannel(channelId: string) {
   } = await supabase.auth.getUser();
 
   if (!user) throw new Error("Unauthorized");
+  if (!(await isAdmin(user.id))) throw new Error("Unauthorized");
 
   const client = getServerStreamClient();
   if (!client) throw new Error("Stream not configured");
@@ -307,6 +371,8 @@ export async function handleMashMention(
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) throw new Error("Unauthorized");
+  // The reply is posted with server privileges, so the caller must belong to the channel
+  if ((await isChannelMember(channelId, user.id)) === false) throw new Error("Unauthorized");
 
   const prompt = messageText
     .replace(/@(?:Mash|AI|mash|ai|mash-ai|MASH)\b/gi, "")

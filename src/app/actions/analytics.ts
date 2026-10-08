@@ -2,6 +2,8 @@
 
 import prisma from "@/lib/prisma";
 import { getUserData } from "./user";
+import { createClient } from "@/utils/supabase/server";
+import { getAdminCaller } from "./_admin-guard";
 
 /**
  * Track an analytics event
@@ -12,6 +14,12 @@ export async function trackAnalyticsEvent(
   metadata?: Record<string, any>
 ) {
   try {
+    // "use server" export => reachable from the browser. Require a signed-in
+    // caller so anonymous requests can't pollute analytics.
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
     await prisma.analyticsEvent.create({
       data: {
         userId,
@@ -65,11 +73,25 @@ export async function awardReferralBonus(referredUserId: string) {
     });
     if (!referred?.referredBy) return { success: false, error: "No referrer found" };
 
+    // This is a browser-callable server action, so verify the qualifying
+    // condition server-side: the referred user must have completed a session.
+    const completedSessions = await prisma.session.count({
+      where: { studentId: referredUserId, status: "COMPLETED" },
+    });
+    if (completedSessions === 0) return { success: false, error: "Referral not yet qualified" };
+
     // Find the referral record
     const referral = await prisma.referral.findFirst({
       where: { referredId: referredUserId, bonusAwarded: false },
     });
     if (!referral) return { success: false, error: "No pending referral bonus" };
+
+    // Claim the bonus atomically first so concurrent calls can't double-award.
+    const claimed = await prisma.referral.updateMany({
+      where: { id: referral.id, bonusAwarded: false },
+      data: { bonusAwarded: true },
+    });
+    if (claimed.count === 0) return { success: false, error: "No pending referral bonus" };
 
     // Award 100 XP to referrer
     await prisma.user.update({
@@ -81,12 +103,6 @@ export async function awardReferralBonus(referredUserId: string) {
     await prisma.user.update({
       where: { id: referredUserId },
       data: { points: { increment: 50 } },
-    });
-
-    // Mark bonus as awarded
-    await prisma.referral.update({
-      where: { id: referral.id },
-      data: { bonusAwarded: true },
     });
 
     // Notify referrer
@@ -118,6 +134,8 @@ export async function awardReferralBonus(referredUserId: string) {
  */
 export async function getAdminAnalytics() {
   try {
+    if (!(await getAdminCaller())) throw new Error("Unauthorized");
+
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -134,7 +152,8 @@ export async function getAdminAnalytics() {
       prisma.analyticsEvent.count({ where: { eventType: "signup", createdAt: { gte: today } } }),
       prisma.analyticsEvent.count({ where: { eventType: "signup", createdAt: { gte: weekAgo } } }),
       prisma.analyticsEvent.count({ where: { eventType: "signup", createdAt: { gte: monthAgo } } }),
-      prisma.analyticsEvent.count({ where: { eventType: "signup", createdAt: { gte: today } } }),
+      // Daily active users (was a copy of the signups-today query).
+      prisma.user.count({ where: { lastActiveAt: { gte: today } } }),
       (async () => {
         const sevenDaysAgoUsers = await prisma.analyticsEvent.findMany({
           where: { eventType: "signup", createdAt: { gte: new Date(today.getTime() - 8 * 24 * 60 * 60 * 1000), lt: new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000) } },

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 export async function POST(req: NextRequest) {
   try {
@@ -35,6 +36,14 @@ export async function POST(req: NextRequest) {
 
     // Remove Web Push subscription
     if (endpoint && typeof endpoint === "string") {
+      // Senders read the Supabase `push_subscriptions` table; also clear any
+      // legacy row in the Prisma table.
+      const adminSupabase = createAdminClient();
+      await adminSupabase
+        .from("push_subscriptions")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("endpoint", endpoint);
       await prisma.pushSubscription.deleteMany({
         where: { userId: user.id, endpoint },
       });

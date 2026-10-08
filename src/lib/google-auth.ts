@@ -53,6 +53,8 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
   session_not_found: "Your sign-in expired before it finished. Try again.",
   invalid_code: "That sign-in link has already been used. Try again.",
   google_not_configured: "Google sign-in isn't available right now. Use your email and password.",
+  otp_expired: "That link has expired or was already used. Request a new one.",
+  account_created: "Your account was created. Sign in with your email and password to continue.",
 };
 
 export function authErrorMessage(code: string | null | undefined): string | null {

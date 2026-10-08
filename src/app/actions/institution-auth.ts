@@ -6,6 +6,7 @@ import prisma from "@/lib/prisma";
 import { z } from "zod";
 import { rateLimit } from "@/lib/rate-limit";
 import { headers } from "next/headers";
+import { getAdminCaller } from "./_admin-guard";
 
 const applicationSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -90,6 +91,8 @@ export async function submitInstitutionInquiry(formData: FormData) {
 }
 
 export async function getInstitutionApplications(status?: string) {
+  // Applicant PII: platform admins only (this was previously unauthenticated).
+  if (!(await getAdminCaller())) return [];
   const where = status ? { status: status as "PENDING" | "APPROVED" | "REJECTED" } : {};
   return prisma.institutionApplication.findMany({
     where,
@@ -103,8 +106,8 @@ export async function reviewInstitutionApplication(
   action: "APPROVED" | "REJECTED",
   adminNotes?: string,
 ) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  // Any signed-in user could previously approve applications.
+  const user = await getAdminCaller();
   if (!user) return { error: "Unauthorized" };
 
   const app = await prisma.institutionApplication.findUnique({

@@ -28,6 +28,8 @@ interface Props {
     weakTopics: string[];
     studyStyle: string;
   };
+  /** Called after a successful save so the parent can refetch status. */
+  onSaved?: () => void;
 }
 
 /**
@@ -36,7 +38,7 @@ interface Props {
  * actually missing are rendered, so a user who got through most of the flow is
  * not asked to re-answer everything.
  */
-export function ProfileCompletionPanel({ status, defaults }: Props) {
+export function ProfileCompletionPanel({ status, defaults, onSaved }: Props) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -106,6 +108,9 @@ export function ProfileCompletionPanel({ status, defaults }: Props) {
         description: "You can keep editing these details any time.",
       });
       router.refresh();
+      // router.refresh() doesn't re-run the client page's data load, so the
+      // panel kept listing fields that had just been saved.
+      onSaved?.();
     } catch {
       toast.error("Could not save your profile", {
         description: "Please try again in a moment.",

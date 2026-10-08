@@ -78,8 +78,10 @@ export default function TutorNotificationsPage() {
           {
             event: "INSERT",
             schema: "public",
-            table: "Notification",
-            filter: `userId=eq.${userId}`,
+            // notifyUser() writes to public.notifications (snake_case); the
+            // Prisma "Notification" table is never written.
+            table: "notifications",
+            filter: `user_id=eq.${userId}`,
           },
           () => {
             load();
@@ -116,7 +118,12 @@ export default function TutorNotificationsPage() {
   };
 
   const handleMarkRead = async (id: string, actionUrl?: string | null) => {
-    await markNotificationRead(id);
+    try {
+      await markNotificationRead(id);
+    } catch (err) {
+      // Still follow the link; the read flag will sync next load
+      console.error("Failed to mark notification read:", err);
+    }
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
     if (actionUrl) {
       window.location.href = actionUrl;

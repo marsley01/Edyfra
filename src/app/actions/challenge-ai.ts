@@ -7,6 +7,28 @@ import { SESSION_CONFIG, CHALLENGE_CONFIG } from "@/lib/config";
 import { recalibrateTier } from "./user";
 import { notifyUser } from "./notifications";
 import { getAdminGlobalSettings } from "@/app/actions/admin";
+import { createClient } from "@/utils/supabase/server";
+
+/**
+ * Prisma id of the signed-in caller (id OR email, for legacy rows), or null.
+ * Everything below is a browser-callable server action, so user ids passed in
+ * from the client must never be trusted.
+ */
+async function getAuthedUserId(): Promise<string | null> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+  const dbUser = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { id: user.id },
+        ...(user.email ? [{ email: user.email }] : []),
+      ],
+    },
+    select: { id: true },
+  });
+  return dbUser?.id ?? null;
+}
 
 interface ChallengeGenerationRequest {
   level: string;
@@ -77,6 +99,9 @@ function parseChallengesFromAI(aiResponse: string): GeneratedChallenge[] {
 
 export async function generateChallenges(request: ChallengeGenerationRequest): Promise<GeneratedChallenge[]> {
   try {
+    // Spends AI credits and notifies up to 100 users — never anonymously.
+    if (!(await getAuthedUserId())) throw new Error("Unauthorized");
+
     const { level, subject, topic, count = 1 } = request;
 
     const levelText = level === "UNIVERSITY" ? "university level" : "high school level";
@@ -224,6 +249,9 @@ function shuffleArray<T>(arr: T[]): T[] {
 
 export async function getChallengesForUser(userId: string, level: string) {
   try {
+    const me = await getAuthedUserId();
+    if (!me) return [];
+    userId = me;
     const eduLevel = level as EduLevel;
 
     // Always fetch or generate today's challenge first to ensure it exists
@@ -314,6 +342,9 @@ export async function getChallengesForUser(userId: string, level: string) {
 
 export async function evaluateChallengeAnswer(challengeId: string, userAnswer: string) {
   try {
+    const me = await getAuthedUserId();
+    if (!me) throw new Error("Unauthorized");
+
     const challenge = await prisma.dailyChallenge.findUnique({ where: { id: challengeId } });
     if (!challenge) throw new Error("Challenge not found");
 
@@ -352,8 +383,16 @@ Respond with a JSON object:
       };
     }
 
+    const correct = result.correct === true;
+
+    // Record the attempt here, from the server's own verdict.
+    // saveChallengeAttempt() used to take `userId` and `correct` straight from
+    // the browser, so anyone could award themselves (or any user) points
+    // without answering.
+    await recordChallengeAttempt(me, challenge.id, correct);
+
     return {
-      correct: result.correct,
+      correct,
       explanation: result.explanation || challenge.explanation,
       correctAnswer: result.correctAnswer || challenge.answer,
     };
@@ -363,7 +402,20 @@ Respond with a JSON object:
   }
 }
 
-export async function saveChallengeAttempt(userId: string, challengeId: string, correct: boolean) {
+/**
+ * Kept for existing callers. The attempt is now recorded by
+ * evaluateChallengeAnswer(); the client-supplied `userId` and `correct` are
+ * ignored and this just returns the caller's recorded attempt.
+ */
+export async function saveChallengeAttempt(_userId: string, challengeId: string, _correct: boolean) {
+  const me = await getAuthedUserId();
+  if (!me) throw new Error("Unauthorized");
+  return prisma.dailyChallengeAttempt.findFirst({
+    where: { userId: me, challengeId },
+  });
+}
+
+async function recordChallengeAttempt(userId: string, challengeId: string, correct: boolean) {
   try {
     const challenge = await prisma.dailyChallenge.findUnique({ where: { id: challengeId } });
     if (!challenge) throw new Error("Challenge not found");
@@ -439,6 +491,9 @@ export async function getTodaysChallenge(level: string) {
 
 export async function getChallengeCompletion(userId: string, challengeId: string) {
   try {
+    const me = await getAuthedUserId();
+    if (!me) return null;
+    userId = me;
     const attempt = await prisma.dailyChallengeAttempt.findFirst({
       where: { userId, challengeId },
     });
@@ -451,6 +506,9 @@ export async function getChallengeCompletion(userId: string, challengeId: string
 
 export async function generateFreshChallengesForUser(userId: string, level: string) {
   try {
+    const me = await getAuthedUserId();
+    if (!me) return false;
+    userId = me;
     const recentAttempts = await prisma.dailyChallengeAttempt.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
@@ -510,6 +568,13 @@ export async function getChallengeStats() {
 
 export async function generatePersonalizedChallenge(userId: string, level: string) {
   try {
+    // Always personalise for the caller, never for a client-supplied id (that
+    // leaked another user's weak topics into the prompt and spent AI credits
+    // anonymously).
+    const me = await getAuthedUserId();
+    if (!me) throw new Error("Unauthorized");
+    userId = me;
+
     // ── 1. Onboarding profile: the subjects the student picked + weak topics ──
     const profile = await prisma.studentProfile.findUnique({
       where: { userId },

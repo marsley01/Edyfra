@@ -145,6 +145,9 @@ export default function SettingsPage() {
         studyHoursPerWeek: parseInt(formData.studyHours) || 0,
       });
       toast.success("Profile updated");
+      // Refresh the completion panel so it doesn't keep nagging about fields
+      // that were just saved.
+      getMyProfileStatus().then(setProfileStatus).catch(() => {});
     } catch { toast.error("Failed to update profile"); }
     finally { setSaving(false); }
   };
@@ -291,6 +294,7 @@ export default function SettingsPage() {
               {profileStatus && !profileStatus.isComplete && (
                 <ProfileCompletionPanel
                   status={profileStatus}
+                  onSaved={() => { getMyProfileStatus().then(setProfileStatus).catch(() => {}); }}
                   defaults={{
                     name: userData?.name || formData.name || "",
                     educationLevel: userData?.educationLevel || formData.educationLevel,

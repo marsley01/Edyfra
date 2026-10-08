@@ -131,6 +131,14 @@ export async function POST(request: Request) {
       }
     }
 
+    // The server client bypasses Stream permissions, so make sure the caller
+    // actually belongs to this channel before posting into it (otherwise any
+    // signed-in user could inject AI messages into any study room by id).
+    const membership = await channel.queryMembers({ user_id: user.id });
+    if (membership.members.length === 0) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     await channel.sendMessage({
       text: aiResponse,
       user_id: MASH_AI_USER_ID,

@@ -14,64 +14,7 @@ export function IncomingRequests() {
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
-  useEffect(() => {
-    loadRequests();
-
-    // Real-time subscription for new booking requests
-    const channel = supabase
-      .channel("incoming-bookings")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "bookings",
-          filter: `status=eq.pending`,
-        },
-        (payload: any) => {
-          const newBooking = payload.new;
-          // Fetch student details
-          fetch(`/api/users/${newBooking.student_id}`, { signal: AbortSignal.timeout(5000) })
-            .then(res => res.json())
-            .then(student => {
-              setRequests(prev => {
-                if (prev.find(r => r.id === newBooking.id)) return prev;
-                return [{
-                  ...newBooking,
-                  student: { name: student.name || "Student", avatar: student.avatar },
-                }, ...prev];
-              });
-              showInfo("New booking request", { description: "Someone just asked to book a session with you." });
-            })
-            .catch(() => {
-              setRequests(prev => {
-                if (prev.find(r => r.id === newBooking.id)) return prev;
-                return [{
-                  ...newBooking,
-                  student: { name: "A student", avatar: "" },
-                }, ...prev];
-              });
-            });
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "bookings",
-          filter: `status=in.(confirmed,declined,expired)`,
-        },
-        (payload: any) => {
-          setRequests(prev => prev.filter(r => r.id !== payload.new.id));
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [supabase]);
+  const [actingId, setActingId] = useState<string | null>(null);
 
   const loadRequests = async () => {
     try {
@@ -84,9 +27,63 @@ export function IncomingRequests() {
     }
   };
 
+  useEffect(() => {
+    loadRequests();
+
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let cancelled = false;
+
+    // Real-time subscription for this tutor's booking requests only
+    supabase.auth.getUser().then(({ data }: { data: { user: { id: string } | null } }) => {
+      const tutorId = data.user?.id;
+      if (!tutorId || cancelled) return;
+      channel = supabase
+        .channel(`incoming-bookings-${tutorId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "bookings",
+            filter: `tutor_id=eq.${tutorId}`,
+          },
+          (payload: any) => {
+            if (payload.new?.status !== "pending") return;
+            // Reload so the row has the same (camelCase + student) shape as the initial fetch
+            loadRequests();
+            showInfo("New booking request", { description: "Someone just asked to book a session with you." });
+          }
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "bookings",
+            filter: `tutor_id=eq.${tutorId}`,
+          },
+          (payload: any) => {
+            if (payload.new?.status !== "pending") {
+              setRequests(prev => prev.filter(r => r.id !== payload.new.id));
+            }
+          }
+        )
+        .subscribe();
+    });
+
+    return () => {
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [supabase]);
+
   const handleAction = async (bookingId: string, action: "confirm" | "decline") => {
+    if (actingId) return;
+    setActingId(bookingId);
     try {
       await updateBookingStatus(bookingId, action === "confirm" ? "confirmed" : "declined");
+      setRequests(prev => prev.filter(r => r.id !== bookingId));
       showSuccess(action === "confirm" ? "Booking accepted" : "Booking declined", {
         description: action === "confirm" ? "The student will get a confirmation." : "We'll let the student know.",
       });
@@ -97,6 +94,9 @@ export function IncomingRequests() {
         cause: "We didn't get a response from the server.",
         fix: "Give it another try, or refresh the page.",
       });
+      loadRequests();
+    } finally {
+      setActingId(null);
     }
   };
 
@@ -139,12 +139,14 @@ export function IncomingRequests() {
                   <Button 
                     variant="outline" 
                     className="flex-1 sm:flex-none border-destructive text-destructive hover:bg-destructive/10"
+                    disabled={actingId !== null}
                     onClick={() => handleAction(req.id, "decline")}
                   >
                     <XCircle className="h-4 w-4 mr-2" /> Decline
                   </Button>
                   <Button 
                     className="flex-1 sm:flex-none bg-emerald-500 hover:bg-emerald-600 text-white"
+                    disabled={actingId !== null}
                     onClick={() => handleAction(req.id, "confirm")}
                   >
                     <CheckCircle2 className="h-4 w-4 mr-2" /> Accept

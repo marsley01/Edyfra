@@ -82,8 +82,11 @@ export default function NotificationsPage() {
           {
             event: "INSERT",
             schema: "public",
-            table: "Notification",
-            filter: `userId=eq.${userId}`,
+            // notifyUser() writes to public.notifications (snake_case); the
+            // Prisma "Notification" table is never written, so this listener
+            // used to never fire.
+            table: "notifications",
+            filter: `user_id=eq.${userId}`,
           },
           () => {
             load();

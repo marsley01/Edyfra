@@ -34,9 +34,10 @@ const SUPPORTED = new Set<AuthEmailType>([
 ]);
 
 interface HookPayload {
-  user?: { email?: string };
+  user?: { email?: string; new_email?: string };
   email_data?: {
     token_hash?: string;
+    token_hash_new?: string;
     redirect_to?: string;
     email_action_type?: string;
   };
@@ -125,12 +126,34 @@ export async function POST(request: Request) {
   }
 
   try {
-    await sendAuthEmail({
-      to,
-      type: actionType,
-      tokenHash,
-      redirectTo: payload.email_data?.redirect_to || "",
-    });
+    if (actionType === "email_change" && payload.user?.new_email) {
+      // The confirmation belongs at the NEW address — sending it to `user.email`
+      // asked the old inbox to approve the move. With "secure email change" on,
+      // GoTrue also issues `token_hash_new`, and both inboxes must confirm.
+      await sendAuthEmail({
+        to: payload.user.new_email,
+        type: actionType,
+        tokenHash,
+        redirectTo: payload.email_data?.redirect_to || "",
+      });
+      const currentHash = payload.email_data?.token_hash_new;
+      if (currentHash) {
+        await sendAuthEmail({
+          to,
+          type: actionType,
+          tokenHash: currentHash,
+          redirectTo: payload.email_data?.redirect_to || "",
+          newEmail: payload.user.new_email,
+        });
+      }
+    } else {
+      await sendAuthEmail({
+        to,
+        type: actionType,
+        tokenHash,
+        redirectTo: payload.email_data?.redirect_to || "",
+      });
+    }
     return NextResponse.json({ ok: true });
   } catch (error) {
     // Surfaced so the failure is visible in Supabase's hook logs rather than

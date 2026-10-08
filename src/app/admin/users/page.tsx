@@ -99,7 +99,15 @@ export default function AdminUsersPage() {
 
   const handleRoleUpdate = async (id: string, role: Role) => {
     try {
-      await updateUserRoleAdmin(id, role);
+      const result = await updateUserRoleAdmin(id, role);
+      if (result?.error) {
+        showError({
+          title: "We couldn't update that role",
+          cause: result.error,
+          fix: "Try again, or refresh the page.",
+        });
+        return;
+      }
       showSuccess(`Role updated to ${role}`, { description: "Their permissions are now in effect." });
       fetchUsers();
     } catch (err) {

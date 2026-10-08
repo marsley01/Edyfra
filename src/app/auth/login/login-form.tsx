@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { ArrowRight, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
@@ -44,7 +43,6 @@ export default function LoginForm({
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(initialError)
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
   const supabase = createClient()
 
   const isEmail = input.includes('@')
@@ -54,50 +52,63 @@ export default function LoginForm({
     setError(null)
     setLoading(true)
 
-    let email = input
+    try {
+      let email = input.trim()
 
-    if (!isEmail) {
-      try {
-        const res = await fetch(`/api/auth/resolve-username?q=${encodeURIComponent(input)}`)
-        if (!res.ok) throw new Error('resolve-failed')
-        const data = await res.json()
-        if (!data.found) {
-          setError(`No account found with the username "${input}". Try signing up or use your email.`)
-          setLoading(false)
+      if (!isEmail) {
+        try {
+          const res = await fetch(`/api/auth/resolve-username?q=${encodeURIComponent(email.replace(/^@/, ''))}`)
+          if (res.status === 429) {
+            setError('Too many attempts. Please wait a minute and try again.')
+            return
+          }
+          if (!res.ok) throw new Error('resolve-failed')
+          const data = await res.json()
+          if (!data.found) {
+            setError(`No account found with the username "${input}". Try signing up or use your email.`)
+            return
+          }
+          email = data.email
+        } catch {
+          setError('Could not verify your username right now. Try using your email address instead.')
           return
         }
-        email = data.email
-      } catch {
-        setError('Could not verify your username right now. Try using your email address instead.')
-        setLoading(false)
+      }
+
+      let { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+
+      if (signInError?.message === 'Email not confirmed') {
+        try {
+          const res = await fetch('/api/auth/auto-confirm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+          })
+          if (res.ok) {
+            ;({ data, error: signInError } = await supabase.auth.signInWithPassword({ email, password }))
+          }
+        } catch {
+          // fall through to error handling below
+        }
+      }
+
+      if (signInError) {
+        setError(friendlyError(signInError.message))
         return
       }
-    }
 
-    let { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
-
-    if (signInError?.message === 'Email not confirmed') {
-      try {
-        await fetch('/api/auth/auto-confirm', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email }),
-        })
-        ;({ data, error: signInError } = await supabase.auth.signInWithPassword({ email, password }))
-      } catch {
-        // fall through to error handling below
+      if (!data.session) {
+        setError('We could not start your session. Please try again.')
+        return
       }
-    }
 
-    if (signInError) {
-      setError(friendlyError(signInError.message))
+      // Full navigation so the server layouts see the new session cookies and
+      // route the user by role (tutor/admin/student) and onboarding state.
+      window.location.href = '/dashboard'
+    } catch {
+      setError('Could not reach the server. Check your internet connection.')
+    } finally {
       setLoading(false)
-      return
-    }
-
-    if (data.session) {
-      router.push('/dashboard')
-      router.refresh()
     }
   }
 

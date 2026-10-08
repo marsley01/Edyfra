@@ -36,14 +36,19 @@ export default function TutorLeaderboardPage() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [me, data] = await Promise.all([
-        getUserData(),
-        getTutorLeaderboard(20),
-      ]);
-      if (cancelled) return;
-      setUserId(me?.id ?? null);
-      setLeaders((data as unknown as TutorLeader[]) ?? []);
-      setLoading(false);
+      try {
+        const [me, data] = await Promise.all([
+          getUserData(),
+          getTutorLeaderboard(20),
+        ]);
+        if (cancelled) return;
+        setUserId(me?.id ?? null);
+        setLeaders((data as unknown as TutorLeader[]) ?? []);
+      } catch (err) {
+        console.error("Failed to load tutor leaderboard:", err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     })();
     return () => {
       cancelled = true;

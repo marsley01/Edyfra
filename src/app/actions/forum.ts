@@ -29,7 +29,9 @@ export async function getPublicPosts(limit = 10, category?: string) {
       orderBy: {
         createdAt: 'desc'
       },
-      take: limit,
+      // Public, unauthenticated server action: clamp so callers can't dump
+      // the whole feed table in one request.
+      take: Math.min(Math.max(Math.floor(Number(limit) || 10), 1), 50),
     });
   } catch (error) {
     console.error("getPublicPosts error:", error);

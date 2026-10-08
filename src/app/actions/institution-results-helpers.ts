@@ -76,7 +76,9 @@ export function suggestMapping(columns: string[]): ColumnMapping {
 }
 
 const RowSchema = z.object({
-  admissionNumber: z.string().max(60),
+  // Must match the server-side ImportSchema (min 1): an empty admission number
+  // previously passed preview validation and then failed the whole import.
+  admissionNumber: z.string().min(1, "Admission number is required").max(60),
   studentName: z.string().min(1).max(160),
   subject: z.string().min(1).max(60),
   marks: z.coerce.number().min(0).max(100),

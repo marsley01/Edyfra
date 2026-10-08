@@ -71,7 +71,13 @@ export default function GroupChatPage() {
     </div>
   );
 
-  if (!group) return null;
+  // A failed load used to render a completely blank page with no way back.
+  if (!group) return (
+    <div className="h-screen flex flex-col items-center justify-center gap-4 bg-background">
+      <p className="text-sm text-muted-foreground">This group couldn&apos;t be loaded.</p>
+      <Button variant="outline" onClick={() => router.push("/dashboard/groups")}>Back to groups</Button>
+    </div>
+  );
 
   return (
     <div className="h-screen bg-background text-foreground flex flex-col overflow-hidden font-sans">

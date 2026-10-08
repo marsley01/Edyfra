@@ -12,7 +12,16 @@ const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_RE
     })
   : null;
 
-function getConfig(path: string): RateLimitConfig {
+function getConfig(path: string): RateLimitConfig | null {
+  // Called by Supabase's servers for every auth email, so all users share one
+  // source IP. It is authenticated by its webhook signature instead.
+  if (path === "/api/auth/send-email") {
+    return null;
+  }
+  // Fired while the user types on the signup form.
+  if (path.startsWith("/api/auth/check-") || path.startsWith("/api/auth/resolve-username")) {
+    return { interval: 60_000, maxRequests: 60 };
+  }
   if (path.startsWith("/api/auth") || path.startsWith("/api/setup-admin")) {
     return { interval: 60_000, maxRequests: 10 };
   }
@@ -35,13 +44,17 @@ export async function rateLimit(key: string, config?: RateLimitConfig): Promise<
     const windowSeconds = Math.ceil(cfg.interval / 1000);
     const redisKey = `rl:${key}`;
 
+    // Fixed window: the expiry is set only when the key is created. Re-arming
+    // it on every hit (as before) meant a client that kept retrying was never
+    // released, because the window slid forward with each blocked request.
     const result = await redis.pipeline()
+      .set(redisKey, 0, { nx: true, ex: windowSeconds })
       .incr(redisKey)
-      .expire(redisKey, windowSeconds)
+      .ttl(redisKey)
       .exec();
 
-    const count = result[0] as number;
-    const ttl = result[1] as number;
+    const count = result[1] as number;
+    const ttl = Math.max(0, result[2] as number);
 
     if (count > cfg.maxRequests) {
       return { success: false, remaining: 0, resetAt: Date.now() + (ttl || 0) * 1000 };

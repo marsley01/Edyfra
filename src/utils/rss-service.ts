@@ -40,8 +40,46 @@ const HTML_TAG_REGEX = /<[^>]*(>|$)/g;
  * Removes HTML tags and neutralizes any residual "<" so nested/overlapping
  * payloads cannot reassemble into a live element after sanitization.
  */
+const NAMED_ENTITIES: Record<string, string> = {
+  amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ",
+  ndash: "–", mdash: "—", hellip: "…", rsquo: "'", lsquo: "'", rdquo: '"', ldquo: '"',
+};
+
+/** Decodes named and numeric HTML entities. */
+export function decodeEntities(input: string): string {
+  return input.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (match, code: string) => {
+    if (code[0] === "#") {
+      const n = code[1].toLowerCase() === "x" ? parseInt(code.slice(2), 16) : parseInt(code.slice(1), 10);
+      return Number.isFinite(n) && n > 0 && n < 0x110000 ? String.fromCodePoint(n) : "";
+    }
+    return NAMED_ENTITIES[code.toLowerCase()] ?? match;
+  });
+}
+
+/**
+ * Turns an RSS title/description into plain display text.
+ *
+ * Many feeds (Google News in particular) put *entity-encoded* HTML inside the
+ * description — `&lt;a href=&quot;https://…&quot;&gt;Headline&lt;/a&gt;`. The old
+ * stripper removed literal tags only, and the excerpt code then deleted the
+ * remaining angle brackets, which left `a href="https://…"` on the page. Decode
+ * first (twice, for double-encoded feeds), then strip tags and bare URLs.
+ */
+export function rssToPlainText(input: string): string {
+  let text = decodeEntities(decodeEntities(input));
+  text = text
+    .replace(/<(script|style)[\s\S]*?<\/\1>/gi, " ")
+    .replace(HTML_TAG_REGEX, " ")
+    .replace(/[<>]/g, " ")
+    .replace(/\bhttps?:\/\/\S+/gi, " ")
+    .replace(/\bwww\.\S+/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return text;
+}
+
 function stripHtmlTags(input: string): string {
-  return input.replace(HTML_TAG_REGEX, "").replace(/</g, "&lt;");
+  return rssToPlainText(input);
 }
 
 function extractImage(itemXml: string): string {
@@ -139,8 +177,8 @@ export class RSSService {
     let match;
     while ((match = itemRegex.exec(xml)) !== null) {
       const itemXml = match[1];
-      const title = itemXml.match(titleRegex)?.[1]?.trim() || "";
-      const link = itemXml.match(linkRegex)?.[1]?.trim() || "";
+      const title = rssToPlainText(itemXml.match(titleRegex)?.[1]?.trim() || "");
+      const link = decodeEntities(itemXml.match(linkRegex)?.[1]?.trim() || "");
       const description = stripHtmlTags(itemXml.match(descRegex)?.[1]?.trim() || "");
       const pubDate = itemXml.match(dateRegex)?.[1]?.trim() || "";
       const imageUrl = extractImage(itemXml);

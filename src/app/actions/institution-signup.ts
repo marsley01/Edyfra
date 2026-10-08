@@ -4,7 +4,10 @@ import { z } from "zod";
 import { Prisma, type InstitutionPlan, type SchoolType, type Curriculum, type AdminTitle, type InstitutionStatus } from "@/generated/client";
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
+import { emailTypoMessage } from "@/lib/institution-email";
 import { getResend } from "@/lib/email";
+import { getAppUrl } from "@/lib/app-url";
 import { revalidatePath } from "next/cache";
 
 // Zod schemas for the 4-step wizard. Used to validate before insert.
@@ -12,16 +15,29 @@ import { revalidatePath } from "next/cache";
 const Step1Schema = z.object({
   schoolName: z.string().min(2, "School name is required").max(120),
   schoolType: z.enum(["PRIMARY", "SECONDARY", "COLLEGE", "UNIVERSITY"]),
-  curriculum: z.enum(["CBC", "EIGHT_FOUR_FOUR", "IGCSE", "MIXED", "UNIVERSITY"]),
+  // The public /institution/apply form only collects a subset of the wizard
+  // fields, so the rest are optional here and stored as null when absent.
+  curriculum: z.enum(["CBC", "EIGHT_FOUR_FOUR", "IGCSE", "MIXED", "UNIVERSITY"]).optional(),
   county: z.string().min(2, "County is required"),
-  subCounty: z.string().min(2, "Sub-county is required"),
-  studentCount: z.coerce.number().int().min(1).max(100000),
+  subCounty: z.string().min(2, "Sub-county is required").optional(),
+  studentCount: z.coerce.number().int().min(1).max(100000).optional(),
+  address: z.string().max(200).optional(),
+  website: z.string().max(160).optional(),
 });
 
 const Step2Schema = z.object({
   adminName: z.string().min(2, "Full name is required").max(120),
-  adminTitle: z.enum(["PRINCIPAL", "DEPUTY", "HOD", "REGISTRAR", "OTHER"]),
-  adminEmail: z.string().email("Valid email is required").max(160),
+  adminTitle: z.enum(["PRINCIPAL", "DEPUTY", "HOD", "REGISTRAR", "OTHER"]).default("OTHER"),
+  adminEmail: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(160)
+    .email("Please enter a valid email address")
+    .superRefine((value, ctx) => {
+      const typo = emailTypoMessage(value);
+      if (typo) ctx.addIssue({ code: "custom", message: typo });
+    }),
   adminPhone: z
     .string()
     .min(9, "Phone number is required")
@@ -31,12 +47,12 @@ const Step2Schema = z.object({
 });
 
 const Step3Schema = z.object({
-  plan: z.enum(["STARTER", "GROWTH", "ENTERPRISE"]),
+  plan: z.enum(["STARTER", "GROWTH", "ENTERPRISE"]).optional(),
 });
 
 const FullApplicationSchema = Step1Schema.merge(Step2Schema).merge(Step3Schema);
 
-export type InstitutionApplicationInput = z.infer<typeof FullApplicationSchema>;
+export type InstitutionApplicationInput = z.input<typeof FullApplicationSchema>;
 
 export type SubmitApplicationResult =
   | { ok: true; institutionId: string; status: InstitutionStatus }
@@ -45,11 +61,11 @@ export type SubmitApplicationResult =
 /**
  * Submit a new institution application. The flow is:
  *   1. Validate every field with zod.
- *   2. Create a Supabase auth account for the admin (or sign them in if
- *      the email already exists — we'll then link via InstitutionMember).
- *   3. Insert the Institution row with status PENDING.
- *   4. Insert an InstitutionAdmin for the user.
- *   5. Insert an InstitutionMember (role INSTITUTION_ADMIN).
+ *   2. Create a confirmed auth user with the service role (no confirmation
+ *      email), or, if the email is taken, require that account's password.
+ *   3-5. In one transaction: Prisma User (if missing), Institution (PENDING),
+ *      InstitutionAdmin, InstitutionMember. If it fails, the auth user created
+ *      in step 2 is deleted again.
  *   6. Fan out a notification to every founder via notifyManyUsers.
  *   7. Email the founders a heads-up.
  *   8. Email the admin a "we received your application" message.
@@ -68,174 +84,225 @@ export async function submitInstitutionSignup(
   }
   const data = parsed.data;
 
-  // ─── 1. Supabase auth ────────────────────────────────────────────────────
-  const supabase = await createClient();
-  let userId: string | null = null;
+  const email = data.adminEmail;
 
-  // Try sign up; if the email is already registered we fall back to
-  // fetching the existing user by email (handled via a "sign in with
-  // link" pattern — for the application flow we just need the auth
-  // account to exist so we can link an InstitutionMember to it).
-  const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
-    email: data.adminEmail,
-    password: data.password,
-    options: {
-      data: {
-        name: data.adminName,
-        role: "INSTITUTION_ADMIN",
-        institution_apply: data.schoolName,
+  // Refuse a double-submit / second application from the same person while
+  // one is still being reviewed (looked up by email so it also catches older
+  // accounts whose Prisma id differs from their auth id).
+  try {
+    const pendingApp = await prisma.institutionAdmin.findFirst({
+      where: {
+        user: { email: { equals: email, mode: "insensitive" } },
+        institution: { status: "PENDING" },
       },
+      select: { id: true },
+    });
+    if (pendingApp) {
+      return {
+        ok: false,
+        error: "You already have an application under review. We'll email you as soon as it's approved.",
+        field: "adminEmail",
+      };
+    }
+  } catch (err) {
+    console.error("[submitInstitutionSignup] pending lookup failed:", err);
+  }
+
+  // ─── 1. Auth account (service role, no confirmation email) ──────────────
+  // supabase.auth.signUp() from the server sent a confirmation email through
+  // the Send Email hook and was IP-rate-limited (every request shares Vercel's
+  // egress IP), so applications failed intermittently, and the raw error object
+  // reached the UI as "{}". The admin API creates a confirmed user directly.
+  let admin: ReturnType<typeof createAdminClient>;
+  try {
+    admin = createAdminClient();
+  } catch (err) {
+    console.error("[submitInstitutionSignup] admin client unavailable:", err);
+    return { ok: false, error: "Applications are temporarily unavailable. Please try again shortly." };
+  }
+
+  const supabase = await createClient();
+  let authUserId: string;
+  let createdNow = false;
+
+  const { data: created, error: createErr } = await admin.auth.admin.createUser({
+    email,
+    password: data.password,
+    email_confirm: true,
+    user_metadata: {
+      name: data.adminName,
+      role: "INSTITUTION_ADMIN",
+      institution_apply: data.schoolName,
     },
   });
 
-  if (signUpErr && !signUpErr.message.toLowerCase().includes("already")) {
-    return { ok: false, error: signUpErr.message };
-  }
-
-  if (signUpData?.user?.id) {
-    userId = signUpData.user.id;
-  } else {
-    // Email already exists — pull the user via admin client so we can
-    // link the application to their existing Edyfra account.
-    const { createAdminClient } = await import("@/utils/supabase/admin");
-    const admin = createAdminClient();
-    const { data: list, error: listErr } = await admin.auth.admin.listUsers();
-    if (listErr) return { ok: false, error: listErr.message };
-    const existing = list.users.find(
-      (u) => u.email?.toLowerCase() === data.adminEmail.toLowerCase(),
-    );
-    if (!existing) {
+  if (created?.user && !createErr) {
+    authUserId = created.user.id;
+    createdNow = true;
+  } else if (isAlreadyRegistered(createErr)) {
+    // Existing account: the applicant must prove they own it. Without this,
+    // anyone could attach a school to someone else's account.
+    const { data: signIn, error: signInErr } = await supabase.auth.signInWithPassword({
+      email,
+      password: data.password,
+    });
+    if (signInErr || !signIn.user) {
       return {
         ok: false,
         error:
-          "An account with this email already exists. Please sign in and contact us to add this school to your account.",
+          "An account with this email already exists. Enter that account's password to link this school to it.",
+        field: "password",
       };
     }
-    userId = existing.id;
+    authUserId = signIn.user.id;
+  } else {
+    console.error("[submitInstitutionSignup] createUser failed:", createErr?.message ?? createErr);
+    return { ok: false, error: friendlyAuthError(createErr), field: authErrorField(createErr) };
   }
 
-  if (!userId) return { ok: false, error: "Could not create or find the admin account." };
-
-  // ─── 1b. Prisma User row ─────────────────────────────────────────────────
-  // The InstitutionAdmin / InstitutionMember inserts have a foreign key to
-  // the User table, so we MUST ensure a Prisma User row exists for this
-  // user id before we try to create the institution. Supabase signUp only
-  // creates the auth account, not the Prisma mirror row.
-  //
-  // We use upsert so this is idempotent: if the user already has a Prisma
-  // row (because they signed up to Edyfra before), we just refresh the
-  // name/county without overwriting their existing role.
+  // ─── 2. Prisma: user + institution + memberships, all-or-nothing ────────
+  let institution: { id: string; isActive: boolean };
   try {
-    await prisma.user.upsert({
-      where: { id: userId },
-      update: {
-        name: data.adminName,
-        email: data.adminEmail,
-      },
-      create: {
-        id: userId,
-        email: data.adminEmail,
-        name: data.adminName,
-        // Prisma's Role enum doesn't include INSTITUTION_ADMIN, so we keep
-        // the default (STUDENT). Institution access is gated by the
-        // InstitutionAdmin / InstitutionMember tables, not by User.role.
-        role: "STUDENT",
-        county: data.county,
-        lastActiveAt: new Date(),
-      },
+    // Older accounts can have a Prisma id that differs from the auth id, so
+    // resolve the profile by id OR email before deciding to create one.
+    const existingProfile = await prisma.user.findFirst({
+      where: { OR: [{ id: authUserId }, { email: { equals: email, mode: "insensitive" } }] },
+      select: { id: true },
     });
-  } catch (err) {
-    const detail = err instanceof Error ? err.message : String(err);
-    console.error("[submitInstitutionSignup] failed to upsert Prisma user:", err);
-    return {
-      ok: false,
-      error:
-        process.env.NODE_ENV === "production"
-          ? "We couldn't create your account on our side. Please try again in a moment."
-          : `We couldn't create your account on our side. (${detail})`,
-      field: "adminEmail",
-    };
-  }
 
-  // ─── 2. Prisma: institution + memberships ───────────────────────────────
-  try {
     // TODO(RLS): new institution creation needs a scoped INSERT policy before this can move to Supabase client — founder has no InstitutionMember row yet at this point in the flow.
-    const institution = await prisma.$transaction(async (tx) => {
-      // Generate a unique invite code
-      const code = await generateInstitutionCode(tx, data.schoolName);
+    institution = await prisma.$transaction(
+      async (tx) => {
+        let userId = existingProfile?.id;
+        if (userId) {
+          await tx.user.update({ where: { id: userId }, data: { name: data.adminName } });
+        } else {
+          const user = await tx.user.create({
+            data: {
+              id: authUserId,
+              email,
+              name: data.adminName,
+              // Institution access is gated by InstitutionAdmin/InstitutionMember,
+              // not User.role (whose enum has no institution roles).
+              role: "STUDENT",
+              county: data.county,
+              lastActiveAt: new Date(),
+            },
+            select: { id: true },
+          });
+          userId = user.id;
+        }
 
-      const inst = await tx.institution.create({
-        data: {
-          name: data.schoolName,
-          type: data.schoolType,
-          code,
-          email: data.adminEmail,
-          isActive: false,
-        },
-      });
+        const code = await generateInstitutionCode(tx, data.schoolName);
+        const inst = await tx.institution.create({
+          data: {
+            name: data.schoolName,
+            type: data.schoolType,
+            code,
+            email,
+            isActive: false,
+            status: "PENDING",
+            schoolType: data.schoolType as SchoolType,
+            curriculum: (data.curriculum ?? null) as Curriculum | null,
+            county: data.county,
+            subCounty: data.subCounty ?? null,
+            studentCount: data.studentCount ?? null,
+            address: data.address || null,
+            website: data.website || null,
+            adminName: data.adminName,
+            adminTitle: data.adminTitle as AdminTitle,
+            adminPhone: data.adminPhone,
+            adminEmail: email,
+            primaryAdminUserId: userId,
+            planTier: (data.plan ?? null) as InstitutionPlan | null,
+          },
+          select: { id: true, isActive: true },
+        });
 
-      await tx.institutionAdmin.create({
-        data: {
-          institutionId: inst.id,
-          userId,
-          title: data.adminTitle as AdminTitle,
-          isPrimary: true,
-        },
-      });
-
-      await tx.institutionMember.create({
-        data: {
-          institutionId: inst.id,
-          userId,
-          role: "INSTITUTION_ADMIN",
-          status: "PENDING",
-        },
-      });
-
-      await tx.institutionActivity.create({
-        data: {
-          institutionId: inst.id,
-          type: "ADMIN_ADDED",
-          actorUserId: userId,
-          title: "Application submitted",
-          body: `${data.schoolName} applied for the ${data.plan} plan.`,
-        },
-      });
-
-      return inst;
-    });
-
-    // ─── 3. Notify founders ────────────────────────────────────────────────
-    await notifyFoundersOfApplication(institution.id, data.schoolName, data.adminName, data.plan);
-
-    // ─── 4. Email admins a confirmation ────────────────────────────────────
-    await emailApplicantConfirmation(data.adminEmail, data.adminName, data.schoolName).catch(
-      (e) => console.warn("[institution-signup] applicant email failed:", e),
+        await tx.institutionAdmin.create({
+          data: { institutionId: inst.id, userId, title: data.adminTitle as AdminTitle, isPrimary: true },
+        });
+        await tx.institutionMember.create({
+          data: { institutionId: inst.id, userId, role: "INSTITUTION_ADMIN", status: "PENDING" },
+        });
+        await tx.institutionActivity.create({
+          data: {
+            institutionId: inst.id,
+            type: "ADMIN_ADDED",
+            actorUserId: userId,
+            title: "Application submitted",
+            body: data.plan
+              ? `${data.schoolName} applied for the ${data.plan} plan.`
+              : `${data.schoolName} applied to join Edyfra Institutions.`,
+          },
+        });
+        return inst;
+      },
+      { timeout: 20_000 },
     );
-
-    revalidatePath("/institution");
-    revalidatePath("/admin/institutions");
-    return { ok: true, institutionId: institution.id, status: institution.isActive ? "ACTIVE" : "PENDING" };
   } catch (err) {
-    console.error("[submitInstitutionSignup] failed:", err);
-    if (err instanceof Prisma.PrismaClientKnownRequestError) {
-      if (err.code === "P2002") {
-        return { ok: false, error: "An institution with similar details already exists." };
-      }
-      // Foreign-key violation = a row we tried to link to is missing.
-      // The most common cause is a missing Prisma User row, but the
-      // upsert above should now prevent that. If we still get one,
-      // surface the specific missing field so the user can tell us.
-      if (err.code === "P2003") {
-        return {
-          ok: false,
-          error: `Your application is missing a related record (${err.meta?.field_name ?? "unknown"}). Please refresh and try again.`,
-        };
-      }
+    console.error("[submitInstitutionSignup] database write failed:", err);
+    // Roll back the auth user we just created so the email is not left
+    // registered without a usable account (and the applicant can retry).
+    if (createdNow) {
+      await admin.auth.admin
+        .deleteUser(authUserId)
+        .catch((e) => console.error("[submitInstitutionSignup] rollback deleteUser failed:", e));
     }
-    const detail = err instanceof Error ? err.message : "Unknown error";
-    return { ok: false, error: `Something went wrong on our side. (${detail})` };
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      return { ok: false, error: "An institution with these details already exists. Try signing in instead." };
+    }
+    return { ok: false, error: "We couldn't save your application. Please try again in a moment." };
   }
+
+  // Sign the new admin in (sets session cookies) so the pending page can show
+  // their application. Non-fatal: they can always sign in manually.
+  if (createdNow) {
+    await supabase.auth
+      .signInWithPassword({ email, password: data.password })
+      .catch((e) => console.warn("[submitInstitutionSignup] post-signup sign-in failed:", e));
+  }
+
+  // ─── 3. Notify founders + confirm to applicant (best-effort) ────────────
+  await notifyFoundersOfApplication(institution.id, data.schoolName, data.adminName, data.plan ?? "STARTER");
+  await emailApplicantConfirmation(email, data.adminName, data.schoolName).catch((e) =>
+    console.warn("[institution-signup] applicant email failed:", e),
+  );
+
+  revalidatePath("/institution");
+  revalidatePath("/admin/institutions");
+  return { ok: true, institutionId: institution.id, status: institution.isActive ? "ACTIVE" : "PENDING" };
+}
+
+type AuthErrorLike = { message?: string; code?: string; status?: number } | null | undefined;
+
+function isAlreadyRegistered(err: AuthErrorLike): boolean {
+  if (!err) return false;
+  if (err.code === "email_exists" || err.code === "user_already_exists") return true;
+  return /already (been )?registered|already exists/i.test(err.message ?? "");
+}
+
+/** Always a plain, user-facing string, never a stringified error object. */
+function friendlyAuthError(err: AuthErrorLike): string {
+  const code = err?.code ?? "";
+  const message = typeof err?.message === "string" ? err.message : "";
+  if (code === "weak_password" || /password/i.test(message)) {
+    return "That password is too weak. Use at least 8 characters with a mix of letters and numbers.";
+  }
+  if (code === "email_address_invalid" || /invalid.*email|email.*invalid/i.test(message)) {
+    return "That email address doesn't look valid. Please check it and try again.";
+  }
+  if (err?.status === 429 || /rate limit/i.test(message)) {
+    return "Too many attempts right now. Please wait a minute and try again.";
+  }
+  return "We couldn't create your account right now. Please try again in a moment.";
+}
+
+function authErrorField(err: AuthErrorLike): string | undefined {
+  const message = `${err?.code ?? ""} ${err?.message ?? ""}`;
+  if (/password/i.test(message)) return "password";
+  if (/email/i.test(message)) return "adminEmail";
+  return undefined;
 }
 
 async function generateInstitutionCode(
@@ -303,10 +370,10 @@ async function notifyFoundersOfApplication(
       subject: `New institution application — ${schoolName}`,
       html: `
         <h2>New institution application</h2>
-        <p><strong>${schoolName}</strong> has applied for the <strong>${plan}</strong> plan.</p>
-        <p>Admin contact: ${adminName}</p>
+        <p><strong>${escapeHtml(schoolName)}</strong> has applied for the <strong>${escapeHtml(plan)}</strong> plan.</p>
+        <p>Admin contact: ${escapeHtml(adminName)}</p>
         <p>Review the application in the founder admin:</p>
-        <p><a href="${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/admin/institutions/${institutionId}">Open application</a></p>
+        <p><a href="${getAppUrl()}/admin/institutions/${institutionId}">Open application</a></p>
       `,
     });
   } catch (err) {
@@ -325,10 +392,19 @@ async function emailApplicantConfirmation(
     to: email,
     subject: `Application received — ${schoolName}`,
     html: `
-      <h2>Hi ${name},</h2>
-      <p>We've received your application for <strong>${schoolName}</strong> to join the Edyfra Institutions program.</p>
+      <h2>Hi ${escapeHtml(name)},</h2>
+      <p>We've received your application for <strong>${escapeHtml(schoolName)}</strong> to join the Edyfra Institutions program.</p>
       <p>Our team will review your details and contact you within 24 hours. If you don't hear from us, reply to this email.</p>
       <p>— The Edyfra team</p>
     `,
   });
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }

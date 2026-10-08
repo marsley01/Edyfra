@@ -33,8 +33,12 @@ export async function uploadAndCreateResource(formData: FormData) {
   const description = formData.get("description") as string;
   const price = Number(formData.get("price"));
 
-  if (!file || !title || !subject) {
+  if (!file || !title || !subject || !education_level) {
     return { error: "Missing required fields" };
+  }
+
+  if (!Number.isFinite(price) || price < 0 || !Number.isInteger(price)) {
+    return { error: "Price must be a whole number of KES (0 for free)." };
   }
 
   // Validate file size and extension
@@ -141,14 +145,16 @@ export async function getResourceDownloadUrl(
   }
 
   if (!resource) return { error: "Resource not found." };
-  if (resource.status !== "approved") {
-    return { error: "This resource is not available for download." };
-  }
 
   const isOwner = resource.sellerId === user.id;
   const isPaid = Number(resource.price) > 0;
   const hasPurchased = resource.purchases.length > 0;
   const isAdmin = await isUserAdmin(user.id);
+
+  // Owners and admins (reviewing pending uploads) can always open the file
+  if (resource.status !== "approved" && !isOwner && !isAdmin) {
+    return { error: "This resource is not available for download." };
+  }
 
   if (isPaid && !isOwner && !hasPurchased && !isAdmin) {
     return { error: "You must purchase this resource before downloading." };

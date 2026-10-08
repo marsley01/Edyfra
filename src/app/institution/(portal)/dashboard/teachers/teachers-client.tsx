@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Search, UserPlus, X, XCircle, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,8 @@ const STATUS_STYLES: Record<TeacherRow["status"], string> = {
 export function TeachersClient({ initialRows }: { initialRows: TeacherRow[] }) {
   const router = useRouter();
   const [rows, setRows] = useState(initialRows);
+  // Re-sync when the server sends a fresh list (e.g. after an invite).
+  useEffect(() => setRows(initialRows), [initialRows]);
   const [search, setSearch] = useState("");
   const [showInvite, setShowInvite] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -49,7 +51,7 @@ export function TeachersClient({ initialRows }: { initialRows: TeacherRow[] }) {
       if (!res?.ok) {
         showError({
           title: "Couldn't remove that teacher",
-          cause: "We didn't get a confirmation from the server.",
+          cause: res?.error ?? "We didn't get a confirmation from the server.",
           fix: "Try again, or refresh the page.",
         });
         return;
@@ -219,23 +221,32 @@ function InviteTeacherDialog({ onClose }: { onClose: () => void }) {
       return;
     }
     setPending(true);
-    const res = await inviteTeacher({
-      name,
-      email,
-      subjects,
-      formYear: formYear || null,
-    });
-    setPending(false);
-    if (!res.ok) {
+    try {
+      const res = await inviteTeacher({
+        name,
+        email,
+        subjects,
+        formYear: formYear || null,
+      });
+      if (!res.ok) {
+        showError({
+          title: "We couldn't send that invite",
+          cause: res.error,
+          fix: "Double-check the email and try again.",
+        });
+        return;
+      }
+      showSuccess("Invitation sent", { description: `${email} will get an email with next steps.` });
+      onClose();
+    } catch {
       showError({
         title: "We couldn't send that invite",
-        cause: res.error,
-        fix: "Double-check the email and try again.",
+        cause: "The server didn't respond.",
+        fix: "Try again in a moment.",
       });
-      return;
+    } finally {
+      setPending(false);
     }
-    showSuccess("Invitation sent", { description: `${email} will get an email with next steps.` });
-    onClose();
   }
 
   return (

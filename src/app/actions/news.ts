@@ -1,6 +1,6 @@
 "use server";
 
-import { RSSService, RSSItem } from "@/utils/rss-service";
+import { RSSService, RSSItem, rssToPlainText } from "@/utils/rss-service";
 import { getCached, TTL } from "@/lib/cache";
 import prisma from "@/lib/prisma";
 
@@ -25,14 +25,17 @@ export interface NewsArticle {
 
 import { fetchOgImage } from "@/utils/og-scraper";
 
-const HTML_ANGLE_BRACKET_REGEX = /[<>]/g;
-const HTML_ENTITY_BRACKET_REGEX = /&lt;|&gt;/gi;
-
-/** Removes literal and entity-encoded HTML angle brackets from RSS excerpts. */
-function stripRssExcerpt(input: string): string {
-  return input
-    .replace(HTML_ENTITY_BRACKET_REGEX, "")
-    .replace(HTML_ANGLE_BRACKET_REGEX, "");
+/**
+ * Plain-text excerpt for an RSS item. Google News descriptions are just the
+ * headline wrapped in a link plus the source name, so once the markup is gone
+ * they often repeat the title — show nothing rather than a duplicate.
+ */
+function buildRssExcerpt(description: string, title: string): string {
+  const text = rssToPlainText(description);
+  if (!text) return "";
+  const norm = (v: string) => v.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  if (norm(title) && norm(text).startsWith(norm(title))) return "";
+  return text.length > 180 ? `${text.slice(0, 180).replace(/\s+\S*$/, "")}…` : text;
 }
 
 // Single branded fallback thumbnail — used whenever an article has no real cover image.
@@ -76,7 +79,9 @@ export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
   let articles: Awaited<ReturnType<typeof prisma.newsArticle.findMany>> = [];
   try {
     articles = await prisma.newsArticle.findMany({
-      where: { status: "published" },
+      // Admin-published articles historically only set isDraft=false (status
+      // stayed "draft"), so accept either marker.
+      where: { OR: [{ status: "published" }, { isDraft: false }] },
       orderBy: [{ publishedAt: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }],
       take: fetchLimit,
     });
@@ -121,7 +126,7 @@ export async function getLatestNews(limit = 10): Promise<NewsArticle[]> {
 
     const newsArticles = await Promise.all(
       sorted.slice(0, limit).map(async (item, index) => {
-        const excerpt = stripRssExcerpt(item.description).slice(0, 180) + "...";
+        const excerpt = buildRssExcerpt(item.description, item.title);
 
 
         return {
@@ -230,7 +235,8 @@ Keep it under 3 paragraphs (max 200 words). Focus on why it matters to students,
 
   const data = await prisma.newsArticle.findUnique({ where: { slug } });
 
-  if (!data) return null;
+  // Drafts must not be readable publicly by slug.
+  if (!data || (data.isDraft && data.status !== "published")) return null;
   return {
     id: data.id,
     title: data.title,

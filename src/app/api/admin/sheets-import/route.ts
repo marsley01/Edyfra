@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
-import { createAdminClient } from "@/utils/supabase/admin";
-import { isFounderEmail } from "@/utils/admin-guard";
+import { getAdminCaller } from "@/app/actions/_admin-guard";
+import prisma from "@/lib/prisma";
+import { Role, EduLevel, VerifPath } from "@/generated/client";
 import { z } from "zod";
 import Papa from "papaparse";
 
@@ -25,27 +25,13 @@ const subjectSchema = z.object({
   description: z.string().optional(),
 });
 
+// Users / profiles / topics are Prisma tables ("User", "TutorProfile",
+// "CurriculumTopic"…); the previous supabase-js version targeted snake_case
+// tables that do not exist, so every row failed to import.
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user || !user.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const adminSupabase = createAdminClient();
-
-    const { data: dbUser } = await adminSupabase
-      .from("users")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    const isDbAdmin = dbUser?.role === "ADMIN" || dbUser?.role === "FOUNDER";
-    const isFounder = isFounderEmail(user.email);
-
-    if (!isFounder && !isDbAdmin) {
+    // Prisma role (ADMIN/FOUNDER) or founder email.
+    if (!(await getAdminCaller())) {
       return NextResponse.json({ error: "Forbidden: Admin access required." }, { status: 403 });
     }
 
@@ -53,6 +39,9 @@ export async function POST(req: NextRequest) {
 
     if (!sheets_url || !import_type) {
       return NextResponse.json({ error: "Missing sheets_url or import_type" }, { status: 400 });
+    }
+    if (!["students", "tutors", "subjects"].includes(import_type)) {
+      return NextResponse.json({ error: "import_type must be students, tutors or subjects" }, { status: 400 });
     }
 
     // Extract Sheet ID
@@ -62,10 +51,13 @@ export async function POST(req: NextRequest) {
     }
     const sheetId = match[1];
 
+    // Sheet IDs are opaque tokens of [a-zA-Z0-9-_]; anything else is rejected
+    // so user input can never alter the request host or path structure.
     if (!/^[a-zA-Z0-9_-]{10,120}$/.test(sheetId)) {
       return NextResponse.json({ error: "Invalid Google Sheets URL." }, { status: 400 });
     }
 
+    // Fetch CSV — host is a server-controlled constant
     const csvUrl = new URL("https://docs.google.com/spreadsheets/d/" + sheetId + "/export");
     csvUrl.searchParams.set("format", "csv");
     const response = await fetch(csvUrl);
@@ -77,7 +69,7 @@ export async function POST(req: NextRequest) {
     const csvText = await response.text();
 
     if (csvText.includes("<html")) {
-      return NextResponse.json({ error: "Google returned HTML instead of CSV. Please check sharing permissions." }, { status: 400 });
+        return NextResponse.json({ error: "Google returned HTML instead of CSV. Please check sharing permissions." }, { status: 400 });
     }
 
     // Parse CSV
@@ -96,88 +88,94 @@ export async function POST(req: NextRequest) {
 
     for (let i = 0; i < parsed.data.length; i++) {
       const row: any = parsed.data[i];
-      const rowNum = i + 2;
+      const rowNum = i + 2; // 1-based + header
 
       try {
         if (import_type === "students") {
           const validRow = studentSchema.parse(row);
           
-          const { data: upsertedUser, error: uErr } = await adminSupabase
-            .from("users")
-            .upsert({
+          await prisma.user.upsert({
+            where: { email: validRow.email },
+            create: {
               email: validRow.email,
               name: validRow.name,
               phone: validRow.phone || null,
-              role: "STUDENT",
+              role: Role.STUDENT,
               county: "Imported",
-            }, { onConflict: "email" })
-            .select("id")
-            .single();
-
-          if (uErr) throw uErr;
-
-          if (upsertedUser) {
-            await adminSupabase
-              .from("student_profiles")
-              .upsert({
-                user_id: upsertedUser.id,
-                subjects: [],
-                weak_topics: [],
-                study_style: "Visual",
-                preferred_times: {},
-                goals: [],
-              }, { onConflict: "user_id" });
-          }
-
+              studentProfile: {
+                create: {
+                  subjects: [],
+                  weakTopics: [],
+                  studyStyle: "Visual",
+                  preferredTimes: {},
+                  goals: []
+                }
+              }
+            },
+            update: {
+              name: validRow.name,
+              phone: validRow.phone || undefined,
+            },
+          });
           imported++;
 
         } else if (import_type === "tutors") {
           const validRow = tutorSchema.parse(row);
           
-          const { data: upsertedUser, error: uErr } = await adminSupabase
-            .from("users")
-            .upsert({
+          // Never demote an existing admin/founder via a spreadsheet row.
+          const existing = await prisma.user.findUnique({
+            where: { email: validRow.email },
+            select: { role: true },
+          });
+          const keepRole = existing?.role === Role.ADMIN || existing?.role === Role.FOUNDER;
+
+          const user = await prisma.user.upsert({
+            where: { email: validRow.email },
+            create: {
               email: validRow.email,
               name: validRow.name,
               phone: validRow.phone || null,
-              role: "TUTOR",
+              role: Role.TUTOR,
               county: "Imported",
-            }, { onConflict: "email" })
-            .select("id")
-            .single();
-
-          if (uErr) throw uErr;
+            },
+            update: {
+              name: validRow.name,
+              phone: validRow.phone || undefined,
+              ...(keepRole ? {} : { role: Role.TUTOR }), // ensure role is tutor
+            },
+          });
 
           const subjectsArr = validRow.subjects ? validRow.subjects.split(",").map(s => s.trim()) : [];
 
-          if (upsertedUser) {
-            await adminSupabase
-              .from("tutor_profiles")
-              .upsert({
-                user_id: upsertedUser.id,
-                subjects: subjectsArr,
-                levels_taught: [],
-                verification_path: "GRADES",
-                hourly_rate: validRow.hourly_rate || 200,
-                bio: "Tutor imported from Google Sheets",
-                availability: {},
-              }, { onConflict: "user_id" });
-          }
+          await prisma.tutorProfile.upsert({
+            where: { userId: user.id },
+            create: {
+              userId: user.id,
+              subjects: subjectsArr,
+              levelsTaught: [],
+              verificationPath: VerifPath.GRADES,
+              hourlyRate: validRow.hourly_rate || 200,
+              bio: "Tutor imported from Google Sheets",
+              availability: {},
+            },
+            update: {
+              subjects: subjectsArr.length > 0 ? subjectsArr : undefined,
+              hourlyRate: validRow.hourly_rate !== undefined ? validRow.hourly_rate : undefined,
+            }
+          });
           imported++;
 
         } else if (import_type === "subjects") {
           const validRow = subjectSchema.parse(row);
           
-          const { error: cErr } = await adminSupabase
-            .from("curriculum_topics")
-            .insert({
+          await prisma.curriculumTopic.create({
+            data: {
               subject: validRow.id,
-              topic_name: validRow.name,
+              topicName: validRow.name,
               description: validRow.description || null,
-              level: "HIGH_SCHOOL",
-            });
-
-          if (cErr) throw cErr;
+              level: EduLevel.HIGH_SCHOOL
+            }
+          });
           imported++;
         }
       } catch (err: any) {

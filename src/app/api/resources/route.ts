@@ -9,7 +9,7 @@ const resourceSchema = z.object({
   resource_type: z.string().min(1).max(50),
   topic: z.string().max(200).optional(),
   description: z.string().max(2000).optional(),
-  price: z.number().min(0).optional(),
+  price: z.number().int().min(0).optional(),
   file_path: z.string().min(1).max(500),
 });
 
@@ -24,22 +24,24 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get("type") || "";
     const topic = searchParams.get("topic") || "";
     const price = searchParams.get("price") || ""; // free or paid
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "12");
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1") || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "12") || 12));
     const skip = (page - 1) * limit;
 
     let query = supabase
       .from("resources")
       .select(`
         *,
-        seller:users!seller_id ( id, name )
+        seller:User!seller_id ( id, name )
       `, { count: "exact" })
       .eq("status", "approved")
       .order("created_at", { ascending: false })
       .range(skip, skip + limit - 1);
 
-    if (search) {
-      query = query.or(`title.ilike.%${search}%,subject.ilike.%${search}%,description.ilike.%${search}%`);
+    // Strip characters that would break out of the PostgREST or() filter syntax
+    const safeSearch = search.replace(/[,()*%\\]/g, " ").trim();
+    if (safeSearch) {
+      query = query.or(`title.ilike.%${safeSearch}%,subject.ilike.%${safeSearch}%,description.ilike.%${safeSearch}%`);
     }
 
     if (subject) {
@@ -102,6 +104,15 @@ export async function POST(request: NextRequest) {
     }
 
     const { title, subject, education_level, resource_type, topic, description, price, file_path } = parsed.data;
+
+    // The file must be one this user uploaded to their own folder; otherwise a
+    // user could list (and sell) someone else's file.
+    if (
+      file_path.includes("..") ||
+      !(file_path.startsWith(`${user.id}/`) || file_path.startsWith(`resources/${user.id}/`))
+    ) {
+      return NextResponse.json({ error: "Invalid file path" }, { status: 400 });
+    }
 
     const { data: resource, error } = await supabase
       .from("resources")

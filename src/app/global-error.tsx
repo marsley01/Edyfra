@@ -4,10 +4,12 @@ import { useEffect } from "react";
 
 export default function GlobalError({
   error,
-  reset,
+  retry,
 }: {
   error: Error;
-  reset: () => void;
+  // Next 16: retry() re-fetches the segment; reset() only re-renders the
+  // same (failed) payload, so "Try again" never recovered from server errors.
+  retry: () => void;
 }) {
   useEffect(() => {
     console.error("Global application error:", error);
@@ -29,7 +31,7 @@ export default function GlobalError({
             </p>
           </div>
           <button
-            onClick={reset}
+            onClick={() => retry()}
             className="h-11 inline-flex items-center px-5 rounded-full bg-foreground text-background text-xs font-black tracking-widest uppercase"
           >
             Try again

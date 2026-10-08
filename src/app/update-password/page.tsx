@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Loader2, AlertCircle, Check, ArrowRight, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
+import { createClient } from '@/utils/supabase/client'
 
 export default function UpdatePasswordPage() {
   const [password, setPassword] = useState('')
@@ -15,11 +16,21 @@ export default function UpdatePasswordPage() {
   const [done, setDone] = useState(false)
   const router = useRouter()
 
+  // The reset link signs the user in via /auth/verify. Without that session the
+  // update can only fail, so say so up front instead of after they type twice.
+  useEffect(() => {
+    createClient().auth.getUser().then((result: { data: { user: unknown } }) => {
+      if (!result.data.user) {
+        setError('This reset link has expired or was already used. Request a new one from "Forgot password".')
+      }
+    }).catch(() => {})
+  }, [])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters.')
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters.')
       return
     }
     if (password !== confirm) {
@@ -48,7 +59,7 @@ export default function UpdatePasswordPage() {
       }
 
       setDone(true)
-      setTimeout(() => router.push('/auth/login'), 2500)
+      setTimeout(() => router.push('/dashboard'), 2000)
     } catch {
       setError('Could not reach the server. Check your internet connection.')
     } finally {
@@ -74,7 +85,7 @@ export default function UpdatePasswordPage() {
               <Check className="h-7 w-7 text-emerald-500" />
             </div>
             <h1 className="text-4xl font-black tracking-tightest">Password updated</h1>
-            <p className="text-muted-foreground font-medium text-lg">Redirecting you to sign in...</p>
+            <p className="text-muted-foreground font-medium text-lg">Taking you to your dashboard...</p>
           </div>
         </motion.div>
       </div>
@@ -120,9 +131,9 @@ export default function UpdatePasswordPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={6}
+                minLength={8}
                 autoComplete="new-password"
-                placeholder="At least 6 characters"
+                placeholder="At least 8 characters"
                 className="h-14 w-full rounded-2xl px-6 pr-14 border border-border bg-secondary font-medium text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-4 focus:ring-primary/20 transition-all"
                 autoFocus
               />
@@ -144,7 +155,7 @@ export default function UpdatePasswordPage() {
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               required
-              minLength={6}
+              minLength={8}
               autoComplete="new-password"
               placeholder="Re-enter your password"
               className="h-14 w-full rounded-2xl px-6 border border-border bg-secondary font-medium text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-4 focus:ring-primary/20 transition-all"

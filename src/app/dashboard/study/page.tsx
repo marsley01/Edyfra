@@ -29,19 +29,22 @@ export default function StudyPage() {
   const aiFallbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const {
-    isMatching,
-    matchStep,
-    timer,
     formData,
-    setMatching,
-    setMatchStep,
-    setTimer,
     setFormData,
     setCurrentRequestId,
     reset: resetStore
   } = useMatchStore();
 
   const matchCtx = useMatch();
+  const [submitting, setSubmitting] = useState(false);
+
+  // The matching UI is driven by MatchProvider, which owns the request, the
+  // countdown and the polling. The zustand flags this page used to read were
+  // never set by anything, so the page stayed on the form after a request was
+  // made (letting students fire duplicate requests) and never showed progress.
+  const isMatching = matchCtx.step !== "idle";
+  const timer = matchCtx.timer;
+  const matchStep = matchCtx.step === "tutor" ? 1 : matchCtx.step === "peer" ? 2 : 3;
 
   // Cleanup AI fallback timer when component unmounts or matching resets
   const clearAiTimer = () => {
@@ -79,7 +82,9 @@ export default function StudyPage() {
       toast.error("Please select a subject");
       return;
     }
+    if (submitting) return;
 
+    setSubmitting(true);
     try {
       const result = await createMatchRequest(formData);
       if (!result.success) {
@@ -130,6 +135,8 @@ export default function StudyPage() {
     } catch (error) {
       console.error("Matching error:", error);
       toast.error("Failed to start matching. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -201,6 +208,7 @@ export default function StudyPage() {
 
             <Button
               onClick={handleMatchMe}
+              disabled={submitting}
               className="w-full h-14 rounded-2xl bg-primary text-primary-foreground font-bold text-base hover:opacity-90 transition-all shadow-lg shadow-primary/20"
             >
               Find Me Someone to Help

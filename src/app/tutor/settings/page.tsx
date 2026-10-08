@@ -111,52 +111,59 @@ export default function TutorSettingsPage() {
   useEffect(() => { loadProfile(); }, []);
 
   const loadProfile = async () => {
-    const user = await getUserData() as any;
-    if (user) {
-      setUserData(user);
-      setCurrentAvatar(user.avatar || null);
-      const tp = user.tutorProfile || {};
-      setFormData({
-        name: user.name || "",
-        bio: tp.bio || "",
-        bioCharsLeft: 300 - (tp.bio?.length || 0),
-        subjects: tp.subjects || [],
-        confidenceLevels: "",
-        levelsTaught: tp.levelsTaught?.join(", ") || "",
-        hourlyRate: tp.hourlyRate?.toString() || TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH.toString(),
-        mpesaNumber: tp.mpesaNumber || "",
-        sessionPreference: tp.sessionPreference || "both",
-        maxGroupStudents: tp.maxGroupStudents?.toString() || "3",
-        defaultSessionDuration: tp.defaultSessionDuration?.toString() || "60",
-        allowSessionRecording: tp.allowSessionRecording ?? false,
-        showRatingPublicly: tp.showRatingPublicly ?? true,
-        allowReRequest: tp.allowReRequest ?? true,
-        autoAcceptRequests: tp.autoAcceptRequests ?? false,
-        allowMashInactive: tp.allowMashInactive ?? true,
-        showMashSummary: tp.showMashSummary ?? true,
-      });
-      setSchedule(tp.availability?.schedule || {});
-      setAvailableNow(tp.availability?.isOnline || false);
-      setPrefs(user.userPreferences || {});
-      try {
-        const notifSettings = await getNotificationSettings();
-        if (Object.keys(notifSettings).length > 0) {
-          setNotifPrefs(prev => ({ ...prev, ...notifSettings }));
-        }
-      } catch {}
-      try {
-        const calendarSettings = await getTutorCalendarSettings();
-        if (calendarSettings) {
-          setIcalUrl(calendarSettings.icalUrl || "");
-          setCalendarAutoSync(calendarSettings.autoSync);
-          setLastSyncedAt(calendarSettings.lastSyncedAt);
-        }
-      } catch {}
-    }
+    // Without try/finally a failed getUserData left the page spinning forever
     try {
-      setVerification(await getTutorVerification());
-    } catch {}
-    setLoading(false);
+      const user = await getUserData() as any;
+      if (user) {
+        setUserData(user);
+        setCurrentAvatar(user.avatar || null);
+        const tp = user.tutorProfile || {};
+        setFormData({
+          name: user.name || "",
+          bio: tp.bio || "",
+          bioCharsLeft: 300 - (tp.bio?.length || 0),
+          subjects: tp.subjects || [],
+          confidenceLevels: "",
+          levelsTaught: tp.levelsTaught?.join(", ") || "",
+          hourlyRate: tp.hourlyRate?.toString() || TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH.toString(),
+          mpesaNumber: tp.mpesaNumber || "",
+          sessionPreference: tp.sessionPreference || "both",
+          maxGroupStudents: tp.maxGroupStudents?.toString() || "3",
+          defaultSessionDuration: tp.defaultSessionDuration?.toString() || "60",
+          allowSessionRecording: tp.allowSessionRecording ?? false,
+          showRatingPublicly: tp.showRatingPublicly ?? true,
+          allowReRequest: tp.allowReRequest ?? true,
+          autoAcceptRequests: tp.autoAcceptRequests ?? false,
+          allowMashInactive: tp.allowMashInactive ?? true,
+          showMashSummary: tp.showMashSummary ?? true,
+        });
+        setSchedule(tp.availability?.schedule || {});
+        setAvailableNow(tp.availability?.isOnline || false);
+        setPrefs(user.userPreferences || {});
+        try {
+          const notifSettings = await getNotificationSettings();
+          if (Object.keys(notifSettings).length > 0) {
+            setNotifPrefs(prev => ({ ...prev, ...notifSettings }));
+          }
+        } catch {}
+        try {
+          const calendarSettings = await getTutorCalendarSettings();
+          if (calendarSettings) {
+            setIcalUrl(calendarSettings.icalUrl || "");
+            setCalendarAutoSync(calendarSettings.autoSync);
+            setLastSyncedAt(calendarSettings.lastSyncedAt);
+          }
+        } catch {}
+      }
+      try {
+        setVerification(await getTutorVerification());
+      } catch {}
+    } catch (err) {
+      console.error("Failed to load tutor settings:", err);
+      showError({ title: "We couldn't load your settings", cause: "Our server didn't respond.", fix: "Refresh the page in a moment." });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSaveVerification = async () => {

@@ -17,9 +17,15 @@ export default function FavoriteButton({ userId, className }: FavoriteButtonProp
 
   useEffect(() => {
     async function check() {
-      const result = await isFavorite(userId);
-      setFavorited(result);
-      setLoading(false);
+      // try/finally: a failed request left the star permanently disabled.
+      try {
+        const result = await isFavorite(userId);
+        setFavorited(result);
+      } catch {
+        // leave unfavorited
+      } finally {
+        setLoading(false);
+      }
     }
     check();
   }, [userId]);
@@ -30,11 +36,16 @@ export default function FavoriteButton({ userId, className }: FavoriteButtonProp
     if (loading) return;
     
     setLoading(true);
-    const result = await toggleFavorite(userId);
-    if (result.success) {
-      setFavorited(result.isFavorited!);
+    try {
+      const result = await toggleFavorite(userId);
+      if (result.success) {
+        setFavorited(result.isFavorited!);
+      }
+    } catch {
+      // keep previous state
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

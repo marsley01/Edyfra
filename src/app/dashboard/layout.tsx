@@ -68,8 +68,17 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  const dbUser = await prisma.user.findUnique({
-    where: { id: user.id },
+  // Match on id OR email, like getUserData()/onboarding do. Legacy rows can carry
+  // a primary key that differs from the Supabase auth id; a by-id lookup found
+  // nothing for them, sent them to /onboarding/choice, which (finding the row by
+  // email) sent them straight back here — an endless redirect loop.
+  const dbUser = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { id: user.id },
+        ...(user.email ? [{ email: user.email }] : []),
+      ],
+    },
     include: { institutionMembers: true, studentProfile: true, tutorProfile: true },
   });
 

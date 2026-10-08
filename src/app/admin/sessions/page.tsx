@@ -43,7 +43,8 @@ export default function AdminSessionsPage() {
   const handleClose = async (id: string) => {
     if (!confirm("Are you sure you want to terminate this live session?")) return;
     try {
-      await closeSession(id);
+      const result = await closeSession(id);
+      if (result?.error) throw new Error(result.error);
       showSuccess("Session terminated", { description: "That session has been closed." });
       setSelectedSessions(prev => prev.filter(sId => sId !== id));
       fetchSessions();
@@ -59,7 +60,8 @@ export default function AdminSessionsPage() {
   const handleBatchClose = async () => {
     if (!confirm(`Are you sure you want to terminate ${selectedSessions.length} sessions?`)) return;
     try {
-      await closeSessionsBatch(selectedSessions);
+      const result = await closeSessionsBatch(selectedSessions);
+      if (result?.error) throw new Error(result.error);
       showSuccess(`Terminated ${selectedSessions.length} sessions`, { description: "Those sessions are now closed." });
       setSelectedSessions([]);
       fetchSessions();

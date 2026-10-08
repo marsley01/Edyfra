@@ -28,8 +28,22 @@ export async function POST(req: NextRequest) {
       },
     );
 
+    // GoTrue never errors for an unknown address, so surfacing failures here
+    // does not reveal whether an account exists. Swallowing them did hide real
+    // outages: a rate limit or a failing Send Email hook still told the user to
+    // "check your email" for a message that was never sent.
     if (error) {
-      console.error("[Auth] Password reset error:", error.message);
+      console.error("[Auth] Password reset error:", error.status, error.code, error.message);
+      if (error.status === 429 || /rate limit/i.test(error.message)) {
+        return NextResponse.json(
+          { error: "Too many reset requests. Please wait a few minutes and try again." },
+          { status: 429 },
+        );
+      }
+      return NextResponse.json(
+        { error: "We couldn't send the reset email right now. Please try again in a few minutes." },
+        { status: 502 },
+      );
     }
 
     return NextResponse.json(

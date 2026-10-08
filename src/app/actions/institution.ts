@@ -2,6 +2,11 @@
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { assertInstitutionAdminAccess } from "./_institution-access";
+
+// Every export below is a publicly reachable server action, so each one
+// verifies (from the database) that the caller administers the institution
+// being read or modified.
 
 const DEV_INSTITUTION_ID = "mock-1";
 
@@ -44,6 +49,7 @@ function isDbOffline(err: unknown) {
 }
 
 export async function getInstitutionDashboard(institutionId: string = DEV_INSTITUTION_ID) {
+  await assertInstitutionAdminAccess(institutionId);
   try {
     const institution = await prisma.institution.findUnique({
       where: { id: institutionId },
@@ -134,6 +140,7 @@ export async function updateInstitutionProfile(
     allowedDomains?: string[];
   },
 ) {
+  await assertInstitutionAdminAccess(institutionId);
   try {
     const institution = await prisma.institution.update({
       where: { id: institutionId },
@@ -154,6 +161,7 @@ export async function getInstitutionMembers(
   institutionId: string,
   params?: { role?: string; status?: string; search?: string },
 ) {
+  await assertInstitutionAdminAccess(institutionId);
   try {
     const where: Record<string, unknown> = { institutionId };
 
@@ -198,6 +206,9 @@ export async function updateMemberRole(
   memberId: string,
   role: "INSTITUTION_ADMIN" | "DEPARTMENT_HEAD" | "INSTRUCTOR" | "STUDENT",
 ) {
+  const target = await prisma.institutionMember.findUnique({ where: { id: memberId }, select: { institutionId: true } });
+  if (!target) throw new Error("Member not found");
+  await assertInstitutionAdminAccess(target.institutionId);
   try {
     const member = await prisma.institutionMember.update({
       where: { id: memberId },
@@ -213,6 +224,9 @@ export async function updateMemberRole(
 }
 
 export async function removeMember(memberId: string) {
+  const target = await prisma.institutionMember.findUnique({ where: { id: memberId }, select: { institutionId: true } });
+  if (!target) return;
+  await assertInstitutionAdminAccess(target.institutionId);
   try {
     await prisma.institutionMember.delete({
       where: { id: memberId },
@@ -235,9 +249,11 @@ export async function uploadInstitutionDocument(
     uploadedBy: string;
   },
 ) {
+  const membership = await assertInstitutionAdminAccess(institutionId);
   try {
     const document = await prisma.institutionDocument.create({
-      data: { ...data, institutionId },
+      // Never trust a client-supplied uploader id.
+      data: { ...data, uploadedBy: membership.member.userId, institutionId },
     });
     revalidatePath("/institution");
     return document;
@@ -249,6 +265,9 @@ export async function uploadInstitutionDocument(
 }
 
 export async function deleteInstitutionDocument(documentId: string) {
+  const doc = await prisma.institutionDocument.findUnique({ where: { id: documentId }, select: { institutionId: true } });
+  if (!doc) return;
+  await assertInstitutionAdminAccess(doc.institutionId);
   try {
     await prisma.institutionDocument.delete({
       where: { id: documentId },
@@ -261,6 +280,7 @@ export async function deleteInstitutionDocument(documentId: string) {
 }
 
 export async function getInstitutionDocuments(institutionId: string) {
+  await assertInstitutionAdminAccess(institutionId);
   try {
     return await prisma.institutionDocument.findMany({
       where: { institutionId },

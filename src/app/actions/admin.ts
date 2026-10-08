@@ -5,11 +5,12 @@ import { Prisma, Role } from "@/generated/client";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { TUTOR_CONFIG } from "@/lib/config";
-import { isFounderEmail } from "@/utils/admin-guard";
 import { notifyUser } from "@/app/actions/notifications";
 import { getCached, TTL } from "@/lib/cache";
 import { invalidateAICache, getAIConfig } from "@/lib/ai-config";
 import { syncEnvVarsToVercel } from "@/lib/vercel-env";
+import { getAdminCaller } from "@/app/actions/_admin-guard";
+import { isFounderEmail } from "@/utils/admin-guard";
 
 export type AdminGlobalSettings = {
   googleAiKey?: string;
@@ -31,48 +32,15 @@ function toAdminSettingsJson(settings: AdminGlobalSettings): Prisma.InputJsonVal
   return JSON.parse(JSON.stringify(settings)) as Prisma.InputJsonValue;
 }
 
-// Helper: check if current user is an admin (used by server-only contexts)
+// Helper: check if current user is an admin (used by server-only contexts).
+// Prisma role (ADMIN/FOUNDER) is the source of truth; founder env emails also pass.
 async function isAdmin(): Promise<boolean> {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return false;
-
-    // Check founder env vars first
-    if (isFounderEmail(user?.email)) return true;
-
-    // Fallback to database role
-    const dbUser = await prisma.user.findUnique({
-      where: { id: user.id },
-      select: { role: true }
-    });
-    return dbUser?.role === Role.ADMIN;
-  } catch {
-    return false;
-  }
+  return (await getAdminCaller()) !== null;
 }
 
 // Client-callable admin check (checks both env vars AND database role)
 export async function checkAdminStatus(): Promise<boolean> {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return false;
-
-    // First check if email is in founder env vars
-    if (isFounderEmail(user?.email)) return true;
-
-    // Also check Prisma role — supports users promoted to ADMIN via setupAdminUser()
-    const dbUser = await prisma.user.findUnique({
-      where: { id: user.id },
-      select: { role: true }
-    });
-    if (dbUser?.role === Role.ADMIN) return true;
-
-    return false;
-  } catch {
-    return false;
-  }
+  return (await getAdminCaller()) !== null;
 }
 
 // --- AUTH & SETUP ---
@@ -215,10 +183,41 @@ export async function updateUserRoleAdmin(userId: string, role: Role) {
       return { error: "Unauthorized: Admin access required" };
     }
 
+    if (!Object.values(Role).includes(role)) {
+      return { error: "Invalid role" };
+    }
+    // Only a founder may grant the FOUNDER role.
+    if (role === Role.FOUNDER && !isFounderEmail(admin.email)) {
+      return { error: "Only a founder can assign the FOUNDER role" };
+    }
+    // Prevent an admin from accidentally locking themselves out.
+    if (userId === admin.id && role !== Role.ADMIN && role !== Role.FOUNDER) {
+      return { error: "You cannot remove your own admin access" };
+    }
+
     await prisma.user.update({
       where: { id: userId },
       data: { role }
     });
+
+    // Keep Supabase metadata in sync so role-based routing (tutor/student
+    // dashboards) reflects the change on the user's next request.
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (serviceRoleKey) {
+      try {
+        const { createClient: createAdminClient } = await import("@supabase/supabase-js");
+        const adminClient = createAdminClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          serviceRoleKey,
+          { auth: { autoRefreshToken: false, persistSession: false } }
+        );
+        await adminClient.auth.admin.updateUserById(userId, {
+          user_metadata: { role }
+        });
+      } catch (e) {
+        console.error("Failed to sync Supabase role metadata:", e);
+      }
+    }
 
     revalidatePath("/admin/users");
     return { success: true };
@@ -600,13 +599,16 @@ export async function resetAllSessions() {
       return { error: "Unauthorized: Admin access required" };
     }
 
-    // Delete messages first to avoid foreign key violation
-    await prisma.message.deleteMany({});
-    // Then delete all sessions
-    await prisma.session.deleteMany({});
-    
+    // End every live study session. This used to hard-delete ALL sessions and
+    // messages, which cascaded into reviews and session payment records —
+    // irreversible data loss for what the UI presents as a "reset/logout".
+    const result = await prisma.session.updateMany({
+      where: { status: "ACTIVE" },
+      data: { status: "COMPLETED", endedAt: new Date() },
+    });
+
     revalidatePath("/admin/sessions");
-    return { success: true };
+    return { success: true, count: result.count };
   } catch (error: any) {
     console.error("Error in resetAllSessions:", error);
     return { error: error.message || "Failed to reset sessions" };
@@ -641,7 +643,14 @@ export async function saveAdminGlobalSettings(settings: AdminGlobalSettings) {
       return { error: "Unauthorized: Admin access required" };
     }
 
-    const settingsJson = toAdminSettingsJson(settings);
+    // Merge with what is already stored: the Settings page and the AI Settings
+    // page each save only their own fields, and a blind overwrite made each
+    // page wipe the other's values (e.g. saving Settings erased the AI key).
+    const existing = await prisma.platformSettings.findUnique({ where: { key: "global" } });
+    const current = (existing?.value && typeof existing.value === "object" && !Array.isArray(existing.value))
+      ? (existing.value as AdminGlobalSettings)
+      : {};
+    const settingsJson = toAdminSettingsJson({ ...current, ...settings });
 
     await prisma.platformSettings.upsert({
       where: { key: "global" },
@@ -796,12 +805,10 @@ export async function bootstrapSeeds() {
 // --- DASHBOARD METRICS ---
 
 export async function getAdminDashboardMetrics() {
-  return getCached("admin:dashboard:metrics", TTL.PLATFORM_STATS, async () => {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user || !(await isAdmin())) {
+  // Auth must be checked OUTSIDE the shared cache: the cache key is global, so
+  // checking inside it would either serve admin metrics to non-admins or pin
+  // the "UNAUTHORIZED" fallback for real admins.
+  if (!(await isAdmin())) {
       // Return safe fallback data
       return {
         mainStats: [
@@ -821,8 +828,10 @@ export async function getAdminDashboardMetrics() {
         recentUsers: [],
         systemLoad: 0,
       };
-    }
+  }
 
+  return getCached("admin:dashboard:metrics", TTL.PLATFORM_STATS, async () => {
+  try {
     const [
       totalUsers, 
       studentCount, 

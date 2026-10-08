@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { requireInstitutionAdmin } from "./institution-guard";
-import { logActivity } from "./institution-admin";
+import { assertInstitutionAdminAccess, logInstitutionActivity as logActivity } from "./_institution-access";
 
 const AssignmentSchema = z.object({
   studentUserId: z.string().min(1),
@@ -28,6 +28,31 @@ export async function createCoachingAssignment(input: AssignmentInput) {
   if (data.endDate < data.startDate) {
     return { ok: false as const, error: "End date must be after start date" };
   }
+
+  // Both parties must be active members of THIS institution in the right role;
+  // never trust client-supplied user ids (also avoids an FK-violation crash).
+  const [studentMember, teacherMember] = await Promise.all([
+    prisma.institutionMember.findFirst({
+      where: {
+        institutionId: membership.institution.id,
+        userId: data.studentUserId,
+        role: "INSTITUTION_STUDENT",
+        status: "ACTIVE",
+      },
+      select: { id: true },
+    }),
+    prisma.institutionMember.findFirst({
+      where: {
+        institutionId: membership.institution.id,
+        userId: data.teacherUserId,
+        role: "INSTITUTION_TEACHER",
+        status: "ACTIVE",
+      },
+      select: { id: true },
+    }),
+  ]);
+  if (!studentMember) return { ok: false as const, error: "Pick a student from your institution" };
+  if (!teacherMember) return { ok: false as const, error: "Pick an active teacher from your institution" };
 
   const created = await prisma.coachingAssignment.create({
     data: {
@@ -56,10 +81,11 @@ export async function createCoachingAssignment(input: AssignmentInput) {
 
 export async function cancelCoachingAssignment(id: string) {
   const membership = await requireInstitutionAdmin();
-  await prisma.coachingAssignment.updateMany({
+  const res = await prisma.coachingAssignment.updateMany({
     where: { id, institutionId: membership.institution.id },
     data: { status: "CANCELLED" },
   });
+  if (res.count === 0) return { ok: false as const, error: "Assignment not found" };
   await logActivity(membership.institution.id, {
     type: "COACHING_ASSIGNED",
     actorUserId: membership.member.userId,
@@ -70,6 +96,7 @@ export async function cancelCoachingAssignment(id: string) {
 }
 
 export async function getCoachingAssignments(institutionId: string) {
+  await assertInstitutionAdminAccess(institutionId);
   return prisma.coachingAssignment.findMany({
     where: { institutionId },
     include: {
@@ -81,6 +108,7 @@ export async function getCoachingAssignments(institutionId: string) {
 }
 
 export async function isHolidayCoachingActive(institutionId: string): Promise<boolean> {
+  await assertInstitutionAdminAccess(institutionId);
   const term = await prisma.academicTerm.findFirst({
     where: { institutionId, isCurrent: true },
   });

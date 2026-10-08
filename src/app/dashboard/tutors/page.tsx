@@ -31,9 +31,15 @@ export default function TutorsPage() {
 
   const loadTutors = async () => {
     setLoading(true);
-    const data = await getVerifiedTutors(level === "ALL" ? undefined : level);
-    setTutors(data || []);
-    setLoading(false);
+    try {
+      const data = await getVerifiedTutors(level === "ALL" ? undefined : level);
+      setTutors(data || []);
+    } catch (err) {
+      console.error("Failed to load tutors:", err);
+      setTutors([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const filteredTutors = tutors.filter((t: any) => 
@@ -59,7 +65,7 @@ export default function TutorsPage() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <Select value={level} onValueChange={(val: any) => setLevel(val)}>
+        <Select value={level} onValueChange={(val: any) => setLevel(val ?? "ALL")}>
           <SelectTrigger className="w-full sm:w-[200px] h-14 rounded-xl border-border bg-background font-bold text-base focus:ring-primary">
             <SelectValue placeholder="Education Level" />
           </SelectTrigger>
@@ -176,8 +182,11 @@ function BookingDialog({ tutor }: { tutor: any }) {
       
       const slotsForDay = tutor.tutorAvailabilities.filter((a: any) => a.dayOfWeek === dayOfWeek && !a.isBlocked);
       slotsForDay.forEach((slot: any) => {
-        const dateStr = d.toISOString();
         const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        // createBooking only accepts a local YYYY-MM-DD date. This used to send
+        // d.toISOString() (a UTC timestamp), so every booking was rejected as
+        // "Invalid date or time".
+        const dateStr = dateKey;
         if (slotOverlapsBlock(dateKey, slot.startTime, 60, tutor.tutorAvailabilityBlocks)) return;
         const value = `${dateStr}|${slot.startTime}`;
         const label = `${d.toLocaleDateString('en-US', {weekday: 'short', month: 'short', day: 'numeric'})}, ${slot.startTime} - ${slot.endTime}`;
@@ -204,7 +213,7 @@ function BookingDialog({ tutor }: { tutor: any }) {
         setOpen(false);
         // Maybe redirect or just close
       } else {
-        toast.error("Failed to book session.");
+        toast.error(res.error || "Failed to book session.");
       }
     } catch (e) {
       toast.error("An error occurred.");

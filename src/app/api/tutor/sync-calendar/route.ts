@@ -49,6 +49,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  // The server fetches this URL, so only allow Google Calendar's public iCal
+  // host over HTTPS (prevents SSRF into internal/metadata endpoints).
+  let icalHost = "";
+  try {
+    const u = new URL(ical_url);
+    icalHost = u.protocol === "https:" ? u.hostname.toLowerCase() : "";
+  } catch {
+    icalHost = "";
+  }
+  if (icalHost !== "calendar.google.com") {
+    return NextResponse.json(
+      { error: "Please paste your Google Calendar secret iCal address (https://calendar.google.com/...)" },
+      { status: 400 },
+    );
+  }
+
   try {
     const result = await syncTutorCalendarFromIcal({ icalUrl: ical_url, tutorId: tutor_id });
 

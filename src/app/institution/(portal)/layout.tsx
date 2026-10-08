@@ -53,7 +53,8 @@ const NAV: { section: string; items: { href: string; label: string; icon: Lucide
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const membership = await requireInstitutionAdmin();
   const inst = membership.institution;
-  const plan = getPlan(inst.plan as any);
+  // `plan` is the legacy free-text column ("FREE"); the tier enum lives in planTier.
+  const plan = getPlan(inst.planTier);
 
   // We can't usePathname in a server component — use a `headers` call instead.
   // For simplicity we just render a flat sidebar; the page provides its own title.

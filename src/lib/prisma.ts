@@ -9,7 +9,29 @@ function validateDatabaseUrl(url: string | undefined): string {
   if (!url.startsWith("postgresql://") && !url.startsWith("postgres://")) {
     throw new Error(`Invalid DATABASE_URL scheme. Must start with postgresql:// or postgres://. Got: ${url.substring(0, 30)}...`);
   }
-  return url;
+  return withServerlessPoolLimits(url);
+}
+
+/**
+ * On Vercel every function instance gets its own Prisma pool, sized
+ * `num_cpus * 2 + 1` by default. Many warm instances × that pool exhausts the
+ * Supabase pooler, and requests start failing with 500s ("too many clients",
+ * pool timeouts). Cap each instance's pool unless the URL already says
+ * otherwise, and allow queries a little longer to wait for a free connection.
+ */
+function withServerlessPoolLimits(url: string): string {
+  try {
+    const parsed = new URL(url);
+    if (!parsed.searchParams.has("connection_limit")) {
+      parsed.searchParams.set("connection_limit", process.env.PRISMA_CONNECTION_LIMIT || "3");
+    }
+    if (!parsed.searchParams.has("pool_timeout")) {
+      parsed.searchParams.set("pool_timeout", "20");
+    }
+    return parsed.toString();
+  } catch {
+    return url;
+  }
 }
 
 const prisma = globalForPrisma.prisma ?? new PrismaClient({

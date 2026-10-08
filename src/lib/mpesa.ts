@@ -69,7 +69,8 @@ export async function initiateStkPush({
 }) {
   const cfg = getMpesaConfig();
   const token = await getMpesaToken();
-  const timestamp = new Date().toISOString().replace(/[-:T.Z]/g, "").slice(0, 14);
+  // Daraja expects the timestamp in Kenyan time (EAT, UTC+3), formatted YYYYMMDDHHmmss
+  const timestamp = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString().replace(/[-:T.Z]/g, "").slice(0, 14);
   const password = Buffer.from(
     `${cfg.shortcode}${cfg.passkey}${timestamp}`
   ).toString("base64");

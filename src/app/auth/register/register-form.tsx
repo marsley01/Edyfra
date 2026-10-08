@@ -26,7 +26,7 @@ const STEPS = [
   { title: 'Your name', subtitle: 'What should we call you?', icon: Sparkles },
   { title: 'Email address', subtitle: "We'll use this to log you in.", icon: Check },
   { title: 'Choose a username', subtitle: 'Make it yours — @username.', icon: Check },
-  { title: 'Create a password', subtitle: 'At least 6 characters.', icon: Check },
+  { title: 'Create a password', subtitle: 'At least 8 characters.', icon: Check },
   { title: 'About you', subtitle: 'One last step — pick your avatar.', icon: Check },
 ] as const
 
@@ -103,10 +103,11 @@ export default function RegisterForm({ googleEnabled = false }: { googleEnabled?
     }
     if (s === 2) {
       if (usernameStatus === 'checking') return 'Still checking that username...'
-      if (usernameStatus !== 'available') return 'Pick a username that is available'
+      if (!isValidUsername(username)) return '3–20 letters, numbers, or underscores'
+      if (usernameStatus === 'taken') return 'That username is taken — try another one'
     }
     if (s === 3) {
-      if (password.length < 6) return 'Password must be at least 6 characters'
+      if (password.length < 8) return 'Password must be at least 8 characters'
     }
     if (s === 4) {
       if (!gender) return 'Please select your gender'
@@ -136,56 +137,49 @@ export default function RegisterForm({ googleEnabled = false }: { googleEnabled?
     if (err) { setError(err); return }
     setLoading(true)
 
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email, password,
-      options: { data: { name, username, gender, avatar: avatarUrl } },
-    })
-
-    if (authError) {
-      if (authError.message.includes('already registered')) {
-        setError('An account with this email already exists. Try signing in instead.')
-      } else if (authError.message.includes('Password should be at least')) {
-        setError('Password must be at least 6 characters.')
-      } else {
-        setError(authError.message)
-      }
-      setLoading(false)
-      return
-    }
-
-    if (authData.user) {
-      const res = await fetch('/api/auth/sync-user', {
+    try {
+      const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id: authData.user.id,
-          email: authData.user.email,
-          name: authData.user.user_metadata?.name,
-          username: authData.user.user_metadata?.username,
-          gender: authData.user.user_metadata?.gender,
-          avatar: authData.user.user_metadata?.avatar,
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          username,
+          password,
+          gender: gender || undefined,
+          avatar: avatarUrl,
         }),
       })
 
       if (!res.ok) {
-        setError('Account created but couldn\'t sync to our database. Please contact support.')
-        setLoading(false)
+        const data = await res.json().catch(() => ({}))
+        if (res.status === 429) {
+          setError('Too many attempts. Please wait a minute and try again.')
+        } else {
+          setError(data.error || 'Could not create your account. Please try again.')
+        }
+        if (res.status === 409 && /username/i.test(data.error || '')) {
+          setUsernameStatus('taken')
+        }
         return
       }
 
-      // If no session was created, sign the user in directly (sync auto-confirms email)
-      if (!authData.session) {
-        const { error: autoSignInError } = await supabase.auth.signInWithPassword({ email, password })
-        if (autoSignInError) {
-          setError('Account created — please sign in with your new password.')
-          setLoading(false)
-          router.push('/auth/login')
-          return
-        }
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      })
+      if (signInError) {
+        // The account exists; only the automatic sign-in failed.
+        router.push('/auth/login?error=account_created')
+        return
       }
 
-      router.push('/onboarding/choice')
-      router.refresh()
+      // Full navigation so the server sees the fresh session cookies.
+      window.location.href = '/onboarding/choice'
+    } catch {
+      setError('Could not reach the server. Check your internet connection and try again.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -395,7 +389,7 @@ export default function RegisterForm({ googleEnabled = false }: { googleEnabled?
                       onChange={(e) => setPassword(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); goNext() } }}
                       required
-                      minLength={6}
+                      minLength={8}
                       autoComplete="new-password"
                       placeholder="••••••••"
                       autoFocus
@@ -413,11 +407,11 @@ export default function RegisterForm({ googleEnabled = false }: { googleEnabled?
                   <div className="flex items-center gap-1.5 ml-4">
                     {password.length > 0 && (
                       <>
-                        {password.length >= 6
+                        {password.length >= 8
                           ? <Check className="h-3 w-3 text-green-500" />
                           : <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
-                        <p className={cn("text-xs font-medium", password.length >= 6 ? 'text-green-500' : 'text-muted-foreground')}>
-                          {password.length >= 6 ? 'Great password' : `${password.length}/6 characters`}
+                        <p className={cn("text-xs font-medium", password.length >= 8 ? 'text-green-500' : 'text-muted-foreground')}>
+                          {password.length >= 8 ? 'Great password' : `${password.length}/8 characters`}
                         </p>
                       </>
                     )}

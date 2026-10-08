@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
-import { createAdminClient } from "@/utils/supabase/admin";
+import { getAdminCaller } from "@/app/actions/_admin-guard";
 import { listInstitutionApplications } from "@/app/actions/institution-founder";
 import { InstitutionsReviewClient } from "./institutions-client";
 
@@ -13,19 +13,19 @@ export default async function AdminInstitutionsPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const adminSupabase = createAdminClient();
-  const { data: dbUser } = await adminSupabase
-    .from("users")
-    .select("id, role")
-    .eq("id", user.id)
-    .single();
-
-  if (!dbUser || (dbUser.role !== "FOUNDER" && dbUser.role !== "ADMIN")) {
+  // Prisma role is the source of truth. The previous check queried a
+  // non-existent "users" table, so every admin was redirected away.
+  const dbUser = await getAdminCaller();
+  if (!dbUser) {
     redirect("/dashboard");
   }
 
   const applications = await listInstitutionApplications("ALL");
-  const pendingCount = applications.filter((a) => !a.isActive).length;
+  // Use the real lifecycle `status`, not `isActive` (which defaults to true, so
+  // pending signups looked ACTIVE and rejected ones looked PENDING).
+  const statusOf = (a: (typeof applications)[number]) =>
+    a.status ?? (a.isActive ? "ACTIVE" : "PENDING");
+  const pendingCount = applications.filter((a) => statusOf(a) === "PENDING").length;
 
   return (
     <InstitutionsReviewClient
@@ -33,20 +33,20 @@ export default async function AdminInstitutionsPage() {
         id: a.id,
         code: a.code,
         name: a.name,
-        schoolType: (a.type ?? "SECONDARY") as any,
-        curriculum: null as any,
-        county: null,
-        subCounty: null,
-        studentCount: null,
-        planTier: (a.plan ?? "STARTER") as any,
-        status: a.isActive ? "ACTIVE" : "PENDING",
+        schoolType: (a.schoolType ?? a.type ?? "SECONDARY") as any,
+        curriculum: (a.curriculum ?? null) as any,
+        county: a.county ?? null,
+        subCounty: a.subCounty ?? null,
+        studentCount: a.studentCount ?? null,
+        planTier: (a.planTier ?? a.plan ?? "STARTER") as any,
+        status: statusOf(a),
         email: a.email,
-        adminName: null,
-        adminTitle: null,
-        adminPhone: null,
-        adminEmail: a.email,
+        adminName: a.adminName ?? null,
+        adminTitle: a.adminTitle ?? null,
+        adminPhone: a.adminPhone ?? null,
+        adminEmail: a.adminEmail ?? a.email,
         createdAt: a.createdAt,
-        approvedAt: null,
+        approvedAt: a.approvedAt ?? null,
         membersCount: a._count.members,
         studentsCount: a._count.students,
         tutorsCount: a._count.tutors,

@@ -22,16 +22,18 @@ export function HomeNewsletter() {
 
     setIsSubmitting(true);
     try {
-      const res = await fetch("/api/newsletter/subscribe", {
+      const res = await fetch("/api/newsletter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, source: "landing_page" }),
+        body: JSON.stringify({ email: email.trim(), source: "landing_page" }),
         signal: AbortSignal.timeout(10000),
       });
-      const data = await res.json();
-      setResult(data);
-      if (data.success) {
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        setResult({ success: true, message: "You're on the list! We'll keep you posted." });
         setEmail("");
+      } else {
+        setResult({ success: false, message: data.error || "Something went wrong. Please try again." });
       }
     } catch (error) {
       setResult({ success: false, message: "Something went wrong. Please try again." });
@@ -50,7 +52,7 @@ export function HomeNewsletter() {
           Study tips, platform updates, and exclusive opportunities delivered to your inbox.
         </p>
         
-        {result ? (
+        {result && (
           <div className={`p-4 rounded-xl text-center ${
             result.success ? "bg-green-500/10 border border-green-500/20" : "bg-red-500/10 border border-red-500/20"
           }`}>
@@ -58,7 +60,9 @@ export function HomeNewsletter() {
               {result.message}
             </p>
           </div>
-        ) : (
+        )}
+        {/* Keep the form visible after an error so the visitor can retry. */}
+        {!result?.success && (
           <form onSubmit={handleSubmit} className="flex flex-col md:flex-row items-center gap-4">
             <label htmlFor="newsletter-email" className="sr-only">
               Email address

@@ -7,7 +7,9 @@ import { Prisma } from "@/generated/client";
 import prisma from "@/lib/prisma";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { requireInstitutionAdmin } from "./institution-guard";
+import { assertInstitutionAdminAccess, logInstitutionActivity } from "./_institution-access";
 import { randomBytes } from "crypto";
+import { getAppUrl } from "@/lib/app-url";
 
 // ─── Overview ────────────────────────────────────────────────────────────
 
@@ -20,6 +22,7 @@ export interface OverviewStats {
 }
 
 export const getInstitutionOverview = cache(async (institutionId: string): Promise<OverviewStats> => {
+  await assertInstitutionAdminAccess(institutionId);
   const [students, teachers, activeCoaching, recentResults] = await Promise.all([
     prisma.institutionMember.count({
       where: { institutionId, role: "INSTITUTION_STUDENT", status: "ACTIVE" },
@@ -81,6 +84,7 @@ export interface SubjectTrendPoint {
 export const getInstitutionPerformanceTrend = cache(async (
   institutionId: string,
 ): Promise<SubjectTrendPoint[]> => {
+  await assertInstitutionAdminAccess(institutionId);
   const rows = await prisma.studentResultsAnalysis.findMany({
     where: { institutionId },
     select: { subject: true, term: true, year: true, marks: true },
@@ -134,6 +138,7 @@ export const getFlaggedStudents = cache(async (
   currentTerm: number,
   currentYear: number,
 ): Promise<FlaggedStudent[]> => {
+  await assertInstitutionAdminAccess(institutionId);
   const rows = await prisma.studentResultsAnalysis.findMany({
     where: {
       institutionId,
@@ -168,6 +173,7 @@ export interface ActivityItem {
 }
 
 export const getRecentActivity = cache(async (institutionId: string): Promise<ActivityItem[]> => {
+  await assertInstitutionAdminAccess(institutionId);
   const rows = await prisma.institutionActivity.findMany({
     where: { institutionId },
     orderBy: { createdAt: "desc" },
@@ -203,6 +209,7 @@ export const getInstitutionStudentsList = cache(async (
   institutionId: string,
   opts?: { search?: string; form?: string; performance?: "GREEN" | "YELLOW" | "RED" },
 ): Promise<StudentRow[]> => {
+  await assertInstitutionAdminAccess(institutionId);
   const members = await prisma.institutionMember.findMany({
     where: {
       institutionId,
@@ -240,11 +247,11 @@ export const getInstitutionStudentsList = cache(async (
   const userIds = members.map((m) => m.user.id);
   const [latestResults, recentAnalyses] = await Promise.all([
     prisma.studentResult.findMany({
-      where: { studentUserId: { in: userIds } },
+      where: { institutionId, studentUserId: { in: userIds } },
       orderBy: [{ year: "desc" }, { term: "desc" }, { createdAt: "desc" }],
     }),
     prisma.studentResultsAnalysis.findMany({
-      where: { studentUserId: { in: userIds } },
+      where: { institutionId, studentUserId: { in: userIds } },
       orderBy: { createdAt: "desc" },
     }),
   ]);
@@ -310,45 +317,87 @@ export async function addStudent(input: AddStudentInput) {
 
   // Create or fetch the user
   let userId: string;
-  const existing = await prisma.user.findFirst({
-    where: { email: data.email.toLowerCase() },
-    select: { id: true },
-  });
-  if (existing) {
-    userId = existing.id;
-  } else {
-    const { data: created, error } = await admin.auth.admin.createUser({
-      email: data.email,
-      email_confirm: true,
-      user_metadata: { name: data.fullName, role: "STUDENT" },
+  try {
+    const existing = await prisma.user.findFirst({
+      where: { email: { equals: data.email, mode: "insensitive" } },
+      select: { id: true },
     });
-    if (error || !created.user) {
-      return { ok: false as const, error: error?.message ?? "Could not create user" };
+    if (existing) {
+      userId = existing.id;
+    } else {
+      const { data: created, error } = await admin.auth.admin.createUser({
+        email: data.email,
+        email_confirm: true,
+        user_metadata: { name: data.fullName, role: "STUDENT" },
+      });
+      if (error || !created.user) {
+        return { ok: false as const, error: error?.message ?? "Could not create user" };
+      }
+      userId = created.user.id;
+      // The auth trigger may already have inserted the mirror row — upsert so
+      // that race doesn't surface as a unique-constraint crash.
+      await prisma.user.upsert({
+        where: { id: userId },
+        update: { formYear: data.formYear },
+        create: {
+          id: userId,
+          email: data.email.toLowerCase(),
+          name: data.fullName,
+          role: "STUDENT",
+          county: "Unknown",
+          formYear: data.formYear,
+        },
+      });
     }
-    userId = created.user.id;
-    await prisma.user.create({
-      data: {
-        id: userId,
-        email: data.email.toLowerCase(),
-        name: data.fullName,
-        role: "STUDENT",
-        county: "Unknown",
-        formYear: data.formYear,
-      },
-    });
-  }
 
-  // Link the student
-  await prisma.institutionMember.upsert({
-    where: { institutionId_userId: { institutionId: membership.institution.id, userId } },
-    create: {
-      institutionId: membership.institution.id,
-      userId,
-      role: "INSTITUTION_STUDENT",
-      status: "ACTIVE",
-    },
-    update: { status: "ACTIVE", role: "INSTITUTION_STUDENT" },
-  });
+    // Never silently demote an existing admin/deputy/teacher of this school
+    // to a student by re-adding their email here.
+    const current = await prisma.institutionMember.findUnique({
+      where: { institutionId_userId: { institutionId: membership.institution.id, userId } },
+      select: { role: true, status: true },
+    });
+    if (current && current.status === "ACTIVE" && current.role !== "INSTITUTION_STUDENT") {
+      return {
+        ok: false as const,
+        error: "That email already belongs to a staff member of this institution.",
+      };
+    }
+
+    // Link the student
+    await prisma.institutionMember.upsert({
+      where: { institutionId_userId: { institutionId: membership.institution.id, userId } },
+      create: {
+        institutionId: membership.institution.id,
+        userId,
+        role: "INSTITUTION_STUDENT",
+        status: "ACTIVE",
+      },
+      update: { status: "ACTIVE", role: "INSTITUTION_STUDENT" },
+    });
+
+    // Persist the admission number: results import matches students by
+    // InstitutionStudent.studentIdStr, which was never written, so admission
+    // matching could never succeed.
+    if (data.admissionNumber) {
+      await prisma.institutionStudent.upsert({
+        where: { userId },
+        create: {
+          institutionId: membership.institution.id,
+          userId,
+          studentIdStr: data.admissionNumber,
+          classYear: String(data.formYear),
+        },
+        update: {
+          institutionId: membership.institution.id,
+          studentIdStr: data.admissionNumber,
+          classYear: String(data.formYear),
+        },
+      });
+    }
+  } catch (err) {
+    console.error("[addStudent] failed:", err);
+    return { ok: false as const, error: "Could not add that student. Please try again." };
+  }
 
   await logActivity(membership.institution.id, {
     type: "STUDENT_JOINED",
@@ -364,10 +413,12 @@ export async function addStudent(input: AddStudentInput) {
 
 export async function removeStudent(studentUserId: string) {
   const membership = await requireInstitutionAdmin();
-  await prisma.institutionMember.updateMany({
-    where: { institutionId: membership.institution.id, userId: studentUserId },
+  // Scope by role so this can't be used to remove an admin/teacher.
+  const res = await prisma.institutionMember.updateMany({
+    where: { institutionId: membership.institution.id, userId: studentUserId, role: "INSTITUTION_STUDENT" },
     data: { status: "REMOVED" },
   });
+  if (res.count === 0) return { ok: false as const, error: "Student not found in this institution" };
   await logActivity(membership.institution.id, {
     type: "STUDENT_REMOVED",
     actorUserId: membership.member.userId,
@@ -393,6 +444,7 @@ export interface TeacherRow {
 }
 
 export const getInstitutionTeachersList = cache(async (institutionId: string): Promise<TeacherRow[]> => {
+  await assertInstitutionAdminAccess(institutionId);
   const [members, invitations] = await Promise.all([
     prisma.institutionMember.findMany({
       where: { institutionId, role: "INSTITUTION_TEACHER" },
@@ -416,7 +468,7 @@ export const getInstitutionTeachersList = cache(async (institutionId: string): P
   const teacherIds = members.map((m) => m.userId);
   const assignments = teacherIds.length
     ? await prisma.teacherSubjectAssignment.findMany({
-        where: { teacherUserId: { in: teacherIds } },
+        where: { institutionId, teacherUserId: { in: teacherIds } },
       })
     : [];
   const byTeacher = new Map<string, { subjects: Set<string>; forms: Set<string> }>();
@@ -431,7 +483,7 @@ export const getInstitutionTeachersList = cache(async (institutionId: string): P
   const coachingCounts = teacherIds.length
     ? await prisma.coachingAssignment.groupBy({
         by: ["teacherUserId"],
-        where: { teacherUserId: { in: teacherIds } },
+        where: { institutionId, teacherUserId: { in: teacherIds } },
         _count: { studentUserId: true },
       })
     : [];
@@ -528,7 +580,7 @@ export async function inviteTeacher(input: InviteTeacherInput) {
   try {
     const { getResend } = await import("@/lib/email");
     const resend = getResend();
-    const acceptUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/institution/accept?token=${token}`;
+    const acceptUrl = `${getAppUrl()}/institution/accept?token=${token}`;
     await resend.emails.send({
       from: "Edyfra Institutions <institutions@edyfra.online>",
       to: data.email,
@@ -552,10 +604,12 @@ export async function inviteTeacher(input: InviteTeacherInput) {
 
 export async function removeTeacher(teacherUserId: string) {
   const membership = await requireInstitutionAdmin();
-  await prisma.institutionMember.updateMany({
-    where: { institutionId: membership.institution.id, userId: teacherUserId },
+  // Scope by role so this can't be used to remove an admin/student.
+  const res = await prisma.institutionMember.updateMany({
+    where: { institutionId: membership.institution.id, userId: teacherUserId, role: "INSTITUTION_TEACHER" },
     data: { status: "REMOVED" },
   });
+  if (res.count === 0) return { ok: false as const, error: "Teacher not found in this institution" };
   await logActivity(membership.institution.id, {
     type: "TEACHER_REMOVED",
     actorUserId: membership.member.userId,
@@ -599,7 +653,8 @@ export async function updateInstitutionSettings(input: z.infer<typeof SettingsSc
     actorUserId: membership.member.userId,
     title: "School details updated",
   });
-  revalidatePath("/institution/dashboard/settings");
+  // The school name is rendered by the portal layout on every page.
+  revalidatePath("/institution/dashboard", "layout");
   return { ok: true as const };
 }
 
@@ -620,48 +675,70 @@ export async function addDeputyAdmin(input: z.infer<typeof DeputySchema>) {
 
   // Ensure user exists
   let userId: string;
-  const existing = await prisma.user.findFirst({ where: { email: data.email.toLowerCase() }, select: { id: true } });
-  if (existing) {
-    userId = existing.id;
-  } else {
-    const { data: created, error } = await admin.auth.admin.createUser({
-      email: data.email,
-      email_confirm: true,
-      user_metadata: { name: data.name, role: "INSTITUTION_DEPUTY" },
+  try {
+    const existing = await prisma.user.findFirst({
+      where: { email: { equals: data.email, mode: "insensitive" } },
+      select: { id: true },
     });
-    if (error || !created.user) {
-      return { ok: false as const, error: error?.message ?? "Could not create deputy" };
+    if (existing) {
+      userId = existing.id;
+    } else {
+      const { data: created, error } = await admin.auth.admin.createUser({
+        email: data.email,
+        email_confirm: true,
+        user_metadata: { name: data.name, role: "INSTITUTION_DEPUTY" },
+      });
+      if (error || !created.user) {
+        return { ok: false as const, error: error?.message ?? "Could not create deputy" };
+      }
+      userId = created.user.id;
+      await prisma.user.upsert({
+        where: { id: userId },
+        update: {},
+        create: {
+          id: userId,
+          email: data.email.toLowerCase(),
+          name: data.name,
+          role: "STUDENT", // base role; InstitutionMember is the institution-specific role
+          county: "Unknown",
+        },
+      });
     }
-    userId = created.user.id;
-    await prisma.user.create({
-      data: {
-        id: userId,
-        email: data.email.toLowerCase(),
-        name: data.name,
-        role: "STUDENT", // base role; InstitutionMember is the institution-specific role
-        county: "Unknown",
-      },
-    });
-  }
 
-  await prisma.institutionAdmin.create({
-    data: {
-      institutionId: membership.institution.id,
-      userId,
-      title: data.title,
-      isPrimary: false,
-    },
-  });
-  await prisma.institutionMember.upsert({
-    where: { institutionId_userId: { institutionId: membership.institution.id, userId } },
-    create: {
-      institutionId: membership.institution.id,
-      userId,
-      role: "INSTITUTION_DEPUTY",
-      status: "ACTIVE",
-    },
-    update: { status: "ACTIVE", role: "INSTITUTION_DEPUTY" },
-  });
+    const current = await prisma.institutionMember.findUnique({
+      where: { institutionId_userId: { institutionId: membership.institution.id, userId } },
+      select: { role: true, status: true },
+    });
+    if (current?.status === "ACTIVE" && current.role === "INSTITUTION_ADMIN") {
+      return { ok: false as const, error: "That person is already the primary admin." };
+    }
+
+    // upsert: re-adding a previously added deputy must not crash on the
+    // (institutionId, userId) unique constraint.
+    await prisma.institutionAdmin.upsert({
+      where: { institutionId_userId: { institutionId: membership.institution.id, userId } },
+      create: {
+        institutionId: membership.institution.id,
+        userId,
+        title: data.title,
+        isPrimary: false,
+      },
+      update: { title: data.title },
+    });
+    await prisma.institutionMember.upsert({
+      where: { institutionId_userId: { institutionId: membership.institution.id, userId } },
+      create: {
+        institutionId: membership.institution.id,
+        userId,
+        role: "INSTITUTION_DEPUTY",
+        status: "ACTIVE",
+      },
+      update: { status: "ACTIVE", role: "INSTITUTION_DEPUTY" },
+    });
+  } catch (err) {
+    console.error("[addDeputyAdmin] failed:", err);
+    return { ok: false as const, error: "Could not add that deputy. Please try again." };
+  }
 
   await logActivity(membership.institution.id, {
     type: "ADMIN_ADDED",
@@ -731,11 +808,13 @@ export async function upsertAcademicTerm(input: z.infer<typeof TermSchema>) {
       isCurrent: data.makeCurrent ?? false,
     },
   });
-  revalidatePath("/institution/dashboard/settings");
+  // The current term drives the overview, results, reports and coaching pages.
+  revalidatePath("/institution/dashboard", "layout");
   return { ok: true as const };
 }
 
 export const getCurrentTerm = cache(async (institutionId: string) => {
+  await assertInstitutionAdminAccess(institutionId);
   return prisma.academicTerm.findFirst({
     where: { institutionId, isCurrent: true },
   });
@@ -743,28 +822,7 @@ export const getCurrentTerm = cache(async (institutionId: string) => {
 
 // ─── Activity helper (internal) ──────────────────────────────────────────
 
-export async function logActivity(
-  institutionId: string,
-  data: {
-    type: Parameters<typeof prisma.institutionActivity.create>[0]["data"]["type"];
-    actorUserId?: string | null;
-    targetUserId?: string | null;
-    title: string;
-    body?: string | null;
-  },
-) {
-  try {
-    await prisma.institutionActivity.create({
-      data: {
-        institutionId,
-        type: data.type,
-        actorUserId: data.actorUserId ?? null,
-        targetUserId: data.targetUserId ?? null,
-        title: data.title,
-        body: data.body ?? null,
-      },
-    });
-  } catch (e) {
-    console.warn("[logActivity] failed:", e);
-  }
-}
+// Not exported: an exported function in a "use server" file is a publicly
+// callable server action, which would let anyone write activity rows into any
+// institution. Other modules import logInstitutionActivity directly.
+const logActivity = logInstitutionActivity;

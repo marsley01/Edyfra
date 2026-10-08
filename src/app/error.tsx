@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button";
 
 export default function GlobalError({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  // Next 16: retry() re-fetches the segment; reset() only re-renders the
+  // same (failed) payload, so "Try again" never recovered from server errors.
+  retry: () => void;
 }) {
   useEffect(() => {
     // eslint-disable-next-line no-console
@@ -57,7 +59,7 @@ export default function GlobalError({
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Button
-            onClick={reset}
+            onClick={() => retry()}
             className="h-12 rounded-full bg-amber-500 hover:bg-amber-600 text-black font-black text-xs tracking-widest uppercase px-6"
           >
             <RotateCcw className="mr-2 h-4 w-4" />

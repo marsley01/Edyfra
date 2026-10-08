@@ -45,10 +45,17 @@ export async function uploadResource(formData: FormData) {
     return { error: validation.error || "Invalid file." };
   }
 
+  if (!Number.isFinite(price) || price < 0 || !Number.isInteger(price)) {
+    return { error: "Price must be a whole number of KES (0 for free)." };
+  }
+
   // Ensure the Prisma User record exists (foreign key requirement)
   const existingUser = await prisma.user.findUnique({ where: { id: user.id } });
   if (!existingUser) {
     return { error: "Please visit your dashboard first to activate your account before uploading." };
+  }
+  if (existingUser.role !== "TUTOR" && existingUser.role !== "ADMIN") {
+    return { error: "Only verified tutors can sell resources. Apply to become a tutor first." };
   }
 
   const sanitizedExt = sanitizeFileExtension(file.name);

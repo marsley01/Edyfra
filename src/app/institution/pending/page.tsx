@@ -12,19 +12,50 @@ export default async function InstitutionPendingPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/institution/login");
-  const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+  // Older accounts can have a Prisma id that differs from the auth id.
+  const dbUser =
+    (await prisma.user.findUnique({ where: { id: user.id } })) ??
+    (user.email
+      ? await prisma.user.findFirst({ where: { email: { equals: user.email, mode: "insensitive" } } })
+      : null);
   if (!dbUser) redirect("/institution/login");
 
+  // Mirror requireInstitutionAdmin: only a membership of a not-yet-active
+  // institution belongs on this page. Anything else goes back through the
+  // dashboard guard, which routes active admins in and everyone else to login
+  // (so the two pages can never bounce between each other).
   const member = await prisma.institutionMember.findFirst({
-    where: { userId: dbUser.id },
+    where: { userId: dbUser.id, institution: { isActive: false } },
     include: { institution: true },
     orderBy: { createdAt: "desc" },
   });
-  if (!member) redirect("/institution/login");
+  if (!member) redirect("/institution/dashboard");
 
-  // If already approved, bounce into the dashboard
-  if (member.institution.isActive) {
-    redirect("/institution/dashboard");
+  // A rejected application previously showed "under review" forever.
+  const rejected = member.status === "REJECTED" || member.institution.status === "REJECTED";
+  if (rejected) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-rose-50/40 py-16">
+        <div className="mx-auto max-w-2xl rounded-3xl border border-rose-200 bg-gradient-to-b from-rose-50/60 to-white p-10 text-center">
+          <h1 className="text-2xl font-black text-gray-900">Application not approved</h1>
+          <p className="mt-2 text-sm text-gray-600">
+            Hi {dbUser.name}, the application for <strong>{member.institution.name}</strong> was not approved.
+            Contact us if you think this is a mistake.
+          </p>
+          <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <a
+              href="mailto:hello@edyfra.online"
+              className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-white hover:bg-primary"
+            >
+              Contact support
+            </a>
+            <LinkButton href="/institution" variant="ghost">
+              Back to home
+            </LinkButton>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

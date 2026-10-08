@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Filter, Plus, Search, Trash2, Upload, Users, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,9 @@ function hashColor(name: string): InitialsColor {
 export function StudentsClient({ initialRows }: { initialRows: StudentRow[] }) {
   const router = useRouter();
   const [rows, setRows] = useState(initialRows);
+  // Re-sync when the server sends a fresh list (after add/invite/refresh);
+  // useState alone ignores new props, so added students never appeared.
+  useEffect(() => setRows(initialRows), [initialRows]);
   const [search, setSearch] = useState("");
   const [formFilter, setFormFilter] = useState<string>("");
   const [perfFilter, setPerfFilter] = useState<"" | OverallStatus>("");
@@ -60,7 +63,7 @@ export function StudentsClient({ initialRows }: { initialRows: StudentRow[] }) {
       if (!res?.ok) {
         showError({
           title: "Couldn't remove that student",
-          cause: "We didn't get a confirmation from the server.",
+          cause: res?.error ?? "We didn't get a confirmation from the server.",
           fix: "Try again, or refresh the page.",
         });
         return;
@@ -240,24 +243,33 @@ function AddStudentDialog({ onClose }: { onClose: () => void }) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setPending(true);
-    const res = await addStudent({
-      fullName: name,
-      email,
-      formYear: Number(formYear),
-      admissionNumber: admissionNumber || null,
-      stream: null,
-    });
-    setPending(false);
-    if (!res.ok) {
+    try {
+      const res = await addStudent({
+        fullName: name,
+        email,
+        formYear: Number(formYear),
+        admissionNumber: admissionNumber || null,
+        stream: null,
+      });
+      if (!res.ok) {
+        showError({
+          title: "We couldn't add that student",
+          cause: res.error,
+          fix: "Double-check the email and details, then try again.",
+        });
+        return;
+      }
+      showSuccess(`${name} added`, { description: "They're now on the institution's roster." });
+      onClose();
+    } catch {
       showError({
         title: "We couldn't add that student",
-        cause: res.error,
-        fix: "Double-check the email and details, then try again.",
+        cause: "The server didn't respond.",
+        fix: "Try again in a moment.",
       });
-      return;
+    } finally {
+      setPending(false);
     }
-    showSuccess(`${name} added`, { description: "They're now on the institution's roster." });
-    onClose();
   }
 
   return (
@@ -339,18 +351,31 @@ function BulkUploadDialog({ onClose }: { onClose: () => void }) {
       };
     });
     setPending(true);
-    const res = await bulkInviteStudents({ rows: rows.map((r) => ({ ...r, formYear: r.formYear, admissionNumber: r.admissionNumber })) });
-    setPending(false);
-    if (!res.ok) {
+    try {
+      const res = await bulkInviteStudents({ rows: rows.map((r) => ({ ...r, formYear: r.formYear, admissionNumber: r.admissionNumber })) });
+      if (!res.ok) {
+        showError({
+          title: "We couldn't invite those students",
+          cause: res.error,
+          fix: "Check the rows for invalid emails, then try again.",
+        });
+        return;
+      }
+      showSuccess(`Invited ${res.invited} students`, {
+        description: res.emailFailures
+          ? `${res.emailFailures} invitation email(s) could not be sent — ask those students to contact you.`
+          : "They'll each get an email with next steps.",
+      });
+      onClose();
+    } catch {
       showError({
         title: "We couldn't invite those students",
-        cause: res.error,
-        fix: "Check the rows for invalid emails, then try again.",
+        cause: "The server didn't respond.",
+        fix: "Try again in a moment.",
       });
-      return;
+    } finally {
+      setPending(false);
     }
-    showSuccess(`Invited ${res.invited} students`, { description: "They'll each get an email with next steps." });
-    onClose();
   }
 
   return (

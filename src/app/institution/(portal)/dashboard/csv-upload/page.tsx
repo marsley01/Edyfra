@@ -68,9 +68,23 @@ export default function CsvUploadPage() {
         body: formData,
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        setResult({ success: true, message: `Successfully processed ${data.processedRows} rows! The file has been archived.` });
+        const skipped = data.skippedRows
+          ? ` ${data.skippedRows} rows were skipped (invalid, or no enrolled student matched${
+              Array.isArray(data.unmatchedNames) && data.unmatchedNames.length
+                ? `: ${data.unmatchedNames.slice(0, 5).join(", ")}`
+                : ""
+            }).`
+          : "";
+        const saved = Number(data.processedRows) || 0;
+        setResult({
+          success: saved > 0,
+          message:
+            saved > 0
+              ? `Saved ${data.inserted ?? saved} new and ${data.updated ?? 0} updated results.${skipped}`
+              : `No results were saved.${skipped} Add the students to your roster first, then upload again.`,
+        });
         setFile(null);
         setPreview([]);
       } else {

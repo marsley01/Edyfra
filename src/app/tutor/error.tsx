@@ -1,6 +1,6 @@
 "use client";
 
-export default function TutorError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function TutorError({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
   return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center p-8">
       <div className="max-w-lg w-full space-y-6">
@@ -13,7 +13,7 @@ export default function TutorError({ error, reset }: { error: Error & { digest?:
           {error.message || "An unexpected error occurred."}
         </p>
         <button
-          onClick={reset}
+          onClick={() => retry()}
           className="px-6 py-3 bg-white/10 hover:bg-white/15 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-colors"
         >
           Try Again

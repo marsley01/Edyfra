@@ -2,7 +2,7 @@
 
 import { cache } from "react";
 import prisma from "@/lib/prisma";
-import { requireInstitutionAdmin } from "./institution-guard";
+import { assertInstitutionAdminAccess } from "./_institution-access";
 
 export interface StudentFullProfile {
   user: {
@@ -72,6 +72,7 @@ export interface StudentFullProfile {
 
 export const getStudentFullProfile = cache(
   async (studentUserId: string, institutionId: string): Promise<StudentFullProfile | null> => {
+    await assertInstitutionAdminAccess(institutionId);
     const [user, member, currentTerm, sessions, challenges, aiMessages, resourcePurchases, coaching] =
       await Promise.all([
         prisma.user.findUnique({

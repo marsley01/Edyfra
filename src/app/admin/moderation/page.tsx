@@ -23,21 +23,41 @@ export default function ModerationPage() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || !(await checkAdminStatus())) { router.push("/dashboard"); return; }
-      const { getReports } = await import("@/app/actions/admin-content");
-      const [reportsData, modData] = await Promise.all([
-        getReports(),
-        getModerationReports().catch(() => ({ reports: [], flaggedUsers: [] })),
-      ]);
-      setReports(reportsData);
-      setFlaggedUsers(modData.flaggedUsers || []);
-      setLoading(false);
+      try {
+        const { getReports } = await import("@/app/actions/admin-content");
+        const [reportsData, modData] = await Promise.all([
+          getReports(),
+          getModerationReports().catch(() => ({ reports: [], flaggedUsers: [] })),
+        ]);
+        setReports(reportsData);
+        setFlaggedUsers(modData.flaggedUsers || []);
+      } catch (err) {
+        console.error("Failed to load moderation data:", err);
+        showError({
+          title: "We couldn't load the moderation queue",
+          cause: "Something didn't go through on our side.",
+          fix: "Refresh the page to try again.",
+        });
+      } finally {
+        setLoading(false);
+      }
     };
     init();
   }, [router]);
 
   const handleAction = async (reportId: string, action: "warn" | "suspend" | "ban") => {
-    const { actionReport } = await import("@/app/actions/admin-content");
-    await actionReport(reportId, action);
+    try {
+      const { actionReport } = await import("@/app/actions/admin-content");
+      await actionReport(reportId, action);
+    } catch (err) {
+      console.error("Failed to action report:", err);
+      showError({
+        title: "We couldn't apply that action",
+        cause: err instanceof Error ? err.message : "Something didn't go through on our side.",
+        fix: "Try again, or refresh the page.",
+      });
+      return;
+    }
     showSuccess(`User ${action}ed`, { description: "The action is recorded and the user is notified." });
     setReports((prev) => prev.filter((r) => r.id !== reportId));
   };
@@ -99,7 +119,7 @@ export default function ModerationPage() {
                       <Button onClick={() => handleAction(report.id, "warn")} variant="outline" size="sm" className="rounded-xl">Warn</Button>
                       <Button onClick={() => handleAction(report.id, "suspend")} variant="outline" size="sm" className="rounded-xl text-amber-500">Suspend</Button>
                       <Button onClick={() => handleAction(report.id, "ban")} size="sm" className="rounded-xl bg-destructive text-destructive-foreground">Ban</Button>
-                      <Button onClick={async () => { const { dismissReport } = await import("@/app/actions/admin-content"); await dismissReport(report.id); setReports((prev) => prev.filter((r) => r.id !== report.id)); showSuccess("Dismissed", { description: "That report is no longer in the queue." }); }} variant="ghost" size="sm" className="rounded-xl">Dismiss</Button>
+                      <Button onClick={async () => { const { dismissReport } = await import("@/app/actions/admin-content"); const res = await dismissReport(report.id).catch(() => ({ error: "Could not dismiss report." })); if ("error" in res && res.error) { showError({ title: "We couldn't dismiss that report", cause: res.error, fix: "Try again, or refresh the page." }); return; } setReports((prev) => prev.filter((r) => r.id !== report.id)); showSuccess("Dismissed", { description: "That report is no longer in the queue." }); }} variant="ghost" size="sm" className="rounded-xl">Dismiss</Button>
                     </div>
                   </CardContent>
                 </Card>

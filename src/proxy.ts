@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
 import { rateLimit, getRateLimitKey, getConfig } from '@/lib/rate-limit'
 
 const ALLOWED_ORIGINS = [
@@ -8,6 +8,17 @@ const ALLOWED_ORIGINS = [
   'http://localhost:3000',
   'http://127.0.0.1:3000',
   ...(process.env.EXTERNAL_ALLOWED_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean) || []),
+]
+
+// Signed-in-only areas. Layouts still enforce roles; this only stops anonymous
+// visitors from rendering a half-loaded private page.
+const PROTECTED_PREFIXES = [
+  '/dashboard',
+  '/tutor',
+  '/admin',
+  '/onboarding',
+  '/study-room',
+  '/institution/dashboard',
 ]
 
 const SERVER_ACTION_LIMIT = { interval: 60_000, maxRequests: 20 };
@@ -82,7 +93,7 @@ function validateCsrf(request: NextRequest): boolean {
   return isOriginAllowed(origin, allowedUrls) || isOriginAllowed(referer, allowedUrls);
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const url = new URL(request.url)
   const isApiRoute = url.pathname.startsWith('/api/')
   const origin = request.headers.get('origin')
@@ -96,6 +107,16 @@ export async function middleware(request: NextRequest) {
     const httpsUrl = new URL(request.url)
     httpsUrl.protocol = 'https'
     return NextResponse.redirect(httpsUrl, 308)
+  }
+
+  // Supabase falls back to the Site URL (the home page) when a redirect target
+  // is missing from its allowlist, so OAuth/reset codes landed on `/?code=...`
+  // and were never exchanged — the user simply stayed signed out. Hand them to
+  // the callback that performs the exchange.
+  if (url.pathname === '/' && url.searchParams.has('code') && request.method === 'GET') {
+    const callbackUrl = request.nextUrl.clone()
+    callbackUrl.pathname = '/auth/callback'
+    return NextResponse.redirect(callbackUrl)
   }
 
   // CSRF check for mutation requests on non-API routes (server actions)
@@ -126,9 +147,9 @@ export async function middleware(request: NextRequest) {
       ? `sa:${getRateLimitKey(request)}`
       : getRateLimitKey(request)
     const config = isServerAction ? SERVER_ACTION_LIMIT : getConfig(url.pathname)
-    const result = await rateLimit(key, config)
+    const result = config ? await rateLimit(key, config) : null
 
-    if (!result.success) {
+    if (config && result && !result.success) {
       const body = isServerAction
         ? { error: 'Too many requests. Please slow down and try again.' }
         : { error: 'Too many requests. Please try again later.' }
@@ -157,23 +178,24 @@ export async function middleware(request: NextRequest) {
 
   let supabaseResponse = NextResponse.next({ request })
 
+  // getAll/setAll is the only cookie API @supabase/ssr supports correctly. The
+  // old get/set/remove form rebuilt the response on every `set`, so when a
+  // refreshed session was split across chunked cookies only the last chunk
+  // survived — users were logged out at random.
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value
+        getAll() {
+          return request.cookies.getAll()
         },
-        set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({ name, value, ...options })
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({ request })
-          supabaseResponse.cookies.set({ name, value, ...options })
-        },
-        remove(name: string, options: CookieOptions) {
-          request.cookies.set({ name, value: '', ...options })
-          supabaseResponse = NextResponse.next({ request })
-          supabaseResponse.cookies.set({ name, value: '', ...options })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
         },
       },
     }
@@ -181,10 +203,17 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user && (request.nextUrl.pathname.startsWith('/dashboard') || request.nextUrl.pathname.startsWith('/institution/dashboard'))) {
+  const path = request.nextUrl.pathname
+  const isProtected = PROTECTED_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))
+
+  if (!user && isProtected) {
     const redirectUrl = request.nextUrl.clone()
-    redirectUrl.pathname = '/auth/login'
-    return NextResponse.redirect(redirectUrl)
+    redirectUrl.pathname = path.startsWith('/institution/') ? '/auth/institution-login' : '/auth/login'
+    redirectUrl.search = ''
+    const redirect = NextResponse.redirect(redirectUrl)
+    // Carry over any cookie changes (e.g. a cleared, expired session).
+    supabaseResponse.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie))
+    return redirect
   }
 
   // Add security headers to all responses

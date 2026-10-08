@@ -8,16 +8,19 @@ function WavyPlane() {
   const meshRef = useRef<THREE.Mesh>(null);
   const geomRef = useRef<THREE.PlaneGeometry>(null);
 
-  const { positions, originalPositions } = useMemo(() => {
+  // Rest positions, taken from an identical plane. The animated vertices must
+  // be written into the geometry actually rendered (geomRef) â€” previously they
+  // went into this throwaway geometry, so the mesh never moved.
+  const originalPositions = useMemo(() => {
     const geom = new THREE.PlaneGeometry(30, 30, 60, 60);
-    const pos = geom.attributes.position.array as Float32Array;
-    const origPos = new Float32Array(pos.length);
-    origPos.set(pos);
-    return { positions: pos, originalPositions: origPos };
+    const origPos = new Float32Array(geom.attributes.position.array as Float32Array);
+    geom.dispose();
+    return origPos;
   }, []);
 
   useFrame((state) => {
     if (!geomRef.current) return;
+    const positions = geomRef.current.attributes.position.array as Float32Array;
     const time = state.clock.getElapsedTime() * 0.5;
 
     for (let i = 0; i < positions.length; i += 3) {

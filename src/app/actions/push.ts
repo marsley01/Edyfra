@@ -34,7 +34,9 @@ export async function sendNotificationPush(
       const data = JSON.stringify({
         title: payload.title,
         body: payload.body,
-        url: payload.url || "/",
+        // Exported from a "use server" module, so callable from the browser:
+        // only same-site relative links, never an off-site phishing URL.
+        url: payload.url && payload.url.startsWith("/") && !payload.url.startsWith("//") ? payload.url : "/",
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       });
 

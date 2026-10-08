@@ -23,8 +23,14 @@ export function HomeTestimonials({ initialReviews }: TestimonialsProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const result = await submitReview(form);
-    setLoading(false);
+    let result: Awaited<ReturnType<typeof submitReview>>;
+    try {
+      result = await submitReview(form);
+    } catch {
+      result = { error: "Something went wrong on our side." };
+    } finally {
+      setLoading(false);
+    }
     if (result.error) {
       showError({ title: "We couldn't submit that review", cause: result.error, fix: "Try again, or refresh the page." });
     } else {

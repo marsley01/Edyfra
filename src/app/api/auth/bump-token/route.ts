@@ -1,21 +1,10 @@
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
 import prisma from '@/lib/prisma'
+import { createClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/admin'
 
 export async function POST() {
-  const cookieStore = await cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) { return cookieStore.get(name)?.value },
-        set() {},
-        remove() {},
-      },
-    }
-  )
+  const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
@@ -29,20 +18,13 @@ export async function POST() {
     select: { tokenVersion: true },
   })
 
-  // Sign out all other Supabase sessions for this user (uses service_role)
+  // Sign out every other Supabase session for this user. `admin.signOut` takes
+  // the caller's access token (not a user id) and the scope to revoke.
   try {
-    const adminClient = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        cookies: {
-          get(name: string) { return cookieStore.get(name)?.value },
-          set() {},
-          remove() {},
-        },
-      }
-    )
-    await adminClient.auth.admin.signOut(user.id)
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session?.access_token) {
+      await createAdminClient().auth.admin.signOut(session.access_token, 'others')
+    }
   } catch {
     // Non-critical — tokenVersion still prevents old sessions
   }

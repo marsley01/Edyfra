@@ -79,7 +79,7 @@ export default function AdminBookingsPage() {
 
   const handleConfirm = async (id: string) => {
     setActionLoading(id + "-confirm");
-    const res = await adminConfirmBooking(id);
+    const res = await adminConfirmBooking(id).catch(() => ({ error: "Request failed. Check your connection." }));
     if ((res as any).success) {
       showSuccess("Booking confirmed", { description: "Both the tutor and student have been notified." });
       fetchBookings(activeFilter);
@@ -95,7 +95,7 @@ export default function AdminBookingsPage() {
 
   const handleCancel = async (id: string) => {
     setActionLoading(id + "-cancel");
-    const res = await adminCancelBooking(id, "Admin override");
+    const res = await adminCancelBooking(id, "Admin override").catch(() => ({ error: "Request failed. Check your connection." }));
     if ((res as any).success) {
       showSuccess("Booking cancelled", { description: "Both the tutor and student have been notified." });
       fetchBookings(activeFilter);

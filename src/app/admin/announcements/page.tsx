@@ -44,17 +44,32 @@ export default function AnnouncementsPage() {
   }, [router]);
 
   const handleCreate = async () => {
-    if (!title || !body) return;
-    const { createAnnouncement } = await import("@/app/actions/admin-content");
-    await createAnnouncement({ title, body, targetAudience: target });
+    if (!title || !body) {
+      toast.error("Title and message are required");
+      return;
+    }
+    try {
+      const { createAnnouncement } = await import("@/app/actions/admin-content");
+      await createAnnouncement({ title, body, targetAudience: target });
+    } catch (err) {
+      console.error("Failed to create announcement:", err);
+      toast.error("Couldn't publish the announcement");
+      return;
+    }
     showSuccess("Announcement published", { description: "It's reaching the audience you picked." });
     setTitle(""); setBody(""); setShowForm(false);
     await load();
   };
 
   const handleDelete = async (id: string) => {
-    const { deleteAnnouncement } = await import("@/app/actions/admin-content");
-    await deleteAnnouncement(id);
+    try {
+      const { deleteAnnouncement } = await import("@/app/actions/admin-content");
+      await deleteAnnouncement(id);
+    } catch (err) {
+      console.error("Failed to delete announcement:", err);
+      toast.error("Couldn't delete the announcement");
+      return;
+    }
     showSuccess("Announcement deleted", { description: "It's been removed from the feed." });
     await load();
   };

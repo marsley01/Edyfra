@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { getTutorStats } from "@/app/actions/tutor";
 import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
+import { showInfo } from "@/lib/toast";
 
 interface TutorStats {
   totalEarnings: number;
@@ -21,22 +23,31 @@ export default function TutorEarningsPage() {
   const [stats, setStats] = useState<TutorStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [withdrawing, setWithdrawing] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     loadStats();
   }, []);
 
   const loadStats = async () => {
-    const data = await getTutorStats();
-    setStats(data);
-    setLoading(false);
+    try {
+      const data = await getTutorStats();
+      setStats(data);
+    } catch (err) {
+      console.error("Failed to load earnings:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // There is no self-serve payout endpoint yet; previously this button just
+  // spun for 2s and did nothing. Tell the tutor what actually happens.
   const handleWithdraw = () => {
     setWithdrawing(true);
-    setTimeout(() => {
-      setWithdrawing(false);
-    }, 2000);
+    showInfo("Withdrawal requests are handled by our team", {
+      description: "Contact Edyfra support with your M-Pesa number to request a payout.",
+    });
+    setWithdrawing(false);
   };
 
   if (loading) return (
@@ -75,7 +86,7 @@ export default function TutorEarningsPage() {
                    {withdrawing ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <ArrowDownCircle className="h-5 w-5 mr-2" />}
                    Withdraw to M-Pesa
                  </Button>
-                 <Button variant="outline" className="h-16 px-10 rounded-2xl border-border bg-secondary/50 hover:bg-secondary font-black text-xs tracking-widest uppercase transition-all">
+                 <Button onClick={() => router.push("/tutor/settings")} variant="outline" className="h-16 px-10 rounded-2xl border-border bg-secondary/50 hover:bg-secondary font-black text-xs tracking-widest uppercase transition-all">
                    Payment Settings
                  </Button>
               </div>

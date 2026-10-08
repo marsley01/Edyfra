@@ -19,6 +19,11 @@ export async function searchStudents(query: string): Promise<Student[]> {
 
   const normalizedQuery = query.trim().toLowerCase();
 
+  // Subjects are stored Title Cased ("Computer Science"). Without matching on
+  // them in the query, a subject search only ever returned students whose
+  // *name* happened to contain the subject, so "Physics" found nobody.
+  const titleCased = normalizedQuery.replace(/\b\w/g, (c) => c.toUpperCase());
+
   try {
     const users = await prisma.user.findMany({
       where: {
@@ -27,6 +32,7 @@ export async function searchStudents(query: string): Promise<Student[]> {
           { name: { contains: normalizedQuery, mode: "insensitive" } },
           { username: { contains: normalizedQuery, mode: "insensitive" } },
           { county: { contains: normalizedQuery, mode: "insensitive" } },
+          { studentProfile: { subjects: { hasSome: [titleCased, query.trim()] } } },
         ],
       },
       take: 20,

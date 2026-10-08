@@ -116,6 +116,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
+  // Not verified as admin (redirect in flight, or the check itself failed):
+  // never render admin pages — they would otherwise mount and fire admin
+  // requests for a non-admin. Offer a retry for transient failures.
+  if (!adminUser) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
+            We couldn&apos;t verify admin access
+          </span>
+          <button
+            onClick={() => window.location.reload()}
+            className="rounded-lg border border-border px-4 py-2 text-xs font-medium hover:bg-muted/50"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground selection:bg-primary/30">
       {/* Minimal Status Strip */}

@@ -63,6 +63,11 @@ export default function MatchNotification() {
       if (result.success) {
         showSuccess("Match accepted", { description: "Taking you into the room." });
         router.push(`/study-room/${result.sessionId}`);
+      } else {
+        // acceptMatchRequest reports failures (already taken, own request...) as
+        // a result, not a throw — previously the click silently did nothing.
+        showError({ title: "We couldn't accept that match", cause: result.error || "This request is no longer available.", fix: "Pick a different request." });
+        setRequests((prev) => prev.filter(r => r.requestId !== requestId));
       }
     } catch (err: unknown) {
       const error = err as Error;

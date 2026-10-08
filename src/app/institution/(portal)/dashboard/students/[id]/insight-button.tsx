@@ -40,17 +40,26 @@ export function StudentInsightButton({
 
   async function onEmail() {
     setEmailing(true);
-    const res = await emailInsightToTeacher(studentUserId, term, year);
-    setEmailing(false);
-    if (!res.ok) {
+    try {
+      const res = await emailInsightToTeacher(studentUserId, term, year);
+      if (!res.ok) {
+        showError({
+          title: "We couldn't email that insight",
+          cause: res.error,
+          fix: "Try again, or check the teacher's email address.",
+        });
+        return;
+      }
+      showSuccess(`Emailed ${res.count} teachers`, { description: "They'll see the insight in their inbox." });
+    } catch {
       showError({
         title: "We couldn't email that insight",
-        cause: res.error,
-        fix: "Try again, or check the teacher's email address.",
+        cause: "The server didn't respond.",
+        fix: "Try again in a moment.",
       });
-      return;
+    } finally {
+      setEmailing(false);
     }
-    showSuccess(`Emailed ${res.count} teachers`, { description: "They'll see the insight in their inbox." });
   }
 
   return (

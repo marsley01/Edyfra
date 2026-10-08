@@ -37,7 +37,12 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser();
     userId = user?.id ?? null;
   } catch {
-    // Unauthenticated requests are allowed; they share the "system" bucket.
+    userId = null;
+  }
+  // This endpoint accepts an arbitrary prompt AND system prompt, so leaving it
+  // open made it a free, anonymous LLM proxy billed to the platform's key.
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const feature =

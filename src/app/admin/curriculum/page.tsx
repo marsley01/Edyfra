@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, Upload, FileText, Loader2, ExternalLink, Trash2, BookMarked } from "lucide-react";
 import { showError, showSuccess } from "@/lib/toast";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/utils/supabase/client";
 
 type ContentTab = "upload" | "library";
 type ContentType = "Curriculum Book" | "Past Paper" | "Revision Guide" | "Reference Book";
@@ -118,19 +119,42 @@ export default function AdminCurriculumPage() {
 
     setIsUploading(true);
     try {
-      const { uploadCurriculumContent } = await import("@/app/actions/admin-content");
-      const payload = new FormData();
-      payload.append("file", file);
-      payload.append("title", title);
-      payload.append("subject", subject);
-      payload.append("educationLevel", level);
-      payload.append("resourceType", contentType);
-      payload.append("curriculumType", curriculumType);
-      if (topic) payload.append("topic", topic);
-      if (description) payload.append("description", description);
-      payload.append("price", String(price));
+      // Upload straight to storage via a signed URL — server actions are capped
+      // at 1 MB, so sending the file through one failed for real PDFs.
+      const { createCurriculumUploadUrl, createCurriculumResource } = await import("@/app/actions/admin-content");
+      const signed = await createCurriculumUploadUrl({ name: file.name, size: file.size, type: file.type });
+      if (!signed.success) {
+        showError({
+          title: "We couldn't publish that resource",
+          cause: signed.error,
+          fix: "Try again, or refresh the page.",
+        });
+        return;
+      }
 
-      const result = await uploadCurriculumContent(payload);
+      const supabase = createClient();
+      const { error: uploadError } = await supabase.storage
+        .from(signed.bucket)
+        .uploadToSignedUrl(signed.path, signed.token, file, { contentType: file.type || undefined });
+      if (uploadError) {
+        showError({
+          title: "We couldn't upload that file",
+          cause: uploadError.message,
+          fix: "Try again, or refresh the page.",
+        });
+        return;
+      }
+
+      const result = await createCurriculumResource({
+        title: `${curriculumType ? `[${curriculumType}] ` : ""}${title}`,
+        subject,
+        educationLevel: level,
+        resourceType: contentType,
+        topic: topic || undefined,
+        description: description || undefined,
+        price: Number(price) || 0,
+        filePath: signed.path,
+      });
 
       if (result.success) {
         showSuccess(`${contentType} published`, { description: "It's now live in the library." });
@@ -138,12 +162,6 @@ export default function AdminCurriculumPage() {
         setCurriculumType(""); setTopic(""); setDescription(""); setPrice(0); setFile(null);
         setTab("library");
         await loadResources();
-      } else if ("error" in result && result.error) {
-        showError({
-          title: "We couldn't publish that resource",
-          cause: result.error,
-          fix: "Try again, or refresh the page.",
-        });
       }
     } catch (error) {
       showError({

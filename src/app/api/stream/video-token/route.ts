@@ -1,81 +1,76 @@
-// IMPORTANT: Before this works you must:
-// 1. Go to dashboard.getstream.io
-// 2. Select your app
-// 3. Go to Video & Audio section
-// 4. Make sure "default" call type exists
-// 5. Disable "Backstage mode" (under settings) unless you explicitly use it.
-// 6. Enable the following permissions on the "default" call type:
-//    - Send audio: all participants
-//    - Send video: all participants
-//    - Create call: all participants
-//    - Join call: all participants
-//    - End call: all participants
-// 7. Save the configuration
+// Stream dashboard setup for the "default" call type (Video & Audio):
+//   - Backstage mode off.
+//   - Ring settings: auto-cancel ~30-45s, incoming timeout ~30-45s.
+//   - Roles: "user" may create calls and ring; joining should be limited to
+//     call members (grant JoinCall to the "call_member" role rather than
+//     "user") so only the room's participants can enter a call.
+//   - Webhook: https://www.edyfra.online/api/webhooks/stream (call.* events).
 
-import { StreamClient } from '@stream-io/node-sdk';
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
-import prisma from '@/lib/prisma';
+import { StreamClient } from "@stream-io/node-sdk";
+import { NextResponse } from "next/server";
+import { resolveStreamViewer } from "@/lib/video/viewer";
 
-export async function GET(_req: NextRequest) {
+/** Video tokens are short-lived; the browser refreshes through tokenProvider. */
+const TOKEN_TTL_SECONDS = 60 * 60;
+
+let streamClient: StreamClient | null = null;
+function getClient(apiKey: string, secret: string) {
+  if (!streamClient) streamClient = new StreamClient(apiKey, secret);
+  return streamClient;
+}
+
+const noStore = { "Cache-Control": "no-store, max-age=0" };
+
+/**
+ * GET /api/stream/video-token
+ * Issues a Stream Video token for the signed-in user. The Stream user id is
+ * the PRISMA user id (same id chat uses), so ringing a member id taken from
+ * the database reaches this user.
+ */
+export async function GET() {
   try {
     const apiKey = process.env.NEXT_PUBLIC_STREAM_KEY;
     const secret = process.env.STREAM_SECRET;
-
     if (!apiKey || !secret) {
-      return NextResponse.json(
-        { error: 'Stream not configured' },
-        { status: 503 }
-      );
+      return NextResponse.json({ error: "Stream not configured" }, { status: 503, headers: noStore });
     }
 
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
-
-    if (error || !user) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    const viewer = await resolveStreamViewer();
+    if (!viewer) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401, headers: noStore });
     }
 
-    const userId = user.id;
+    const client = getClient(apiKey, secret);
 
-    // Get the user's display name from the database
-    const profile = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { name: true },
-    });
-
-    const userName = profile?.name || user.email?.split('@')[0] || 'Edyfra User';
-
-    const client = new StreamClient(apiKey, secret);
-
-    // Upsert the user in Stream first so they exist before token is issued
+    // Make sure the user exists in Stream (with a fresh name/avatar) before
+    // the browser connects or anyone rings them.
     await client.upsertUsers([
       {
-        id: userId,
-        name: userName,
-        role: 'user',
+        id: viewer.id,
+        name: viewer.name,
+        image: viewer.image || undefined,
+        role: "user",
       },
     ]);
 
-    // Generate token valid for 1 hour
     const token = client.generateUserToken({
-      user_id: userId,
-      validity_in_seconds: 3600,
+      user_id: viewer.id,
+      validity_in_seconds: TOKEN_TTL_SECONDS,
     });
 
-    console.log('[stream/video-token] Token generated for:', userId);
-
-    return NextResponse.json({
-      token,
-      userId,
-      userName,
-      apiKey,
-    });
-  } catch (err: any) {
-    console.error('[stream/video-token] Token generation failed:', err.message);
-    return NextResponse.json({ error: "Token generation failed" }, { status: 500 });
+    return NextResponse.json(
+      {
+        token,
+        userId: viewer.id,
+        userName: viewer.name,
+        userImage: viewer.image,
+        apiKey,
+        expiresAt: Date.now() + TOKEN_TTL_SECONDS * 1000,
+      },
+      { headers: noStore },
+    );
+  } catch (err) {
+    console.error("[stream/video-token] Token generation failed:", err instanceof Error ? err.message : err);
+    return NextResponse.json({ error: "Token generation failed" }, { status: 500, headers: noStore });
   }
 }

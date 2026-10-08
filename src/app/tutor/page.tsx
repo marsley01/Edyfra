@@ -118,9 +118,9 @@ export default function TutorDashboard() {
           // Check if this match involves the current tutor
           if (payload.new?.sessionId) {
             const session = await (await import("@/app/actions/match")).getSession(payload.new.sessionId);
-            if (session?.partnerId === profile?.user?.name || session?.partner?.name === profile?.user?.name) {
+            const myId = (profile as any)?.userId;
+            if (myId && session?.partnerId === myId) {
               // This tutor was matched
-              const student = await (await import("@/app/actions/user")).getUserData();
               setMatchBanner({
                 studentName: session?.student?.name || "A student",
                 subject: payload.new.subject || "a subject",
@@ -138,18 +138,15 @@ export default function TutorDashboard() {
 
   // Countdown timer for match banner
   useEffect(() => {
-    if (!matchBanner || countdown <= 0) return;
-    const timer = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          // Auto-reassign: tutor didn't respond in 2 minutes
-          handleTimeout();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
+    if (!matchBanner) return;
+    if (countdown <= 0) {
+      // Auto-reassign: tutor didn't respond in 2 minutes
+      handleTimeout();
+      return;
+    }
+    const timer = setTimeout(() => setCountdown(prev => prev - 1), 1000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchBanner, countdown]);
 
   const handleTimeout = async () => {
@@ -259,13 +256,19 @@ export default function TutorDashboard() {
   };
 
   const loadProfile = async () => {
-    const data = await getTutorProfile();
-    if (data) {
-      setProfile(data as any);
-      setIsOnline((data.availability as Record<string, boolean>)?.isOnline || false);
+    try {
+      const data = await getTutorProfile();
+      if (data) {
+        setProfile(data as any);
+        setIsOnline((data.availability as Record<string, boolean>)?.isOnline || false);
+      }
+      return data;
+    } catch (err) {
+      console.error("Failed to load tutor profile:", err);
+      return null;
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-    return data;
   };
 
   const loadBookings = async () => {
@@ -589,12 +592,12 @@ export default function TutorDashboard() {
                 </Card>
               ))}
               {upcomingBookings.map((booking) => {
-                const now = new Date();
-                const eatNow = new Date(now.getTime() + (3 * 60 * 60 * 1000));
-                const sessionStart = new Date(booking.date);
+                // booking.date is YYYY-MM-DD and startTime is HH:mm in EAT (UTC+3);
+                // build the absolute start instant and compare with the real "now".
+                const [y, mo, d] = String(booking.date).slice(0, 10).split("-").map(Number);
                 const [hours, minutes] = booking.startTime.split(":").map(Number);
-                sessionStart.setHours(hours, minutes, 0, 0);
-                const minutesUntilSession = (sessionStart.getTime() - eatNow.getTime()) / (1000 * 60);
+                const sessionStart = new Date(Date.UTC(y, mo - 1, d, hours - 3, minutes, 0, 0));
+                const minutesUntilSession = (sessionStart.getTime() - Date.now()) / (1000 * 60);
                 const canJoin = minutesUntilSession <= 5 && minutesUntilSession >= -30;
 
                 return (

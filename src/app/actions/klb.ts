@@ -121,6 +121,9 @@ export async function fetchKLBResources(filters: {
       const haystack = `${r.title} ${r.subject} ${r.description} ${r.level}`.toLowerCase();
       if (!haystack.includes(query)) return false;
     }
+    // Missing `return true` made the filter drop every item, so the built-in
+    // catalog always rendered empty.
+    return true;
   }).map((r) => ({ ...r, source: "klb" as const }));
   return { items, live: false };
 }

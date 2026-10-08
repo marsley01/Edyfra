@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/utils/supabase/admin";
+import prisma from "@/lib/prisma";
+import { Prisma } from "@/generated/client";
 import { checkAdminStatus } from "@/app/actions/admin";
+
+// NOTE: DailyChallenge is a Prisma model without @@map, so its table is
+// "DailyChallenge" with camelCase columns. The previous supabase-js version
+// queried "daily_challenges"/"form_year", which do not exist, so every
+// request 500'd and the admin challenges page was always empty.
 
 // List all challenges (for admin)
 export async function GET() {
@@ -11,20 +17,15 @@ export async function GET() {
     }
 
     const now = new Date();
-    const supabase = createAdminClient();
-    const { data: challenges, error } = await supabase
-      .from("daily_challenges")
-      .select("*")
-      .order("date", { ascending: false })
-      .limit(100);
-
-    if (error) throw error;
+    const challenges = await prisma.dailyChallenge.findMany({
+      orderBy: { date: "desc" },
+      take: 100
+    });
 
     return NextResponse.json({
-      challenges: (challenges || []).map((challenge) => ({
+      challenges: challenges.map((challenge) => ({
         ...challenge,
-        formYear: challenge.form_year,
-        scheduled: new Date(challenge.date) > now,
+        scheduled: challenge.date > now,
       })),
     });
   } catch (error) {
@@ -51,23 +52,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "At least two options are required" }, { status: 400 });
     }
 
-    const supabase = createAdminClient();
-    const { data: challenge, error } = await supabase
-      .from("daily_challenges")
-      .insert({
+    const challenge = await prisma.dailyChallenge.create({
+      data: {
         subject,
         level: level || "HIGH_SCHOOL",
-        form_year: body.formYear ?? null,
+        formYear: body.formYear ?? null,
         question,
         options,
         answer,
         explanation: explanation || "",
-        date: new Date(date).toISOString(),
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
+        date: new Date(date),
+      },
+    });
 
     return NextResponse.json({ challenge }, { status: 201 });
   } catch (error) {
@@ -91,10 +87,10 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json();
-    const data: Record<string, unknown> = {};
+    const data: Prisma.DailyChallengeUpdateInput = {};
     if (body.subject !== undefined) data.subject = body.subject;
     if (body.level !== undefined) data.level = body.level;
-    if (body.formYear !== undefined) data.form_year = body.formYear;
+    if (body.formYear !== undefined) data.formYear = body.formYear;
     if (body.question !== undefined) data.question = body.question;
     if (body.options !== undefined) {
       if (!Array.isArray(body.options) || body.options.length < 2) {
@@ -104,17 +100,12 @@ export async function PUT(req: NextRequest) {
     }
     if (body.answer !== undefined) data.answer = body.answer;
     if (body.explanation !== undefined) data.explanation = body.explanation;
-    if (body.date !== undefined) data.date = new Date(body.date).toISOString();
+    if (body.date !== undefined) data.date = new Date(body.date);
 
-    const supabase = createAdminClient();
-    const { data: challenge, error } = await supabase
-      .from("daily_challenges")
-      .update(data)
-      .eq("id", id)
-      .select()
-      .single();
-
-    if (error) throw error;
+    const challenge = await prisma.dailyChallenge.update({
+      where: { id },
+      data,
+    });
 
     return NextResponse.json({ challenge });
   } catch (error) {
@@ -138,21 +129,11 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Challenge ID required" }, { status: 400 });
     }
 
-    const supabase = createAdminClient();
-
-    // Delete related attempts first
-    await supabase
-      .from("daily_challenge_attempts")
-      .delete()
-      .eq("challenge_id", id);
-
-    // Delete the challenge
-    const { error } = await supabase
-      .from("daily_challenges")
-      .delete()
-      .eq("id", id);
-
-    if (error) throw error;
+    // Delete related attempts first, then the challenge (no cascade on the relation)
+    await prisma.$transaction([
+      prisma.dailyChallengeAttempt.deleteMany({ where: { challengeId: id } }),
+      prisma.dailyChallenge.delete({ where: { id } }),
+    ]);
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { CheckSignature } from "stream-chat";
-import { createAdminClient } from "@/utils/supabase/admin";
+import prisma from "@/lib/prisma";
 
 const STREAM_KEY = process.env.NEXT_PUBLIC_STREAM_KEY!;
 const STREAM_SECRET = process.env.STREAM_SECRET!;
@@ -48,18 +48,18 @@ export async function POST(request: Request) {
     }
 
     const callId: string = call?.id || call?.cid?.split(":")?.[1] || "unknown";
+    // Calls are created as `room-<roomId>-<suffix>` with the room id in custom data
+    const roomId: string = call?.custom?.roomId || callId;
     const callType: string = call?.type || call?.cid?.split(":")?.[0] || "default";
 
     // Find the Edyfra session that matches this Stream call/channel id.
     let edyfraSession: { id: string; subject: string; studentId: string; partnerId: string | null } | null = null;
     try {
-      const supabase = createAdminClient();
-      const { data } = await supabase
-        .from("sessions")
-        .select("id, subject, studentId:student_id, partnerId:partner_id")
-        .eq("id", callId)
-        .single();
-      edyfraSession = data;
+      // Sessions live in the Prisma "Session" table (camelCase columns)
+      edyfraSession = await prisma.session.findUnique({
+        where: { id: roomId },
+        select: { id: true, subject: true, studentId: true, partnerId: true },
+      });
     } catch (e) {
       console.warn("[StreamWebhook] Session lookup failed:", e);
     }

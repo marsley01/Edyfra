@@ -34,7 +34,9 @@ export function ResultsClient({
   currentTerm: { term: number; year: number } | null;
 }) {
   const router = useRouter();
-  const [summary, setSummary] = useState(initialSummary);
+  // Read straight from props: router.refresh() after an import delivers a new
+  // summary, which a useState copy would ignore (charts stayed stale).
+  const summary = initialSummary;
   const [showUpload, setShowUpload] = useState(false);
   const [term, setTerm] = useState(currentTerm?.term ?? 1);
   const [year, setYear] = useState(currentTerm?.year ?? new Date().getFullYear());
@@ -279,24 +281,37 @@ function UploadDialog({
   async function handleImport() {
     if (!parsed || !validation) return;
     setImporting(true);
-    const fullValidation = validateResultsRows(parsed.rows, mapping);
-    const res = await importStudentResults({
-      term,
-      year,
-      rows: fullValidation.allValid,
-    });
-    setImporting(false);
-    if (!res.ok) {
+    try {
+      const fullValidation = validateResultsRows(parsed.rows, mapping);
+      const res = await importStudentResults({
+        term,
+        year,
+        rows: fullValidation.allValid,
+      });
+      if (!res.ok) {
+        showError({
+          title: "We couldn't import those results",
+          cause: res.error,
+          fix: "Fix the rows highlighted in the preview, then try again.",
+        });
+        return;
+      }
+      showSuccess(`Imported ${res.inserted} result rows`, {
+        description: res.skipped
+          ? `${res.skipped} rows were skipped because they didn't match an enrolled student.`
+          : "Results are now in the system.",
+      });
+      setStep("done");
+      onImported();
+    } catch {
       showError({
         title: "We couldn't import those results",
-        cause: res.error,
-        fix: "Fix the rows highlighted in the preview, then try again.",
+        cause: "The server didn't respond — the file may be too large.",
+        fix: "Try again, or split the file into smaller uploads.",
       });
-      return;
+    } finally {
+      setImporting(false);
     }
-    showSuccess(`Imported ${res.inserted} result rows`, { description: "Results are now in the system." });
-    setStep("done");
-    onImported();
   }
 
   return (

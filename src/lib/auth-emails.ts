@@ -53,6 +53,8 @@ interface SendAuthEmailArgs {
   /** Verifier for `supabase.auth.verifyOtp({ token_hash })`. */
   tokenHash: string;
   redirectTo: string;
+  /** For `email_change`: the address being moved to, when `to` is the old one. */
+  newEmail?: string;
 }
 
 export async function sendAuthEmail({
@@ -60,6 +62,7 @@ export async function sendAuthEmail({
   type,
   tokenHash,
   redirectTo,
+  newEmail,
 }: SendAuthEmailArgs): Promise<void> {
   // `redirectTo` originates from the Supabase Site URL / redirect allowlist, so
   // only its origin is reused and the verifier is appended to our own verify
@@ -85,7 +88,7 @@ export async function sendAuthEmail({
     case "email_change":
       subject = "Confirm your new Edyfra email";
       title = "Confirm your new email";
-      body = `<p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#475569">Confirm this address to finish moving your Edyfra account to <strong>${escapeHtml(to)}</strong>. Until you confirm, your old address stays active.</p>${button(link, "Confirm email")}`;
+      body = `<p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#475569">Confirm this address to finish moving your Edyfra account to <strong>${escapeHtml(newEmail || to)}</strong>. Until you confirm, your old address stays active.</p>${button(link, "Confirm email")}`;
       break;
     case "signup":
       subject = "Confirm your Edyfra account";

@@ -138,6 +138,18 @@ export function SettingsClient({
           </CardContent>
         </Card>
 
+        <div className="flex justify-end">
+          <Button type="submit" disabled={pending} className="bg-primary hover:bg-primary">
+            {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Save changes
+          </Button>
+        </div>
+      </form>
+
+      {/* These cards live outside the profile <form>: the term editor is its own
+          <form>, and nested forms are invalid HTML — the browser dropped the
+          inner one, so "Save term" submitted the profile form instead. */}
+      <div className="space-y-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-base">Deputy admins</CardTitle>
@@ -209,14 +221,7 @@ export function SettingsClient({
             <TermForm term={term} />
           </CardContent>
         </Card>
-
-        <div className="flex justify-end">
-          <Button type="submit" disabled={pending} className="bg-primary hover:bg-primary">
-            {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Save changes
-          </Button>
-        </div>
-      </form>
+      </div>
 
       {showDeputy && <AddDeputy onClose={() => setShowDeputy(false)} />}
     </div>
@@ -301,12 +306,17 @@ function AddDeputy({ onClose }: { onClose: () => void }) {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setPending(true);
-    const res = await addDeputyAdmin({ name, email, title });
-    setPending(false);
-    if (!res.ok) showError({ title: "We couldn't invite that deputy", cause: res.error, fix: "Double-check the email and try again." });
-    else {
-      showSuccess("Deputy admin invited", { description: "They've been emailed a setup link." });
-      onClose();
+    try {
+      const res = await addDeputyAdmin({ name, email, title });
+      if (!res.ok) showError({ title: "We couldn't invite that deputy", cause: res.error, fix: "Double-check the email and try again." });
+      else {
+        showSuccess("Deputy admin added", { description: "They can sign in with this email to access the dashboard." });
+        onClose();
+      }
+    } catch {
+      showError({ title: "We couldn't invite that deputy", cause: "The server didn't respond.", fix: "Try again in a moment." });
+    } finally {
+      setPending(false);
     }
   }
 

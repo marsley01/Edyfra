@@ -31,8 +31,10 @@ export default async function StudyRoomPage({ params }: PageProps) {
   }
 
   let session: any = await getMatchSession(sessionId);
+  let isBooking = false;
   if (!session) {
     session = await getBookingSessionData(sessionId);
+    isBooking = !!session;
   }
 
   if (!session) {
@@ -41,6 +43,7 @@ export default async function StudyRoomPage({ params }: PageProps) {
 
   const initialData: StudyRoomInitialData = {
     sessionId,
+    isBooking,
     session: {
       id: session.id,
       tier: session.tier,

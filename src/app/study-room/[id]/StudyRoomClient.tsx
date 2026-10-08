@@ -42,6 +42,8 @@ export interface StudyRoomSession {
 
 export interface StudyRoomInitialData {
   sessionId: string;
+  /** True when this room is a scheduled booking (bookings table), not a matched Session */
+  isBooking?: boolean;
   session: StudyRoomSession;
   currentUser: { id: string; name?: string; avatar?: string };
 }
@@ -115,6 +117,23 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
     }
   }, [sessionId]);
 
+  // When the tutor opens a confirmed booking's room, mark it active (this also
+  // notifies the student that the session has started).
+  useEffect(() => {
+    if (!initialData.isBooking) return;
+    // getBookingSessionData reports a "confirmed" booking as status "ACTIVE"
+    if (initialData.session.partnerId !== currentUser.id || initialData.session.status !== "ACTIVE") return;
+    (async () => {
+      try {
+        const { updateBookingStatus } = await import("@/app/actions/bookings");
+        await updateBookingStatus(sessionId, "active");
+      } catch (err) {
+        console.warn("[StudyRoom] could not mark booking active:", err);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     if (session && session.tier === "TUTOR" && session.studentId === currentUser?.id) {
       const timer = setTimeout(() => {
@@ -138,8 +157,20 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
     setIsEnding(true);
     setShowLeaveConfirm(false);
     try {
-      const { completeSession } = await import("@/app/actions/match");
-      const result = await completeSession(sessionId);
+      let result: { pointsAwarded?: number } | undefined;
+      if (initialData.isBooking) {
+        // Booking rooms have no Session row, so completeSession was a no-op and
+        // the booking stayed "confirmed" forever. The tutor closes it out
+        // (confirmed -> active -> completed are the only valid transitions).
+        if (session.partnerId === currentUser.id) {
+          const { updateBookingStatus } = await import("@/app/actions/bookings");
+          await updateBookingStatus(sessionId, "active").catch(() => {});
+          await updateBookingStatus(sessionId, "completed");
+        }
+      } else {
+        const { completeSession } = await import("@/app/actions/match");
+        result = await completeSession(sessionId);
+      }
 
       if (result?.pointsAwarded) {
         showSuccess(`+${result.pointsAwarded} points`, { description: "Session logged." });

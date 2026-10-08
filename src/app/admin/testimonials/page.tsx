@@ -37,15 +37,27 @@ export default function TestimonialsPage() {
   }, [router]);
 
   const handleApprove = async (id: string) => {
-    const { approveTestimonial } = await import("@/app/actions/admin-content");
-    await approveTestimonial(id);
+    try {
+      const { approveTestimonial } = await import("@/app/actions/admin-content");
+      await approveTestimonial(id);
+    } catch (err) {
+      console.error("Failed to approve testimonial:", err);
+      toast.error("Couldn't approve the testimonial");
+      return;
+    }
     showSuccess("Testimonial approved", { description: "It's now live on the homepage." });
     await load();
   };
 
   const handleReject = async (id: string) => {
-    const { rejectTestimonial } = await import("@/app/actions/admin-content");
-    await rejectTestimonial(id);
+    try {
+      const { rejectTestimonial } = await import("@/app/actions/admin-content");
+      await rejectTestimonial(id);
+    } catch (err) {
+      console.error("Failed to reject testimonial:", err);
+      toast.error("Couldn't reject the testimonial");
+      return;
+    }
     showSuccess("Testimonial rejected", { description: "It's been removed from the queue." });
     await load();
   };

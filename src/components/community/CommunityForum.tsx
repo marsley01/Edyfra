@@ -97,20 +97,42 @@ export function CommunityForum({
 
   const loadList = useCallback(async () => {
     setLoading(true);
-    const res = await getForumBootstrap();
-    setData(res);
-    setLoading(false);
+    try {
+      const res = await getForumBootstrap();
+      setData(res);
+    } catch (err) {
+      console.error("Failed to load community:", err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   const openThread = useCallback(async (topicId: string) => {
     setActiveTopicId(topicId);
+    // Drop the previously open thread so we never flash (or post into) the
+    // wrong topic while the new one loads.
+    setThread((prev) => (prev?.topic.id === topicId ? prev : null));
     setView("thread");
-    const res = await getForumTopic(topicId);
+    let res: Awaited<ReturnType<typeof getForumTopic>>;
+    try {
+      res = await getForumTopic(topicId);
+    } catch {
+      res = { ok: false, error: "Something hiccuped on our side." };
+    }
     if (res.ok) setThread(res);
-    else showError({ title: "We couldn't open that topic", cause: res.error, fix: "Try again, or refresh the page." });
+    else {
+      setView("list");
+      showError({ title: "We couldn't open that topic", cause: res.error, fix: "Try again, or refresh the page." });
+    }
   }, []);
 
   useEffect(() => { loadList(); }, [loadList]);
+
+  // Deep link from notifications: `${basePath}?topic=<id>` opens that thread.
+  useEffect(() => {
+    const topicId = new URLSearchParams(window.location.search).get("topic");
+    if (topicId) openThread(topicId);
+  }, [openThread]);
 
   // Real-time-ish "alive" ping: refetch the bootstrap every 45s so the
   // "online" count moves and new topics float up. Slower on mobile to save
@@ -136,8 +158,8 @@ export function CommunityForum({
     let id: ReturnType<typeof setInterval> | null = null;
     const tick = async () => {
       if (document.hidden) return;
-      const res = await getForumTopic(activeTopicId);
-      if (res.ok) setThread(res);
+      const res = await getForumTopic(activeTopicId).catch(() => null);
+      if (res?.ok) setThread(res);
     };
     id = setInterval(tick, 20_000);
     return () => {
@@ -175,16 +197,22 @@ export function CommunityForum({
           onNewTopic={() => setComposerOpen(true)}
         />
       )}
+      {view === "thread" && !thread && (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+          <SkeletonList />
+        </div>
+      )}
       {view === "thread" && thread && (
         <ForumThread
+          key={thread.topic.id}
           basePath={basePath}
           role={role}
           thread={thread}
           onBack={() => { setView("list"); loadList(); }}
           onRefresh={async () => {
             if (!activeTopicId) return;
-            const res = await getForumTopic(activeTopicId);
-            if (res.ok) setThread(res);
+            const res = await getForumTopic(activeTopicId).catch(() => null);
+            if (res?.ok) setThread(res);
           }}
         />
       )}
@@ -554,12 +582,18 @@ function ForumThread({
     const text = reply.trim();
     if (!text) return;
     setBusy(true);
-    const res = await createForumPost({
-      topicId: thread.topic.id,
-      body: text,
-      parentId: replyTo?.id ?? null,
-    });
-    setBusy(false);
+    let res: Awaited<ReturnType<typeof createForumPost>>;
+    try {
+      res = await createForumPost({
+        topicId: thread.topic.id,
+        body: text,
+        parentId: replyTo?.id ?? null,
+      });
+    } catch {
+      res = { ok: false, error: "Something hiccuped on our side." };
+    } finally {
+      setBusy(false);
+    }
     if (!res.ok) { showError({ title: "We couldn't post your reply", cause: res.error, fix: "Try again, or refresh the page." }); return; }
     setReply("");
     setReplyTo(null);
@@ -568,14 +602,14 @@ function ForumThread({
   };
 
   const react = async (type: string, postId?: string) => {
-    const res = await toggleForumReaction({ type, postId, topicId: postId ? undefined : thread.topic.id });
-    if (!res.ok) { showError({ title: "We couldn't save your reaction", cause: "Something hiccuped on our side.", fix: "Tap the reaction again in a moment." }); return; }
+    const res = await toggleForumReaction({ type, postId, topicId: postId ? undefined : thread.topic.id }).catch(() => null);
+    if (!res?.ok) { showError({ title: "We couldn't save your reaction", cause: "Something hiccuped on our side.", fix: "Tap the reaction again in a moment." }); return; }
     await onRefresh();
   };
 
   const sub = async () => {
-    const res = await toggleForumSubscription(thread.topic.id);
-    if (!res.ok) { showError({ title: "We couldn't update that", cause: "Something hiccuped on our side.", fix: "Try again, or refresh the page." }); return; }
+    const res = await toggleForumSubscription(thread.topic.id).catch(() => null);
+    if (!res?.ok) { showError({ title: "We couldn't update that", cause: "Something hiccuped on our side.", fix: "Try again, or refresh the page." }); return; }
     setSubscribed(res.subscribed);
     showSuccess(res.subscribed ? "You're subscribed" : "You're unsubscribed", {
       description: res.subscribed
@@ -843,8 +877,14 @@ function NewTopicDialog({
 
   const submit = async () => {
     setBusy(true);
-    const res = await createForumTopic({ title, body, categoryId });
-    setBusy(false);
+    let res: Awaited<ReturnType<typeof createForumTopic>>;
+    try {
+      res = await createForumTopic({ title, body, categoryId });
+    } catch {
+      res = { ok: false, error: "Something hiccuped on our side." };
+    } finally {
+      setBusy(false);
+    }
     if (!res.ok) { showError({ title: "We couldn't post that topic", cause: res.error, fix: "Try again, or refresh the page." }); return; }
     showSuccess("Topic posted", { description: "Your question is live in the community." });
     onCreated(res.topicId);

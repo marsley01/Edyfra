@@ -1,43 +1,54 @@
 "use server";
 
+import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 
-export async function getAchievements() {
+// These actions used to query Supabase tables named `achievements`, `sessions`
+// and `daily_challenge_attempts` with snake_case columns. Those tables don't
+// exist — Prisma owns `"Achievement"`, `"Session"`, `"DailyChallengeAttempt"`
+// with camelCase columns — so every read came back empty and every award
+// silently failed (RLS also forbids client inserts). Going through Prisma fixes
+// both.
+
+/** Resolve the caller's Prisma id (legacy rows can differ from the auth id). */
+async function getMyUserId(): Promise<string | null> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
+  if (!user) return null;
+  const dbUser = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { id: user.id },
+        ...(user.email ? [{ email: user.email }] : []),
+      ],
+    },
+    select: { id: true },
+  });
+  return dbUser?.id ?? null;
+}
 
-  const { data: achievements } = await supabase
-    .from("achievements")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("unlocked_at", { ascending: false });
+export async function getAchievements() {
+  const userId = await getMyUserId();
+  if (!userId) throw new Error("Unauthorized");
 
-  return (achievements || []).map(a => ({
-    ...a,
-    userId: a.user_id,
-    unlockedAt: a.unlocked_at,
-  }));
+  return prisma.achievement.findMany({
+    where: { userId },
+    orderBy: { unlockedAt: "desc" },
+  });
 }
 
 export async function checkAndAwardAchievements() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
+  const userId = await getMyUserId();
+  if (!userId) return;
 
-  const [
-    { count: studentSessions },
-    { count: tutorSessions },
-    { count: challengeAttempts },
-  ] = await Promise.all([
-    supabase.from("sessions").select("*", { count: "exact", head: true }).eq("student_id", user.id),
-    supabase.from("sessions").select("*", { count: "exact", head: true }).eq("partner_id", user.id),
-    supabase.from("daily_challenge_attempts").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+  const [studentSessions, tutorSessions, challengeCount] = await Promise.all([
+    prisma.session.count({ where: { studentId: userId, status: "COMPLETED" } }),
+    prisma.session.count({ where: { partnerId: userId, status: "COMPLETED" } }),
+    prisma.dailyChallengeAttempt.count({ where: { userId } }),
   ]);
 
-  const sessionCount = (studentSessions || 0) + (tutorSessions || 0);
-  const challengeCount = challengeAttempts || 0;
+  const sessionCount = studentSessions + tutorSessions;
 
   const possibleAchievements = [
     {
@@ -65,15 +76,17 @@ export async function checkAndAwardAchievements() {
 
   for (const ach of possibleAchievements) {
     if (ach.check()) {
-      await supabase
-        .from("achievements")
-        .upsert({
-          user_id: user.id,
+      await prisma.achievement.upsert({
+        where: { userId_type: { userId, type: ach.type } },
+        create: {
+          userId,
           type: ach.type,
           title: ach.title,
           description: ach.description,
           icon: ach.icon,
-        }, { onConflict: "user_id,type" });
+        },
+        update: {},
+      });
     }
   }
 

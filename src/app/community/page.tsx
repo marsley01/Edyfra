@@ -231,11 +231,8 @@ export default function ForumPage() {
     if (activeCategory !== "all") {
       const cat = categories.find((c) => c.id === activeCategory);
       if (cat) {
-        list = list.filter(
-          (p) =>
-            p.subject?.toLowerCase().includes(cat.name.toLowerCase()) ||
-            p.content?.toLowerCase().includes(cat.name.toLowerCase()),
-        );
+        // Must mirror buildCategories: posts without a subject are "General".
+        list = list.filter((p) => (p.subject || "General") === cat.name);
       }
     }
     if (searchQuery) {

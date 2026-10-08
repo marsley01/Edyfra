@@ -2,19 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { notFound } from "next/navigation";
-import { getNewsBySlug, NewsArticle } from "@/app/actions/news";
+import { getNewsBySlug, getLatestNews, NewsArticle } from "@/app/actions/news";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Calendar, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DOMPurify from "dompurify";
+import { toast } from "sonner";
 
 export default function NewsArticleClient({ params }: { params: Promise<{ slug: string }> }) {
   const [article, setArticle] = useState<NewsArticle | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [sanitizedContent, setSanitizedContent] = useState("");
   const [slug, setSlug] = useState<string | null>(null);
+  const [related, setRelated] = useState<NewsArticle[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -25,28 +27,53 @@ export default function NewsArticleClient({ params }: { params: Promise<{ slug: 
     }).catch((err) => {
       console.error("Failed to resolve params:", err);
     });
-    return () => { cancelled = false; };
+    return () => { cancelled = true; };
   }, [params]);
 
   useEffect(() => {
     if (!slug) return;
     const currentSlug = slug;
     async function loadArticle() {
+      // Don't call notFound() in here: throwing inside an async effect is an
+      // unhandled rejection, not a render. Leaving `article` null makes the
+      // render below call notFound() properly.
       try {
         const data = await getNewsBySlug(currentSlug);
-        if (!data) {
-          notFound();
-        }
         setArticle(data);
       } catch (e) {
         console.error("Failed to fetch article:", e);
-        notFound();
       } finally {
         setIsLoading(false);
       }
     }
     loadArticle();
   }, [slug]);
+
+  useEffect(() => {
+    if (!slug) return;
+    let cancelled = false;
+    getLatestNews(6)
+      .then((items) => {
+        if (!cancelled) setRelated(items.filter((a) => a.slug !== slug).slice(0, 3));
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [slug]);
+
+  const handleShare = async () => {
+    if (!article) return;
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: article.title, text: article.excerpt, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success("Link copied to clipboard");
+      }
+    } catch (e: any) {
+      if (e?.name !== "AbortError") toast.error("Couldn't share this article");
+    }
+  };
 
   useEffect(() => {
     if (article?.content) {
@@ -156,6 +183,7 @@ export default function NewsArticleClient({ params }: { params: Promise<{ slug: 
             <Button 
               variant="outline"
               className="h-12 px-8"
+              onClick={handleShare}
             >
               Share Article
             </Button>
@@ -168,6 +196,7 @@ export default function NewsArticleClient({ params }: { params: Promise<{ slug: 
         </div>
       </div>
 
+      {related.length > 0 && (
       <div className="container-max py-16">
         <motion.p
           initial={{ opacity: 0, y: 20 }}
@@ -184,27 +213,35 @@ export default function NewsArticleClient({ params }: { params: Promise<{ slug: 
           You might also like
         </motion.h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {[1, 2, 3].map((i) => (
+          {related.map((item, i) => {
+            const isExternal = item.slug.startsWith("rss") && item.content.startsWith("http");
+            return (
             <motion.div
-              key={i}
+              key={item.id}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.05 }}
               className="group"
             >
-              <Link href={`/news/article-${i}`} className="block space-y-4">
+              <Link
+                href={isExternal ? item.content : `/news/${item.slug}`}
+                target={isExternal ? "_blank" : undefined}
+                rel={isExternal ? "noopener noreferrer" : undefined}
+                className="block space-y-4"
+              >
                 <div className="aspect-[16/10] rounded-3xl overflow-hidden border border-border shadow-sm group-hover:shadow-xl group-hover:translate-y-[-2px] transition-all duration-500 relative">
                   <Image
-                    src="/placeholder-news.jpg"
-                    alt="Related Article"
+                    src={item.thumbnail_url || item.cover_image}
+                    alt={item.title}
                     fill
+                    unoptimized
                     className="object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity">
                     <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white text-[8px] font-black uppercase tracking-widest">
-                      3m read
+                      {item.reading_time || "3m"} read
                     </span>
                   </div>
                   <div className="absolute bottom-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -216,24 +253,26 @@ export default function NewsArticleClient({ params }: { params: Promise<{ slug: 
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border bg-secondary text-primary border-transparent">
-                      Education
+                      {item.category}
                     </span>
                     <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-1">
-                      <Calendar className="h-3 w-3" /> Jan 15, 2026
+                      <Calendar className="h-3 w-3" /> {new Date(item.published_at).toLocaleDateString("en-KE", { day: "numeric", month: "short", year: "numeric" })}
                     </span>
                   </div>
                   <h3 className="text-xl font-black tracking-tight leading-tight group-hover:text-primary transition-colors line-clamp-2">
-                    How to Master Kenyan History in 30 Days
+                    {item.title}
                   </h3>
                   <p className="text-sm text-muted-foreground font-medium leading-relaxed line-clamp-2">
-                    Proven study techniques and resources for excelling in KCSE history papers.
+                    {item.excerpt}
                   </p>
                 </div>
               </Link>
             </motion.div>
-          ))}
+            );
+          })}
         </div>
       </div>
+      )}
     </div>
   );
 }

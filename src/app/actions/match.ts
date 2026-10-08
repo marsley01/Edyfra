@@ -13,11 +13,32 @@ import {
   decrementTutorActiveSessions,
   commitHumanMatch,
   commitAISession,
-} from "./match-algorithm";
+} from "./match-engine";
 import { syncUsersToStream } from "@/lib/user-sync";
 import { notifyUser } from "@/app/actions/notifications";
 import { getUserData } from "@/app/actions/user";
 import { withRateLimit } from "@/lib/rate-limit";
+
+/**
+ * Resolve the signed-in user's Prisma id (matching on id OR email, since legacy
+ * rows can carry a different primary key than the Supabase auth id).
+ * Returns null when nobody is signed in.
+ */
+async function getAuthedPrismaUserId(): Promise<string | null> {
+  const supabase = await (await import("@/utils/supabase/server")).createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+  const dbUser = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { id: user.id },
+        ...(user.email ? [{ email: user.email }] : []),
+      ],
+    },
+    select: { id: true },
+  });
+  return dbUser?.id ?? user.id;
+}
 
 export async function createMatchRequest(data: { subject: string; topic: string }) {
   try {
@@ -106,6 +127,10 @@ export async function acceptMatchRequest(requestId: string) {
     return { success: false, error: "Match request no longer available." };
   }
 
+  if (matchRequest.studentId === user.id) {
+    return { success: false, error: "You can't accept your own request." };
+  }
+
   const userData = await prisma.user.findUnique({
     where: { id: user.id },
   });
@@ -167,6 +192,16 @@ export async function acceptMatchRequest(requestId: string) {
  */
 export async function initiateAutoMatch(requestId: string, options?: { skipAI?: boolean }) {
   try {
+    const me = await getAuthedPrismaUserId();
+    if (!me) return { success: false, error: "Please sign in to start matching." };
+    const owned = await prisma.matchRequest.findUnique({
+      where: { id: requestId },
+      select: { studentId: true },
+    });
+    if (!owned || owned.studentId !== me) {
+      return { success: false, error: "Match request not found." };
+    }
+
     const result = await executeSmartMatching(requestId, options);
     
     if (!result.success) {
@@ -221,29 +256,42 @@ export async function initiateAutoMatch(requestId: string, options?: { skipAI?: 
 }
 
 export async function forceAIFallback(requestId: string) {
-  const matchRequest = await prisma.matchRequest.findUnique({
-    where: { id: requestId },
-  });
+  try {
+    const me = await getAuthedPrismaUserId();
+    if (!me) return { success: false, message: "Please sign in." };
 
-  if (!matchRequest || matchRequest.sessionId) {
+    const matchRequest = await prisma.matchRequest.findUnique({
+      where: { id: requestId },
+    });
+
+    if (!matchRequest || matchRequest.sessionId || matchRequest.studentId !== me) {
+      return { success: false, message: "Already matched or not found" };
+    }
+
+    // Atomic: AI Session create + MatchRequest resolve in one transaction.
+    const { sessionId } = await commitAISession({
+      matchRequestId: requestId,
+      studentId: matchRequest.studentId,
+      subject: matchRequest.subject,
+      topic: matchRequest.topic,
+    });
+
+    return { success: true, sessionId };
+  } catch (error) {
+    // commitAISession throws when the request was resolved concurrently; an
+    // unhandled throw here left the matching overlay spinning.
+    console.error("Error in forceAIFallback:", error);
     return { success: false, message: "Already matched or not found" };
   }
-
-  // Atomic: AI Session create + MatchRequest resolve in one transaction.
-  const { sessionId } = await commitAISession({
-    matchRequestId: requestId,
-    studentId: matchRequest.studentId,
-    subject: matchRequest.subject,
-    topic: matchRequest.topic,
-  });
-
-  return { success: true, sessionId };
 }
 
 export async function cancelMatchRequest(requestId: string) {
   try {
-    await prisma.matchRequest.delete({
-      where: { id: requestId },
+    const me = await getAuthedPrismaUserId();
+    if (!me) return { success: false, error: "Please sign in." };
+    // Only the requesting student may cancel, and never once it's been matched.
+    await prisma.matchRequest.deleteMany({
+      where: { id: requestId, studentId: me, sessionId: null },
     });
     revalidatePath("/tutor/requests");
     return { success: true };
@@ -255,6 +303,8 @@ export async function cancelMatchRequest(requestId: string) {
 
 export async function sweepUnmatchedRequests() {
   try {
+    const me = await getAuthedPrismaUserId();
+    if (!me) return { success: false };
     const result = await sweepAndAIFallback();
     return result;
   } catch (error) {
@@ -265,8 +315,10 @@ export async function sweepUnmatchedRequests() {
 
 export async function getSession(id: string) {
   try {
-    return await prisma.session.findUnique({
-      where: { id },
+    const me = await getAuthedPrismaUserId();
+    if (!me) return null;
+    return await prisma.session.findFirst({
+      where: { id, OR: [{ studentId: me }, { partnerId: me }] },
       include: {
         student: { select: { name: true, avatar: true } },
         partner: { select: { name: true, avatar: true } }
@@ -280,6 +332,18 @@ export async function getSession(id: string) {
 
 export async function sendMessage(data: { sessionId: string; senderId: string; content: string; isMash: boolean }) {
   try {
+    // senderId comes from the client; it must be the caller, and the caller
+    // must be in the session.
+    const me = await getAuthedPrismaUserId();
+    if (!me || data.senderId !== me) {
+      return { success: false, error: "Unauthorized" };
+    }
+    const participant = await prisma.session.findFirst({
+      where: { id: data.sessionId, OR: [{ studentId: me }, { partnerId: me }] },
+      select: { id: true },
+    });
+    if (!participant) return { success: false, error: "Unauthorized" };
+
     const message = await prisma.message.create({
       data: {
         sessionId: data.sessionId,
@@ -297,8 +361,10 @@ export async function sendMessage(data: { sessionId: string; senderId: string; c
 
 export async function checkMatchStatus(requestId: string) {
   try {
-    const request = await prisma.matchRequest.findUnique({
-      where: { id: requestId },
+    const me = await getAuthedPrismaUserId();
+    if (!me) return { success: false };
+    const request = await prisma.matchRequest.findFirst({
+      where: { id: requestId, studentId: me },
       select: { sessionId: true }
     });
     return { success: true, sessionId: request?.sessionId };
@@ -310,6 +376,9 @@ export async function checkMatchStatus(requestId: string) {
 
 export async function completeSession(sessionId: string) {
   try {
+    const me = await getAuthedPrismaUserId();
+    if (!me) return { success: false, pointsAwarded: 0 };
+
     const session = await prisma.session.findUnique({
       where: { id: sessionId },
       include: { student: true, partner: true }
@@ -319,6 +388,12 @@ export async function completeSession(sessionId: string) {
       return { success: true, pointsAwarded: 0 };
     }
 
+    // Only a participant can end the session (previously anyone could complete
+    // any session and farm points for arbitrary users).
+    if (session.studentId !== me && session.partnerId !== me) {
+      return { success: false, pointsAwarded: 0 };
+    }
+
     const now = new Date();
     const durationMs = session.startedAt ? now.getTime() - session.startedAt.getTime() : 0;
     const durationMin = Math.floor(durationMs / 60000);
@@ -326,14 +401,19 @@ export async function completeSession(sessionId: string) {
     // Require at least 3 minutes to award points (prevent spam/failed rooms)
     const shouldAwardPoints = durationMin >= 3;
 
-    await prisma.session.update({
-      where: { id: sessionId },
-      data: { 
+    // Conditional update: when both participants hang up at once only the
+    // first call may proceed; otherwise points were awarded twice.
+    const claimed = await prisma.session.updateMany({
+      where: { id: sessionId, status: { not: "COMPLETED" } },
+      data: {
         status: "COMPLETED",
         endedAt: now,
         durationMin
       }
     });
+    if (claimed.count === 0) {
+      return { success: true, pointsAwarded: 0 };
+    }
 
     let pointsAwarded = 0;
 
@@ -409,6 +489,12 @@ export async function completeSession(sessionId: string) {
 
 export async function getUserSessions(userId: string) {
   try {
+    // Always scope to the caller. The id argument used to be trusted, letting
+    // anyone read another user's sessions, and it also missed legacy users
+    // whose Prisma id differs from the auth id. Kept for call-site compatibility.
+    const me = await getAuthedPrismaUserId();
+    if (!me) return [];
+    userId = me;
     const sessions = await prisma.session.findMany({
       where: {
         OR: [
@@ -418,7 +504,7 @@ export async function getUserSessions(userId: string) {
       },
       include: {
         student: { select: { name: true } },
-        partner: { select: { name: true } },
+        partner: { select: { id: true, name: true } },
         _count: { select: { messages: true } },
       },
       orderBy: { startedAt: "desc" },

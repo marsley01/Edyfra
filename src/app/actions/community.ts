@@ -42,6 +42,9 @@ async function ensureCategories() {
   });
 }
 
+// Must match the REACTIONS list in components/community/CommunityForum.tsx
+const REACTION_TYPES = new Set(["heart", "fire", "hug", "idea", "yay", "eyes"]);
+
 /* ──────────────────────────────────────────────────────────────────────────
    Helpers
    ────────────────────────────────────────────────────────────────────────── */
@@ -326,6 +329,21 @@ export async function createForumPost(input: {
   if (!topic) return { ok: false, error: "Topic not found." };
   if (topic.locked) return { ok: false, error: "This topic is locked." };
 
+  // The UI only threads one level deep under top-level posts, so a parent
+  // must be a top-level post in this same topic — otherwise the reply would
+  // be saved but never rendered anywhere.
+  let parentId: string | null = null;
+  if (input.parentId) {
+    const parent = await prisma.communityPost.findUnique({
+      where: { id: input.parentId },
+      select: { topicId: true, parentId: true },
+    });
+    if (!parent || parent.topicId !== topic.id) {
+      return { ok: false, error: "The reply you're answering no longer exists." };
+    }
+    parentId = parent.parentId ?? input.parentId;
+  }
+
   try {
     const verdict = await moderateMessage(body, auth.user.id);
     if (verdict?.should_report) {
@@ -338,7 +356,7 @@ export async function createForumPost(input: {
       topicId: topic.id,
       authorId: auth.user.id,
       body,
-      parentId: input.parentId || null,
+      parentId,
     },
   });
 
@@ -361,32 +379,49 @@ export async function createForumPost(input: {
     new Set([...subscriberIds, topic.authorId].filter((id) => id !== auth.user.id))
   );
 
+  // Notifications are best-effort: the reply is already saved, so a failed
+  // ping must not surface as "couldn't post" (which invites duplicate posts).
   if (recipientIds.length > 0) {
-    const preview = body.length > 100 ? body.slice(0, 100) + "…" : body;
-    const baseTitle = topic.title.length > 60 ? topic.title.slice(0, 60) + "…" : topic.title;
-    // Author gets "your topic" copy
-    if (topic.authorId !== auth.user.id) {
-      await notifyUser(topic.authorId, {
-        type: "FORUM_REPLY",
-        title: `💬 ${auth.user.name} replied to your topic`,
-        body: `${baseTitle} — "${preview}"`,
-        actionUrl: `/dashboard/community/t/${topic.id}`,
+    try {
+      const preview = body.length > 100 ? body.slice(0, 100) + "…" : body;
+      const baseTitle = topic.title.length > 60 ? topic.title.slice(0, 60) + "…" : topic.title;
+      // There is no per-topic route; the forum opens a thread via ?topic=.
+      // Tutors live under /tutor, everyone else under /dashboard.
+      const recipients = await prisma.user.findMany({
+        where: { id: { in: recipientIds } },
+        select: { id: true, role: true },
       });
-    }
-    // Subscribers get a generic reply
-    const subOnly = recipientIds.filter((id) => id !== topic.authorId);
-    if (subOnly.length > 0) {
-      await notifyManyUsers(subOnly, {
-        type: "FORUM_REPLY",
-        title: `💬 New reply in "${baseTitle}"`,
-        body: `${auth.user.name}: ${preview}`,
-        actionUrl: `/dashboard/community/t/${topic.id}`,
-      });
+      const roleOf = new Map(recipients.map((u) => [u.id, u.role as string]));
+      const urlFor = (id: string) =>
+        `${roleOf.get(id) === "TUTOR" ? "/tutor/community" : "/dashboard/community"}?topic=${topic.id}`;
+
+      // Author gets "your topic" copy
+      if (topic.authorId !== auth.user.id) {
+        await notifyUser(topic.authorId, {
+          type: "FORUM_REPLY",
+          title: `💬 ${auth.user.name} replied to your topic`,
+          body: `${baseTitle} — "${preview}"`,
+          actionUrl: urlFor(topic.authorId),
+        });
+      }
+      // Subscribers get a generic reply (grouped so each gets the right URL)
+      const subOnly = recipientIds.filter((id) => id !== topic.authorId);
+      const tutorSubs = subOnly.filter((id) => roleOf.get(id) === "TUTOR");
+      const otherSubs = subOnly.filter((id) => roleOf.get(id) !== "TUTOR");
+      for (const group of [tutorSubs, otherSubs]) {
+        if (group.length === 0) continue;
+        await notifyManyUsers(group, {
+          type: "FORUM_REPLY",
+          title: `💬 New reply in "${baseTitle}"`,
+          body: `${auth.user.name}: ${preview}`,
+          actionUrl: urlFor(group[0]),
+        });
+      }
+    } catch (err) {
+      console.error("[createForumPost] notification fan-out failed:", err);
     }
   }
 
-  revalidatePath(`/dashboard/community/t/${topic.id}`);
-  revalidatePath(`/tutor/community/t/${topic.id}`);
   revalidatePath(`/dashboard/community`);
   revalidatePath(`/tutor/community`);
   return { ok: true as const, postId: post.id };
@@ -400,41 +435,51 @@ export async function toggleForumReaction(input: {
   const auth = await requireEdyfraUser();
   if (!auth.ok) return auth;
   if (!input.topicId && !input.postId) return { ok: false, error: "Nothing to react to." };
+  if (!REACTION_TYPES.has(input.type)) return { ok: false, error: "Unknown reaction." };
 
-  const where: any = {
-    userId: auth.user.id,
-    type: input.type,
-    topicId: input.topicId ?? null,
-    postId: input.postId ?? null,
-  };
-  const existing = await prisma.communityReaction.findFirst({ where });
-  if (existing) {
-    await prisma.communityReaction.delete({ where: { id: existing.id } });
-    return { ok: true as const, active: false };
+  // A reaction targets exactly one thing: a post wins over a topic.
+  const postId = input.postId ?? null;
+  const topicId = postId ? null : input.topicId ?? null;
+
+  const target = postId
+    ? await prisma.communityPost.findUnique({ where: { id: postId }, select: { id: true } })
+    : await prisma.communityTopic.findUnique({ where: { id: topicId! }, select: { id: true } });
+  if (!target) return { ok: false, error: "That post no longer exists." };
+
+  const where = { userId: auth.user.id, type: input.type, topicId, postId };
+  try {
+    const existing = await prisma.communityReaction.findFirst({ where });
+    if (existing) {
+      await prisma.communityReaction.deleteMany({ where: { id: existing.id } });
+      return { ok: true as const, active: false };
+    }
+    await prisma.communityReaction.create({
+      data: { userId: auth.user.id, type: input.type, topicId, postId },
+    });
+    return { ok: true as const, active: true };
+  } catch (err) {
+    // Double-tap race: the unique constraint already holds this reaction.
+    console.error("toggleForumReaction error:", err);
+    return { ok: false, error: "Couldn't save your reaction." };
   }
-  await prisma.communityReaction.create({
-    data: {
-      userId: auth.user.id,
-      type: input.type,
-      topicId: input.topicId ?? null,
-      postId: input.postId ?? null,
-    },
-  });
-  return { ok: true as const, active: true };
 }
 
 export async function toggleForumSubscription(topicId: string) {
   const auth = await requireEdyfraUser();
   if (!auth.ok) return auth;
+  const topic = await prisma.communityTopic.findUnique({ where: { id: topicId }, select: { id: true } });
+  if (!topic) return { ok: false as const, error: "Topic not found." };
   const existing = await prisma.communitySubscription.findUnique({
     where: { userId_topicId: { userId: auth.user.id, topicId } },
   });
   if (existing) {
-    await prisma.communitySubscription.delete({ where: { id: existing.id } });
+    await prisma.communitySubscription.deleteMany({ where: { id: existing.id } });
     return { ok: true as const, subscribed: false };
   }
-  await prisma.communitySubscription.create({
-    data: { userId: auth.user.id, topicId },
+  await prisma.communitySubscription.upsert({
+    where: { userId_topicId: { userId: auth.user.id, topicId } },
+    create: { userId: auth.user.id, topicId },
+    update: {},
   });
   return { ok: true as const, subscribed: true };
 }
@@ -442,6 +487,8 @@ export async function toggleForumSubscription(topicId: string) {
 export async function markForumTopicRead(topicId: string) {
   const auth = await requireEdyfraUser();
   if (!auth.ok) return auth;
+  const topic = await prisma.communityTopic.findUnique({ where: { id: topicId }, select: { id: true } });
+  if (!topic) return { ok: false as const, error: "Topic not found." };
   await prisma.communityRead.upsert({
     where: { userId_topicId: { userId: auth.user.id, topicId } },
     create: { userId: auth.user.id, topicId },

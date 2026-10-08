@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Calendar, Plus, X, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,7 +29,10 @@ export function CoachingClient({
   students: { id: string; name: string }[];
   teachers: { id: string; name: string; subjects: string[] }[];
 }) {
+  const router = useRouter();
   const [rows, setRows] = useState(initialAssignments);
+  // Re-sync when the server sends fresh data; new assignments never showed up.
+  useEffect(() => setRows(initialAssignments), [initialAssignments]);
   const [showCreate, setShowCreate] = useState(false);
   const [pending, startTransition] = useTransition();
 
@@ -39,12 +43,12 @@ export function CoachingClient({
       if (!res.ok) {
         showError({
           title: "Couldn't cancel that assignment",
-          cause: "We didn't get a confirmation from the server.",
+          cause: res.error ?? "We didn't get a confirmation from the server.",
           fix: "Try again, or refresh the page.",
         });
         return;
       }
-      showSuccess("Assignment cancelled", { description: "The student and teacher have been notified." });
+      showSuccess("Assignment cancelled", { description: "The assignment is no longer active." });
       setRows((cur) => cur.map((r) => (r.id === id ? { ...r, status: "CANCELLED" as CoachingStatus } : r)));
     });
   }
@@ -154,6 +158,10 @@ export function CoachingClient({
       {showCreate && (
         <CreateDialog
           onClose={() => setShowCreate(false)}
+          onCreated={() => {
+            setShowCreate(false);
+            router.refresh();
+          }}
           students={students}
           teachers={teachers}
           isHoliday={holidayActive}
@@ -165,11 +173,13 @@ export function CoachingClient({
 
 function CreateDialog({
   onClose,
+  onCreated,
   students,
   teachers,
   isHoliday,
 }: {
   onClose: () => void;
+  onCreated: () => void;
   students: { id: string; name: string }[];
   teachers: { id: string; name: string; subjects: string[] }[];
   isHoliday: boolean;
@@ -192,27 +202,44 @@ function CreateDialog({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setPending(true);
-    const res = await createCoachingAssignment({
-      studentUserId: studentId,
-      teacherUserId: teacherId,
-      subject,
-      schedule: schedule || null,
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
-      isHoliday,
-    });
-    setPending(false);
-    if (!res.ok) {
+    if (!studentId || !teacherId || !subject) {
       showError({
-        title: "We couldn't create that assignment",
-        cause: res.error,
-        fix: "Check the details and try again.",
+        title: "Pick a student, teacher and subject",
+        cause: "All three are required to create an assignment.",
+        fix: "Add students and invite teachers first if the lists are empty.",
       });
       return;
     }
-    showSuccess("Assignment created", { description: "Holiday coaching is locked in for that student and teacher." });
-    onClose();
+    setPending(true);
+    try {
+      const res = await createCoachingAssignment({
+        studentUserId: studentId,
+        teacherUserId: teacherId,
+        subject,
+        schedule: schedule || null,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        isHoliday,
+      });
+      if (!res.ok) {
+        showError({
+          title: "We couldn't create that assignment",
+          cause: res.error,
+          fix: "Check the details and try again.",
+        });
+        return;
+      }
+      showSuccess("Assignment created", { description: "Holiday coaching is locked in for that student and teacher." });
+      onCreated();
+    } catch {
+      showError({
+        title: "We couldn't create that assignment",
+        cause: "The server didn't respond.",
+        fix: "Try again in a moment.",
+      });
+    } finally {
+      setPending(false);
+    }
   }
 
   return (

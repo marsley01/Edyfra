@@ -257,7 +257,7 @@ export default function TutorResourcesPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Price (KES) — 0 for Free</Label>
-                  <Input type="number" min="0" value={price} onChange={e => setPrice(Number(e.target.value))} placeholder="0" className="h-12 rounded-xl" />
+                  <Input type="number" min="0" step="1" value={price} onChange={e => setPrice(Math.max(0, Math.round(Number(e.target.value) || 0)))} placeholder="0" className="h-12 rounded-xl" />
                   <p className="text-xs text-muted-foreground">You earn 70% of every paid sale.</p>
                 </div>
               </div>

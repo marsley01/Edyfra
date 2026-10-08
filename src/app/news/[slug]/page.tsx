@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { createAdminClient } from "@/utils/supabase/admin";
+import { cache } from "react";
+import prisma from "@/lib/prisma";
 import { JsonLd } from "@/components/json-ld";
 import { getAppUrl } from "@/lib/app-url";
 import NewsArticleClient from "./NewsArticleClient";
@@ -10,17 +11,37 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
+// Articles live in the Prisma `NewsArticle` table (same source the client
+// reads via getNewsBySlug). The legacy Supabase `news_articles` table is not
+// what the app writes to, so querying it made every article look missing.
+// RSS-backed slugs (`rss-N`) have no DB row until first view.
+const getArticle = cache(async (slug: string) => {
+  try {
+    return await prisma.newsArticle.findUnique({
+      where: { slug },
+      select: {
+        slug: true,
+        title: true,
+        summary: true,
+        coverImage: true,
+        publishedAt: true,
+        createdAt: true,
+        category: true,
+      },
+    });
+  } catch (err) {
+    console.error("[news/slug] article lookup failed:", err);
+    return null;
+  }
+});
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
 
-  const supabase = createAdminClient();
-  const { data: article } = await supabase
-    .from("news_articles")
-    .select("*")
-    .eq("slug", slug)
-    .maybeSingle();
+  const article = await getArticle(slug);
 
   if (!article) {
+    if (slug.startsWith("rss-")) return { title: "News" };
     return { title: "Article Not Found", robots: { index: false } };
   }
 
@@ -33,7 +54,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: "article",
       url: `${siteUrl}/news/${article.slug}`,
       images: article.coverImage ? [{ url: article.coverImage }] : undefined,
-      publishedTime: article.publishedAt?.toISOString() || undefined,
+      publishedTime: (article.publishedAt ?? article.createdAt).toISOString(),
       tags: [article.category],
     },
     twitter: {
@@ -46,12 +67,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 async function getArticleJsonLd(slug: string) {
-  const supabase = createAdminClient();
-  const { data: article } = await supabase
-    .from("news_articles")
-    .select("*")
-    .eq("slug", slug)
-    .maybeSingle();
+  const article = await getArticle(slug);
 
   if (!article) return null;
 
@@ -61,7 +77,7 @@ async function getArticleJsonLd(slug: string) {
     headline: article.title,
     description: article.summary || undefined,
     image: article.coverImage || undefined,
-    datePublished: article.publishedAt?.toISOString() || undefined,
+    datePublished: (article.publishedAt ?? article.createdAt).toISOString(),
     author: {
       "@type": "Person",
       name: "Edyfra",

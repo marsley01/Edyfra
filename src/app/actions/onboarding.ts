@@ -94,7 +94,9 @@ export async function completeOnboarding(data: OnboardingData) {
     curriculum: userEducationLevel === EduLevel.HIGH_SCHOOL ? (curriculum || "8-4-4") : "HEC",
     formYear: parseInt(formYear) || null,
     county: county || "Nairobi",
-    isUnder18: userEducationLevel === EduLevel.HIGH_SCHOOL,
+    // For tutors educationLevel is the level they *teach*, not their own age
+    // bracket, so it must not flag them as a minor.
+    isUnder18: !isTutor && userEducationLevel === EduLevel.HIGH_SCHOOL,
     bio: bio || "",
     avatar: user.user_metadata?.avatar || null,
     gender: metaGender === "MALE" ? Gender.MALE : metaGender === "FEMALE" ? Gender.FEMALE : undefined,
@@ -187,7 +189,10 @@ export async function completeOnboarding(data: OnboardingData) {
       create: {
         userId: finalUserId,
         subjects: subjects || [],
-        levelsTaught: formYear ? [formYear] : [],
+        // Matching filters tutors with `levelsTaught: { has: "HIGH_SCHOOL" | "UNIVERSITY" }`.
+        // This used to store the hard-coded formYear ("1"), so no onboarded
+        // tutor could ever be matched to a student.
+        levelsTaught: [userEducationLevel],
         verificationPath: verificationPath === "GRADES" ? VerifPath.GRADES : VerifPath.POINTS,
         gradesProof: kycSchoolIdUrl || null,
         hourlyRate: parseInt(hourlyRate || "0") || TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH,
@@ -197,6 +202,7 @@ export async function completeOnboarding(data: OnboardingData) {
       },
       update: {
         subjects: subjects || [],
+        levelsTaught: [userEducationLevel],
         gradesProof: kycSchoolIdUrl || null,
         hourlyRate: parseInt(hourlyRate || "0") || TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH,
         bio: bio || "",

@@ -61,6 +61,7 @@ export default function AdminChallengesPage() {
     try {
       const res = await fetch("/api/admin/challenges", { signal });
       const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Failed to fetch challenges");
       setChallenges(data.challenges || []);
     } catch (error) {
       if ((error as any)?.name === "AbortError") return;

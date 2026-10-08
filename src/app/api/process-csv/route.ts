@@ -1,40 +1,47 @@
 import { NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
 import { createAdminClient } from "@/utils/supabase/admin";
+import { notifyManyUsers } from "@/app/actions/notifications";
 
+// processing_jobs is @@map'ped but its columns are NOT (they are camelCase:
+// "filePath", "createdAt", ...), and InstitutionMember is the unmapped
+// "InstitutionMember" table — so the previous supabase-js queries using
+// snake_case names never found or updated a job. Use Prisma for DB access and
+// the service-role client only for Storage.
 export async function GET(request: Request) {
-  // Simple auth for cron
+  // Cron auth. Fail closed when CRON_SECRET is unset — otherwise the literal
+  // header "Bearer undefined" was accepted.
+  const cronSecret = process.env.CRON_SECRET;
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  let jobId: string | null = null;
   try {
-    const supabase = createAdminClient();
-
     // 1. Fetch one pending job
-    const { data: job } = await supabase
-      .from("processing_jobs")
-      .select("*")
-      .eq("status", "pending")
-      .order("created_at", { ascending: true })
-      .limit(1)
-      .maybeSingle();
+    const job = await prisma.processingJob.findFirst({
+      where: { status: "pending" },
+      orderBy: { createdAt: "asc" },
+    });
 
     if (!job) {
       return NextResponse.json({ message: "No pending jobs" });
     }
+    jobId = job.id;
 
     // 2. Mark as processing
-    await supabase
-      .from("processing_jobs")
-      .update({ status: "processing", started_at: new Date().toISOString() })
-      .eq("id", job.id);
+    await prisma.processingJob.update({
+      where: { id: job.id },
+      data: { status: "processing", startedAt: new Date() },
+    });
 
     // 3. Download the file from Supabase Storage
+    const supabase = createAdminClient();
     const { data: fileData, error: downloadError } = await supabase
       .storage
       .from("institution-uploads")
-      .download(job.file_path);
+      .download(job.filePath);
 
     if (downloadError || !fileData) {
       await updateJobFailed(job.id, "Failed to download file from storage.");
@@ -47,40 +54,42 @@ export async function GET(request: Request) {
     const studentCount = rows.length > 1 ? rows.length - 1 : 0;
 
     // 5. Mark as completed
-    await supabase
-      .from("processing_jobs")
-      .update({ status: "completed", completed_at: new Date().toISOString() })
-      .eq("id", job.id);
+    await prisma.processingJob.update({
+      where: { id: job.id },
+      data: { status: "completed", completedAt: new Date() },
+    });
 
     // 6. Create in-app notification for institution admins
-    const { data: admins } = await supabase
-      .from("institution_members")
-      .select("user_id")
-      .eq("institution_id", job.institution_id)
-      .eq("role", "INSTITUTION_ADMIN");
+    const admins = await prisma.institutionMember.findMany({
+      where: { institutionId: job.institutionId, role: "INSTITUTION_ADMIN" },
+      select: { userId: true },
+    });
 
-    if (admins) {
-      for (const admin of admins) {
-        await supabase.from("notifications").insert({
-          user_id: admin.user_id,
+    if (admins.length > 0) {
+      await notifyManyUsers(
+        admins.map((a) => a.userId),
+        {
           type: "SYSTEM",
           title: "CSV Processing Complete",
           body: `Your results have been processed. ${studentCount} students analyzed.`,
-        });
-      }
+        }
+      );
     }
 
     return NextResponse.json({ message: "Job processed successfully", jobId: job.id });
   } catch (error: any) {
     console.error("Error processing CSV:", error);
+    // Don't leave the job stuck in "processing" forever.
+    if (jobId) {
+      await updateJobFailed(jobId, "Unexpected error while processing.").catch(() => {});
+    }
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 
 async function updateJobFailed(jobId: string, errorMsg: string) {
-  const supabase = createAdminClient();
-  await supabase
-    .from("processing_jobs")
-    .update({ status: "failed", error: errorMsg, completed_at: new Date().toISOString() })
-    .eq("id", jobId);
+  await prisma.processingJob.update({
+    where: { id: jobId },
+    data: { status: "failed", error: errorMsg, completedAt: new Date() },
+  });
 }

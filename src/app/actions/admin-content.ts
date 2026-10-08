@@ -4,26 +4,20 @@ import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { revalidatePath } from "next/cache";
-import { isFounderEmail } from "@/utils/admin-guard";
+import { cache } from "@/lib/cache";
+import { requireAdminCaller } from "@/app/actions/_admin-guard";
 import { STORAGE_BUCKETS, createSignedUrl, isHttpUrl, validateUploadFile, sanitizeFileName } from "@/lib/supabase-storage";
 
 async function guard() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
-  if (isFounderEmail(user.email)) return;
-  const dbUser = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { role: true },
-  });
-  if (dbUser?.role !== "ADMIN") throw new Error("Unauthorized");
+  await requireAdminCaller();
 }
 
 // --- REPORTS / MODERATION ---
 export async function getReports() {
   await guard();
   try {
-    return await prisma.report.findMany({ orderBy: { createdAt: "desc" }, take: 100 });
+    // Only the open queue — dismissed/actioned reports used to reappear on reload.
+    return await prisma.report.findMany({ where: { status: "pending" }, orderBy: { createdAt: "desc" }, take: 100 });
   } catch (error) {
     console.error("Failed to get reports:", error);
     return [];
@@ -46,9 +40,10 @@ export async function actionReport(reportId: string, action: "warn" | "suspend" 
   await guard();
   const report = await prisma.report.findUnique({ where: { id: reportId } });
   if (!report) throw new Error("Report not found");
-  await prisma.report.update({ where: { id: reportId }, data: { status: "actioned" } });
+  if (action === "warn") await prisma.user.update({ where: { id: report.reportedUserId }, data: { strikes: { increment: 1 } } });
   if (action === "suspend") await prisma.user.update({ where: { id: report.reportedUserId }, data: { suspended: true } });
   if (action === "ban") await prisma.user.update({ where: { id: report.reportedUserId }, data: { banned: true } });
+  await prisma.report.update({ where: { id: reportId }, data: { status: "actioned" } });
   revalidatePath("/admin/moderation");
 }
 
@@ -183,15 +178,22 @@ export async function createNewsArticle(data: { title: string; slug: string; cat
       summary: data.summary,
       publishedAt: data.publish ? new Date() : null,
       isDraft: !data.publish,
+      // The public feed (getLatestNews) filters on status === "published";
+      // without this, "published" admin articles never appeared anywhere.
+      status: data.publish ? "published" : "draft",
     },
   });
+  cache.deleteByPrefix("news:");
   revalidatePath("/admin/news");
+  revalidatePath("/news");
 }
 
 export async function deleteNewsArticle(id: string) {
   await guard();
   await prisma.newsArticle.delete({ where: { id } });
+  cache.deleteByPrefix("news:");
   revalidatePath("/admin/news");
+  revalidatePath("/news");
 }
 
 // --- TESTIMONIALS ---
@@ -286,6 +288,58 @@ export async function uploadCurriculumContent(formData: FormData) {
     price,
     filePath: fileName,
   });
+}
+
+/**
+ * Issues a signed upload URL so the browser can upload curriculum files
+ * straight to Supabase Storage. Sending the file through a server action
+ * (uploadCurriculumContent) fails for anything over Next's 1 MB action body
+ * limit / Vercel's 4.5 MB request cap, so large PDFs never uploaded.
+ */
+export async function createCurriculumUploadUrl(file: { name: string; size: number; type: string }) {
+  try {
+    const caller = await requireAdminCaller();
+
+    const validation = validateUploadFile(file as File, {
+      maxSizeBytes: 50 * 1024 * 1024,
+      allowedExtensions: ["pdf", "doc", "docx", "ppt", "pptx", "png", "jpg", "jpeg", "webp"],
+      allowedMimeTypes: [
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.ms-powerpoint",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+      ],
+    });
+    if (!validation.valid) {
+      return { success: false as const, error: validation.error || "Invalid file" };
+    }
+
+    const adminClient = createAdminClient();
+    const path = `curriculum/${caller.id}/${Date.now()}_${sanitizeFileName(file.name)}`;
+
+    let { data, error } = await adminClient.storage
+      .from(STORAGE_BUCKETS.resources)
+      .createSignedUploadUrl(path);
+
+    if (error?.message?.includes("bucket") || error?.message?.includes("not found")) {
+      await adminClient.storage.createBucket(STORAGE_BUCKETS.resources, { public: true });
+      const retry = await adminClient.storage.from(STORAGE_BUCKETS.resources).createSignedUploadUrl(path);
+      data = retry.data;
+      error = retry.error;
+    }
+
+    if (error || !data) {
+      return { success: false as const, error: error?.message || "Could not prepare the upload" };
+    }
+
+    return { success: true as const, bucket: STORAGE_BUCKETS.resources, path: data.path, token: data.token };
+  } catch (err) {
+    return { success: false as const, error: err instanceof Error ? err.message : "Could not prepare the upload" };
+  }
 }
 
 export async function createCurriculumResource(data: {

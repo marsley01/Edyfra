@@ -45,8 +45,9 @@ export default function TutorSchedulePage() {
       setAvailability(availData);
     } catch (err) {
       console.error("Failed to load schedule:", err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const today = new Date();
@@ -118,10 +119,10 @@ export default function TutorSchedulePage() {
 
       <div className="grid gap-4">
         {weekDays.map((day) => {
-          const dayBookings = bookings.filter((b) => {
-            const bDate = new Date(b.date);
-            return bDate.toDateString() === day.toDateString();
-          });
+          // b.date is a plain YYYY-MM-DD; compare against the local calendar day
+          // (new Date("YYYY-MM-DD") is UTC midnight and can land on the wrong day)
+          const dayKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
+          const dayBookings = bookings.filter((b) => String(b.date || "").slice(0, 10) === dayKey);
 
           const dayAvail = availability.filter((a) => a.day_of_week === day.getDay());
 

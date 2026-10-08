@@ -21,7 +21,7 @@ export async function POST(request: Request) {
 
     const { record, old_record } = payload;
 
-    if (record.status !== "COMPLETED" || old_record.status === "COMPLETED") {
+    if (!record || record.status !== "COMPLETED" || old_record?.status === "COMPLETED") {
       return NextResponse.json({ success: true, message: "Not a completion event" });
     }
 
@@ -64,7 +64,8 @@ export async function POST(request: Request) {
       type: "SESSION_SUMMARY",
       title: "Session Summary Ready",
       body: summary,
-      actionUrl: `/dashboard/sessions/${sessionId}`,
+      // There is no /dashboard/sessions/[id] page; link to the sessions list
+      actionUrl: `/dashboard/sessions?session=${sessionId}`,
     });
 
     return NextResponse.json({ success: true });

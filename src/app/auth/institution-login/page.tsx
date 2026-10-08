@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { Eye, EyeOff, Loader2, AlertCircle, Building2, ArrowLeft, ChevronRight } from 'lucide-react'
@@ -38,7 +37,6 @@ export default function InstitutionLoginPage() {
   const [showPw, setShowPw] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
   const supabase = createClient()
 
   const isEmail = input.includes('@')
@@ -79,42 +77,48 @@ export default function InstitutionLoginPage() {
     setLoading(true)
     setError(null)
 
-    let email = input
+    try {
+      let email = input.trim()
 
-    if (!isEmail) {
-      try {
-        const res = await fetch(`/api/auth/resolve-username?q=${encodeURIComponent(input)}`)
-        if (!res.ok) throw new Error()
-        const data = await res.json()
-        if (!data.found) {
-          setError(`No account found with the username "${input}" at this institution.`)
-          setLoading(false)
+      if (!isEmail) {
+        try {
+          const res = await fetch(`/api/auth/resolve-username?q=${encodeURIComponent(email)}`)
+          if (!res.ok) throw new Error()
+          const data = await res.json()
+          if (!data.found) {
+            setError(`No account found with the username "${input}" at this institution.`)
+            return
+          }
+          email = data.email
+        } catch {
+          setError('Could not verify your username. Try your email instead.')
           return
         }
-        email = data.email
-      } catch {
-        setError('Could not verify your username. Try your email instead.')
-        setLoading(false)
+      }
+
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+
+      if (signInError) {
+        setError(friendlyError(signInError.message))
         return
       }
-    }
 
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+      if (!data.session) {
+        setError('We could not start your session. Please try again.')
+        return
+      }
 
-    if (signInError) {
-      setError(friendlyError(signInError.message))
-      setLoading(false)
-      return
-    }
-
-    if (data.session) {
       try {
         await fetch('/api/auth/bump-token', { method: 'POST' })
       } catch {
         // Bump is non-critical
       }
-      router.push('/institution/dashboard')
-      router.refresh()
+      // Full navigation so the server sees the new session cookies.
+      window.location.href = '/institution/dashboard'
+    } catch {
+      setError('Could not reach the server. Check your internet connection.')
+    } finally {
+      setLoading(false)
     }
   }
 

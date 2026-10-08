@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/utils/supabase/admin";
+import prisma from "@/lib/prisma";
 
 export async function GET() {
   const startTime = Date.now();
   const checks: Record<string, string> = {};
 
   try {
-    const supabase = createAdminClient();
-    await supabase.from("users").select("id").limit(1);
+    // supabase-js never throws on query errors (and "users" is not a real
+    // table), so the old check reported "ok" even with the DB down.
+    await prisma.$queryRaw`SELECT 1`;
     checks.database = "ok";
   } catch {
     checks.database = "error";

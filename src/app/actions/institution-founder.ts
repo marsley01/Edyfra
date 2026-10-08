@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { checkAdminStatus } from "./admin";
-import { logActivity as _logActivity } from "./institution-admin";
+import { getAdminCaller } from "./_admin-guard";
 import { createAdminClient } from "@/utils/supabase/admin";
 
 /**
@@ -36,11 +36,13 @@ const DecisionSchema = z.object({
 });
 
 export async function decideInstitutionApplication(input: z.infer<typeof DecisionSchema>) {
-  const isAdmin = await checkAdminStatus();
-  if (!isAdmin) return { ok: false as const, error: "Forbidden" };
+  const caller = await getAdminCaller();
+  if (!caller) return { ok: false as const, error: "Forbidden" };
   const parsed = DecisionSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: parsed.error.issues[0]?.message ?? "Invalid" };
-  const { institutionId, decision, approverUserId } = parsed.data;
+  const { institutionId, decision } = parsed.data;
+  // Record the real (session-verified) approver, not a client-supplied id.
+  const approverUserId = caller.id;
 
   const inst = await prisma.institution.findUnique({ where: { id: institutionId } });
   if (!inst) return { ok: false as const, error: "Institution not found" };
@@ -51,6 +53,9 @@ export async function decideInstitutionApplication(input: z.infer<typeof Decisio
         where: { id: institutionId },
         data: {
           isActive: true,
+          status: "ACTIVE",
+          approvedAt: new Date(),
+          approvedByUserId: approverUserId,
         },
       });
       // Activate pending members
@@ -92,7 +97,7 @@ export async function decideInstitutionApplication(input: z.infer<typeof Decisio
   } else {
     await prisma.institution.update({
       where: { id: institutionId },
-      data: { isActive: false },
+      data: { isActive: false, status: "REJECTED" },
     });
     await prisma.institutionMember.updateMany({
       where: { institutionId, status: "PENDING" },

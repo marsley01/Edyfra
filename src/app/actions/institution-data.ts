@@ -4,6 +4,8 @@ import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 import { getUserData } from "./user";
 import { getCached, TTL } from "@/lib/cache";
+import { assertInstitutionAdminAccess } from "./_institution-access";
+import { getAdminCaller } from "./_admin-guard";
 
 export async function getUserInstitution() {
   try {
@@ -31,6 +33,7 @@ export async function getUserInstitution() {
 }
 
 export async function getInstitutionStudents(institutionId: string, search?: string) {
+  await assertInstitutionAdminAccess(institutionId);
   // Use caching for generic un-searched queries
   if (!search) {
     return getCached(`institution:students:${institutionId}`, TTL.INSTITUTION_STUDENTS, async () => {
@@ -134,10 +137,11 @@ async function fetchInstitutionStudents(institutionId: string, search?: string) 
 }
 
 export async function getInstitutionTutors(institutionId: string, search?: string) {
+  await assertInstitutionAdminAccess(institutionId);
   try {
     const where: Record<string, unknown> = {
       institutionId,
-      role: "INSTRUCTOR",
+      role: { in: ["INSTRUCTOR", "INSTITUTION_TEACHER"] },
       status: "ACTIVE",
     };
 
@@ -202,6 +206,7 @@ export async function getInstitutionTutors(institutionId: string, search?: strin
 }
 
 export async function getInstitutionSessions(institutionId: string, search?: string) {
+  await assertInstitutionAdminAccess(institutionId);
   try {
     const memberEmails = await prisma.institutionMember.findMany({
       where: { institutionId },
@@ -256,6 +261,7 @@ export async function getInstitutionSessions(institutionId: string, search?: str
 }
 
 export async function getInstitutionResources(institutionId: string, search?: string) {
+  await assertInstitutionAdminAccess(institutionId);
   try {
     const members = await prisma.institutionMember.findMany({
       where: { institutionId },
@@ -297,6 +303,7 @@ export async function getInstitutionResources(institutionId: string, search?: st
 }
 
 export async function getInstitutionAnalytics(institutionId: string) {
+  await assertInstitutionAdminAccess(institutionId);
   try {
     const members = await prisma.institutionMember.findMany({
       where: { institutionId },
@@ -412,6 +419,7 @@ export async function getInstitutionAnalytics(institutionId: string) {
 }
 
 export async function getInstitutionAnnouncements(institutionId: string) {
+  await assertInstitutionAdminAccess(institutionId);
   try {
     const members = await prisma.institutionMember.findMany({
       where: { institutionId },
@@ -456,6 +464,9 @@ export async function createInstitutionAnnouncement(
   title: string,
   body: string,
 ) {
+  // Announcements are platform-wide (no institution scope), so only platform
+  // admins may create them. This was previously callable by anyone.
+  if (!(await getAdminCaller())) return null;
   try {
     const announcement = await prisma.announcement.create({
       data: {
@@ -473,6 +484,7 @@ export async function createInstitutionAnnouncement(
 }
 
 export async function getInstitutionBilling(institutionId: string) {
+  await assertInstitutionAdminAccess(institutionId);
   try {
     const institution = await prisma.institution.findUnique({
       where: { id: institutionId },
@@ -518,6 +530,7 @@ export async function getInstitutionBilling(institutionId: string) {
 }
 
 export async function getInstitutionReports(institutionId: string) {
+  await assertInstitutionAdminAccess(institutionId);
   try {
     const analytics = await getInstitutionAnalytics(institutionId);
     if (!analytics) return [];

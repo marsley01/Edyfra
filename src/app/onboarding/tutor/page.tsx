@@ -84,6 +84,9 @@ export default function TutorOnboardingPage() {
       setFormData(prev => ({ ...prev, [field]: result.path || result.url! }));
     } else {
       console.error("Upload failed:", result.error);
+      // Without this the button just flipped back to "Select File" and the
+      // Continue button stayed disabled with no explanation.
+      showError({ title: "Upload failed", cause: result.error || "We couldn't upload that file.", fix: "Check it's an image under the size limit and try again." });
     }
   };
 
@@ -113,7 +116,7 @@ export default function TutorOnboardingPage() {
         // Redirect to pending status page instead of /tutor
         window.location.href = "/onboarding/tutor-pending";
       } else {
-        showError({ title: "We couldn't submit that", cause: "Something went wrong on our side.", fix: "Try again in a moment." });
+        showError({ title: "We couldn't submit that", cause: result.error || "Something went wrong on our side.", fix: "Try again in a moment." });
         setLoading(false);
       }
     } catch (e: unknown) {

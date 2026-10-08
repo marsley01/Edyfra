@@ -31,19 +31,26 @@ export default function MessagesPage() {
 
   useEffect(() => {
     const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      setCurrentUser({
-        id: user.id,
-        name: user.user_metadata?.name || user.email?.split("@")[0] || "User",
-        avatar: user.user_metadata?.avatar || undefined,
-      });
+      // try/finally: a missing session or a failed partner lookup used to leave
+      // the sidebar spinner running forever.
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        setCurrentUser({
+          id: user.id,
+          name: user.user_metadata?.name || user.email?.split("@")[0] || "User",
+          avatar: user.user_metadata?.avatar || undefined,
+        });
 
-      // Get recent conversations - users this person has messaged
-      const { getRecentDMPartners } = await import("@/app/actions/stream");
-      const partners = await getRecentDMPartners(user.id);
-      setDmPartners(partners);
-      setLoading(false);
+        // Get recent conversations - users this person has messaged
+        const { getRecentDMPartners } = await import("@/app/actions/stream");
+        const partners = await getRecentDMPartners(user.id);
+        setDmPartners(partners);
+      } catch (err) {
+        console.error("Failed to load conversations:", err);
+      } finally {
+        setLoading(false);
+      }
     };
     init();
   }, [supabase]);

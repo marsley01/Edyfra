@@ -1,9 +1,12 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import { getAdminCaller } from "@/app/actions/_admin-guard";
 
 export async function getResourceStats() {
   try {
+    if (!(await getAdminCaller())) return null;
+
     // 1. Pending Jobs
     const pendingJobsCount = await prisma.processingJob.count({
       where: { status: "pending" },

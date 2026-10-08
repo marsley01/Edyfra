@@ -27,9 +27,10 @@ const CONTACT_INBOX = process.env.CONTACT_INBOX_EMAIL || "edyfraplatform@gmail.c
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const name = String(body.name || "").trim();
+    const name = String(body.name || "").trim().slice(0, 120);
     const email = String(body.email || "").trim().toLowerCase();
-    const subject = String(body.subject || "").trim();
+    // Collapse newlines so a crafted subject can't break the email header.
+    const subject = String(body.subject || "").replace(/[\r\n]+/g, " ").trim().slice(0, 200);
     const message = String(body.message || "").trim();
     // Honey-pot field — bots fill this; real humans never see it.
     const honeypot = String(body.website || "").trim();
@@ -68,7 +69,8 @@ export async function POST(request: NextRequest) {
     const cleanBody = message.replace(/[<>]/g, (c) => (c === "<" ? "&lt;" : "&gt;"));
 
     try {
-      await getResend().emails.send({
+      // Resend reports API failures via `error` rather than throwing.
+      const { error: sendError } = await getResend().emails.send({
         from: "Edyfra Contact <hello@edyfra.online>",
         to: CONTACT_INBOX,
         replyTo: email,
@@ -85,6 +87,7 @@ export async function POST(request: NextRequest) {
           </div>
         `,
       });
+      if (sendError) throw sendError;
     } catch (err) {
       console.error("[Contact] Resend error:", err);
       return NextResponse.json(

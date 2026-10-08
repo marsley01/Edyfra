@@ -33,12 +33,20 @@ export default function TutorRequestsPage() {
   useEffect(() => {
     let channel: any;
     let broadcastChannel: any;
+    let cancelled = false;
 
     const setup = async () => {
-      const profile = await getTutorProfile();
-      const subjects = (profile as any)?.subjects || [];
+      let subjects: string[] = [];
+      try {
+        const profile = await getTutorProfile();
+        subjects = (profile as any)?.subjects || [];
+      } catch (err) {
+        console.error("Failed to load tutor profile:", err);
+      }
+      if (cancelled) return;
       setTutorSubjects(subjects);
       await fetchRequests(subjects);
+      if (cancelled) return;
 
       channel = supabase
         .channel("new-requests")
@@ -100,7 +108,8 @@ export default function TutorRequestsPage() {
     setup();
 
     return () => {
-      supabase.removeChannel(channel);
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
       if (broadcastChannel) supabase.removeChannel(broadcastChannel);
     };
   }, [supabase]);
@@ -127,9 +136,17 @@ export default function TutorRequestsPage() {
     setAcceptingId(id);
     try {
       const result = await acceptMatchRequest(id);
-      if (result.success) {
+      if (result?.success && result.sessionId) {
         showSuccess("Match accepted!", { description: "Taking you into the room." });
         router.push(`/study-room/${result.sessionId}`);
+      } else {
+        showError({
+          title: "We couldn't accept that match",
+          cause: result?.error || "Something blocked the request on our side.",
+          fix: "Try again, or pick a different request.",
+        });
+        // The request was most likely taken by another tutor — refresh the list
+        fetchRequests(tutorSubjects);
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to accept request.";
@@ -171,7 +188,7 @@ export default function TutorRequestsPage() {
               <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between gap-8">
                 <div className="flex items-center gap-6">
                   <div className="w-16 h-16 rounded-2xl bg-teal-600/10 text-teal-600 flex items-center justify-center font-black text-xl border border-teal-600/20">
-                    {req.subject[0]}
+                    {req.subject?.[0]}
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">

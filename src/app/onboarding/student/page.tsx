@@ -213,7 +213,7 @@ export default function StudentOnboardingPage() {
 
                       <div className="space-y-4">
                         <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Academic Year</label>
-                        <Select onValueChange={(v: string | null) => v && setFormData({...formData, formYear: v})}>
+                        <Select value={formData.formYear || null} onValueChange={(v: string | null) => v && setFormData({...formData, formYear: v})}>
                           <SelectTrigger className="h-16 rounded-2xl border-border bg-background font-bold px-8 text-lg">
                             <SelectValue placeholder={formData.educationLevel === "UNIVERSITY" ? "Select Year" : "Select Form/Grade"} />
                           </SelectTrigger>
@@ -254,7 +254,7 @@ export default function StudentOnboardingPage() {
 
                    <div className="space-y-4">
                       <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Current County</label>
-                      <Select onValueChange={(v: string | null) => v && setFormData({...formData, county: v})}>
+                      <Select value={formData.county || null} onValueChange={(v: string | null) => v && setFormData({...formData, county: v})}>
                         <SelectTrigger className="h-20 rounded-[2rem] border-border bg-background font-black px-8 text-2xl">
                           <SelectValue placeholder="Select Zone" />
                         </SelectTrigger>

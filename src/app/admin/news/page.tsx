@@ -24,7 +24,6 @@ export default function NewsPage() {
   const [body, setBody] = useState("");
   const [coverImage, setCoverImage] = useState("");
   const [summary, setSummary] = useState("");
-  const [publish, setPublish] = useState(false);
 
   const load = async () => {
     try {
@@ -47,20 +46,35 @@ export default function NewsPage() {
     init();
   }, [router]);
 
-  const handleCreate = async () => {
-    if (!title || !slug || !body) return;
-    const { createNewsArticle } = await import("@/app/actions/admin-content");
-    await createNewsArticle({ title, slug, category, body, coverImage, summary, publish });
+  const handleCreate = async (publish: boolean) => {
+    if (!title || !slug || !body) {
+      toast.error("Title, slug and body are required");
+      return;
+    }
+    try {
+      const { createNewsArticle } = await import("@/app/actions/admin-content");
+      await createNewsArticle({ title, slug, category, body, coverImage, summary, publish });
+    } catch (err) {
+      console.error("Failed to create article:", err);
+      toast.error("Couldn't save the article. The slug may already be in use.");
+      return;
+    }
     showSuccess(publish ? "Article published" : "Draft saved", {
-      description: publish ? "It's live on the news page." : "You can publish it from the list.",
+      description: publish ? "It's live on the news page." : "It stays hidden from the news page until published.",
     });
     setTitle(""); setSlug(""); setBody(""); setCoverImage(""); setSummary(""); setShowForm(false);
     await load();
   };
 
   const handleDelete = async (id: string) => {
-    const { deleteNewsArticle } = await import("@/app/actions/admin-content");
-    await deleteNewsArticle(id);
+    try {
+      const { deleteNewsArticle } = await import("@/app/actions/admin-content");
+      await deleteNewsArticle(id);
+    } catch (err) {
+      console.error("Failed to delete article:", err);
+      toast.error("Couldn't delete the article");
+      return;
+    }
     showSuccess("Article deleted", { description: "It's gone from the news page." });
     await load();
   };
@@ -96,8 +110,8 @@ export default function NewsPage() {
             <Input placeholder="Summary (short preview)" value={summary} onChange={(e) => setSummary(e.target.value)} className="rounded-xl" />
             <Textarea placeholder="Article body (HTML supported)" value={body} onChange={(e) => setBody(e.target.value)} className="rounded-xl min-h-[200px]" />
             <div className="flex gap-4">
-              <Button onClick={() => { setPublish(true); handleCreate(); }} className="rounded-xl"><Eye className="h-4 w-4 mr-2" /> Publish Now</Button>
-              <Button onClick={() => { setPublish(false); handleCreate(); }} variant="outline" className="rounded-xl"><EyeOff className="h-4 w-4 mr-2" /> Save as Draft</Button>
+              <Button onClick={() => handleCreate(true)} className="rounded-xl"><Eye className="h-4 w-4 mr-2" /> Publish Now</Button>
+              <Button onClick={() => handleCreate(false)} variant="outline" className="rounded-xl"><EyeOff className="h-4 w-4 mr-2" /> Save as Draft</Button>
             </div>
           </CardContent>
         </Card>

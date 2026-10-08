@@ -51,13 +51,23 @@ export async function submitTutorApplication(formData: FormData) {
   const idPhoto = formData.get("idPhoto") as File | null;
   const selfie = formData.get("selfie") as File | null;
   const subjectsStr = formData.get("subjects") as string;
-  const subjects = subjectsStr ? JSON.parse(subjectsStr) : [];
 
-  let idPhotoUrl = null;
-  let selfieUrl = null;
+  const existing = await prisma.tutorApplication.findUnique({
+    where: { userId: user.id },
+    select: { status: true, idPhotoUrl: true, selfieUrl: true },
+  });
+  if (existing?.status === "APPROVED") {
+    return { success: false, error: "Your tutor application has already been approved." };
+  }
+
+  // Keep documents already on file when a field is left empty
+  let idPhotoUrl: string | null = existing?.idPhotoUrl ?? null;
+  let selfieUrl: string | null = existing?.selfieUrl ?? null;
 
   try {
-    if (idPhoto) {
+    const subjects: string[] = subjectsStr ? JSON.parse(subjectsStr) : [];
+
+    if (idPhoto && idPhoto.size > 0) {
       const v = validateUploadFile(idPhoto, KYC_VALIDATION_OPTIONS);
       if (!v.valid) return { success: false, error: `ID Photo error: ${v.error}` };
       const ext = sanitizeFileExtension(idPhoto.name);
@@ -66,7 +76,7 @@ export async function submitTutorApplication(formData: FormData) {
       idPhotoUrl = path;
     }
 
-    if (selfie) {
+    if (selfie && selfie.size > 0) {
       const v = validateUploadFile(selfie, KYC_VALIDATION_OPTIONS);
       if (!v.valid) return { success: false, error: `Selfie error: ${v.error}` };
       const ext = sanitizeFileExtension(selfie.name);
@@ -89,12 +99,17 @@ export async function submitTutorApplication(formData: FormData) {
         subjects,
         idPhotoUrl,
         selfieUrl,
+        // A resubmission (e.g. after rejection) goes back into the review queue
+        status: "PENDING",
       },
     });
 
-    await supabase.auth.admin.updateUserById(user.id, {
-      user_metadata: { tutorApplicationStatus: "PENDING" },
-    });
+    // auth.admin.* needs the service-role key; the user client can only update itself.
+    try {
+      await supabase.auth.updateUser({ data: { tutorApplicationStatus: "PENDING" } });
+    } catch {
+      // metadata sync is best-effort
+    }
 
     return { success: true, application };
   } catch (error: any) {
@@ -232,6 +247,17 @@ export async function getTutorVerification() {
 export async function resolveKycUrl(urlOrPath: string | null | undefined): Promise<string | null> {
   if (!urlOrPath) return null;
   if (isHttpUrl(urlOrPath)) return urlOrPath;
+
+  // This is a callable server action: only admins, or the owner of the
+  // document, may mint a signed URL for a KYC file.
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+  if (!urlOrPath.startsWith(`kyc/${user.id}/`)) {
+    const caller = await prisma.user.findUnique({ where: { id: user.id }, select: { role: true } });
+    if (caller?.role !== "ADMIN") return null;
+  }
+
   try {
     return await createSignedUrl(STORAGE_BUCKETS.kyc, urlOrPath, 60 * 60);
   } catch {

@@ -50,7 +50,17 @@ export async function toggleTutorStatus(isOnline: boolean) {
   try {
     const user = await getUserData();
     if (!user) throw new Error("Unauthorized");
+    if (user.role !== Role.TUTOR && user.role !== Role.ADMIN) throw new Error("Only tutors can change online status");
 
+    // Merge into the existing availability JSON so the saved schedule isn't wiped
+    const existing = await prisma.tutorProfile.findUnique({
+      where: { userId: user.id },
+      select: { availability: true },
+    });
+    const prev =
+      existing?.availability && typeof existing.availability === "object" && !Array.isArray(existing.availability)
+        ? (existing.availability as Record<string, unknown>)
+        : {};
 
     await prisma.tutorProfile.upsert({
       where: { userId: user.id },
@@ -64,7 +74,7 @@ export async function toggleTutorStatus(isOnline: boolean) {
         availability: { isOnline }
       },
       update: {
-        availability: { isOnline },
+        availability: { ...prev, isOnline } as any,
       }
     });
 
@@ -80,11 +90,21 @@ export async function updateTutorAvailability(schedule: any) {
   try {
     const user = await getUserData();
     if (!user) throw new Error("Unauthorized");
+    if (user.role !== Role.TUTOR && user.role !== Role.ADMIN) throw new Error("Only tutors can set availability");
+
+    const existing = await prisma.tutorProfile.findUnique({
+      where: { userId: user.id },
+      select: { availability: true },
+    });
+    const prev =
+      existing?.availability && typeof existing.availability === "object" && !Array.isArray(existing.availability)
+        ? (existing.availability as Record<string, unknown>)
+        : {};
 
     await prisma.tutorProfile.update({
       where: { userId: user.id },
       data: {
-        availability: { schedule }
+        availability: { ...prev, schedule } as any
       }
     });
 
@@ -118,17 +138,6 @@ export async function getVerifiedTutors(level?: EduLevel) {
     console.error("Error in getVerifiedTutors:", error);
     return [];
   }
-}
-
-/** Elevates the current user to Admin for setup purposes */
-export async function elevateToAdmin() {
-  const user = await getUserData();
-  if (!user) throw new Error("Authentication required");
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { role: Role.ADMIN }
-  });
-  revalidatePath("/");
 }
 
 /** Fetches all tutors awaiting verification */
@@ -251,7 +260,14 @@ export async function getTutorLeaderboard(limit = 20) {
 export async function bookTutorSession(tutorId: string, subject: string, topic: string, scheduledTime: string) {
   try {
     const user = await getUserData();
-    if (!user) throw new Error("Unauthorized");
+    if (!user) return { success: false, error: "Please sign in to book a session" };
+    if (tutorId === user.id) return { success: false, error: "You can't book a session with yourself" };
+
+    const scheduledAt = new Date(scheduledTime);
+    if (Number.isNaN(scheduledAt.getTime())) return { success: false, error: "Invalid session time" };
+
+    const tutor = await prisma.user.findUnique({ where: { id: tutorId }, select: { role: true } });
+    if (!tutor || tutor.role !== Role.TUTOR) return { success: false, error: "Tutor not found" };
 
     const session = await prisma.session.create({
       data: {
@@ -262,7 +278,7 @@ export async function bookTutorSession(tutorId: string, subject: string, topic: 
         topic,
         status: "PENDING",
         roomId: `room_${Date.now()}_${Math.random().toString(36).substring(7)}`,
-        startedAt: new Date(scheduledTime),
+        startedAt: scheduledAt,
       }
     });
 

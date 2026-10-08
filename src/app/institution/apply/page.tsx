@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { emailTypoMessage } from '@/lib/institution-email'
 
 export default function InstitutionApply() {
   const [step, setStep] = useState(1)
@@ -20,7 +20,6 @@ export default function InstitutionApply() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
-  const supabase = createClient()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -31,43 +30,35 @@ export default function InstitutionApply() {
     setLoading(true)
     setError(null)
 
-    // 1. Create auth account in Supabase
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: formData.contactEmail,
-      password: formData.password,
-      options: {
-        data: {
-          role: 'INSTITUTION_ADMIN',
-          name: formData.contactName
-        }
-      }
-    })
-
-    if (authError) {
-      setError(authError.message)
-      setLoading(false)
-      return
-    }
-
-    if (authData.user) {
-      // 2. Create Institution Profile via API
+    // The auth account is created server-side together with the application
+    // (previously a client-side signUp left orphaned accounts whenever the
+    // API call failed, and the API trusted a client-supplied user id).
+    try {
       const res = await fetch('/api/institution/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          supabaseId: authData.user.id,
-          ...formData
-        })
+        body: JSON.stringify(formData)
       })
+      const data = await res.json().catch(() => ({}))
 
       if (!res.ok) {
-        setError('Failed to submit application. Please contact support.')
-        setLoading(false)
+        // Only ever render a plain string: a stringified error object once
+        // reached this box as "{}".
+        const message = typeof data?.error === 'string' && data.error.trim() ? data.error : null
+        setError(message ?? 'Failed to submit application. Please try again or contact support.')
+        // Send the applicant back to the step holding the offending field.
+        if (data?.field === 'adminName' || data?.field === 'adminPhone') setStep(2)
+        else if (data?.field === 'schoolName' || data?.field === 'county' || data?.field === 'address' || data?.field === 'website') setStep(1)
         return
       }
 
-      // 3. Success, redirect to login
-      router.push('/auth/institution-login')
+      // Success: the pending page shows review status (or sends the user to
+      // sign in first if their email still needs confirming).
+      router.push('/institution/pending')
+    } catch {
+      setError('Could not reach the server. Check your connection and try again.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -138,11 +129,15 @@ export default function InstitutionApply() {
                 <div>
                   <label className="block text-sm font-medium mb-1">Administrator Email</label>
                   <input required type="email" name="contactEmail" value={formData.contactEmail} onChange={handleChange} className="w-full p-2 border rounded-md bg-background" />
-                  <p className="text-xs text-muted-foreground mt-1">This will be your login email.</p>
+                  {emailTypoMessage(formData.contactEmail) ? (
+                    <p className="text-xs text-amber-600 mt-1">{emailTypoMessage(formData.contactEmail)}</p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground mt-1">This will be your login email.</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Password</label>
-                  <input required type="password" name="password" value={formData.password} onChange={handleChange} className="w-full p-2 border rounded-md bg-background" />
+                  <input required minLength={8} type="password" name="password" value={formData.password} onChange={handleChange} className="w-full p-2 border rounded-md bg-background" />
                 </div>
               </div>
               <div className="flex gap-4 mt-4">

@@ -22,6 +22,19 @@ const PYTHON_BACKEND =
       })()
     : "http://127.0.0.1:8000");
 
+const ALLOWED_PREFIXES = ["/bookings", "/tutors"];
+
+function isAllowedPythonPath(path: string): boolean {
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(path);
+  } catch {
+    return false;
+  }
+  if (decoded.includes("..") || decoded.includes("\\") || decoded.includes("//")) return false;
+  return ALLOWED_PREFIXES.some((p) => decoded === p || decoded.startsWith(`${p}/`));
+}
+
 export async function GET(request: NextRequest) {
   return proxy(request);
 }
@@ -49,6 +62,14 @@ async function proxy(request: NextRequest) {
 
   const { pathname, searchParams } = new URL(request.url);
   const targetPath = pathname.replace(/^\/api\/python/, "");
+
+  // Explicit allowlist. The backend exposes internal endpoints (e.g. POST
+  // /db/query runs raw SQL with no auth), so never forward arbitrary paths.
+  // Only the booking/tutor routes used by src/lib/booking-client.ts and the
+  // booking hooks are reachable through this proxy.
+  if (!isAllowedPythonPath(targetPath)) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   const qs = searchParams.toString();
   const targetUrl = `${PYTHON_BACKEND}${targetPath}${qs ? "?" + qs : ""}`;
 

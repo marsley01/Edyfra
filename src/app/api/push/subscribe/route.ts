@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,18 +38,24 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Store Web Push subscription (endpoint + p256dh + auth)
+    // Store Web Push subscription (endpoint + p256dh + auth).
+    // Senders (src/lib/sendNotification.ts, actions/push.ts) read the
+    // Supabase `push_subscriptions` table, so the subscription must be stored
+    // there — writing only to the Prisma "PushSubscription" table meant web
+    // push was never delivered. Upserting by endpoint also re-binds a shared
+    // browser's endpoint to the account that is currently signed in.
     if (endpoint && keys?.p256dh && keys?.auth) {
-      await prisma.pushSubscription.upsert({
-        where: { endpoint },
-        update: { p256dh: keys.p256dh, auth: keys.auth },
-        create: {
-          userId: user.id,
-          endpoint,
-          p256dh: keys.p256dh,
-          auth: keys.auth,
-        },
-      });
+      const adminSupabase = createAdminClient();
+      const { error: upsertError } = await adminSupabase
+        .from("push_subscriptions")
+        .upsert(
+          { user_id: user.id, endpoint, p256dh: keys.p256dh, auth: keys.auth },
+          { onConflict: "endpoint" }
+        );
+      if (upsertError) {
+        console.error("Push subscribe upsert error:", upsertError);
+        return NextResponse.json({ success: false, error: "Could not save subscription" }, { status: 500 });
+      }
     }
 
     return NextResponse.json({ success: true });

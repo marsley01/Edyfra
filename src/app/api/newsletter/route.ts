@@ -33,7 +33,11 @@ function getAdminClient() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, source = "landing_page" } = body;
+    const { email } = body;
+    const source =
+      typeof body.source === "string" && body.source.trim()
+        ? body.source.trim().slice(0, 64)
+        : "landing_page";
 
     // Validate email format
     if (!email || typeof email !== "string" || !isValidEmail(email.trim())) {
@@ -45,19 +49,37 @@ export async function POST(request: NextRequest) {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    // Insert to newsletter_subscribers table (upsert to avoid duplicate errors)
-    const { error } = await getAdminClient()
+    // newsletter_subscribers has no unique constraint on email, so the old
+    // `upsert(..., { onConflict: "email" })` was rejected by Postgres ("no
+    // unique or exclusion constraint matching the ON CONFLICT specification")
+    // and every signup failed. Look up first, then insert.
+    const admin = getAdminClient();
+    const { data: existing, error: lookupError } = await admin
       .from("newsletter_subscribers")
-      .upsert(
-        {
-          email: normalizedEmail,
-          subscribed_at: new Date().toISOString(),
-          source,
-        },
-        { onConflict: "email", ignoreDuplicates: true }
-      );
+      .select("id")
+      .eq("email", normalizedEmail)
+      .limit(1);
 
-    if (error) {
+    if (lookupError) {
+      console.error("[Newsletter] Supabase lookup error:", lookupError);
+      return NextResponse.json(
+        { error: "Something went wrong. Please try again." },
+        { status: 500 }
+      );
+    }
+
+    if (existing && existing.length > 0) {
+      return NextResponse.json({ success: true, alreadySubscribed: true });
+    }
+
+    const { error } = await admin.from("newsletter_subscribers").insert({
+      email: normalizedEmail,
+      subscribed_at: new Date().toISOString(),
+      source,
+    });
+
+    // 23505 = a concurrent request (or a future unique index) already added it.
+    if (error && error.code !== "23505") {
       // Never expose the database error to the client
       console.error("[Newsletter] Supabase insert error:", error);
       return NextResponse.json(

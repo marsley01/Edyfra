@@ -59,6 +59,10 @@ export function useStreamChatInit({
   const initOnceRef = useRef<string | null>(null);
   const connectingRef = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
+  // Subscription for the @mash listener; must be removed before re-subscribing
+  // (retry) and on unmount, otherwise each retry adds another listener and a
+  // single mention triggers several AI replies.
+  const mentionSubRef = useRef<{ unsubscribe: () => void } | null>(null);
 
   // Stable serialization for memberIds in the dep array
   const memberIdsKey = JSON.stringify(memberIds);
@@ -134,7 +138,8 @@ export function useStreamChatInit({
       setChannel(c);
       setChatClient(client);
 
-      c.on("message.new", async (event: any) => {
+      mentionSubRef.current?.unsubscribe();
+      mentionSubRef.current = c.on("message.new", async (event: any) => {
         const msg = event.message;
         if (!msg || msg.user?.id === MASH_AI_USER_ID) return;
         if (msg.user_id !== userId) return; // idempotency — only sender triggers AI
@@ -175,6 +180,8 @@ export function useStreamChatInit({
   useEffect(() => {
     return () => {
       abortRef.current?.abort();
+      mentionSubRef.current?.unsubscribe();
+      mentionSubRef.current = null;
       initOnceRef.current = null;
       const c = clientRef.current;
       if (c && c.userID) {

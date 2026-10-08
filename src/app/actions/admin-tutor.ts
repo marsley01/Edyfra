@@ -5,17 +5,14 @@ import prisma from "@/lib/prisma";
 import { Role, VerifPath, TutorApplication, User, TutorProfile } from "@/generated/client";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
-import { getUserData } from "./user";
+import { requireAdminCaller } from "@/app/actions/_admin-guard";
 import { notifyUser } from "@/app/actions/notifications";
 import { TUTOR_CONFIG } from "@/lib/config";
 import { resolveKycUrl } from "@/app/actions/tutor-kyc";
 
+// Prisma role (ADMIN/FOUNDER) or founder env email — same gate as the rest of /admin.
 async function requireAdminUser() {
-  const adminUser = await getUserData();
-  if (!adminUser || adminUser.role !== Role.ADMIN) {
-    throw new Error("Unauthorized: Admin access required");
-  }
-  return adminUser;
+  return requireAdminCaller();
 }
 
 // Get tutor applications with PENDING status only
@@ -95,7 +92,7 @@ export async function getAllTutorsWithDetails(): Promise<any[]> {
 // Approve tutor application - simplified version
 export async function approveTutorApplicationEnhanced(applicationId: string) {
   try {
-    await requireAdminUser();
+    const admin = await requireAdminUser();
 
     // Get the application with timeout
     const app = await prisma.tutorApplication.findUnique({
@@ -140,7 +137,9 @@ export async function approveTutorApplicationEnhanced(applicationId: string) {
       where: { id: applicationId },
       data: { 
         status: "APPROVED",
-        notes: app.notes || "Application approved"
+        notes: app.notes || "Application approved",
+        reviewedBy: admin.id,
+        reviewedAt: new Date(),
       }
     });
 
@@ -161,14 +160,16 @@ export async function approveTutorApplicationEnhanced(applicationId: string) {
     return { success: true, message: "Tutor approved successfully" };
   } catch (error) {
     console.error("Error approving tutor:", error);
-    throw new Error(`Failed to approve tutor application: ${error instanceof Error ? error.message : "Unknown error"}`);
+    // Return (not throw): thrown server-action errors are redacted in production,
+    // so the admin only ever saw a generic failure.
+    return { success: false, error: `Failed to approve tutor application: ${error instanceof Error ? error.message : "Unknown error"}` };
   }
 }
 
 // Reject tutor application
 export async function rejectTutorApplication(applicationId: string, reason?: string) {
   try {
-    await requireAdminUser();
+    const admin = await requireAdminUser();
 
     // Get the application
     const app = await prisma.tutorApplication.findUnique({
@@ -184,7 +185,9 @@ export async function rejectTutorApplication(applicationId: string, reason?: str
       where: { id: applicationId },
       data: { 
         status: "REJECTED",
-        notes: reason || "Application rejected by admin"
+        notes: reason || "Application rejected by admin",
+        reviewedBy: admin.id,
+        reviewedAt: new Date(),
       }
     });
 
@@ -204,7 +207,7 @@ export async function rejectTutorApplication(applicationId: string, reason?: str
     return { success: true, message: "Application rejected" };
   } catch (error) {
     console.error("Error rejecting tutor:", error);
-    throw new Error(`Failed to reject tutor application: ${error instanceof Error ? error.message : "Unknown error"}`);
+    return { success: false, error: `Failed to reject tutor application: ${error instanceof Error ? error.message : "Unknown error"}` };
   }
 }
 

@@ -297,6 +297,7 @@ export async function updateUserRole(role: "STUDENT" | "TUTOR") {
 
 export async function updateUserPreferences(prefs: {
   theme?: string;
+  mashStyle?: string;
   accentColor?: string;
   layout?: string;
   fontSize?: string;
@@ -315,11 +316,15 @@ export async function updateUserPreferences(prefs: {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Unauthorized");
 
+    // Must mirror the UserPreferences columns exactly. `studyHoursPerWeek` has
+    // no column, so passing it made Prisma throw — which failed *every* profile
+    // save on /dashboard/settings (updateStudentProfile always sends it).
+    // `mashStyle` does have a column but was missing, so that setting never
+    // persisted.
     const allowed = [
-      "theme", "accentColor", "layout", "fontSize", "preferredLanguage",
+      "theme", "accentColor", "layout", "fontSize", "mashStyle", "preferredLanguage",
       "studyTime", "sessionLength", "sessionTypePref", "showProfile",
       "showOnlineStatus", "allowTutorRequests", "enableMashFallback",
-      "studyHoursPerWeek"
     ];
     const cleanPrefs = Object.fromEntries(
       Object.entries(prefs).filter(([k]) => allowed.includes(k) && prefs[k as keyof typeof prefs] !== undefined)
@@ -582,7 +587,15 @@ export async function deleteUserAccount() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Unauthorized");
 
-    await prisma.user.delete({ where: { id: user.id } });
+    // Resolve the Prisma row by id OR email (legacy rows can have a different
+    // primary key), otherwise delete threw P2025 and the account stayed.
+    const dbUser = await prisma.user.findFirst({
+      where: { OR: [{ id: user.id }, ...(user.email ? [{ email: user.email }] : [])] },
+      select: { id: true },
+    });
+    if (dbUser) {
+      await prisma.user.delete({ where: { id: dbUser.id } });
+    }
 
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (serviceRoleKey) {
@@ -594,6 +607,10 @@ export async function deleteUserAccount() {
       );
       await adminClient.auth.admin.deleteUser(user.id);
     }
+
+    // Clear the session cookie; otherwise the browser still holds a session for
+    // a user with no profile row and gets bounced into onboarding.
+    await supabase.auth.signOut().catch(() => {});
 
     return { success: true };
   } catch (error) {

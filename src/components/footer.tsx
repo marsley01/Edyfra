@@ -35,8 +35,8 @@ const footerLinks = [
   {
     title: "Get Started",
     links: [
-      { name: "Create Account", href: "/signup" },
-      { name: "Sign In", href: "/login" },
+      { name: "Create Account", href: "/auth/register" },
+      { name: "Sign In", href: "/auth/login" },
       { name: "Talk to Support", href: "/contact" },
     ],
   },
@@ -44,7 +44,7 @@ const footerLinks = [
     title: "Institutions",
     links: [
       { name: "Institution Overview", href: "/institution" },
-      { name: "Institution Login", href: "/institution/login" },
+      { name: "Institution Login", href: "/auth/institution-login" },
       { name: "Book Onboarding", href: "/contact" },
     ],
   },
@@ -119,21 +119,9 @@ export function Footer() {
 
   return (
     <footer className="relative overflow-hidden bg-surface-container-lowest border-t border-surface-container-low">
-      {/* Subtle background glow */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-40 left-1/4 h-[28rem] w-[28rem] rounded-full bg-primary/10 blur-[120px]" />
-        <div className="absolute -bottom-40 right-1/4 h-[28rem] w-[28rem] rounded-full bg-primary/5 blur-[120px]" />
-      </div>
-
       <div className="relative container-max pt-20 pb-10">
-        {/* Newsletter card — suppressHydrationWarning: purely decorative blobs
-            here tripped false mismatches for users with stale cached chunks */}
-        <div
-          className="glass-panel relative mb-20 overflow-hidden rounded-xl p-8 sm:p-12"
-          suppressHydrationWarning
-        >
-          <div className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-brand-orange/10 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-brand-orange/10 blur-3xl" />
+        {/* Newsletter */}
+        <div className="relative mb-20 rounded-2xl border border-border bg-card p-6 sm:p-10">
 
           <div className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
             <div className="space-y-3 max-w-xl">
@@ -159,7 +147,7 @@ export function Footer() {
                   placeholder="you@school.ac.ke"
                   type="email"
                   disabled={subscribed || loading}
-                  className="h-12 rounded-xl px-5 border-border bg-secondary text-foreground placeholder:text-muted-foreground min-w-[280px] focus-visible:ring-primary/30"
+                  className="h-12 rounded-xl px-5 border-border bg-secondary text-foreground placeholder:text-muted-foreground min-w-0 flex-1 sm:min-w-[280px] focus-visible:ring-primary/30"
                 />
                 <Button
                   type="submit"
