@@ -4,6 +4,8 @@ import { getApprovedReviews } from "@/app/actions/reviews";
 import { unstable_cache } from "next/cache";
 import { HomeHero } from "@/components/home/hero";
 import { HomeFeatures } from "@/components/home/features";
+import { CourseLanding } from "@/components/home/course-landing";
+import { COURSE_MODE_ENABLED } from "@/config/course-mode";
 
 // Below-the-fold sections are code-split so their JS only loads after the
 // hero has painted. Each has a lightweight skeleton while its chunk streams in.
@@ -53,6 +55,14 @@ const getCachedReviews = unstable_cache(
 );
 
 export default async function HomePage() {
+  if (COURSE_MODE_ENABLED) {
+    return (
+      <div className="flex flex-col overflow-hidden bg-background">
+        <CourseLanding />
+      </div>
+    );
+  }
+
   const reviews = await getCachedReviews();
 
   return (
