@@ -93,11 +93,13 @@ export default function DashboardSidebar({ user, onClose }: { user: User; onClos
   };
 
   return (
-    <aside data-tour="tour-sidebar" className={cn(
-      "flex flex-col bg-card-bg border-r-[1.5px] border-border transition-all duration-200 py-6 px-3",
+    // Only the desktop sidebar is a tour target. The drawer copy is mounted
+    // off-screen on phones, and pointing the tour at it highlighted nothing.
+    <aside data-tour={onClose ? undefined : "tour-sidebar"} className={cn(
+      "flex flex-col bg-card-bg border-border transition-colors duration-200 py-6 px-3",
       onClose
-        ? "h-full w-full pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]"
-        : "w-[240px] h-dvh sticky top-0 hidden lg:flex"
+        ? "h-full w-full border-l-[1.5px] pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]"
+        : "w-[240px] h-dvh sticky top-0 hidden lg:flex border-r-[1.5px]"
     )}>
       {/* Mobile Close Button */}
       {onClose && (

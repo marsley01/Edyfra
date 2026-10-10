@@ -4,12 +4,15 @@ import { Trophy, Flame, Zap, Sparkles, Crown } from "lucide-react";
 import { motion } from "framer-motion";
 import { TIER_CONFIG } from "@/lib/config";
 
-const tierColors: Record<string, { bg: string; text: string; bar: string; icon: any }> = {
-  BRONZE:   { bg: "from-amber-900/30 to-amber-800/10", text: "text-amber-600", bar: "bg-amber-600", icon: Trophy },
-  SILVER:   { bg: "from-slate-400/30 to-slate-300/10",  text: "text-slate-400", bar: "bg-slate-400", icon: Zap },
-  GOLD:     { bg: "from-yellow-500/30 to-yellow-400/10", text: "text-yellow-500", bar: "bg-yellow-500", icon: Sparkles },
-  PLATINUM: { bg: "from-cyan-400/30 to-cyan-300/10",    text: "text-cyan-400",  bar: "bg-cyan-400",  icon: Crown },
-  LEGEND:   { bg: "from-amber-500/30 to-amber-400/10", text: "text-amber-500", bar: "bg-amber-500", icon: Crown },
+// `badge` is a tinted chip behind the tier icon. It used to reuse `bar` (the
+// solid progress-bar colour), which painted the icon the same colour as its own
+// background, so the badge showed up as an empty square.
+const tierColors: Record<string, { bg: string; text: string; bar: string; badge: string; icon: any }> = {
+  BRONZE:   { bg: "from-amber-900/30 to-amber-800/10", text: "text-amber-600", bar: "bg-amber-600", badge: "bg-amber-600/15 ring-amber-600/30", icon: Trophy },
+  SILVER:   { bg: "from-slate-400/30 to-slate-300/10",  text: "text-slate-400", bar: "bg-slate-400", badge: "bg-slate-400/15 ring-slate-400/30", icon: Zap },
+  GOLD:     { bg: "from-yellow-500/30 to-yellow-400/10", text: "text-yellow-500", bar: "bg-yellow-500", badge: "bg-yellow-500/15 ring-yellow-500/30", icon: Sparkles },
+  PLATINUM: { bg: "from-cyan-400/30 to-cyan-300/10",    text: "text-cyan-400",  bar: "bg-cyan-400",  badge: "bg-cyan-400/15 ring-cyan-400/30", icon: Crown },
+  LEGEND:   { bg: "from-amber-500/30 to-amber-400/10", text: "text-amber-500", bar: "bg-amber-500", badge: "bg-amber-500/15 ring-amber-500/30", icon: Crown },
 };
 
 export default function LevelXPBar({ points = 0, streakDays = 0 }: { points: number; streakDays: number }) {
@@ -33,7 +36,7 @@ export default function LevelXPBar({ points = 0, streakDays = 0 }: { points: num
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             {/* Tier icon badge */}
-            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg ${tier.bar} bg-opacity-20 bg-background/10`}>
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg ring-1 ${tier.badge}`}>
               <Icon className={`h-7 w-7 ${tier.text}`} />
             </div>
             <div>

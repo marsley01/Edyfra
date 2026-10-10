@@ -50,6 +50,8 @@ const STUDENT_DASHBOARD_STEPS = [
   },
   {
     target: "tour-sidebar",
+    // Phones have no sidebar; point at the bottom tab bar instead.
+    mobileTarget: "tour-mobile-nav",
     title: "Navigation hub",
     description: "Access all features from here — study, community, challenges, resources, and settings. Everything is one tap away.",
     placement: "right" as const,
@@ -116,7 +118,7 @@ export default async function DashboardLayout({
         </main>
         <MatchNotification />
         <TourGuide tourId="student-dashboard" steps={STUDENT_DASHBOARD_STEPS} />
-        <TourTrigger tourId="student-dashboard" />
+        <TourTrigger tourId="student-dashboard" homePath="/dashboard" />
         <AgentWidget agentId="eddy" />
       </div>
     </DashboardProviders>

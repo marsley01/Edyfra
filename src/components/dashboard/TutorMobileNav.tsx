@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import { MobileDrawer } from "./MobileDrawer";
 import {
   Menu, X, ChevronLeft,
-  LayoutDashboard, CalendarCheck, Inbox, Wallet, MoreHorizontal,
+  LayoutDashboard, CalendarCheck, Inbox, Wallet, Video,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TutorSidebar } from "./TutorSidebar";
@@ -20,7 +21,7 @@ const BOTTOM_TABS = [
   { href: "/tutor", label: "Home", icon: LayoutDashboard },
   { href: "/tutor/schedule", label: "Schedule", icon: CalendarCheck },
   { href: "/tutor/requests", label: "Requests", icon: Inbox, accent: true },
-  { href: "/tutor/sessions", label: "Sessions", icon: MoreHorizontal },
+  { href: "/tutor/sessions", label: "Sessions", icon: Video },
 ];
 
 const PAGE_TITLES: Record<string, string> = {
@@ -39,6 +40,7 @@ export function TutorMobileNav({ user }: { user: User }) {
   const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const closeDrawer = useCallback(() => setIsOpen(false), []);
 
   useRegisterOverlay({ id: "tutor-mobile-nav", edge: "bottom", size: 64, slot: "mobile-nav" });
 
@@ -49,10 +51,6 @@ export function TutorMobileNav({ user }: { user: User }) {
     setIsOpen(false);
   }, [pathname]);
 
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? "hidden" : "unset";
-    return () => { document.body.style.overflow = "unset"; };
-  }, [isOpen]);
 
   return (
     <div className="lg:hidden">
@@ -76,12 +74,12 @@ export function TutorMobileNav({ user }: { user: User }) {
         </div>
 
         <div className="flex items-center gap-1">
-          <NotificationBell variant="topbar" />
+          <NotificationBell className="inline-flex h-10 w-10 items-center justify-center p-0 text-foreground" />
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setIsOpen(true)}
-            className="rounded-xl hover:bg-primary/5"
+            className="h-10 w-10 rounded-xl hover:bg-primary/5"
             aria-label="Open tutor menu"
             aria-expanded={isOpen}
           >
@@ -91,35 +89,12 @@ export function TutorMobileNav({ user }: { user: User }) {
       </header>
 
       {/* ── Slide Drawer ── */}
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
-              onClick={() => setIsOpen(false)}
-            />
-            <motion.div
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "tween", duration: 0.28, ease: "easeOut" }}
-              className="fixed inset-y-0 left-0 w-[min(320px,85vw)] bg-background z-[110] shadow-2xl overflow-hidden"
-            >
-              <div className="absolute top-0 left-0 w-full h-80 bg-primary/10 blur-[120px] -translate-y-1/2 -translate-x-1/2 pointer-events-none" />
-              <div className="absolute bottom-0 right-0 w-full h-80 bg-primary/5 blur-[120px] translate-y-1/2 translate-x-1/2 pointer-events-none" />
-              <div className="relative z-10 h-full">
-                <TutorSidebar user={user} onClose={() => setIsOpen(false)} />
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <MobileDrawer open={isOpen} onClose={closeDrawer} label="Tutor menu">
+        <TutorSidebar user={user} onClose={closeDrawer} />
+      </MobileDrawer>
 
       {/* ── Bottom Tab Bar ── */}
-      <nav className="fixed bottom-0 inset-x-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border safe-bottom">
+      <nav data-tour="tour-mobile-nav" className="fixed bottom-0 inset-x-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border safe-bottom">
         <div className="flex items-center justify-around h-16 px-1 max-w-lg mx-auto">
           {BOTTOM_TABS.map(({ href, label, icon: Icon, accent }) => {
             const isActive = pathname === href || (href !== "/tutor" && pathname.startsWith(href));

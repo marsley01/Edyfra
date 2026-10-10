@@ -48,6 +48,8 @@ const TUTOR_DASHBOARD_STEPS = [
   },
   {
     target: "tour-sidebar",
+    // Phones have no sidebar; point at the bottom tab bar instead.
+    mobileTarget: "tour-mobile-nav",
     title: "Navigation hub",
     description: "Access all tutor features from here — schedule, requests, sessions, community, and settings.",
     placement: "right" as const,
@@ -98,7 +100,7 @@ export default async function TutorLayout({
         </main>
 
         <TourGuide tourId="tutor-dashboard" steps={TUTOR_DASHBOARD_STEPS} />
-        <TourTrigger tourId="tutor-dashboard" />
+        <TourTrigger tourId="tutor-dashboard" homePath="/tutor" />
         <AgentWidget agentId="mash" />
       </div>
     </TutorVideoShell>

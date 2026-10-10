@@ -1,13 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronRight, ChevronLeft, Sparkles } from "lucide-react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { X, ChevronRight, ChevronLeft, Compass } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface TourStep {
+  /** `data-tour` value of the element to highlight. */
   target: string;
+  /**
+   * Used instead of `target` below the `lg` breakpoint, where the desktop
+   * sidebar is hidden. Steps whose target is not visible are skipped.
+   */
+  mobileTarget?: string;
   title: string;
   description: string;
   placement?: "top" | "bottom" | "left" | "right" | "auto";
@@ -20,261 +26,420 @@ interface TourGuideProps {
   className?: string;
 }
 
+/** Fired by TourTrigger (or anything else) to replay a tour. */
+export const TOUR_START_EVENT = "edyfra:tour-start";
+/** Fired when a tour is finished or skipped, so TourTrigger can appear. */
+export const TOUR_SEEN_EVENT = "edyfra:tour-seen";
+
+const storageKey = (tourId: string) => `tour-seen-${tourId}`;
+const SPOTLIGHT_PADDING = 6;
+const GAP = 14;
+const EDGE = 12;
+const MOBILE_SHEET_MAX = 640;
+const LG_BREAKPOINT = 1024;
+
+type Rect = { top: number; left: number; width: number; height: number };
+
+function readSeen(tourId: string): boolean {
+  try {
+    return localStorage.getItem(storageKey(tourId)) === "true";
+  } catch {
+    // Storage blocked (private mode): treat as seen so the tour cannot
+    // auto-open on every single page load.
+    return true;
+  }
+}
+
+function writeSeen(tourId: string, seen: boolean) {
+  try {
+    if (seen) localStorage.setItem(storageKey(tourId), "true");
+    else localStorage.removeItem(storageKey(tourId));
+  } catch {
+    // ignore
+  }
+}
+
+/** The first visible element for a step, honouring `mobileTarget`. */
+function findTarget(step: TourStep | undefined): HTMLElement | null {
+  if (!step || typeof window === "undefined") return null;
+  const isNarrow = window.innerWidth < LG_BREAKPOINT;
+  const name = isNarrow && step.mobileTarget ? step.mobileTarget : step.target;
+  const candidates = document.querySelectorAll<HTMLElement>(`[data-tour="${name}"]`);
+  for (const el of candidates) {
+    const r = el.getBoundingClientRect();
+    if (r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== "hidden") return el;
+  }
+  return null;
+}
+
+function sameRect(a: Rect | null, b: Rect): boolean {
+  return (
+    !!a &&
+    Math.abs(a.top - b.top) < 0.5 &&
+    Math.abs(a.left - b.left) < 0.5 &&
+    Math.abs(a.width - b.width) < 0.5 &&
+    Math.abs(a.height - b.height) < 0.5
+  );
+}
+
+/**
+ * Spotlight tour for first-time visitors.
+ *
+ * What the previous version got wrong, and what this one does instead:
+ * - It looked for the first target once, 800ms after mount. The dashboard is
+ *   still showing skeletons at that point, so the tour stayed invisible
+ *   forever (open, but with nothing to point at) and new users never saw it.
+ *   Now it waits until the first target is actually on screen.
+ * - A step whose element was missing (the desktop sidebar on a phone) kept the
+ *   previous step's highlight. Missing steps are now skipped, and steps can
+ *   name a `mobileTarget`.
+ * - It called scrollIntoView from its own scroll listener, so every scroll
+ *   triggered another smooth scroll and the page fought the user. It now
+ *   scrolls once per step and follows the target with requestAnimationFrame.
+ * - The popover position assumed a fixed 200px height. It is now measured, and
+ *   on phones the popover is a sheet docked away from the highlighted element.
+ */
 export default function TourGuide({ tourId, steps, onComplete, className }: TourGuideProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
-  const [hasSeenTour, setHasSeenTour] = useState<boolean | null>(null);
+  const reduceMotion = useReducedMotion();
   const [mounted, setMounted] = useState(false);
-  const [highlightStyle, setHighlightStyle] = useState<React.CSSProperties>({});
+  const [isOpen, setIsOpen] = useState(false);
+  const [stepIndex, setStepIndex] = useState(0);
+  const [rect, setRect] = useState<Rect | null>(null);
+  const [viewport, setViewport] = useState({ width: 1200, height: 800 });
+  const [popoverHeight, setPopoverHeight] = useState(220);
+  const [gliding, setGliding] = useState(false);
+  // Bumped when a replay is requested on a page without the tour's elements,
+  // which re-arms the auto-start poll below so the tour begins once they exist.
+  const [armed, setArmed] = useState(0);
   const popoverRef = useRef<HTMLDivElement>(null);
   const targetRef = useRef<HTMLElement | null>(null);
 
-  // Load tour state from localStorage
+  useEffect(() => setMounted(true), []);
+
+  const finish = useCallback(
+    (completed: boolean) => {
+      setIsOpen(false);
+      setRect(null);
+      targetRef.current = null;
+      writeSeen(tourId, true);
+      window.dispatchEvent(new CustomEvent(TOUR_SEEN_EVENT, { detail: { tourId } }));
+      if (completed) onComplete?.();
+    },
+    [tourId, onComplete],
+  );
+
+  /** Moves to the nearest step at or after `from` (in `direction`) that has a visible target. */
+  const goTo = useCallback(
+    (from: number, direction: 1 | -1) => {
+      for (let i = from; i >= 0 && i < steps.length; i += direction) {
+        const el = findTarget(steps[i]);
+        if (el) {
+          targetRef.current = el;
+          setStepIndex(i);
+          setGliding(true);
+          el.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center", inline: "nearest" });
+          return;
+        }
+      }
+      // Going forward with nothing left means the tour is done. Going back
+      // with nothing earlier just stays where it is.
+      if (direction === 1) finish(true);
+    },
+    [steps, reduceMotion, finish],
+  );
+
+  const start = useCallback(() => {
+    setIsOpen(true);
+    goTo(0, 1);
+  }, [goTo]);
+
+  // Auto-start for first-time visitors, but only once the first target exists.
+  // Polling is deliberate: the dashboard renders its content in several async
+  // waves, and a cheap interval is simpler and sturdier than a MutationObserver
+  // on the whole document.
   useEffect(() => {
-    setMounted(true);
-    try {
-      const seen = localStorage.getItem(`tour-seen-${tourId}`);
-      setHasSeenTour(seen === "true");
-    } catch {
-      setHasSeenTour(false);
-    }
-  }, [tourId]);
+    if (!mounted || readSeen(tourId) || isOpen) return;
+    let settleTimer: ReturnType<typeof setTimeout> | undefined;
+    const poll = setInterval(() => {
+      if (!findTarget(steps[0])) return;
+      clearInterval(poll);
+      // Let the rest of the page finish its first layout pass before the
+      // spotlight appears, so it does not jump as cards load in around it.
+      settleTimer = setTimeout(start, 700);
+    }, 400);
+    return () => {
+      clearInterval(poll);
+      if (settleTimer) clearTimeout(settleTimer);
+    };
+  }, [mounted, tourId, steps, isOpen, start, armed]);
 
-  // Auto-start tour if not seen
+  // Replay on request from TourTrigger.
   useEffect(() => {
-    if (hasSeenTour === false) {
-      const timer = setTimeout(() => {
-        setIsOpen(true);
-        setCurrentStep(0);
-      }, 800);
-      return () => clearTimeout(timer);
-    }
-  }, [hasSeenTour]);
+    const onStart = (event: Event) => {
+      const detail = (event as CustomEvent<{ tourId?: string }>).detail;
+      if (detail?.tourId && detail.tourId !== tourId) return;
+      writeSeen(tourId, false);
+      if (findTarget(steps[0])) start();
+      else setArmed((n) => n + 1);
+    };
+    window.addEventListener(TOUR_START_EVENT, onStart);
+    return () => window.removeEventListener(TOUR_START_EVENT, onStart);
+  }, [tourId, steps, start]);
 
-  // Find target element and calculate position
-  const updateTargetPosition = useCallback(() => {
-    const selector = steps[currentStep]?.target;
-    if (!selector) return;
-
-    const target = document.querySelector<HTMLElement>(`[data-tour="${selector}"]`);
-    if (!target) return;
-
-    targetRef.current = target;
-    const rect = target.getBoundingClientRect();
-    setTargetRect(rect);
-
-    // Scroll target into view smoothly
-    target.scrollIntoView({ behavior: "smooth", block: "center" });
-
-    // Highlight style
-    setHighlightStyle({
-      position: "fixed",
-      top: rect.top - 4,
-      left: rect.left - 4,
-      width: rect.width + 8,
-      height: rect.height + 8,
-      borderRadius: "12px",
-      pointerEvents: "none",
-      zIndex: 9998,
-      boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.6)",
-      transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-    });
-  }, [currentStep, steps]);
-
+  // Follow the target every frame while open. This covers scrolling (including
+  // inner scroll containers), resizes, and cards above it changing height as
+  // their data arrives, with no event-listener feedback loops.
   useEffect(() => {
     if (!isOpen) return;
-    updateTargetPosition();
-    const handleResize = () => updateTargetPosition();
-    window.addEventListener("resize", handleResize);
-    window.addEventListener("scroll", handleResize, true);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("scroll", handleResize, true);
+    let frame = 0;
+    let missingFrames = 0;
+    const tick = () => {
+      const el = targetRef.current;
+      if (el && el.isConnected) {
+        const r = el.getBoundingClientRect();
+        if (r.width > 0 && r.height > 0) {
+          missingFrames = 0;
+          const next = { top: r.top, left: r.left, width: r.width, height: r.height };
+          setRect((prev) => (sameRect(prev, next) ? prev : next));
+        } else {
+          missingFrames++;
+        }
+      } else {
+        missingFrames++;
+      }
+      // The target vanished for about half a second (the user navigated away,
+      // or the section unmounted). Close quietly without marking the tour as
+      // seen, so it can start again next time the dashboard is shown.
+      if (missingFrames > 30) {
+        setIsOpen(false);
+        setRect(null);
+        return;
+      }
+      setViewport((prev) =>
+        prev.width === window.innerWidth && prev.height === window.innerHeight
+          ? prev
+          : { width: window.innerWidth, height: window.innerHeight },
+      );
+      frame = requestAnimationFrame(tick);
     };
-  }, [isOpen, updateTargetPosition]);
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [isOpen, stepIndex]);
 
-  const handleNext = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep((prev) => prev + 1);
-    } else {
-      handleComplete();
-    }
-  };
-
-  const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep((prev) => prev - 1);
-    }
-  };
-
-  const handleSkip = () => {
-    setIsOpen(false);
-    markAsSeen();
-  };
-
-  const handleComplete = () => {
-    setIsOpen(false);
-    markAsSeen();
-    onComplete?.();
-  };
-
-  const markAsSeen = () => {
-    try {
-      localStorage.setItem(`tour-seen-${tourId}`, "true");
-      setHasSeenTour(true);
-    } catch {
-      // localStorage not available
-    }
-  };
-
-  const resetTour = () => {
-    try {
-      localStorage.removeItem(`tour-seen-${tourId}`);
-    } catch {
-      // ignore
-    }
-    setHasSeenTour(false);
-    setCurrentStep(0);
-    setIsOpen(true);
-  };
-
-  // Expose reset function globally for the trigger button
+  // Animate the spotlight between steps, but track scrolling 1:1 afterwards.
   useEffect(() => {
-    (window as any).__resetTour = resetTour;
-    return () => {
-      delete (window as any).__resetTour;
+    if (!gliding) return;
+    const t = setTimeout(() => setGliding(false), 450);
+    return () => clearTimeout(t);
+  }, [gliding, stepIndex]);
+
+  // Measure the real popover height for positioning.
+  useLayoutEffect(() => {
+    if (!isOpen || !popoverRef.current) return;
+    const h = popoverRef.current.offsetHeight;
+    if (h && Math.abs(h - popoverHeight) > 1) setPopoverHeight(h);
+  });
+
+  // Keyboard: Esc skips, arrows step.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") finish(false);
+      else if (event.key === "ArrowRight") goTo(stepIndex + 1, 1);
+      else if (event.key === "ArrowLeft") goTo(stepIndex - 1, -1);
     };
-  }, []);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isOpen, stepIndex, goTo, finish]);
 
-  const currentStepData = steps[currentStep];
-  if (!currentStepData || !targetRect || !mounted) return null;
+  if (!mounted) return null;
 
-  // Calculate popover position
-  const popoverWidth = 320;
-  const popoverHeight = 200;
-  const gap = 16;
+  const step = steps[stepIndex];
+  const visibleSteps = steps.filter((s) => findTarget(s) !== null || s === step);
+  const position = Math.max(0, visibleSteps.indexOf(step));
+  const isLast = !steps.slice(stepIndex + 1).some((s) => findTarget(s));
+  const isFirst = !steps.slice(0, stepIndex).some((s) => findTarget(s));
 
-  let top = 0;
-  let left = 0;
-  const placement = currentStepData.placement || "auto";
+  const isSheet = viewport.width < MOBILE_SHEET_MAX;
+  const popoverWidth = Math.min(340, viewport.width - EDGE * 2);
+  const popoverStyle = rect ? computePopoverStyle(rect, step?.placement ?? "auto", popoverWidth, popoverHeight, viewport, isSheet) : {};
 
-  if (placement === "top" || (placement === "auto" && targetRect.top > popoverHeight + gap)) {
-    top = targetRect.top - popoverHeight - gap;
-    left = targetRect.left + targetRect.width / 2 - popoverWidth / 2;
-  } else if (placement === "bottom" || placement === "auto") {
-    top = targetRect.bottom + gap;
-    left = targetRect.left + targetRect.width / 2 - popoverWidth / 2;
-  } else if (placement === "left") {
-    top = targetRect.top + targetRect.height / 2 - popoverHeight / 2;
-    left = targetRect.left - popoverWidth - gap;
-  } else if (placement === "right") {
-    top = targetRect.top + targetRect.height / 2 - popoverHeight / 2;
-    left = targetRect.right + gap;
-  }
-
-  // Keep popover in viewport
-  const viewportWidth = typeof window !== "undefined" ? window.innerWidth : 1200;
-  const viewportHeight = typeof window !== "undefined" ? window.innerHeight : 800;
-
-  if (left < 16) left = 16;
-  if (left + popoverWidth > viewportWidth - 16) left = viewportWidth - popoverWidth - 16;
-  if (top < 16) top = targetRect.bottom + gap;
-  if (top + popoverHeight > viewportHeight - 16) top = targetRect.top - popoverHeight - gap;
+  const spotlight = rect && {
+    top: rect.top - SPOTLIGHT_PADDING,
+    left: rect.left - SPOTLIGHT_PADDING,
+    width: rect.width + SPOTLIGHT_PADDING * 2,
+    height: rect.height + SPOTLIGHT_PADDING * 2,
+  };
 
   return createPortal(
     <AnimatePresence>
-      {isOpen && (
-        <>
-          {/* Highlight overlay */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            style={highlightStyle}
-            className="rounded-xl"
+      {isOpen && step && rect && spotlight && (
+        <motion.div
+          key="tour"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: reduceMotion ? 0 : 0.2 }}
+        >
+          {/* Swallows clicks so the page underneath cannot be used mid-tour. */}
+          <div className="fixed inset-0 z-[9997]" aria-hidden="true" />
+
+          {/* Spotlight: a hole in a dim overlay, made with one huge box-shadow. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none fixed z-[9998] rounded-2xl ring-2 ring-primary/70"
+            style={{
+              ...spotlight,
+              boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.62)",
+              transition:
+                gliding && !reduceMotion
+                  ? "top 0.4s cubic-bezier(0.32,0.72,0,1), left 0.4s cubic-bezier(0.32,0.72,0,1), width 0.4s cubic-bezier(0.32,0.72,0,1), height 0.4s cubic-bezier(0.32,0.72,0,1)"
+                  : "none",
+            }}
           />
 
-          {/* Popover */}
-          <motion.div
+          <div
             ref={popoverRef}
-            initial={{ opacity: 0, scale: 0.9, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 10 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            style={{ position: "fixed", top, left, width: popoverWidth, zIndex: 9999 }}
-            className={cn("bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-border overflow-hidden", className)}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="tour-step-title"
+            aria-describedby="tour-step-body"
+            className={cn(
+              "fixed z-[9999] overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-2xl",
+              className,
+            )}
+            style={{
+              ...popoverStyle,
+              transition:
+                gliding && !reduceMotion
+                  ? "top 0.4s cubic-bezier(0.32,0.72,0,1), left 0.4s cubic-bezier(0.32,0.72,0,1), bottom 0.4s cubic-bezier(0.32,0.72,0,1)"
+                  : "none",
+            }}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 pb-3 border-b border-border/50">
+            <div className="flex items-center justify-between border-b border-border/50 p-4 pb-3">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary/10">
+                  <Compass className="h-3.5 w-3.5 text-primary" />
                 </div>
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                  Step {currentStep + 1} of {steps.length}
+                  Step {position + 1} of {visibleSteps.length}
                 </span>
               </div>
               <button
-                onClick={handleSkip}
-                className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => finish(false)}
+                className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                 aria-label="Skip tour"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            {/* Content */}
-            <div className="p-5 space-y-3">
-              <h3 className="text-base font-black tracking-tight text-foreground">{currentStepData.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{currentStepData.description}</p>
+            <div key={stepIndex} className="space-y-2 p-5 pb-3 animate-in fade-in duration-300">
+              <h3 id="tour-step-title" className="text-base font-black tracking-tight text-foreground">
+                {step.title}
+              </h3>
+              <p id="tour-step-body" className="text-sm leading-relaxed text-muted-foreground">
+                {step.description}
+              </p>
             </div>
 
-            {/* Progress dots */}
-            <div className="px-5 pb-2 flex items-center gap-1.5">
-              {steps.map((_, idx) => (
+            <div className="flex items-center gap-1.5 px-5 pb-2" aria-hidden="true">
+              {visibleSteps.map((s, idx) => (
                 <div
-                  key={idx}
+                  key={s.target}
                   className={cn(
                     "h-1 rounded-full transition-all duration-300",
-                    idx === currentStep
-                      ? "w-6 bg-primary"
-                      : idx < currentStep
-                        ? "w-2 bg-primary/40"
-                        : "w-2 bg-muted"
+                    idx === position ? "w-6 bg-primary" : idx < position ? "w-2 bg-primary/40" : "w-2 bg-muted",
                   )}
                 />
               ))}
             </div>
 
-            {/* Actions */}
-            <div className="p-4 pt-2 flex items-center justify-between gap-3">
+            <div className="flex items-center justify-between gap-3 p-4 pt-2">
               <button
-                onClick={handleBack}
-                disabled={currentStep === 0}
+                onClick={() => goTo(stepIndex - 1, -1)}
+                disabled={isFirst}
                 className={cn(
-                  "flex items-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-black uppercase tracking-widest transition-all",
-                  currentStep === 0
-                    ? "opacity-0 pointer-events-none"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  "flex items-center gap-1.5 rounded-full px-4 py-2.5 text-xs font-black uppercase tracking-widest transition-colors",
+                  isFirst ? "pointer-events-none opacity-0" : "text-muted-foreground hover:bg-secondary hover:text-foreground",
                 )}
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
                 Back
               </button>
               <button
-                onClick={handleNext}
-                className="flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-primary text-white text-xs font-black uppercase tracking-widest hover:bg-primary/90 transition-all active:scale-95 shadow-lg"
+                onClick={() => goTo(stepIndex + 1, 1)}
+                className="flex items-center gap-1.5 rounded-full bg-primary px-5 py-2.5 text-xs font-black uppercase tracking-widest text-primary-foreground shadow-lg transition-all hover:bg-primary/90 active:scale-95"
+                autoFocus
               >
-                {currentStep === steps.length - 1 ? "Finish" : "Next"}
+                {isLast ? "Finish" : "Next"}
                 <ChevronRight className="h-3.5 w-3.5" />
               </button>
             </div>
-          </motion.div>
-        </>
+          </div>
+        </motion.div>
       )}
     </AnimatePresence>,
-    document.body
+    document.body,
   );
+}
+
+function computePopoverStyle(
+  rect: Rect,
+  placement: NonNullable<TourStep["placement"]>,
+  width: number,
+  height: number,
+  viewport: { width: number; height: number },
+  isSheet: boolean,
+): React.CSSProperties {
+  // Phones: a full-width sheet on whichever half of the screen the target is
+  // not in, so the highlighted element is never hidden behind the popover.
+  if (isSheet) {
+    const targetCenter = rect.top + rect.height / 2;
+    const base: React.CSSProperties = { left: EDGE, width: viewport.width - EDGE * 2 };
+    return targetCenter > viewport.height / 2
+      ? { ...base, top: `calc(env(safe-area-inset-top, 0px) + ${EDGE}px)` }
+      : { ...base, bottom: `calc(env(safe-area-inset-bottom, 0px) + ${EDGE}px)` };
+  }
+
+  const fits = {
+    bottom: rect.top + rect.height + GAP + height <= viewport.height - EDGE,
+    top: rect.top - GAP - height >= EDGE,
+    right: rect.left + rect.width + GAP + width <= viewport.width - EDGE,
+    left: rect.left - GAP - width >= EDGE,
+  };
+  const order: Array<keyof typeof fits> =
+    placement === "auto" ? ["bottom", "top", "right", "left"] : [placement, "bottom", "top", "right", "left"];
+  const side = order.find((s) => fits[s]);
+
+  let top: number;
+  let left: number;
+  switch (side) {
+    case "bottom":
+      top = rect.top + rect.height + GAP;
+      left = rect.left + rect.width / 2 - width / 2;
+      break;
+    case "top":
+      top = rect.top - GAP - height;
+      left = rect.left + rect.width / 2 - width / 2;
+      break;
+    case "right":
+      top = rect.top + rect.height / 2 - height / 2;
+      left = rect.left + rect.width + GAP;
+      break;
+    case "left":
+      top = rect.top + rect.height / 2 - height / 2;
+      left = rect.left - GAP - width;
+      break;
+    default:
+      // The target fills the screen (a tall card): pin to the bottom edge.
+      top = viewport.height - height - EDGE;
+      left = rect.left + rect.width / 2 - width / 2;
+  }
+
+  return {
+    width,
+    top: Math.min(Math.max(top, EDGE), viewport.height - height - EDGE),
+    left: Math.min(Math.max(left, EDGE), viewport.width - width - EDGE),
+  };
 }

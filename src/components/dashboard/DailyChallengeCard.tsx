@@ -123,7 +123,9 @@ export default function DailyChallengeCard({ userId, educationLevel }: DailyChal
       <div className="relative z-10 space-y-2">
         <div className="flex items-center gap-2">
           <Brain className="h-5 w-5 text-primary" />
-          <h3 className="text-lg sm:text-xl font-black tracking-tightest">
+          {/* text-background is explicit: the global h3 rule sets its own colour,
+              which made this title invisible on the inverted card. */}
+          <h3 className="text-lg sm:text-xl font-black tracking-tightest text-background">
             AI Challenge
           </h3>
         </div>
