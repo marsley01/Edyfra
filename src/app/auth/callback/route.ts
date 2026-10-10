@@ -67,8 +67,13 @@ export async function GET(request: NextRequest) {
     try {
       const user = data.user;
       if (user) {
+        // id OR email, like getUserData() and the dashboard layout. A by-id-only
+        // lookup sent legacy accounts (row id != auth id) to onboarding even
+        // though they already had a profile.
         const existing = await prisma.user.findFirst({
-          where: { id: user.id },
+          where: {
+            OR: [{ id: user.id }, ...(user.email ? [{ email: user.email }] : [])],
+          },
           include: { studentProfile: true, tutorProfile: true },
         });
         const hasProfile = Boolean(existing?.studentProfile || existing?.tutorProfile);
@@ -118,7 +123,10 @@ async function ensurePrismaUser(
       },
       select: { id: true },
     });
-    if (existing) return;
+    if (existing) {
+      if (existing.id !== user.id) await relinkOrphanedRow(existing.id, user.id);
+      return;
+    }
 
     const metadata = user.user_metadata ?? {};
     const name =
@@ -145,6 +153,33 @@ async function ensurePrismaUser(
     // Never block a successful sign-in on bookkeeping. The row heals on the
     // first getUserData()/updateUserRole() call if this write lost a race.
     console.error("[auth/callback] failed to materialise Prisma user:", error);
+  }
+}
+
+/**
+ * Deleting a user in the Supabase dashboard removes the `auth.users` row but
+ * leaves the app's "User" row behind. When that person signs in with Google
+ * again they get a fresh auth id, and the stale row (found by email) keeps the
+ * old one — so every query keyed on the session's `user.id` misses it and
+ * inserts referencing the new id fail their foreign keys.
+ *
+ * If the stale row's id no longer exists in `auth.users`, it belongs to nobody
+ * else, and Google has just verified this person owns the email, so move it to
+ * the new id. Most foreign keys to "User" are ON UPDATE CASCADE; a few payment
+ * tables are not, and Postgres rejects the update if those reference the row.
+ * In that case the row is left alone and the email fallback keeps working.
+ */
+async function relinkOrphanedRow(staleId: string, authId: string): Promise<void> {
+  try {
+    const rows = await prisma.$queryRaw<{ exists: boolean }[]>`
+      SELECT EXISTS (SELECT 1 FROM auth.users WHERE id::text = ${staleId}) AS "exists"
+    `;
+    if (rows[0]?.exists) return;
+
+    await prisma.user.update({ where: { id: staleId }, data: { id: authId } });
+    console.info(`[auth/callback] re-linked orphaned user row ${staleId} -> ${authId}`);
+  } catch (error) {
+    console.error("[auth/callback] could not re-link orphaned user row:", error);
   }
 }
 

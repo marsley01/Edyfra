@@ -11,5 +11,5 @@ export default async function LoginPage({
   const rawError = Array.isArray(params.error) ? params.error[0] : params.error
   const initialError = authErrorMessage(rawError)
 
-  return <LoginForm googleEnabled={isGoogleSignInEnabled()} initialError={initialError} />
+  return <LoginForm googleEnabled={await isGoogleSignInEnabled()} initialError={initialError} />
 }

@@ -1,28 +1,18 @@
 "use client";
 
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle2, Mail, Clock } from "lucide-react";
 import { motion } from "framer-motion";
-import { createClient } from "@/utils/supabase/client";
 import { cn } from "@/lib/utils";
 
 export default function TutorPendingPage() {
   const router = useRouter();
 
-  useEffect(() => {
-    // Check if user is logged in
-    const checkUser = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push("/login");
-      }
-    };
-    checkUser();
-  }, [router]);
+  // Signed-out visitors never reach this page: the proxy redirects them. A
+  // browser-side check used to bounce users whose session the browser client
+  // could not read, even though the server considered them signed in.
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 md:p-12 selection:bg-primary/30 font-sans">

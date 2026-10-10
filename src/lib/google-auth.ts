@@ -9,8 +9,7 @@ import { getAppUrl } from "@/lib/app-url";
  * That broker URL is the value registered as an "Authorized redirect URI" in
  * Google Cloud Console. The Google client id/secret live in the Supabase
  * dashboard (Authentication -> Providers -> Google), NOT in this app's
- * runtime env — `GOOGLE_CLIENT_ID` is only used here as the operator's signal
- * that the provider was configured, so the button can be hidden when it was not.
+ * runtime env.
  */
 
 export const GOOGLE_PROVIDER = "google";
@@ -21,8 +20,38 @@ export function getSupabaseAuthCallbackUrl(next?: string): string {
   return next ? `${base}?next=${encodeURIComponent(next)}` : base;
 }
 
-export function isGoogleSignInEnabled(): boolean {
-  return Boolean(process.env.GOOGLE_CLIENT_ID?.trim());
+/**
+ * Whether to show "Continue with Google" on the login and register pages.
+ *
+ * Asks Supabase itself (`/auth/v1/settings`), because that is where the
+ * provider is actually switched on. This used to key off a `GOOGLE_CLIENT_ID`
+ * env var that only existed in local `.env` files, so production silently hid
+ * the button even though the provider was enabled in Supabase.
+ *
+ * The answer is cached for five minutes. If Supabase cannot be reached the
+ * button is shown anyway: GoogleButton already explains a disabled provider to
+ * the user, which beats hiding the option on a transient network blip.
+ * `GOOGLE_SIGNIN_DISABLED=true` is a manual kill switch.
+ */
+export async function isGoogleSignInEnabled(): Promise<boolean> {
+  if (process.env.GOOGLE_SIGNIN_DISABLED?.trim().toLowerCase() === "true") return false;
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) return false;
+
+  try {
+    const res = await fetch(`${url}/auth/v1/settings`, {
+      headers: { apikey: key },
+      next: { revalidate: 300 },
+      signal: AbortSignal.timeout(3000),
+    });
+    if (!res.ok) return true;
+    const settings = (await res.json()) as { external?: Record<string, boolean> };
+    return settings.external?.[GOOGLE_PROVIDER] !== false;
+  } catch {
+    return true;
+  }
 }
 
 /**

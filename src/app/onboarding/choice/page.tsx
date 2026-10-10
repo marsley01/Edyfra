@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { GraduationCap, Users, ArrowRight, Check, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { createClient } from "@/utils/supabase/client";
 import { cn } from "@/lib/utils";
 import { showError } from "@/lib/toast";
 
@@ -22,13 +21,13 @@ export default function RoleChoicePage() {
   useEffect(() => {
     (async () => {
       try {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        window.location.href = "/auth/login";
-        return;
-      }
-
+      // No browser-side "am I signed in?" check here. The proxy already sends
+      // signed-out visitors to /auth/login before this page renders, and the
+      // server is the only reliable judge: when the browser client could not
+      // read the session cookie it redirected to /auth/login, the proxy sent a
+      // signed-in user from there to /dashboard, and the dashboard sent them
+      // back here — an endless loop that made onboarding unreachable. If the
+      // session really is gone, updateUserRole() reports it on Continue.
       const { getUserData } = await import("@/app/actions/user");
       const profile = await getUserData();
 

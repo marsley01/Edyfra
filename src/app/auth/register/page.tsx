@@ -1,6 +1,6 @@
 import RegisterForm from './register-form'
 import { isGoogleSignInEnabled } from '@/lib/google-auth'
 
-export default function RegisterPage() {
-  return <RegisterForm googleEnabled={isGoogleSignInEnabled()} />
+export default async function RegisterPage() {
+  return <RegisterForm googleEnabled={await isGoogleSignInEnabled()} />
 }

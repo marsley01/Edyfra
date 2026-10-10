@@ -95,7 +95,7 @@ function validateCsrf(request: NextRequest): boolean {
   return isOriginAllowed(origin, allowedUrls) || isOriginAllowed(referer, allowedUrls);
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const url = new URL(request.url)
   const isApiRoute = url.pathname.startsWith('/api/')
   const origin = request.headers.get('origin')
@@ -184,6 +184,19 @@ export async function middleware(request: NextRequest) {
   // old get/set/remove form rebuilt the response on every `set`, so when a
   // refreshed session was split across chunked cookies only the last chunk
   // survived — users were logged out at random.
+  //
+  // Two rules here are load-bearing:
+  // 1. Rebuild `supabaseResponse` after writing to `request.cookies`.
+  //    NextResponse.next({ request }) snapshots the request headers when it is
+  //    constructed, so without the rebuild server components and server actions
+  //    in this same request keep the stale, already-rotated tokens and race to
+  //    refresh them again (seen as bursts of token_refreshed + token_revoked).
+  // 2. Pass Supabase's cookie options through untouched. Forcing `httpOnly`
+  //    hides the session from the browser client (createBrowserClient reads
+  //    document.cookie), so client pages saw "no user" while the server saw a
+  //    signed-in one — the /onboarding <-> /auth/login <-> /dashboard loop. It
+  //    also stops the browser from overwriting or clearing those cookies on the
+  //    next sign-in or sign-out.
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -193,16 +206,11 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          const cookieOptions = {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax" as const,
-          }
-          cookiesToSet.forEach(({ name, value, options }) => {
-            const mergedOptions = { ...options, ...cookieOptions }
-            request.cookies.set({ name, value, ...mergedOptions })
-            supabaseResponse.cookies.set({ name, value, ...mergedOptions })
-          })
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          supabaseResponse = NextResponse.next({ request })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
         },
       },
     }
