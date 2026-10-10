@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/utils/supabase/server";
+import { resolveStreamViewer } from "@/lib/video/viewer";
 import { getSession as getMatchSession } from "@/app/actions/match";
 import { getBookingSessionData } from "@/app/actions/bookings";
 import StudyRoomClient, { type StudyRoomInitialData } from "./StudyRoomClient";
@@ -21,12 +21,11 @@ export const dynamic = "force-dynamic";
 export default async function StudyRoomPage({ params }: PageProps) {
   const { id: sessionId } = await params;
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  // The room compares currentUser.id with Session.studentId/partnerId and uses
+  // it as the Stream chat/video id, so it must be the PRISMA id (it differs
+  // from the Supabase auth id for some older accounts).
+  const viewer = await resolveStreamViewer();
+  if (!viewer) {
     redirect("/login");
   }
 
@@ -64,12 +63,9 @@ export default async function StudyRoomPage({ params }: PageProps) {
         : undefined,
     },
     currentUser: {
-      id: user.id,
-      name:
-        user.user_metadata?.name ||
-        user.email?.split("@")[0] ||
-        "User",
-      avatar: user.user_metadata?.avatar || undefined,
+      id: viewer.id,
+      name: viewer.name || "User",
+      avatar: viewer.image || undefined,
     },
   };
 

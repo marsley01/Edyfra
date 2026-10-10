@@ -31,13 +31,13 @@ export async function POST(_request: NextRequest) {
     }
 
     // Best-effort profile sync; a sync failure must not block the token
-    const profile = await syncUserToStream(viewer.id).catch((err) => {
+    await syncUserToStream(viewer.id).catch((err) => {
       console.warn("[Stream API] profile sync failed:", err);
-      return null;
     });
     await syncAIUserToStream().catch(() => {});
 
-    const userId = profile?.id ?? viewer.id;
+    // Same id /api/stream/video-token and getStreamToken use
+    const userId = viewer.id;
     const token = client.createToken(userId);
 
     return NextResponse.json({ token, userId }, { headers: noStore });

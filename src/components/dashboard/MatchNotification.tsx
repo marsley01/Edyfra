@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { showError, showSuccess, showInfo } from "@/lib/toast";
+import { showError, showSuccess } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Zap, X, Check } from "lucide-react";
 import { acceptMatchRequest } from "@/app/actions/match";
+import { getMatchViewerContext } from "@/app/actions/match-algorithm";
+import { teachesSubject } from "@/lib/matching/tutor-ranking";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -25,31 +27,49 @@ export default function MatchNotification() {
 
   useEffect(() => {
     let mounted = true;
+    // Only verified tutors get live request toasts (getMatchViewerContext is
+    // null for everyone else), and only for subjects they teach.
+    // (Peer pairing is automatic now, and the broadcast payload is
+    // client-supplied, so the server re-checks everything on accept.)
+    let viewer: { id: string; role: string; subjects: string[] } | null = null;
+    const ready = getMatchViewerContext()
+      .then((v) => {
+        viewer = v;
+      })
+      .catch(() => {
+        viewer = null;
+      });
+
     const channel = supabase
       .channel('global-matches')
       .on('broadcast', { event: 'new-request' }, async ({ payload }: { payload: any }) => {
         try {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (mounted && user && payload.studentId !== user.id) {
-            setRequests((prev) => [...prev, payload]);
-            showInfo(`New ${payload.subject} request`, { description: `${payload.studentName} is waiting for a tutor.` });
-            
-            // Auto-remove after 45s
-            setTimeout(() => {
-              if (mounted) {
-                setRequests((prev) => prev.filter(r => r.requestId !== payload.requestId));
-              }
-            }, 45000);
-          }
+          await ready;
+          if (!mounted || !viewer || viewer.role !== "TUTOR") return;
+          if (!payload?.requestId || typeof payload.subject !== "string") return;
+          if (payload.studentId === viewer.id) return;
+          if (!teachesSubject(viewer.subjects, payload.subject)) return;
+
+          const safe: MatchRequestPayload = {
+            requestId: String(payload.requestId),
+            studentId: String(payload.studentId ?? ""),
+            studentName: "A student",
+            subject: String(payload.subject).slice(0, 80),
+            topic: String(payload.topic ?? "General").slice(0, 120),
+          };
+          setRequests((prev) => (prev.some((r) => r.requestId === safe.requestId) ? prev : [...prev, safe]));
+
+          // Requests are only offered for a short window; drop the toast after it.
+          setTimeout(() => {
+            if (mounted) {
+              setRequests((prev) => prev.filter(r => r.requestId !== safe.requestId));
+            }
+          }, 45000);
         } catch (err) {
           console.error("Error handling match broadcast:", err);
         }
       })
-      .subscribe((status: any) => {
-        if (status === 'SUBSCRIBED') {
-          // Optional: could log subscription
-        }
-      });
+      .subscribe();
 
     return () => {
       mounted = false;
@@ -63,6 +83,7 @@ export default function MatchNotification() {
       if (result.success) {
         showSuccess("Match accepted", { description: "Taking you into the room." });
         router.push(`/study-room/${result.sessionId}`);
+        setRequests((prev) => prev.filter(r => r.requestId !== requestId));
       } else {
         // acceptMatchRequest reports failures (already taken, own request...) as
         // a result, not a throw — previously the click silently did nothing.
@@ -94,8 +115,8 @@ export default function MatchNotification() {
                       <Zap className="h-4 w-4 text-primary fill-current" />
                     </div>
                     <div>
-                      <p className="text-sm font-bold">{request.studentName} needs help!</p>
-                      <p className="text-xs text-muted-foreground">{request.subject} - {request.topic}</p>
+                      <p className="text-sm font-bold">A {request.subject} student needs help!</p>
+                      <p className="text-xs text-muted-foreground">{request.topic}</p>
                     </div>
                   </div>
                   <button 

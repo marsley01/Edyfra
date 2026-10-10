@@ -7,6 +7,7 @@ import {
   gradeForPoints,
   gradeForScore,
   linearTrend,
+  parseTermParam,
   meanGrade,
   parseClassStream,
   percentileRank,
@@ -45,6 +46,13 @@ describe("KCSE grading", () => {
 });
 
 describe("terms", () => {
+  it("parses the ?term= search param", () => {
+    expect(parseTermParam("2026-2")).toEqual({ year: 2026, term: 2 });
+    expect(parseTermParam(["2025-3"])).toEqual({ year: 2025, term: 3 });
+    expect(parseTermParam("2026-4")).toBeNull();
+    expect(parseTermParam(undefined)).toBeNull();
+  });
+
   it("wraps term 1 to the previous year's term 3", () => {
     expect(previousTerm({ term: 1, year: 2026 })).toEqual({ term: 3, year: 2025 });
     expect(previousTerm({ term: 3, year: 2026 })).toEqual({ term: 2, year: 2026 });
@@ -169,6 +177,14 @@ describe("value-added", () => {
 
   it("omits subjects with too little data", () => {
     expect(subjectDifficulty(records, { minN: 100 })).toEqual([]);
+  });
+
+  it("credits a shared record to every listed teacher", () => {
+    const shared = records.map((r) => (r.subject === "English" ? { ...r, teacherId: null, teacherIds: ["t1", "t2"] } : r));
+    const rows = teacherEffectiveness(shared, { minN: 3 });
+    const ids = rows.map((r) => r.teacherId).sort();
+    expect(ids).toEqual(["t1", "t2", "tA", "tB"]);
+    expect(rows.find((r) => r.teacherId === "t1")!.n).toBe(8);
   });
 
   it("measures teacher value-added within subject", () => {

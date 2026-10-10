@@ -2,7 +2,7 @@
 
 import { getUserData } from "./user";
 import { revalidatePath } from "next/cache";
-import { notifyUser } from "@/app/actions/notifications";
+import { notifyUser } from "@/lib/notifications/server";
 import { getAppUrl } from "@/lib/app-url";
 import {
   pythonGetTutorAvailability,

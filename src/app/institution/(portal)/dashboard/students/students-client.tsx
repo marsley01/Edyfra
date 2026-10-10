@@ -49,12 +49,21 @@ export function StudentsClient({ initialRows }: { initialRows: StudentRow[] }) {
         return (
           r.name.toLowerCase().includes(s) ||
           r.email.toLowerCase().includes(s) ||
+          (r.admissionNumber ?? "").toLowerCase().includes(s) ||
           r.subjects.some((sub) => sub.toLowerCase().includes(s))
         );
       }
       return true;
     });
   }, [rows, search, formFilter, perfFilter]);
+
+  // Render one page at a time so large rosters stay responsive.
+  const PAGE_SIZE = 25;
+  const [page, setPage] = useState(1);
+  useEffect(() => setPage(1), [search, formFilter, perfFilter]);
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const pageRows = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   function handleRemove(id: string, name: string) {
     if (!confirm(`Remove ${name} from the institution? Their Edyfra account is preserved.`)) return;
@@ -134,7 +143,7 @@ export function StudentsClient({ initialRows }: { initialRows: StudentRow[] }) {
       </Card>
 
       <DataTable<StudentRow>
-        rows={filtered}
+        rows={pageRows}
         rowKey={(r) => r.id}
         onRowClick={(r) => router.push(`/institution/dashboard/students/${r.id}`)}
         empty={
@@ -152,7 +161,10 @@ export function StudentsClient({ initialRows }: { initialRows: StudentRow[] }) {
                 <Initials name={r.name} color={hashColor(r.name)} className="!h-8 !w-8 !text-[11px]" />
                 <div className="min-w-0">
                   <p className="truncate font-bold text-gray-900">{r.name}</p>
-                  <p className="truncate text-xs text-gray-500">{r.email}</p>
+                  <p className="truncate text-xs text-gray-500">
+                    {r.admissionNumber ? `${r.admissionNumber} · ` : ""}
+                    {r.email}
+                  </p>
                 </div>
               </div>
             ),
@@ -226,6 +238,25 @@ export function StudentsClient({ initialRows }: { initialRows: StudentRow[] }) {
           },
         ]}
       />
+
+      {filtered.length > PAGE_SIZE && (
+        <div className="flex items-center justify-between text-xs text-gray-500">
+          <span>
+            {(safePage - 1) * PAGE_SIZE + 1}–{Math.min(filtered.length, safePage * PAGE_SIZE)} of {filtered.length} students
+          </span>
+          <div className="flex items-center gap-2">
+            <Button size="xs" variant="ghost" disabled={safePage <= 1} onClick={() => setPage(safePage - 1)}>
+              Previous
+            </Button>
+            <span className="tabular-nums">
+              {safePage}/{pageCount}
+            </span>
+            <Button size="xs" variant="ghost" disabled={safePage >= pageCount} onClick={() => setPage(safePage + 1)}>
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
 
       {showAdd && <AddStudentDialog onClose={() => setShowAdd(false)} />}
       {showBulk && <BulkUploadDialog onClose={() => setShowBulk(false)} />}

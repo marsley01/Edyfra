@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { createAdminClient } from "@/utils/supabase/admin";
-import { notifyManyUsers } from "@/app/actions/notifications";
+import { notifyManyUsers } from "@/lib/notifications/server";
 
 // processing_jobs is @@map'ped but its columns are NOT (they are camelCase:
 // "filePath", "createdAt", ...), and InstitutionMember is the unmapped

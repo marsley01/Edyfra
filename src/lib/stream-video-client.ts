@@ -29,6 +29,15 @@ type Listener = (client: StreamVideoClient | null) => void;
 let client: StreamVideoClient | null = null;
 let clientUser: User | null = null;
 let pending: Promise<StreamVideoClient | null> | null = null;
+/**
+ * In-flight resetVideoClient teardown. The SDK keeps a client in its instance
+ * map until disconnectUser() finishes, so getOrCreateInstance() for the same
+ * user during a teardown (sign out, then straight back in) would hand back
+ * the dying client. New clients are only created once this settles.
+ */
+let teardown: Promise<void> | null = null;
+/** Bumped by every reset, so an init that started before it is discarded. */
+let generation = 0;
 let suspended = false;
 let lifecycleBound = false;
 /** Token fetched during init, handed to the SDK on its first tokenProvider call. */
@@ -154,11 +163,11 @@ async function resumeVideoClient(): Promise<void> {
     emit();
   } catch (err) {
     console.warn('[stream-video-client] reconnect failed, recreating client:', err);
-    // Fall back to a fresh client (e.g. the token's user changed)
-    client = null;
-    clientUser = null;
-    suspended = false;
-    emit();
+    // Fall back to a fresh client (e.g. the token's user changed). Tear the
+    // old one down properly first: the SDK would otherwise hand the same
+    // broken instance back from getOrCreateInstance. (The reset also clears
+    // `pending`, so this can't deadlock when called from inside an init.)
+    await resetVideoClient();
     await getStreamVideoClient();
   }
 }
@@ -171,7 +180,14 @@ async function resumeVideoClient(): Promise<void> {
 export function getStreamVideoClient(): Promise<StreamVideoClient | null> {
   if (pending) return pending;
 
-  pending = (async () => {
+  let gen = generation;
+  let initPromise: Promise<StreamVideoClient | null>;
+
+  initPromise = (async () => {
+    // Never reuse (or race) a client that is still being torn down
+    while (teardown) await teardown;
+    if (gen !== generation) return null;
+
     let data: VideoTokenData;
     try {
       data = await fetchVideoToken();
@@ -183,6 +199,8 @@ export function getStreamVideoClient(): Promise<StreamVideoClient | null> {
       }
       return client && !(err instanceof NotAuthenticatedError) ? client : null;
     }
+    // Signed out (reset) while the token was in flight: don't resurrect
+    if (gen !== generation) return null;
 
     if (client && clientUser?.id === data.userId) {
       if (suspended || !client.state.connectedUser) await resumeVideoClient();
@@ -190,9 +208,15 @@ export function getStreamVideoClient(): Promise<StreamVideoClient | null> {
     }
 
     if (client) {
-      // Different user than the one connected: tear the old one down first
+      // Different user than the one connected: tear the old one down first.
+      // That reset is ours, so keep this init current and shared.
       await resetVideoClient();
+      gen = generation;
+      pending = initPromise!;
     }
+    while (teardown) await teardown;
+    // A sign-out happened meanwhile
+    if (gen !== generation) return null;
 
     const user: User = {
       id: data.userId,
@@ -221,12 +245,13 @@ export function getStreamVideoClient(): Promise<StreamVideoClient | null> {
     emit();
     return next;
   })().finally(() => {
-    pending = null;
+    if (pending === initPromise) pending = null;
   });
 
-  return pending;
-}
+  pending = initPromise;
 
+  return initPromise;
+}
 /** Leaves any calls, closes the socket and forgets the client (logout). */
 export async function resetVideoClient(): Promise<void> {
   const c = client;
@@ -234,16 +259,30 @@ export async function resetVideoClient(): Promise<void> {
   clientUser = null;
   primedToken = null;
   suspended = false;
+  generation++;
+  // An init that started before this reset must not be handed to new callers
+  pending = null;
   emit();
-  if (!c) return;
-  try {
-    for (const call of [...c.state.calls]) {
-      await call.leave({ reject: call.ringing, reason: 'cancel' }).catch(() => {});
-    }
-    await c.disconnectUser();
-  } catch (err) {
-    console.error('[stream-video-client] Disconnect error:', err);
+  if (!c) {
+    if (teardown) await teardown;
+    return;
   }
+  const t: Promise<void> = (async () => {
+    try {
+      for (const call of [...c.state.calls]) {
+        await call.leave({ reject: call.ringing, reason: 'cancel' }).catch(() => {});
+      }
+      await c.disconnectUser();
+    } catch (err) {
+      console.error('[stream-video-client] Disconnect error:', err);
+    }
+  })();
+  const prev = teardown;
+  const all: Promise<void> = Promise.all([prev, t]).then(() => {
+    if (teardown === all) teardown = null;
+  });
+  teardown = all;
+  await all;
 }
 
 /** @deprecated use resetVideoClient */

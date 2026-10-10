@@ -11,10 +11,7 @@ import SessionReviewModal from "@/components/sessions/SessionReviewModal";
 import { Z } from "@/lib/layers";
 import { motion, AnimatePresence } from "framer-motion";
 import { VideoProvider } from "@/components/video/VideoProvider";
-import { useVideoContext } from "@/components/video/VideoProvider";
 import { StartCallButton } from "@/components/video/StartCallButton";
-import { IncomingCall } from "@/components/video/IncomingCall";
-import { ActiveCall } from "@/components/video/ActiveCall";
 
 const StreamChatRoom = dynamic(
   () => import("@/components/stream/StreamChatRoom"),
@@ -50,11 +47,6 @@ export interface StudyRoomInitialData {
 
 function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) {
   const router = useRouter();
-  // Use the shared VideoContext activeCall so that when StartCallButton calls
-  // setActiveCall (via the context) after the receiver accepts, the caller
-  // also transitions into the ActiveCall view.
-  const { activeCall, setActiveCall } = useVideoContext();
-
   const [session, setSession] = useState<StudyRoomSession>(initialData.session);
   const [showReview, setShowReview] = useState(false);
   const [showNoShowPrompt, setShowNoShowPrompt] = useState(false);
@@ -202,16 +194,6 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
     ...(session.partner ? [{ ...session.partner, isCurrentUser: session.partnerId === currentUser.id, role: session.tier === "TUTOR" ? "Tutor" : "Buddy" }] : []),
   ];
 
-  if (activeCall) {
-    return (
-      <ActiveCall
-        call={activeCall}
-        onEnd={() => setActiveCall(null)}
-        subject={`${session.subject}${session.topic ? ` — ${session.topic}` : ""}`}
-      />
-    );
-  }
-
   return (
     <div className="h-[100dvh] bg-background text-foreground flex flex-col overflow-hidden">
       {/* Full-screen ending overlay */}
@@ -329,12 +311,12 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
         </aside>
 
         <section className="flex-1 flex flex-col bg-background relative min-w-0 min-h-0">
-          <IncomingCall onAccepted={(call) => setActiveCall(call)} />
-
+          {/* Incoming rings and the in-call UI are rendered by VideoProvider */}
           {session.partnerId && session.partnerId !== "mash-ai" && (
             <div className="px-4 pt-3 pb-1 flex justify-end shrink-0">
               <StartCallButton
                 roomId={sessionId}
+                subject={`${session.subject}${session.topic ? ` — ${session.topic}` : ""}`}
                 otherUserId={
                   session.studentId === currentUser.id
                     ? session.partnerId

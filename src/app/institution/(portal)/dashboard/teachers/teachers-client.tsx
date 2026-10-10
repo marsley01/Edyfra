@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { DataTable } from "@/components/institution/data-table";
 import { Initials } from "@/components/institution/initials";
 import { showError, showSuccess } from "@/lib/toast";
-import { inviteTeacher, removeTeacher } from "@/app/actions/institution-admin";
+import { inviteTeacher, removeTeacher, revokeTeacherInvitation } from "@/app/actions/institution-admin";
 import type { TeacherRow } from "@/app/actions/institution-admin";
 
 const COLORS = ["indigo", "cyan", "emerald", "amber", "rose", "violet"] as const;
@@ -57,6 +57,20 @@ export function TeachersClient({ initialRows }: { initialRows: TeacherRow[] }) {
         return;
       }
       showSuccess(`${name} removed`, { description: "They no longer have access to this institution." });
+      setRows((cur) => cur.filter((r) => r.id !== id));
+      router.refresh();
+    });
+  }
+
+  function handleRevoke(id: string, name: string) {
+    if (!confirm(`Revoke the invitation sent to ${name}?`)) return;
+    startTransition(async () => {
+      const res = await revokeTeacherInvitation(id);
+      if (!res.ok) {
+        showError({ title: "Couldn't revoke that invitation", cause: res.error, fix: "Refresh the page and try again." });
+        return;
+      }
+      showSuccess("Invitation revoked");
       setRows((cur) => cur.filter((r) => r.id !== id));
       router.refresh();
     });
@@ -183,6 +197,15 @@ export function TeachersClient({ initialRows }: { initialRows: TeacherRow[] }) {
                   title="Remove from institution"
                 >
                   <XCircle className="h-3.5 w-3.5" />
+                </button>
+              ) : r.status === "INVITED" ? (
+                <button
+                  onClick={() => handleRevoke(r.id, r.name)}
+                  disabled={pending}
+                  className="rounded-md px-2 py-1 text-[11px] font-bold text-gray-400 hover:bg-rose-50 hover:text-rose-600"
+                  title="Revoke invitation"
+                >
+                  Revoke
                 </button>
               ) : null,
           },

@@ -6,7 +6,7 @@ import { Role, VerifPath, TutorApplication, User, TutorProfile } from "@/generat
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { requireAdminCaller } from "@/app/actions/_admin-guard";
-import { notifyUser } from "@/app/actions/notifications";
+import { notifyUser } from "@/lib/notifications/server";
 import { TUTOR_CONFIG } from "@/lib/config";
 import { resolveKycUrl } from "@/app/actions/tutor-kyc";
 

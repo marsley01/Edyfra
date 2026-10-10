@@ -346,7 +346,7 @@ async function notifyFoundersOfApplication(
     });
     if (founders.length === 0) return;
 
-    const { notifyManyUsers } = await import("./notifications");
+    const { notifyManyUsers } = await import("@/lib/notifications/server");
     await notifyManyUsers(founders.map((f) => f.id), {
       type: "ANNOUNCEMENT",
       title: `New institution application`,

@@ -5,7 +5,7 @@ import prisma from "@/lib/prisma";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { createDMChannel } from "@/app/actions/stream";
 import { setFollow, type SocialUserDTO } from "@/app/actions/social";
-import { notifyUser } from "@/app/actions/notifications";
+import { notifyUser } from "@/lib/notifications/server";
 import { getSocialViewer, getViewerFollowingIds, getFollowersAmong } from "@/lib/social-viewer";
 
 export interface ProfileData {

@@ -10,7 +10,6 @@ import {
   useCallback,
 } from "react";
 import { StreamChat } from "stream-chat";
-import { getStreamToken } from "@/app/actions/stream";
 import { createClient } from "@/utils/supabase/client";
 import { polyfillClipboard } from "@/utils/clipboard-polyfill";
 
@@ -64,30 +63,31 @@ export function StreamChatProvider({ children }: { children: ReactNode }) {
     } = await supabase.auth.getUser();
     if (!user) return;
 
-    setUserId(user.id);
-
     try {
-      console.log(`[StreamProvider] Connecting user: ${user.id}`);
-
-      let token: string;
-      try {
-        token = await getStreamToken(user.id);
-      } catch (actionErr) {
-        console.warn("[StreamProvider] Server action failed, trying HTTP:", actionErr);
-        const res = await fetch("/api/stream/token", { method: "POST", signal: ctrl.signal });
-        if (!res.ok) throw new Error("Stream token fetch failed");
-        const data = await res.json();
-        token = data.token;
+      // Stream users are keyed by the PRISMA id, which differs from the
+      // Supabase auth id for some older accounts. The token endpoint resolves
+      // it server-side and returns the id the token was minted for; connect
+      // as exactly that id.
+      const res = await fetch("/api/stream/token", { method: "POST", signal: ctrl.signal });
+      if (!res.ok) throw new Error("Stream token fetch failed");
+      const data = await res.json();
+      const token: unknown = data?.token;
+      const streamUserId: unknown = data?.userId;
+      if (typeof token !== "string" || typeof streamUserId !== "string") {
+        throw new Error("Stream token response was malformed");
       }
+      setUserId(streamUserId);
+      console.log(`[StreamProvider] Connecting user: ${streamUserId}`);
 
       // getInstance ensures only ONE client exists for this API key
       const chatClient = StreamChat.getInstance(STREAM_KEY);
 
-      // Only call connectUser if not already connected
-      if (chatClient.userID !== user.id) {
+      // Only call connectUser if not already connected as this user
+      if (chatClient.userID !== streamUserId) {
+        if (chatClient.userID) await chatClient.disconnectUser();
         await chatClient.connectUser(
           {
-            id: user.id,
+            id: streamUserId,
             name:
               user.user_metadata?.name ||
               user.email?.split("@")[0] ||
@@ -96,9 +96,9 @@ export function StreamChatProvider({ children }: { children: ReactNode }) {
           },
           token
         );
-        console.log(`[StreamProvider] Connected: ${user.id}`);
+        console.log(`[StreamProvider] Connected: ${streamUserId}`);
       } else {
-        console.log(`[StreamProvider] Already connected: ${user.id}`);
+        console.log(`[StreamProvider] Already connected: ${streamUserId}`);
       }
 
       clientRef.current = chatClient;

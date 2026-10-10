@@ -62,7 +62,8 @@ describe("isDbTimestampExpired", () => {
 // Mirrors the hook's signature check: the regression that shipped a silently
 // rejecting endpoint was splitting `v1,<sig>` on "," instead of whitespace.
 describe("svix signature format", () => {
-  const secret = "v1,whsec_A95DEY5Wuw3qn81tyA4SitdJLVU6pxdJXiezwuzhCKw=";
+  // Throwaway key generated for this test only — never a real hook secret.
+  const secret = `v1,whsec_${Buffer.from("edyfra-test-only-signing-key-0001").toString("base64")}`;
   const body = JSON.stringify({ user: { email: "a@b.c" } });
   const id = "msg_1";
   const ts = "1790887552";

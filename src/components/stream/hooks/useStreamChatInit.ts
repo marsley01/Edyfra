@@ -79,43 +79,56 @@ export function useStreamChatInit({
 
       const client = StreamChat.getInstance(STREAM_KEY);
 
-      const getToken = async (): Promise<string> => {
+      // Stream users are keyed by the PRISMA id. Some pages pass the Supabase
+      // auth id, which differs for older accounts, so the id we connect as
+      // always comes from the server together with its token.
+      const getSession = async (): Promise<{ token: string; userId: string }> => {
         try {
-          return await getStreamToken(userId);
-        } catch (err) {
-          console.warn("[useStreamChatInit] server-action token failed, trying HTTP", err);
           const res = await fetch("/api/stream/token", { method: "POST", signal: ctrl.signal });
-          if (!res.ok) throw new Error("Failed to authenticate with chat service");
+          if (!res.ok) throw new Error(`token endpoint ${res.status}`);
           const data = await res.json();
-          return data.token;
+          if (typeof data?.token !== "string" || typeof data?.userId !== "string") {
+            throw new Error("bad token response");
+          }
+          return { token: data.token, userId: data.userId };
+        } catch (err) {
+          if (ctrl.signal.aborted) throw err;
+          console.warn("[useStreamChatInit] token endpoint failed, trying server action", err);
+          // Only valid when `userId` already is the Stream id (it throws otherwise)
+          return { token: await getStreamToken(userId), userId };
         }
       };
 
-      if (client.userID !== userId && !connectingRef.current) {
+      let streamUserId = client.userID ?? null;
+      if (streamUserId !== userId && !connectingRef.current) {
         connectingRef.current = true;
         try {
-          const token = await getToken();
-          if (client.userID !== userId) {
+          const session = await getSession();
+          if (client.userID !== session.userId) {
+            // Connected as someone else (e.g. the auth id of an older account)
+            if (client.userID) await client.disconnectUser();
             await client.connectUser(
-              { id: userId, name: userName, image: userImage || undefined },
-              token,
+              { id: session.userId, name: userName, image: userImage || undefined },
+              session.token,
             );
-            console.log(`[useStreamChatInit] Chat connected: ${userId}`);
+            console.log(`[useStreamChatInit] Chat connected: ${session.userId}`);
           }
+          streamUserId = session.userId;
         } finally {
           connectingRef.current = false;
         }
       }
+      const me = streamUserId ?? userId;
 
       try {
-        await upsertStreamUser(userId, userName, userImage || undefined);
+        await upsertStreamUser(me, userName, userImage || undefined);
       } catch (err) {
         console.warn("[useStreamChatInit] upsertStreamUser non-fatal:", err);
       }
 
       const allMembers = [
-        userId,
-        ...(memberIds?.filter((m) => m !== userId) || []),
+        me,
+        ...(memberIds?.filter((m) => m !== me && m !== userId) || []),
         MASH_AI_USER_ID,
       ];
 
@@ -142,7 +155,7 @@ export function useStreamChatInit({
       mentionSubRef.current = c.on("message.new", async (event: any) => {
         const msg = event.message;
         if (!msg || msg.user?.id === MASH_AI_USER_ID) return;
-        if (msg.user_id !== userId) return; // idempotency — only sender triggers AI
+        if (msg.user_id !== me) return; // idempotency — only sender triggers AI
 
         const text = msg.text || "";
         if (!MENTION_REGEX.test(text)) return;

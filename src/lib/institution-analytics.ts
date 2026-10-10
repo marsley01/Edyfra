@@ -91,6 +91,13 @@ export const termKey = (t: TermRef) => `${t.year}-T${t.term}`;
 export const termLabel = (t: TermRef) => `Term ${t.term} ${t.year}`;
 export const compareTerms = (a: TermRef, b: TermRef) => termIndex(a) - termIndex(b);
 
+/** Parses a `?term=2026-2` search param into a TermRef. */
+export function parseTermParam(raw: string | string[] | undefined | null): TermRef | null {
+  const v = Array.isArray(raw) ? raw[0] : raw;
+  const m = v?.match(/^(\d{4})-([123])$/);
+  return m ? { year: Number(m[1]), term: Number(m[2]) } : null;
+}
+
 export function previousTerm(t: TermRef): TermRef {
   return t.term === 1 ? { term: 3, year: t.year - 1 } : { term: t.term - 1, year: t.year };
 }
@@ -250,6 +257,8 @@ export interface ValueAddedRecord {
   /** The student's previous-term mean across all subjects (prior attainment). */
   priorMean: number | null;
   teacherId?: string | null;
+  /** When several teachers share the class/subject, the record counts for each. */
+  teacherIds?: readonly string[];
 }
 
 export interface PriorModel {
@@ -381,10 +390,13 @@ export function teacherEffectiveness(
 
   const byTeacher = new Map<string, number[]>();
   for (const r of withPrior) {
-    if (!r.teacherId) continue;
-    const arr = byTeacher.get(r.teacherId) ?? [];
-    arr.push(residualOf(r) - (subjMean.get(r.subject) ?? 0));
-    byTeacher.set(r.teacherId, arr);
+    const ids = r.teacherIds ?? (r.teacherId ? [r.teacherId] : []);
+    const adj = residualOf(r) - (subjMean.get(r.subject) ?? 0);
+    for (const id of ids) {
+      const arr = byTeacher.get(id) ?? [];
+      arr.push(adj);
+      byTeacher.set(id, arr);
+    }
   }
   const rows = [...byTeacher.entries()]
     .filter(([, a]) => a.length >= minN)

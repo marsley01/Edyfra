@@ -19,7 +19,7 @@ import prisma from "@/lib/prisma";
 import { MatchTier, Prisma } from "@/generated/client";
 import { randomBytes } from "crypto";
 import { syncUsersToStream, getServerStreamClient, MASH_AI_USER_ID } from "@/lib/user-sync";
-import { notifyUser } from "@/app/actions/notifications";
+import { notifyUser } from "@/lib/notifications/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { LIVE_PEER_SEARCH_MS } from "@/lib/matching/peers";
 import {
@@ -27,7 +27,9 @@ import {
   canAccept,
   decideNextOffer,
   isOfferActive,
+  isOpenForTutors,
   matchPhase,
+  TUTOR_GRACE_MS,
   offerStats,
   type MatchPhase,
   type OfferRow,
@@ -93,7 +95,7 @@ async function setOfferStatus(ids: string[], status: OfferStatus, onlyIfPending 
 }
 
 /** Close any pending offers on these requests (resolved some other way). */
-async function withdrawPendingOffers(requestIds: string[]): Promise<void> {
+export async function withdrawPendingOffers(requestIds: string[]): Promise<void> {
   if (requestIds.length === 0) return;
   const db = offersClient();
   if (!db) return;
@@ -430,7 +432,8 @@ export interface TutorFeedRequest {
 }
 
 /**
- * Open requests a tutor can act on: unresolved, not expired, in a subject they
+ * Open requests a tutor can act on: unresolved, still being polled by their
+ * student (younger than AI_FALLBACK_MS + grace, see isOpenForTutors), in a subject they
  * teach (case/alias-insensitive), not the tutor's own, and not currently
  * offered exclusively to a different tutor. Offers to this tutor come first.
  */
@@ -443,7 +446,7 @@ export async function getFilteredMatchRequests(
     const requests = await prisma.matchRequest.findMany({
       where: {
         sessionId: null,
-        createdAt: { gte: new Date(now.getTime() - MATCH_TIMINGS.REQUEST_TTL_MS) },
+        createdAt: { gte: new Date(now.getTime() - MATCH_TIMINGS.AI_FALLBACK_MS - TUTOR_GRACE_MS) },
         ...(viewerId ? { studentId: { not: viewerId } } : {}),
       },
       orderBy: { createdAt: "desc" },
@@ -509,7 +512,9 @@ export type AcceptResult =
 
 /**
  * Accept a request as `acceptorId` (already authenticated by the caller).
- * Tutors get a TUTOR session, students a PEER session.
+ * Only verified tutors who teach the request's subject may accept; peer
+ * pairing is done by the engine itself (tryPairWithLivePeer), never by
+ * claiming a stranger's request id from the public broadcast.
  */
 export async function acceptRequestAs(requestId: string, acceptorId: string): Promise<AcceptResult> {
   const now = new Date();
@@ -517,16 +522,33 @@ export async function acceptRequestAs(requestId: string, acceptorId: string): Pr
     prisma.matchRequest.findUnique({ where: { id: requestId } }),
     prisma.user.findUnique({
       where: { id: acceptorId },
-      select: { id: true, name: true, role: true, banned: true, suspended: true },
+      select: {
+        id: true,
+        name: true,
+        role: true,
+        banned: true,
+        suspended: true,
+        tutorProfile: { select: { isVerified: true, subjects: true } },
+      },
     }),
   ]);
   if (!acceptor || acceptor.banned || acceptor.suspended) {
     return { success: false, error: "Your account can't accept matches right now." };
   }
+  if (acceptor.role !== "TUTOR" || !acceptor.tutorProfile) {
+    return { success: false, error: "Only tutors can accept match requests." };
+  }
+  if (!acceptor.tutorProfile.isVerified) {
+    return { success: false, error: "Your tutor profile is still being verified. You can accept requests once it's approved." };
+  }
   if (!request || request.sessionId) return { success: false, error: "Match request no longer available." };
   if (request.studentId === acceptorId) return { success: false, error: "You can't accept your own request." };
-  if (matchPhase(request.createdAt, now) === "expired") {
-    return { success: false, error: "This request has expired." };
+  if (!teachesSubject(acceptor.tutorProfile.subjects, request.subject)) {
+    return { success: false, error: "This request is for a subject you don't teach." };
+  }
+  if (!isOpenForTutors(request.createdAt, now)) {
+    // The student stopped waiting (they'd have moved to Mash AI by now).
+    return { success: false, error: "This student is no longer waiting. Pick a newer request." };
   }
 
   const offers = await fetchOffers([requestId]);
@@ -535,7 +557,7 @@ export async function acceptRequestAs(requestId: string, acceptorId: string): Pr
     return { success: false, error: "This request is being offered to another tutor. Try again in a few seconds." };
   }
 
-  const tier: ResolvedTier = acceptor.role === "TUTOR" ? "TUTOR" : "PEER";
+  const tier: ResolvedTier = "TUTOR";
   try {
     await syncUsersToStream([request.studentId, acceptorId]);
   } catch {

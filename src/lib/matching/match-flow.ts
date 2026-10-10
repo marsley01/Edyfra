@@ -8,8 +8,9 @@
 //                                    (on decline/timeout) the next tutor is offered
 //   TUTOR_PHASE_MS  AI_FALLBACK_MS   pair with another student who is searching live
 //   AI_FALLBACK_MS  REQUEST_TTL_MS   Mash AI fallback (student's own poll triggers it)
-//   > REQUEST_TTL_MS                 expired: hidden from tutors, cannot be accepted,
-//                                    swept by sweepAndAIFallback
+//   > AI_FALLBACK_MS + TUTOR_GRACE_MS hidden from tutors, cannot be accepted (the
+//                                    student is no longer polling)
+//   > REQUEST_TTL_MS                 expired: swept by sweepAndAIFallback
 // The UI timer (MatchProvider TOTAL_TIME = 60s) mirrors these numbers.
 
 export const MATCH_TIMINGS = {
@@ -31,6 +32,18 @@ export function matchPhase(createdAt: Date, now: Date): MatchPhase {
 
 export function isRequestExpired(createdAt: Date, now: Date): boolean {
   return matchPhase(createdAt, now) === "expired";
+}
+
+/**
+ * Slack past AI_FALLBACK_MS for the student's next poll (every 3s) to hand the
+ * request to Mash AI. Anything still unresolved after this belongs to a student
+ * who stopped polling (tab hidden/closed), so tutors must not see or take it.
+ */
+export const TUTOR_GRACE_MS = 10_000;
+
+/** Whether tutors may still see / accept this request. */
+export function isOpenForTutors(createdAt: Date, now: Date): boolean {
+  return now.getTime() - createdAt.getTime() < MATCH_TIMINGS.AI_FALLBACK_MS + TUTOR_GRACE_MS;
 }
 
 /**

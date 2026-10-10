@@ -1,10 +1,11 @@
 "use server";
 
-import { revalidatePath, unstable_cache } from "next/cache";
+import { unstable_cache } from "next/cache";
 import prisma from "@/lib/prisma";
-import { getUserData } from "@/app/actions/user";
-import { notifyUser, notifyManyUsers } from "@/app/actions/notifications";
+import { notifyUser, notifyManyUsers } from "@/lib/notifications/server";
 import { moderateMessage } from "@/app/actions/moderation";
+import { getSocialViewer } from "@/lib/social-viewer";
+import { decodeCursor, encodeCursor } from "@/lib/social-utils";
 
 /* ──────────────────────────────────────────────────────────────────────────
    Categories are seeded once on first load. They're stable, ordered, and
@@ -66,8 +67,10 @@ export type CommunityBootstrap = {
     lastActivityAgo: string;
     hasUnread: boolean;
   }>;
-  stats: { totalTopics: number; totalPosts: number; onlineCount: number };
+  stats: { totalTopics: number; totalPosts: number };
   me: { id: string; name: string; role: string; avatar: string | null } | null;
+  /** Pass back to getForumBootstrap to load the next page of (non-pinned) topics. */
+  nextCursor: string | null;
 };
 
 export type CommunityThreadPost = {
@@ -106,10 +109,53 @@ export type CommunityThread = {
  * contract for the community.
  */
 async function requireEdyfraUser() {
-  const user = await getUserData();
+  // getSocialViewer resolves the Prisma id (auth id OR email) and, unlike
+  // getUserData(), never writes (no daily rewards / tier recalcs) on reads.
+  const user = await getSocialViewer();
   if (!user) return { ok: false as const, error: "Sign in to use Community." };
   if (user.banned) return { ok: false as const, error: "Your account is suspended." };
   return { ok: true as const, user };
+}
+
+const TOPIC_PAGE = 20;
+const MAX_THREAD_POSTS = 500;
+
+type ReactionTally = Record<string, { count: number; mine: boolean }>;
+
+/** Reaction counts per target via groupBy + the viewer's own reactions — never every reaction row. */
+async function tallyReactions(
+  field: "topicId" | "postId",
+  ids: string[],
+  viewerId: string,
+): Promise<Map<string, ReactionTally>> {
+  const out = new Map<string, ReactionTally>();
+  if (ids.length === 0) return out;
+  const [groups, mine] = await Promise.all([
+    prisma.communityReaction.groupBy({
+      by: [field, "type"],
+      where: { [field]: { in: ids } },
+      _count: { _all: true },
+    }),
+    prisma.communityReaction.findMany({
+      where: { [field]: { in: ids }, userId: viewerId },
+      select: { topicId: true, postId: true, type: true },
+    }),
+  ]);
+  for (const g of groups as unknown as Array<Record<string, unknown> & { type: string; _count: { _all: number } }>) {
+    const id = g[field] as string | null;
+    if (!id) continue;
+    const t = out.get(id) ?? {};
+    t[g.type] = { count: g._count._all, mine: false };
+    out.set(id, t);
+  }
+  for (const r of mine) {
+    const id = r[field];
+    if (!id) continue;
+    const t = out.get(id) ?? {};
+    t[r.type] = { count: t[r.type]?.count ?? 1, mine: true };
+    out.set(id, t);
+  }
+  return out;
 }
 
 function timeAgo(d: Date) {
@@ -128,118 +174,159 @@ function timeAgo(d: Date) {
    Public-shaped server actions
    ────────────────────────────────────────────────────────────────────────── */
 
-export async function getForumBootstrap(): Promise<CommunityBootstrap> {
-  // ensureCategories only writes on the very first load; getCategories is
-  // cached for an hour after that.
-  await ensureCategories();
-  const me = await getUserData();
-  const categories = await getCategories();
+export async function getForumBootstrap(
+  input: { category?: string | null; q?: string | null; cursor?: string | null } = {},
+): Promise<CommunityBootstrap | { ok: false; error: string }> {
+  const auth = await requireEdyfraUser();
+  if (!auth.ok) return auth;
+  const me = auth.user;
 
-  // 25 most-recent active topics with a single line of context
-  const topics = await prisma.communityTopic.findMany({
-    orderBy: [{ pinned: "desc" }, { lastActivityAt: "desc" }],
-    take: 30,
-    include: {
-      author: { select: { id: true, name: true, avatar: true, role: true } },
-      category: { select: { slug: true, name: true, emoji: true } },
-      _count: { select: { posts: true, reactions: true } },
-    },
-  });
-
-  // Lightweight counts for the sidebar — kept cheap on purpose
-  const [totalTopics, totalPosts, onlineCount] = await Promise.all([
-    prisma.communityTopic.count(),
-    prisma.communityPost.count(),
-    // Edyfra users who pinged in the last 5 minutes — feels alive without
-    // being a real-time websocket
-    prisma.user.count({
-      where: { lastActiveAt: { gte: new Date(Date.now() - 5 * 60 * 1000) } },
-    }),
-  ]);
-
-  let myReads: Record<string, string> = {};
-  if (me) {
-    const reads = await prisma.communityRead.findMany({
-      where: { userId: me.id, topicId: { in: topics.map((t) => t.id) } },
-    });
-    myReads = Object.fromEntries(reads.map((r) => [r.topicId, r.lastReadAt.toISOString()]));
+  let categories = await getCategories();
+  if (categories.length < CATEGORY_SEED.length) {
+    // First ever load: seed, then read fresh (the cached read is still empty).
+    await ensureCategories();
+    categories = await prisma.communityCategory.findMany({ orderBy: { order: "asc" } });
   }
 
+  const slug = typeof input?.category === "string" && input.category ? input.category : null;
+  const q = typeof input?.q === "string" ? input.q.trim().slice(0, 80) : "";
+  const cursor = decodeCursor(input?.cursor);
+  const categoryId = slug ? categories.find((c) => c.slug === slug)?.id ?? "__none__" : null;
+
+  const filters: Record<string, unknown>[] = [];
+  if (categoryId) filters.push({ categoryId });
+  if (q) {
+    filters.push({
+      OR: [{ title: { contains: q, mode: "insensitive" } }, { body: { contains: q, mode: "insensitive" } }],
+    });
+  }
+
+  const topicInclude = {
+    author: { select: { id: true, name: true, avatar: true, role: true } },
+    category: { select: { slug: true, name: true, emoji: true } },
+    _count: { select: { posts: true, reactions: true } },
+  } as const;
+
+  // Pinned topics only head the first page; everything else pages by
+  // (lastActivityAt, id) keyset so "load more" never repeats or skips.
+  const keyset =
+    cursor?.kind === "time"
+      ? { OR: [{ lastActivityAt: { lt: cursor.createdAt } }, { lastActivityAt: cursor.createdAt, id: { lt: cursor.id } }] }
+      : null;
+
+  const [pinned, rows] = await Promise.all([
+    cursor
+      ? Promise.resolve([])
+      : prisma.communityTopic.findMany({
+          where: { AND: [...filters, { pinned: true }] },
+          orderBy: [{ lastActivityAt: "desc" }],
+          take: 10,
+          include: topicInclude,
+        }),
+    prisma.communityTopic.findMany({
+      where: { AND: [...filters, { pinned: false }, ...(keyset ? [keyset] : [])] },
+      orderBy: [{ lastActivityAt: "desc" }, { id: "desc" }],
+      take: TOPIC_PAGE + 1,
+      include: topicInclude,
+    }),
+  ]);
+  const hasMore = rows.length > TOPIC_PAGE;
+  const page = hasMore ? rows.slice(0, TOPIC_PAGE) : rows;
+  const topics = [...pinned, ...page];
+  const last = page[page.length - 1];
+
+  // Lightweight counts for the header — only on the first page.
+  // No "online now" figure: there is no real presence signal (lastActiveAt is
+  // only written once a day), so any such number would be misleading.
+  const [totalTopics, totalPosts] = cursor
+    ? [0, 0]
+    : await Promise.all([prisma.communityTopic.count(), prisma.communityPost.count()]);
+
+  const reads = await prisma.communityRead.findMany({
+    where: { userId: me.id, topicId: { in: topics.map((t) => t.id) } },
+    select: { topicId: true, lastReadAt: true },
+  });
+  const myReads = new Map(reads.map((r) => [r.topicId, r.lastReadAt]));
+
   return {
-    categories,
+    categories: categories.map((c) => ({ id: c.id, slug: c.slug, name: c.name, emoji: c.emoji, blurb: c.blurb })),
     topics: topics.map((t) => ({
       id: t.id,
       title: t.title,
       pinned: t.pinned,
       locked: t.locked,
       bodyPreview: t.body.slice(0, 180),
-      author: t.author,
+      author: { ...t.author, role: String(t.author.role) },
       category: t.category,
       replyCount: t._count.posts,
       reactionCount: t._count.reactions,
       createdAt: t.createdAt.toISOString(),
       lastActivityAt: t.lastActivityAt.toISOString(),
       lastActivityAgo: timeAgo(t.lastActivityAt),
-      hasUnread:
-        !!(me && (!myReads[t.id] || new Date(myReads[t.id]) < t.lastActivityAt)),
+      hasUnread: t.authorId !== me.id && (!myReads.has(t.id) || myReads.get(t.id)! < t.lastActivityAt),
     })),
-    stats: { totalTopics, totalPosts, onlineCount },
-    me: me
-      ? { id: me.id, name: me.name, role: me.role, avatar: me.avatar }
-      : null,
+    stats: { totalTopics, totalPosts },
+    me: { id: me.id, name: me.name, role: String(me.role), avatar: me.avatar },
+    nextCursor: hasMore && last ? encodeCursor({ kind: "time", createdAt: last.lastActivityAt, id: last.id }) : null,
   };
 }
 
-export async function getForumTopic(topicId: string): Promise<CommunityThread | { ok: false; error: string }> {
-  const me = await getUserData();
-  if (!me) return { ok: false, error: "Sign in to read this topic." };
+export async function getForumTopic(
+  topicId: string,
+  opts: { countView?: boolean } = {},
+): Promise<CommunityThread | { ok: false; error: string }> {
+  const auth = await requireEdyfraUser();
+  if (!auth.ok) return { ok: false, error: auth.error };
+  const me = auth.user;
+  if (typeof topicId !== "string" || !topicId) return { ok: false, error: "Topic not found." };
+  const countView = opts?.countView !== false;
 
   const topic = await prisma.communityTopic.findUnique({
     where: { id: topicId },
     include: {
       author: { select: { id: true, name: true, avatar: true, role: true } },
       category: { select: { slug: true, name: true, emoji: true } },
-      reactions: { select: { type: true, userId: true } },
     },
   });
   if (!topic) return { ok: false, error: "Topic not found." };
 
-  const sub = await prisma.communitySubscription.findUnique({
-    where: { userId_topicId: { userId: me.id, topicId } },
-    select: { id: true },
-  });
+  const [sub, posts] = await Promise.all([
+    prisma.communitySubscription.findUnique({
+      where: { userId_topicId: { userId: me.id, topicId } },
+      select: { id: true },
+    }),
+    prisma.communityPost.findMany({
+      where: { topicId },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+      take: MAX_THREAD_POSTS,
+      select: {
+        id: true,
+        body: true,
+        parentId: true,
+        isAnswer: true,
+        createdAt: true,
+        author: { select: { id: true, name: true, avatar: true, role: true } },
+      },
+    }),
+    // Opening a thread counts a view and marks it read; background refreshes don't.
+    countView
+      ? prisma.communityTopic.update({ where: { id: topicId }, data: { views: { increment: 1 } } }).catch(() => null)
+      : null,
+    countView
+      ? prisma.communityRead
+          .upsert({
+            where: { userId_topicId: { userId: me.id, topicId } },
+            create: { userId: me.id, topicId },
+            update: { lastReadAt: new Date() },
+          })
+          .catch(() => null)
+      : null,
+  ]);
 
-  // Atomic +1 to the view counter (cheapest possible write)
-  await prisma.communityTopic
-    .update({ where: { id: topicId }, data: { views: { increment: 1 } } })
-    .catch(() => {});
-
-  const posts = await prisma.communityPost.findMany({
-    where: { topicId },
-    orderBy: { createdAt: "asc" },
-    include: {
-      author: { select: { id: true, name: true, avatar: true, role: true } },
-      reactions: { select: { type: true, userId: true } },
-    },
-  });
-
-  // Mark read
-  await prisma.communityRead.upsert({
-    where: { userId_topicId: { userId: me.id, topicId } },
-    create: { userId: me.id, topicId },
-    update: { lastReadAt: new Date() },
-  });
-
-  // Bucket reactions by type for both topic and each post
-  const tally = (reactions: Array<{ type: string; userId: string }>) => {
-    const out: Record<string, { count: number; mine: boolean }> = {};
-    for (const r of reactions) {
-      if (!out[r.type]) out[r.type] = { count: 0, mine: false };
-      out[r.type].count++;
-      if (r.userId === me.id) out[r.type].mine = true;
-    }
-    return out;
-  };
+  const [topicTally, postTally] = await Promise.all([
+    tallyReactions("topicId", [topic.id], me.id),
+    tallyReactions("postId", posts.map((p) => p.id), me.id),
+  ]);
 
   return {
     ok: true as const,
@@ -250,22 +337,36 @@ export async function getForumTopic(topicId: string): Promise<CommunityThread | 
       body: topic.body,
       pinned: topic.pinned,
       locked: topic.locked,
-      views: topic.views,
+      views: topic.views + (countView ? 1 : 0),
       createdAt: topic.createdAt.toISOString(),
-      author: topic.author,
+      author: { ...topic.author, role: String(topic.author.role) },
       category: topic.category,
-      reactions: tally(topic.reactions),
+      reactions: topicTally.get(topic.id) ?? {},
     },
-    posts: posts.map((p) => ({
-      id: p.id,
-      body: p.body,
-      parentId: p.parentId,
-      isAnswer: p.isAnswer,
-      createdAt: p.createdAt.toISOString(),
-      createdAgo: timeAgo(p.createdAt),
-      author: p.author,
-      reactions: tally(p.reactions),
-    })),
+    posts: posts.map((p) => toThreadPost(p, postTally.get(p.id) ?? {})),
+  };
+}
+
+function toThreadPost(
+  p: {
+    id: string;
+    body: string;
+    parentId: string | null;
+    isAnswer: boolean;
+    createdAt: Date;
+    author: { id: string; name: string; avatar: string | null; role: unknown };
+  },
+  reactions: ReactionTally,
+): CommunityThreadPost {
+  return {
+    id: p.id,
+    body: p.body,
+    parentId: p.parentId,
+    isAnswer: p.isAnswer,
+    createdAt: p.createdAt.toISOString(),
+    createdAgo: timeAgo(p.createdAt),
+    author: { ...p.author, role: String(p.author.role) },
+    reactions,
   };
 }
 
@@ -306,8 +407,6 @@ export async function createForumTopic(input: {
     },
   });
 
-  revalidatePath("/dashboard/community");
-  revalidatePath("/tutor/community");
   return { ok: true as const, topicId: topic.id };
 }
 
@@ -315,7 +414,7 @@ export async function createForumPost(input: {
   topicId: string;
   body: string;
   parentId?: string | null;
-}): Promise<{ ok: true; postId: string } | { ok: false; error: string }> {
+}): Promise<{ ok: true; postId: string; post: CommunityThreadPost } | { ok: false; error: string }> {
   const auth = await requireEdyfraUser();
   if (!auth.ok) return auth;
 
@@ -357,6 +456,14 @@ export async function createForumPost(input: {
       authorId: auth.user.id,
       body,
       parentId,
+    },
+    select: {
+      id: true,
+      body: true,
+      parentId: true,
+      isAnswer: true,
+      createdAt: true,
+      author: { select: { id: true, name: true, avatar: true, role: true } },
     },
   });
 
@@ -422,16 +529,14 @@ export async function createForumPost(input: {
     }
   }
 
-  revalidatePath(`/dashboard/community`);
-  revalidatePath(`/tutor/community`);
-  return { ok: true as const, postId: post.id };
+  return { ok: true as const, postId: post.id, post: toThreadPost(post, {}) };
 }
 
 export async function toggleForumReaction(input: {
   topicId?: string;
   postId?: string;
   type: string;
-}) {
+}): Promise<{ ok: true; active: boolean } | { ok: false; error: string }> {
   const auth = await requireEdyfraUser();
   if (!auth.ok) return auth;
   if (!input.topicId && !input.postId) return { ok: false, error: "Nothing to react to." };
@@ -459,6 +564,7 @@ export async function toggleForumReaction(input: {
     return { ok: true as const, active: true };
   } catch (err) {
     // Double-tap race: the unique constraint already holds this reaction.
+    if ((err as { code?: string })?.code === "P2002") return { ok: true as const, active: true };
     console.error("toggleForumReaction error:", err);
     return { ok: false, error: "Couldn't save your reaction." };
   }

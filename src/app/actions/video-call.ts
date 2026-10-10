@@ -4,6 +4,8 @@ import prisma from "@/lib/prisma";
 import { syncUsersToStream } from "@/lib/user-sync";
 import { resolveStreamViewer } from "@/lib/video/viewer";
 import { buildRoomCallId, resolveRoomCallMembers, CALL_TYPE } from "@/lib/video/call-utils";
+import { signRoomCall } from "@/lib/video/call-signature";
+import { getStreamVideoServer } from "@/lib/video/server";
 
 export type PrepareRoomCallResult =
   | {
@@ -19,9 +21,11 @@ export type PrepareRoomCallResult =
 
 /**
  * Validates that the signed-in user is a participant of a study room
- * (matched Session or scheduled booking) and returns the call id + member
- * list to ring. Members come from the database, never from the browser, and
- * are synced to Stream first so ringing never fails on an unknown user.
+ * (matched Session or scheduled booking) and CREATES the call server-side:
+ * created_by is the vetted caller, members come from the database (never from
+ * the browser) and the custom data carries an HMAC (see call-signature.ts) so
+ * the Stream webhook can tell a vetted room call from one a browser made up.
+ * The browser then only rings it (`call.get({ ring: true })`).
  */
 export async function prepareRoomCall(roomId: string): Promise<PrepareRoomCallResult> {
   try {
@@ -72,10 +76,25 @@ export async function prepareRoomCall(roomId: string): Promise<PrepareRoomCallRe
 
     await syncUsersToStream(memberIds);
 
+    const server = getStreamVideoServer();
+    if (!server) return { ok: false, error: "Video calling isn't available right now." };
+    const callId = buildRoomCallId(roomId);
+    const sig = signRoomCall(
+      { callId, roomId, createdBy: viewer.id, members: memberIds },
+      process.env.STREAM_SECRET as string,
+    );
+    await server.video.call(CALL_TYPE, callId).getOrCreate({
+      data: {
+        created_by_id: viewer.id,
+        members: memberIds.map((user_id) => ({ user_id })),
+        custom: { roomId, subject, kind: "study-room", members: memberIds, sig },
+      },
+    });
+
     return {
       ok: true,
       callType: CALL_TYPE,
-      callId: buildRoomCallId(roomId),
+      callId,
       memberIds,
       viewerId: viewer.id,
       subject,

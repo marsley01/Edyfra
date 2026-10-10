@@ -5,7 +5,7 @@ import { EduLevel } from "@/generated/client";
 import { generateAIResponse } from "@/utils/openrouter";
 import { SESSION_CONFIG, CHALLENGE_CONFIG } from "@/lib/config";
 import { recalibrateTier } from "./user";
-import { notifyUser } from "./notifications";
+import { notifyUser } from "@/lib/notifications/server";
 import { getAdminGlobalSettings } from "@/app/actions/admin";
 import { createClient } from "@/utils/supabase/server";
 

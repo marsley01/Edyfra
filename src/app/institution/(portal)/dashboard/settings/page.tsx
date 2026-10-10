@@ -1,12 +1,14 @@
 import { requireInstitutionAdmin } from "@/app/actions/institution-guard";
 import { getInstitutionOverview, getCurrentTerm } from "@/app/actions/institution-admin";
+import { listAcademicTerms } from "@/app/actions/institution-manage";
 import { SettingsClient } from "./settings-client";
 
 export default async function SettingsPage() {
   const membership = await requireInstitutionAdmin();
-  const [overview, term] = await Promise.all([
+  const [overview, term, terms] = await Promise.all([
     getInstitutionOverview(membership.institution.id),
     getCurrentTerm(membership.institution.id),
+    listAcademicTerms(membership.institution.id),
   ]);
   return (
     <SettingsClient
@@ -28,6 +30,7 @@ export default async function SettingsPage() {
         status: membership.institution.isActive ? "ACTIVE" : "PENDING",
         admins: overview.admins as any[],
       }}
+      terms={terms}
       term={
         term
           ? {

@@ -13,7 +13,7 @@ import {
   acceptRequestAs,
   declineOfferAs,
 } from "./match-engine";
-import { notifyUser } from "@/app/actions/notifications";
+import { notifyUser } from "@/lib/notifications/server";
 import { MATCH_TIMINGS } from "@/lib/matching/match-flow";
 import { withRateLimit } from "@/lib/rate-limit";
 
@@ -82,33 +82,46 @@ export async function createMatchRequest(data: { subject: string; topic: string 
       const topic = (data.topic ?? "").trim().slice(0, 200);
 
       // One live request per student: a double click or a second tab used to
-      // create parallel requests that could each get matched.
-      const existing = await prisma.matchRequest.findFirst({
-        where: {
-          studentId: prismaUser.id,
-          sessionId: null,
-          createdAt: { gte: new Date(Date.now() - MATCH_TIMINGS.AI_FALLBACK_MS) },
-        },
-        orderBy: { createdAt: "desc" },
-        select: { id: true, subject: true },
-      });
-      if (existing && existing.subject === subject) {
-        return { matchRequestId: existing.id };
-      }
-      if (existing) {
-        await prisma.matchRequest.deleteMany({ where: { id: existing.id, sessionId: null } });
-      }
+      // create parallel requests that could each get matched. The check and
+      // the insert run under a per-student transaction-scoped advisory lock,
+      // so two concurrent calls are serialized: the second one sees the first
+      // one's request and reuses it.
+      const studentId = prismaUser.id;
+      const matchRequestId = await prisma.$transaction(async (tx) => {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"match_request:" + studentId}))`;
 
-      const matchRequest = await prisma.matchRequest.create({
-        data: {
-          studentId: prismaUser.id,
-          subject,
-          topic: topic || null,
-        },
+        // Every unresolved request of this student, whatever its age: anything
+        // past the matching window is a "ghost" whose student stopped polling
+        // it, and must not linger in the tutor feed.
+        const unresolved = await tx.matchRequest.findMany({
+          where: { studentId, sessionId: null },
+          orderBy: { createdAt: "desc" },
+          select: { id: true, subject: true, createdAt: true },
+        });
+
+        // Reuse the newest one if it's still live and for the same subject.
+        const newest = unresolved[0];
+        const reuse =
+          !!newest &&
+          newest.subject === subject &&
+          Date.now() - newest.createdAt.getTime() < MATCH_TIMINGS.AI_FALLBACK_MS;
+
+        // Remove everything else (their match_offers rows cascade).
+        const drop = (reuse ? unresolved.slice(1) : unresolved).map((r) => r.id);
+        if (drop.length) {
+          await tx.matchRequest.deleteMany({ where: { id: { in: drop }, sessionId: null } });
+        }
+        if (reuse) return newest.id;
+
+        const created = await tx.matchRequest.create({
+          data: { studentId, subject, topic: topic || null },
+          select: { id: true },
+        });
+        return created.id;
       });
 
       revalidatePath("/tutor/requests");
-      return { matchRequestId: matchRequest.id };
+      return { matchRequestId };
     }, { interval: 60_000, maxRequests: 10 });
 
     if (!limited.success) {
@@ -125,23 +138,24 @@ export async function createMatchRequest(data: { subject: string; topic: string 
   }
 }
 
-export async function acceptMatchRequest(requestId: string) {
+export async function acceptMatchRequest(
+  requestId: string,
+): Promise<{ success: boolean; sessionId?: string; error?: string }> {
   const me = await getAuthedPrismaUserId();
-  if (!me) return { success: false as const, error: "Please sign in to accept a match." };
+  if (!me) return { success: false, error: "Please sign in to accept a match." };
 
   const limited = await withRateLimit("acceptMatchRequest", me, () => acceptRequestAs(requestId, me), {
     interval: 60_000,
     maxRequests: 20,
   });
-  if (!limited.success) return { success: false as const, error: limited.error };
+  if (!limited.success) return { success: false, error: limited.error };
   const result = limited.data;
+  if (!result.success) return { success: false, error: result.error };
 
-  if (result.success) {
-    revalidatePath("/tutor/requests");
-    revalidatePath("/dashboard/study");
-    revalidatePath("/dashboard/sessions");
-  }
-  return result;
+  revalidatePath("/tutor/requests");
+  revalidatePath("/dashboard/study");
+  revalidatePath("/dashboard/sessions");
+  return { success: true, sessionId: result.sessionId };
 }
 
 /**
@@ -170,7 +184,9 @@ export async function initiateAutoMatch(requestId: string, options?: { skipAI?: 
       select: { studentId: true },
     });
     if (!owned || owned.studentId !== me) {
-      return { success: false, error: "Match request not found." };
+      // Swept, replaced from another tab, cancelled, or belongs to another
+      // account (state restored from localStorage): tell the UI to stop.
+      return { success: false, gone: true, error: "This match request is no longer active." };
     }
 
     const result = await executeSmartMatching(requestId, options);

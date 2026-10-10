@@ -5,7 +5,7 @@ import { Prisma, Role } from "@/generated/client";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { TUTOR_CONFIG } from "@/lib/config";
-import { notifyUser } from "@/app/actions/notifications";
+import { notifyUser } from "@/lib/notifications/server";
 import { getCached, TTL } from "@/lib/cache";
 import { invalidateAICache, getAIConfig } from "@/lib/ai-config";
 import { syncEnvVarsToVercel } from "@/lib/vercel-env";

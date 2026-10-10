@@ -3,12 +3,12 @@
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { Calendar, Plus, X, XCircle } from "lucide-react";
+import { Calendar, CheckCircle2, Play, Plus, PlusCircle, X, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/institution/data-table";
 import { showError, showSuccess } from "@/lib/toast";
-import { createCoachingAssignment, cancelCoachingAssignment } from "@/app/actions/institution-coaching";
+import { createCoachingAssignment, cancelCoachingAssignment, updateCoachingProgress } from "@/app/actions/institution-coaching";
 import type { CoachingAssignment, CoachingStatus } from "@/generated/client";
 
 const STATUS_STYLES: Record<CoachingStatus, string> = {
@@ -50,6 +50,30 @@ export function CoachingClient({
       }
       showSuccess("Assignment cancelled", { description: "The assignment is no longer active." });
       setRows((cur) => cur.map((r) => (r.id === id ? { ...r, status: "CANCELLED" as CoachingStatus } : r)));
+    });
+  }
+
+  function handleProgress(id: string, action: "start" | "session" | "complete") {
+    if (action === "complete" && !confirm("Mark this coaching assignment as completed?")) return;
+    startTransition(async () => {
+      const res = await updateCoachingProgress(id, action);
+      if (!res.ok) {
+        showError({ title: "Couldn't update that assignment", cause: res.error, fix: "Refresh the page and try again." });
+        return;
+      }
+      setRows((cur) =>
+        cur.map((r) => {
+          if (r.id !== id) return r;
+          if (action === "start") return { ...r, status: "ACTIVE" as CoachingStatus };
+          if (action === "complete") return { ...r, status: "COMPLETED" as CoachingStatus };
+          const attended = r.sessionsAttended + 1;
+          return { ...r, status: "ACTIVE" as CoachingStatus, sessionsAttended: attended, sessionsScheduled: Math.max(r.sessionsScheduled, attended) };
+        }),
+      );
+      showSuccess(
+        action === "start" ? "Coaching started" : action === "session" ? "Session recorded" : "Coaching completed",
+      );
+      router.refresh();
     });
   }
 
@@ -126,6 +150,11 @@ export function CoachingClient({
             ),
           },
           {
+            key: "sessions",
+            header: "Sessions",
+            render: (r) => <span className="text-xs font-bold text-gray-700">{r.sessionsAttended}</span>,
+          },
+          {
             key: "status",
             header: "Status",
             render: (r) => (
@@ -142,14 +171,46 @@ export function CoachingClient({
             align: "right",
             render: (r) =>
               r.status === "SCHEDULED" || r.status === "ACTIVE" ? (
-                <button
-                  onClick={() => handleCancel(r.id)}
-                  disabled={pending}
-                  className="rounded-md p-1.5 text-gray-400 hover:bg-rose-50 hover:text-rose-600"
-                  title="Cancel"
-                >
-                  <XCircle className="h-3.5 w-3.5" />
-                </button>
+                <div className="flex items-center justify-end gap-1">
+                  {r.status === "SCHEDULED" && (
+                    <button
+                      onClick={() => handleProgress(r.id, "start")}
+                      disabled={pending}
+                      className="rounded-md p-1.5 text-gray-400 hover:bg-emerald-50 hover:text-emerald-600"
+                      title="Start coaching"
+                      aria-label="Start coaching"
+                    >
+                      <Play className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleProgress(r.id, "session")}
+                    disabled={pending}
+                    className="rounded-md p-1.5 text-gray-400 hover:bg-cyan-50 hover:text-cyan-600"
+                    title="Record an attended session"
+                    aria-label="Record an attended session"
+                  >
+                    <PlusCircle className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleProgress(r.id, "complete")}
+                    disabled={pending}
+                    className="rounded-md p-1.5 text-gray-400 hover:bg-emerald-50 hover:text-emerald-600"
+                    title="Mark completed"
+                    aria-label="Mark completed"
+                  >
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleCancel(r.id)}
+                    disabled={pending}
+                    className="rounded-md p-1.5 text-gray-400 hover:bg-rose-50 hover:text-rose-600"
+                    title="Cancel"
+                    aria-label="Cancel assignment"
+                  >
+                    <XCircle className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               ) : null,
           },
         ]}

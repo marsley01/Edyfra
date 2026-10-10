@@ -129,7 +129,7 @@ export async function createAnnouncement(data: { title: string; body: string; ta
     });
 
     if (targetUsers.length > 0) {
-      const { notifyManyUsers } = await import("@/app/actions/notifications");
+      const { notifyManyUsers } = await import("@/lib/notifications/server");
       await notifyManyUsers(
         targetUsers.map((u: { id: string }) => u.id),
         {

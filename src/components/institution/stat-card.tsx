@@ -8,6 +8,8 @@ interface StatCardProps {
   icon?: LucideIcon;
   delta?: number;
   deltaLabel?: string;
+  /** Unit after the delta number (default "%"). */
+  deltaUnit?: string;
   accent?: "indigo" | "cyan" | "emerald" | "amber" | "rose" | "violet";
   hint?: string;
 }
@@ -36,6 +38,7 @@ export function StatCard({
   icon: Icon,
   delta,
   deltaLabel,
+  deltaUnit = "%",
   accent = "indigo",
   hint,
 }: StatCardProps) {
@@ -80,7 +83,8 @@ export function StatCard({
               {positive && <ArrowUp className="h-3 w-3" />}
               {negative && <ArrowDown className="h-3 w-3" />}
               {!positive && !negative && <Minus className="h-3 w-3" />}
-              {Math.abs(delta!)}%
+              {Math.abs(delta!)}
+              {deltaUnit}
             </span>
             {deltaLabel && <span className="text-gray-500 font-medium">{deltaLabel}</span>}
           </div>

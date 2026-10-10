@@ -7,7 +7,9 @@ const nextConfig = {
   productionBrowserSourceMaps: true,
   images: {
     minimumCacheTTL: 2592000,
-    formats: ["image/avif", "image/webp"],
+    // AVIF is off: Next's image optimizer had an unauthenticated RCE reachable
+    // through AVIF output (npm audit, critical). WebP keeps most of the savings.
+    formats: ["image/webp"],
     // Avatars are DiceBear SVGs; without this the optimizer answers 400 and the
     // avatar is blank. The CSP/attachment pair is the documented safe setting
     // (scripts inside an SVG can never run from /_next/image).

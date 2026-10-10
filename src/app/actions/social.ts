@@ -2,9 +2,9 @@
 
 import { createAdminClient } from "@/utils/supabase/admin";
 import prisma from "@/lib/prisma";
-import { notifyUser } from "@/app/actions/notifications";
+import { notifyUser } from "@/lib/notifications/server";
 import { revalidatePath } from "next/cache";
-import { getSocialViewer, getViewerFollowingIds, getFollowersAmong } from "@/lib/social-viewer";
+import { getSocialViewer, getViewerFollowingIds } from "@/lib/social-viewer";
 
 /* Follow graph lives in public.connections (follower_id / following_id are
    Prisma "User".id values), accessed with the service-role client. */
@@ -230,12 +230,4 @@ export async function getMySocialSummary(): Promise<{
     console.error("getMySocialSummary error:", error);
     return null;
   }
-}
-
-/** Which of `userIds` follow the viewer — used for "Follows you" badges. */
-export async function getFollowsYouAmong(userIds: string[]): Promise<string[]> {
-  const viewer = await getSocialViewer();
-  if (!viewer || !Array.isArray(userIds)) return [];
-  const ids = userIds.filter((x) => typeof x === "string" && x).slice(0, 100);
-  return [...(await getFollowersAmong(viewer.id, ids))];
 }

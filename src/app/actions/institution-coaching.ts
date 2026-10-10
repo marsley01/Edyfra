@@ -82,16 +82,75 @@ export async function createCoachingAssignment(input: AssignmentInput) {
 export async function cancelCoachingAssignment(id: string) {
   const membership = await requireInstitutionAdmin();
   const res = await prisma.coachingAssignment.updateMany({
-    where: { id, institutionId: membership.institution.id },
+    where: { id: String(id), institutionId: membership.institution.id, status: { in: ["SCHEDULED", "ACTIVE"] } },
     data: { status: "CANCELLED" },
   });
-  if (res.count === 0) return { ok: false as const, error: "Assignment not found" };
+  if (res.count === 0) return { ok: false as const, error: "Assignment not found or already closed" };
   await logActivity(membership.institution.id, {
     type: "COACHING_ASSIGNED",
     actorUserId: membership.member.userId,
     title: "Coaching assignment cancelled",
   });
   revalidatePath("/institution/dashboard/coaching");
+  return { ok: true as const };
+}
+
+/**
+ * Moves an assignment along its lifecycle: SCHEDULED → ACTIVE (start),
+ * ACTIVE → +1 attended session (session), ACTIVE/SCHEDULED → COMPLETED.
+ * Scoped to the caller's institution; illegal transitions are rejected.
+ */
+export async function updateCoachingProgress(
+  id: string,
+  action: "start" | "session" | "complete",
+  notes?: string | null,
+) {
+  const membership = await requireInstitutionAdmin();
+  const institutionId = membership.institution.id;
+  const row = await prisma.coachingAssignment.findFirst({
+    where: { id: String(id), institutionId },
+    select: { id: true, status: true, subject: true, studentUserId: true, sessionsAttended: true, sessionsScheduled: true },
+  });
+  if (!row) return { ok: false as const, error: "Assignment not found" };
+  const cleanNotes = typeof notes === "string" ? notes.trim().slice(0, 1000) || null : undefined;
+
+  if (action === "start") {
+    if (row.status !== "SCHEDULED") return { ok: false as const, error: "Only scheduled assignments can be started" };
+    await prisma.coachingAssignment.update({ where: { id: row.id }, data: { status: "ACTIVE" } });
+  } else if (action === "session") {
+    if (row.status !== "ACTIVE" && row.status !== "SCHEDULED") {
+      return { ok: false as const, error: "This assignment is closed" };
+    }
+    await prisma.coachingAssignment.update({
+      where: { id: row.id },
+      data: {
+        status: "ACTIVE",
+        sessionsAttended: { increment: 1 },
+        // Keep scheduled >= attended so attendance rates stay meaningful.
+        sessionsScheduled: Math.max(row.sessionsScheduled, row.sessionsAttended + 1),
+        ...(cleanNotes !== undefined ? { notes: cleanNotes } : {}),
+      },
+    });
+  } else {
+    if (row.status !== "ACTIVE" && row.status !== "SCHEDULED") {
+      return { ok: false as const, error: "This assignment is already closed" };
+    }
+    await prisma.coachingAssignment.update({
+      where: { id: row.id },
+      data: { status: "COMPLETED", ...(cleanNotes !== undefined ? { notes: cleanNotes } : {}) },
+    });
+  }
+
+  await logActivity(institutionId, {
+    type: "COACHING_BOOKED",
+    actorUserId: membership.member.userId,
+    targetUserId: row.studentUserId,
+    title:
+      action === "start" ? "Coaching started" : action === "session" ? "Coaching session recorded" : "Coaching completed",
+    body: `${row.subject} coaching.`,
+  });
+  revalidatePath("/institution/dashboard/coaching");
+  revalidatePath("/institution/dashboard");
   return { ok: true as const };
 }
 

@@ -93,13 +93,13 @@ export function FollowButton({
     e.preventDefault();
     e.stopPropagation();
     const want = !following;
+    // Keep the button visible (as "Following") for a moment after a follow.
+    if (want && hideWhenFollowing) setJustFollowed(true);
     try {
       const final = await changeFollow(userId, want, following);
-      if (final && hideWhenFollowing) {
-        setJustFollowed(true);
-        setTimeout(() => setJustFollowed(false), 2500);
-      }
+      if (hideWhenFollowing) setTimeout(() => setJustFollowed(false), final ? 2500 : 0);
     } catch (err) {
+      setJustFollowed(false);
       showError({
         title: want ? "We couldn't follow them" : "We couldn't unfollow them",
         cause: err instanceof Error ? err.message : "Something hiccuped on our side.",
@@ -429,7 +429,10 @@ function CommentThread({
     return () => {
       alive = false;
     };
-  }, [postId, viewer]);
+    // Keyed on the id, not the object: SocialFeed gets a fresh viewer object
+    // with every page, and refetching here would wipe earlier/pending comments.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [postId, viewer?.id]);
 
   const loadEarlier = async () => {
     if (!cursor) return;
@@ -776,7 +779,12 @@ export function SocialFeed({
       if (cursor) setLoadingMore(true);
       try {
         const page = await getFeedPage({ tab: t as FeedTab, topic: tp || null, cursor });
-        setViewer(page.viewer);
+        setViewer((prev) => (prev && page.viewer && prev.id === page.viewer.id ? prev : page.viewer));
+        if (page.error) {
+          // Keep the existing cursor so Retry / Load more resumes where it was.
+          setTabs((prev) => ({ ...prev, [k]: { ...(prev[k] ?? EMPTY_TAB), loaded: true, error: true } }));
+          return;
+        }
         setTabs((prev) => {
           const old = prev[k] ?? EMPTY_TAB;
           const base = cursor ? old.posts : old.posts.filter((p) => p.pending);

@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { notifyUser } from "@/app/actions/notifications";
+import { notifyUser } from "@/lib/notifications/server";
 import { moderateMessage } from "@/app/actions/moderation";
 import { getSocialViewer, getViewerFollowingIds } from "@/lib/social-viewer";
 import { decodeCursor, encodeCursor, rankForYou, type FeedCursor } from "@/lib/social-utils";
@@ -48,6 +48,8 @@ export type FeedPage = {
   nextCursor: string | null;
   viewerId: string | null;
   viewer: FeedViewer | null;
+  /** True when the page failed to load; nextCursor is null but the feed is NOT finished. */
+  error?: boolean;
 };
 
 export type FeedCommentDTO = {
@@ -88,7 +90,8 @@ function postSelect(viewerId: string | null) {
     likes: true,
     createdAt: true,
     user: { select: authorSelect },
-    _count: { select: { comments: true, likedBy: true } },
+    // Comments by banned accounts are hidden, so they don't count either.
+    _count: { select: { comments: { where: { user: { banned: false } } }, likedBy: true } },
     // At most one row: "did *I* like this?" without shipping every like.
     likedBy: { where: { userId: viewerId ?? NO_USER }, select: { id: true }, take: 1 },
   } as const;
@@ -197,8 +200,13 @@ async function popularPage(where: Where, cursor: FeedCursor | null, take: number
 /**
  * For you: rank the last 14 days (newest 300 posts) with rankForYou()
  * (see src/lib/social-utils.ts for the formula), page through that ranked
- * window by offset, then continue chronologically with anything older.
- * `asOf` is pinned in the cursor so the window doesn't shift between pages.
+ * list, then continue chronologically with anything older.
+ *
+ * Pagination is stable: `asOf` is pinned in the cursor and the engagement
+ * inputs are counted AS OF that instant (likes/comments created after it are
+ * ignored), so every page re-ranks to the same order. The cursor also carries
+ * the id of the last post shown and the next page resumes right after it, so
+ * a deleted post can't shift the slice. The client still de-dupes by id.
  */
 async function forYouPage(
   baseWhere: Where,
@@ -211,21 +219,41 @@ async function forYouPage(
   if (cursor?.kind === "time") return timePage(baseWhere, cursor, take, viewer.id);
 
   const asOf = cursor?.kind === "ranked" ? cursor.asOf : Date.now();
-  const offset = cursor?.kind === "ranked" ? cursor.offset : 0;
+  const asOfDate = new Date(asOf);
   const windowStart = new Date(asOf - FOR_YOU_WINDOW_MS);
 
   const [pool, profile] = await Promise.all([
     prisma.feedPost.findMany({
-      where: and(baseWhere, { createdAt: { gte: windowStart, lte: new Date(asOf) } }),
+      where: and(baseWhere, { createdAt: { gte: windowStart, lte: asOfDate } }),
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: FOR_YOU_POOL,
-      select: { id: true, userId: true, createdAt: true, likes: true, subject: true, level: true, _count: { select: { comments: true } } },
+      select: { id: true, userId: true, createdAt: true, subject: true, level: true },
     }),
     prisma.user.findUnique({
       where: { id: viewer.id },
       select: { studentProfile: { select: { subjects: true } }, tutorProfile: { select: { subjects: true } } },
     }),
   ]);
+
+  const poolIds = pool.map((p) => p.id);
+  const [likeGroups, commentGroups] = poolIds.length
+    ? await Promise.all([
+        prisma.postLike.groupBy({
+          by: ["postId"],
+          where: { postId: { in: poolIds }, createdAt: { lte: asOfDate } },
+          _count: { postId: true },
+        }),
+        prisma.comment.groupBy({
+          by: ["postId"],
+          where: { postId: { in: poolIds }, createdAt: { lte: asOfDate }, user: { banned: false } },
+          _count: { postId: true },
+        }),
+      ])
+    : [[], []];
+  const countMap = (groups: Array<{ postId: string; _count: unknown }>) =>
+    new Map(groups.map((g) => [g.postId, (g._count as { postId: number }).postId]));
+  const likesAt = countMap(likeGroups);
+  const commentsAt = countMap(commentGroups);
 
   const subjects = new Set(
     [...(profile?.studentProfile?.subjects ?? []), ...(profile?.tutorProfile?.subjects ?? [])].map((s) => String(s).toLowerCase()),
@@ -235,8 +263,8 @@ async function forYouPage(
       id: p.id,
       userId: p.userId,
       createdAt: p.createdAt,
-      likes: p.likes,
-      comments: p._count.comments,
+      likes: likesAt.get(p.id) ?? 0,
+      comments: commentsAt.get(p.id) ?? 0,
       subject: p.subject,
       level: p.level ? String(p.level) : null,
     })),
@@ -249,7 +277,12 @@ async function forYouPage(
     },
   );
 
-  const sliceIds = ranked.slice(offset, offset + take).map((p) => p.id);
+  let start = 0;
+  if (cursor?.kind === "ranked") {
+    const idx = cursor.lastId ? ranked.findIndex((p) => p.id === cursor.lastId) : -1;
+    start = idx >= 0 ? idx + 1 : Math.min(cursor.offset, ranked.length);
+  }
+  const sliceIds = ranked.slice(start, start + take).map((p) => p.id);
   let rows: PostRow[] = [];
   if (sliceIds.length) {
     const full = (await prisma.feedPost.findMany({
@@ -259,18 +292,25 @@ async function forYouPage(
     const byId = new Map(full.map((r) => [r.id, r]));
     rows = sliceIds.map((id) => byId.get(id)).filter((r): r is PostRow => !!r);
   }
+  const end = start + sliceIds.length;
+  const lastId = sliceIds[sliceIds.length - 1] ?? (cursor?.kind === "ranked" ? cursor.lastId : undefined);
 
-  if (offset + take < ranked.length) {
-    return { rows, nextCursor: encodeCursor({ kind: "ranked", offset: offset + take, asOf }) };
+  if (end < ranked.length) {
+    return { rows, nextCursor: encodeCursor({ kind: "ranked", offset: end, asOf, lastId }) };
   }
 
   // Ranked window exhausted: top the page up with older posts.
-  const boundary = pool.length >= FOR_YOU_POOL ? pool[pool.length - 1].createdAt : windowStart;
   const remaining = take - rows.length;
   if (remaining <= 0) {
-    return { rows, nextCursor: encodeCursor({ kind: "ranked", offset: ranked.length, asOf }) };
+    return { rows, nextCursor: encodeCursor({ kind: "ranked", offset: end, asOf, lastId }) };
   }
-  const older = await timePage(and(baseWhere, { createdAt: { lt: boundary } }), null, remaining, viewer.id);
+  // A full pool may have cut off mid-window: continue right after its oldest
+  // post (keyset on createdAt+id); otherwise everything before the window.
+  const oldest = pool[pool.length - 1];
+  const older =
+    pool.length >= FOR_YOU_POOL && oldest
+      ? await timePage(baseWhere, { kind: "time", createdAt: oldest.createdAt, id: oldest.id }, remaining, viewer.id)
+      : await timePage(and(baseWhere, { createdAt: { lt: windowStart } }), null, remaining, viewer.id);
   const seen = new Set(rows.map((r) => r.id));
   return { rows: [...rows, ...older.rows.filter((r) => !seen.has(r.id))], nextCursor: older.nextCursor };
 }
@@ -319,7 +359,11 @@ export async function getFeedPage(
   try {
     const followingIds = viewerId ? await getViewerFollowingIds(viewerId) : [];
     const following = new Set(followingIds);
-    const baseWhere: Where = topic ? { subject: { equals: topic, mode: "insensitive" } } : {};
+    // Banned accounts' posts never appear in any feed.
+    const baseWhere: Where = and(
+      { user: { banned: false } },
+      topic ? { subject: { equals: topic, mode: "insensitive" } } : null,
+    );
 
     let result: { rows: PostRow[]; nextCursor: string | null };
     if (authorId) {
@@ -347,7 +391,7 @@ export async function getFeedPage(
     };
   } catch (error) {
     console.error("getFeedPage error:", error);
-    return empty;
+    return { ...empty, error: true };
   }
 }
 
@@ -421,10 +465,15 @@ export async function setPostLike(
   if (!viewer) return { ok: false, error: "Sign in to like posts." };
   if (typeof postId !== "string" || !postId) return { ok: false, error: "Missing post." };
   const want = liked === true;
+  // Suspended accounts can take a like back, but not add one.
+  if (want && viewer.banned) return { ok: false, error: "Your account is suspended." };
 
   try {
-    const post = await prisma.feedPost.findUnique({ where: { id: postId }, select: { id: true, userId: true } });
-    if (!post) return { ok: false, error: "That post was deleted." };
+    const post = await prisma.feedPost.findFirst({
+      where: { id: postId, user: { banned: false } },
+      select: { id: true, userId: true },
+    });
+    if (!post) return { ok: false, error: "That post is no longer available." };
 
     let created = false;
     if (want) {
@@ -465,8 +514,8 @@ export async function getPost(postId: string): Promise<FeedPostDTO | null> {
   const viewer = await getSocialViewer();
   const viewerId = viewer?.id ?? null;
   try {
-    const row = (await prisma.feedPost.findUnique({
-      where: { id: postId },
+    const row = (await prisma.feedPost.findFirst({
+      where: { id: postId, user: { banned: false } },
       select: postSelect(viewerId),
     })) as unknown as PostRow | null;
     if (!row) return null;
@@ -486,12 +535,15 @@ export async function getPost(postId: string): Promise<FeedPostDTO | null> {
 export async function getComments(
   postId: string,
   cursor?: string | null,
-): Promise<{ comments: FeedCommentDTO[]; nextCursor: string | null }> {
+): Promise<{ comments: FeedCommentDTO[]; nextCursor: string | null; error?: boolean }> {
   const viewer = await getSocialViewer();
   if (!viewer) return { comments: [], nextCursor: null };
   if (typeof postId !== "string" || !postId) return { comments: [], nextCursor: null };
   try {
-    const post = await prisma.feedPost.findUnique({ where: { id: postId }, select: { userId: true } });
+    const post = await prisma.feedPost.findFirst({
+      where: { id: postId, user: { banned: false } },
+      select: { userId: true },
+    });
     if (!post) return { comments: [], nextCursor: null };
 
     const c = decodeCursor(cursor);
@@ -501,7 +553,7 @@ export async function getComments(
         : null;
 
     const rows = await prisma.comment.findMany({
-      where: keyset ? { AND: [{ postId }, keyset] } : { postId },
+      where: { AND: [{ postId }, { user: { banned: false } }, ...(keyset ? [keyset] : [])] },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: COMMENT_PAGE_SIZE + 1,
       select: {
@@ -530,7 +582,7 @@ export async function getComments(
     };
   } catch (error) {
     console.error("getComments error:", error);
-    return { comments: [], nextCursor: null };
+    return { comments: [], nextCursor: null, error: true };
   }
 }
 
@@ -548,10 +600,10 @@ export async function addComment(
 
   try {
     const [post, recent] = await Promise.all([
-      prisma.feedPost.findUnique({ where: { id: postId }, select: { id: true, userId: true } }),
+      prisma.feedPost.findFirst({ where: { id: postId, user: { banned: false } }, select: { id: true, userId: true } }),
       prisma.comment.count({ where: { userId: viewer.id, createdAt: { gte: new Date(Date.now() - 5 * 60 * 1000) } } }),
     ]);
-    if (!post) return { ok: false, error: "That post was deleted." };
+    if (!post) return { ok: false, error: "That post is no longer available." };
     if (recent >= 20) return { ok: false, error: "You're commenting very fast. Give it a minute." };
 
     try {
@@ -614,10 +666,10 @@ export async function getTrendingSubjects(limit = 6): Promise<Array<{ subject: s
   try {
     const groups = await prisma.feedPost.groupBy({
       by: ["subject"],
-      where: { subject: { not: null }, createdAt: { gte: new Date(Date.now() - 30 * DAY_MS) } },
-      _count: { _all: true },
-      // @ts-expect-error - _count orderBy type mismatch in generated client
-      orderBy: { _count: { _all: "desc" } },
+      where: { subject: { not: null }, createdAt: { gte: new Date(Date.now() - 30 * DAY_MS) }, user: { banned: false } },
+      // groupBy can't order by _count._all; subject is non-null here, so its count is the same.
+      _count: { subject: true },
+      orderBy: { _count: { subject: "desc" } },
       take: Math.min(Math.max(Math.floor(Number(limit) || 6), 1), 20),
     });
 
@@ -625,7 +677,7 @@ export async function getTrendingSubjects(limit = 6): Promise<Array<{ subject: s
       .filter((g) => g.subject)
       .map((g) => ({
         subject: g.subject as string,
-        posts: (g._count as { _all: number })._all,
+        posts: (g._count as { subject: number }).subject,
       }));
   } catch (error) {
     console.error("getTrendingSubjects error:", error);

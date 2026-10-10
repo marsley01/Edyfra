@@ -15,12 +15,16 @@ export default async function ReportsPage() {
     <ReportsClient
       schoolName={membership.institution.name}
       summary={summary}
-      students={students.map((s) => ({
-        id: s.id,
-        name: s.name,
-        average: s.averageMarks ?? 0,
-        flag: (s.performance ?? "GREEN") as "RED" | "YELLOW" | "GREEN",
-      }))}
+      // Only students with results: unassessed students were listed with a
+      // fabricated 0% average and a GREEN flag.
+      students={students
+        .filter((s) => s.averageMarks != null)
+        .map((s) => ({
+          id: s.id,
+          name: s.name,
+          average: s.averageMarks!,
+          flag: (s.performance ?? "GREEN") as "RED" | "YELLOW" | "GREEN",
+        }))}
       termName={currentTerm ? `Term ${currentTerm.term} · ${currentTerm.year}` : "Current term"}
     />
   );

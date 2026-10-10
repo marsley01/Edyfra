@@ -20,10 +20,12 @@ interface StartCallButtonProps {
   otherUserName: string;
   /** Kept for backwards compatibility; the server decides who is rung. */
   otherUserId?: string;
+  /** Kept for backwards compatibility; the server sets the call's subject. */
   subject?: string;
 }
 
 type Step = 'idle' | 'device-check' | 'preparing' | 'calling' | 'joining' | 'error';
+type Action = 'ring' | 'join';
 
 const ONGOING_POLL_MS = 15_000;
 
@@ -31,20 +33,26 @@ const ONGOING_POLL_MS = 15_000;
  * Starts a ringing call for a study room, or joins the room's call if one is
  * already in progress (e.g. after a refresh or a missed ring).
  *
- * The Stream SDK drives the ringing flow: once a callee accepts it joins the
- * caller automatically, and VideoProvider switches to the call UI as soon as
- * the call reaches JOINED. We only watch the calling state for the outcome.
+ * The call itself is created server-side by prepareRoomCall (members from
+ * the database); the browser only rings it. The Stream SDK drives the
+ * ringing flow: once a callee accepts it joins the caller automatically, and
+ * VideoProvider switches to the call UI as soon as the call reaches JOINED.
+ * We only watch the calling state for the outcome.
  */
-export function StartCallButton({ roomId, otherUserName, subject }: StartCallButtonProps) {
+export function StartCallButton({ roomId, otherUserName }: StartCallButtonProps) {
   const { client, activeCall, isLoading } = useVideoContext();
   const [step, setStep] = useState<Step>('idle');
   const [errorMsg, setErrorMsg] = useState('');
-  const [ongoingCall, setOngoingCall] = useState<Call | null>(null);
-  const [pendingAction, setPendingAction] = useState<'ring' | 'join'>('ring');
+  // Only the id of an ongoing call: the Call object that gets joined is
+  // always the SDK-registered instance (see joinOngoing)
+  const [ongoingCall, setOngoingCall] = useState<{ type: string; id: string } | null>(null);
+  const [pendingAction, setPendingAction] = useState<Action>('ring');
 
   const outgoingRef = useRef<Call | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
   const mountedRef = useRef(true);
+  // A start (media probe, ring or join) is in flight: blocks double clicks
+  const busyRef = useRef(false);
 
   const stopRinging = useCallback(() => {
     cleanupRef.current?.();
@@ -79,15 +87,21 @@ export function StartCallButton({ roomId, otherUserName, subject }: StartCallBut
 
     const check = async () => {
       try {
+        // No `watch`: a watched query builds and registers a new Call (with
+        // its own listeners) on every poll, and joining such a duplicate
+        // left VideoProvider subscribed to a different object.
         const { calls } = await client.queryCalls({
           filter_conditions: { 'custom.roomId': roomId, ongoing: true },
           sort: [{ field: 'created_at', direction: -1 }],
           limit: 1,
-          watch: true,
         });
         if (cancelled) return;
         const call = calls[0];
-        setOngoingCall(call && call.state.participantCount > 0 && !call.state.endedAt ? call : null);
+        const live = !!call && call.state.participantCount > 0 && !call.state.endedAt;
+        setOngoingCall((prev) => {
+          if (!live) return null;
+          return prev && prev.type === call.type && prev.id === call.id ? prev : { type: call.type, id: call.id };
+        });
       } catch {
         if (!cancelled) setOngoingCall(null);
       }
@@ -120,24 +134,40 @@ export function StartCallButton({ roomId, otherUserName, subject }: StartCallBut
     let timedOut = false;
     let joined = false;
     let rang = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let stateSub: { unsubscribe: () => void } | undefined;
+    let cleanedUp = false;
 
     const stopTone = playOutgoingTone();
     const unsubRejected = call.on('call.rejected', (e) => {
       if (e.user?.id !== client.state.connectedUser?.id) rejectReason = e.reason || 'decline';
     });
-    const stateSub = call.state.callingState$.subscribe((state) => {
+    // Cleanup belongs to THIS call only, so it can never stop another
+    // call's tone or leave this one's looping
+    const cleanup = () => {
+      if (cleanedUp) return;
+      cleanedUp = true;
+      clearTimeout(timer);
+      stopTone();
+      unsubRejected();
+      stateSub?.unsubscribe();
+      if (cleanupRef.current === cleanup) cleanupRef.current = null;
+    };
+    cleanupRef.current = cleanup;
+
+    stateSub = call.state.callingState$.subscribe((state) => {
       if (state === CallingState.RINGING) rang = true;
       if (state === CallingState.JOINING || state === CallingState.JOINED) {
         if (!joined) {
           joined = true;
-          stopRinging();
-          outgoingRef.current = null;
+          cleanup();
+          if (outgoingRef.current === call) outgoingRef.current = null;
           if (mountedRef.current) setStep('idle');
         }
       } else if ((state === CallingState.LEFT || state === CallingState.IDLE) && rang && !joined) {
         // Ring ended without a join: declined, busy, cancelled or timed out
+        cleanup();
         if (outgoingRef.current !== call) return;
-        stopRinging();
         outgoingRef.current = null;
         if (rejectReason === 'cancel') {
           if (mountedRef.current) setStep('idle');
@@ -147,40 +177,38 @@ export function StartCallButton({ roomId, otherUserName, subject }: StartCallBut
       }
     });
     // Backstop in case the call type's ring timeout is longer than ours
-    const timer = setTimeout(() => {
+    timer = setTimeout(() => {
       if (call.state.callingState !== CallingState.RINGING) return;
       timedOut = true;
       void call.leave({ reject: true, reason: 'timeout' }).catch(() => {});
     }, RING_TIMEOUT_MS);
 
-    cleanupRef.current = () => {
-      clearTimeout(timer);
-      stopTone();
-      unsubRejected();
-      stateSub.unsubscribe();
-    };
-
     try {
       if (!video) await call.camera.disable().catch(() => {});
       setStep('calling');
-      await call.getOrCreate({
-        ring: true,
-        data: {
-          members: prep.memberIds.map((user_id) => ({ user_id })),
-          custom: { roomId, subject: subject || prep.subject, kind: 'study-room' },
-        },
-      });
+      // Members and custom data were set server-side by prepareRoomCall
+      await call.get({ ring: true, video });
     } catch (err) {
       console.error('[StartCallButton] ring failed:', err);
-      stopRinging();
-      outgoingRef.current = null;
+      cleanup();
+      if (outgoingRef.current === call) outgoingRef.current = null;
       fail(callErrorMessage(err));
     }
   };
 
   const joinOngoing = async ({ video }: { video: boolean }) => {
-    const call = ongoingCall;
-    if (!call) return;
+    if (!client || !ongoingCall) {
+      if (mountedRef.current) setStep('idle');
+      return;
+    }
+    // Reuse the instance the SDK already tracks for this cid (if any), so
+    // VideoProvider sees the call reach JOINED; never join a second object.
+    const call = client.call(ongoingCall.type, ongoingCall.id, { reuseInstance: true });
+    const state = call.state.callingState;
+    if (state === CallingState.JOINED || state === CallingState.JOINING) {
+      if (mountedRef.current) setStep('idle');
+      return;
+    }
     setStep('joining');
     try {
       if (!video) await call.camera.disable().catch(() => {});
@@ -193,17 +221,38 @@ export function StartCallButton({ roomId, otherUserName, subject }: StartCallBut
     }
   };
 
-  const begin = async (action: 'ring' | 'join') => {
-    setPendingAction(action);
-    // Skip the explainer when the browser already granted both devices
-    if ((await queryMediaPermission()) === 'granted') {
-      const media = await probeMedia();
-      if (media.audio) {
-        void (action === 'ring' ? ring : joinOngoing)({ video: media.video });
-        return;
-      }
+  const start = async (action: Action, opts: { video: boolean }) => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    try {
+      await (action === 'ring' ? ring : joinOngoing)(opts);
+    } finally {
+      busyRef.current = false;
     }
-    setStep('device-check');
+  };
+
+  const begin = async (action: Action) => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setPendingAction(action);
+    // Leave idle right away: the media probe can take a while and the button
+    // must not take a second click meanwhile
+    setStep('preparing');
+    let opts: { video: boolean } | null = null;
+    try {
+      // Skip the explainer when the browser already granted both devices
+      if ((await queryMediaPermission()) === 'granted') {
+        const media = await probeMedia();
+        if (media.audio) opts = { video: media.video };
+      }
+    } catch {
+      opts = null;
+    } finally {
+      busyRef.current = false;
+    }
+    if (!mountedRef.current) return;
+    if (opts) await start(action, opts);
+    else setStep('device-check');
   };
 
   const cancel = async () => {
@@ -219,7 +268,7 @@ export function StartCallButton({ roomId, otherUserName, subject }: StartCallBut
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
         <div className="w-full max-w-md rounded-3xl bg-card border border-border/50 shadow-2xl p-6">
           <DeviceCheck
-            onReady={(opts) => void (pendingAction === 'ring' ? ring : joinOngoing)(opts)}
+            onReady={(opts) => void start(pendingAction, opts)}
             onDenied={() => setStep('idle')}
           />
         </div>
@@ -228,6 +277,7 @@ export function StartCallButton({ roomId, otherUserName, subject }: StartCallBut
   }
 
   if (step === 'preparing' || step === 'calling' || step === 'joining') {
+    const joining = step === 'joining' || (step === 'preparing' && pendingAction === 'join');
     return (
       <div className="flex items-center gap-3 rounded-2xl border border-border/40 bg-card px-4 py-2.5">
         <div className="flex h-9 w-9 animate-pulse items-center justify-center rounded-full bg-primary/15 text-primary">
@@ -235,7 +285,7 @@ export function StartCallButton({ roomId, otherUserName, subject }: StartCallBut
         </div>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-foreground truncate">
-            {step === 'joining' ? 'Joining call…' : `Calling ${otherUserName}…`}
+            {joining ? 'Joining call…' : `Calling ${otherUserName}…`}
           </p>
           <p className="text-xs text-muted-foreground">
             {step === 'preparing' ? 'Setting up' : step === 'joining' ? 'Connecting' : 'Waiting for them to answer'}

@@ -19,6 +19,8 @@ const PROTECTED_PREFIXES = [
   '/onboarding',
   '/study-room',
   '/institution/dashboard',
+  '/institution/accept',
+  '/institution/pending',
 ]
 
 const SERVER_ACTION_LIMIT = { interval: 60_000, maxRequests: 20 };
@@ -93,7 +95,7 @@ function validateCsrf(request: NextRequest): boolean {
   return isOriginAllowed(origin, allowedUrls) || isOriginAllowed(referer, allowedUrls);
 }
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const url = new URL(request.url)
   const isApiRoute = url.pathname.startsWith('/api/')
   const origin = request.headers.get('origin')
@@ -194,7 +196,12 @@ export async function proxy(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, {
+              ...options,
+              httpOnly: true,
+              secure: process.env.NODE_ENV === "production",
+              sameSite: "lax",
+            })
           )
         },
       },
@@ -205,6 +212,20 @@ export async function proxy(request: NextRequest) {
 
   const path = request.nextUrl.pathname
   const isProtected = PROTECTED_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))
+
+  // Redirect authenticated users away from auth pages
+  const isAuthRoute = path === '/auth/login' || path === '/auth/register' || path === '/auth/institution-login' || path === '/institution/login' || path === '/institution/signup'
+  if (user && isAuthRoute) {
+    const role = user.user_metadata?.role?.toUpperCase()
+    const redirectUrl = request.nextUrl.clone()
+    if (role === 'TUTOR') redirectUrl.pathname = '/tutor'
+    else if (role === 'ADMIN' || role === 'FOUNDER') redirectUrl.pathname = '/admin'
+    else if (path.startsWith('/institution/')) redirectUrl.pathname = '/institution/dashboard'
+    else redirectUrl.pathname = '/dashboard'
+    const redirect = NextResponse.redirect(redirectUrl)
+    supabaseResponse.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie))
+    return redirect
+  }
 
   if (!user && isProtected) {
     const redirectUrl = request.nextUrl.clone()

@@ -19,6 +19,7 @@ import {
 } from '@/lib/stream-video-client';
 import { createClient as createSupabaseBrowserClient } from '@/utils/supabase/client';
 import type { StreamVideoClient, Call } from '@stream-io/video-react-sdk';
+import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { IncomingCall } from './IncomingCall';
 import { ActiveCall } from './ActiveCall';
 
@@ -108,7 +109,7 @@ function VideoProviderRoot({ children }: { children: React.ReactNode }) {
     } catch {
       return;
     }
-    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
       const authId = session?.user?.id ?? null;
       if (event === 'INITIAL_SESSION') {
         lastAuthId = authId;
@@ -135,38 +136,47 @@ function VideoProviderRoot({ children }: { children: React.ReactNode }) {
   // joining an ongoing call), show it; clear it once the call is left.
   useEffect(() => {
     if (!client) return;
-    const perCall = new Map<string, { unsubscribe: () => void }>();
+    // Keyed by cid, but remembers the Call object: the SDK can swap in a new
+    // object for the same cid (registerOrUpdateCall on getOrCreate/join), and
+    // we must follow the object that is actually joined.
+    const perCall = new Map<string, { call: Call; sub: { unsubscribe: () => void } }>();
 
     const sub = client.state.calls$.subscribe((calls) => {
-      const live = new Set(calls.map((c) => c.cid));
-      for (const [cid, s] of perCall) {
-        if (!live.has(cid)) {
-          s.unsubscribe();
+      const live = new Map(calls.map((c) => [c.cid, c] as const));
+      for (const [cid, entry] of perCall) {
+        if (live.get(cid) !== entry.call) {
+          entry.sub.unsubscribe();
           perCall.delete(cid);
         }
       }
       for (const call of calls) {
         if (perCall.has(call.cid)) continue;
-        perCall.set(
-          call.cid,
-          call.state.callingState$.subscribe((state) => {
+        perCall.set(call.cid, {
+          call,
+          sub: call.state.callingState$.subscribe((state) => {
             const current = activeCallRef.current;
-            if (LIVE_STATES.has(state) && (!current || current.state.callingState === CallingState.LEFT)) {
+            if (
+              LIVE_STATES.has(state) &&
+              (!current ||
+                current.state.callingState === CallingState.LEFT ||
+                // Same call, replaced object
+                (current.cid === call.cid && current !== call))
+            ) {
               setActiveCall(call);
             } else if (
               (state === CallingState.LEFT || state === CallingState.RECONNECTING_FAILED) &&
-              current?.cid === call.cid
+              current === call
             ) {
               setActiveCall(null);
             }
           }),
-        );
+        });
       }
     });
 
     return () => {
       sub.unsubscribe();
-      for (const s of perCall.values()) s.unsubscribe();
+      for (const entry of perCall.values()) entry.sub.unsubscribe();
     };
   }, [client, setActiveCall]);
 

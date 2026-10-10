@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Loader2, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +9,8 @@ import { showError, showSuccess } from "@/lib/toast";
 import { KENYA_COUNTIES } from "@/lib/kenya-counties";
 import { INSTITUTION_PLANS } from "@/lib/institution-plans";
 import { updateInstitutionSettings, addDeputyAdmin, upsertAcademicTerm } from "@/app/actions/institution-admin";
+import type { AcademicTermRow } from "@/app/actions/institution-manage";
+import { TermList } from "@/components/institution/term-list";
 
 interface Admin {
   id: string;
@@ -20,6 +23,7 @@ interface Admin {
 export function SettingsClient({
   institution,
   term,
+  terms,
 }: {
   institution: {
     id: string;
@@ -38,6 +42,7 @@ export function SettingsClient({
     admins: Admin[];
   };
   term: { term: number; year: number; startDate: Date; endDate: Date; holidayStart: Date | null; holidayEnd: Date | null } | null;
+  terms?: AcademicTermRow[];
 }) {
   const [pending, startTransition] = useTransition();
   const [form, setForm] = useState({
@@ -219,6 +224,12 @@ export function SettingsClient({
               Set the current term, and the holiday window in which holiday coaching can be booked.
             </p>
             <TermForm term={term} />
+            {terms && (
+              <div className="mt-5">
+                <p className="mb-2 text-[11px] font-black uppercase tracking-widest text-gray-500">All terms</p>
+                <TermList terms={terms} />
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -233,6 +244,8 @@ function TermForm({
 }: {
   term: { term: number; year: number; startDate: Date; endDate: Date; holidayStart: Date | null; holidayEnd: Date | null } | null;
 }) {
+  const router = useRouter();
+  const [makeCurrent, setMakeCurrent] = useState(true);
   const [termN, setTermN] = useState(term?.term ?? 1);
   const [year, setYear] = useState(term?.year ?? new Date().getFullYear());
   const [startsOn, setStartsOn] = useState(term ? isoDate(term.startDate) : "");
@@ -251,12 +264,13 @@ function TermForm({
         endDate: new Date(endsOn),
         holidayStart: holidayStart ? new Date(holidayStart) : null,
         holidayEnd: holidayEnd ? new Date(holidayEnd) : null,
-        makeCurrent: true,
+        makeCurrent,
       });
       if (!res.ok) {
         showError({ title: "We couldn't save that term", cause: res.error, fix: "Check the dates and try again." });
       } else {
         showSuccess("Term saved", { description: "Your academic calendar is updated." });
+        router.refresh();
       }
     });
   }
@@ -287,7 +301,11 @@ function TermForm({
               <Input type="date" value={holidayEnd} onChange={(v) => setHolidayEnd(v)} />
             </Field>
       </div>
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between gap-3">
+        <label className="flex items-center gap-2 text-xs font-bold text-gray-600">
+          <input type="checkbox" checked={makeCurrent} onChange={(e) => setMakeCurrent(e.target.checked)} className="h-4 w-4" />
+          Make this the current term
+        </label>
         <Button type="submit" disabled={pending} variant="outline">
           {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
           Save term

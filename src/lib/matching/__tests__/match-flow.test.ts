@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   canAccept,
   decideNextOffer,
+  isOpenForTutors,
   matchPhase,
   offerStats,
   MATCH_TIMINGS,
+  TUTOR_GRACE_MS,
   type OfferRow,
 } from "../match-flow";
 
@@ -22,6 +24,15 @@ describe("matchPhase", () => {
     expect(matchPhase(t0, at(MATCH_TIMINGS.TUTOR_PHASE_MS))).toBe("peer");
     expect(matchPhase(t0, at(MATCH_TIMINGS.AI_FALLBACK_MS))).toBe("ai");
     expect(matchPhase(t0, at(MATCH_TIMINGS.REQUEST_TTL_MS))).toBe("expired");
+  });
+});
+
+describe("isOpenForTutors", () => {
+  it("closes shortly after the AI fallback point, long before expiry", () => {
+    expect(isOpenForTutors(t0, at(0))).toBe(true);
+    expect(isOpenForTutors(t0, at(MATCH_TIMINGS.AI_FALLBACK_MS))).toBe(true);
+    expect(isOpenForTutors(t0, at(MATCH_TIMINGS.AI_FALLBACK_MS + TUTOR_GRACE_MS))).toBe(false);
+    expect(isOpenForTutors(t0, at(MATCH_TIMINGS.REQUEST_TTL_MS - 1))).toBe(false);
   });
 });
 

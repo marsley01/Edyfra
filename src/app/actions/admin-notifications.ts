@@ -34,7 +34,7 @@ export async function sendErrorNotification(params: ErrorNotificationParams) {
       return;
     }
 
-    const { notifyManyUsers } = await import("@/app/actions/notifications");
+    const { notifyManyUsers } = await import("@/lib/notifications/server");
     await notifyManyUsers(
       admins.map((admin: { id: string }) => admin.id),
       {

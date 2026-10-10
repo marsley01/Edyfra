@@ -93,13 +93,14 @@ function byScoreThenRecency(a: { c: RankCandidate; s: number }, b: { c: RankCand
  * resolves if the row the cursor points at was deleted in the meantime.
  *   t:<createdAtMs>:<id>             chronological (latest / following / profile)
  *   p:<likes>:<createdAtMs>:<id>     popular (likes desc, then newest)
- *   r:<offset>:<asOfMs>              for-you ranked window
+ *   r:<offset>:<asOfMs>[:<lastId>]   for-you ranked window (lastId = last post shown;
+ *                                    the next page resumes right after it)
  */
 
 export type FeedCursor =
   | { kind: "time"; createdAt: Date; id: string }
   | { kind: "popular"; likes: number; createdAt: Date; id: string }
-  | { kind: "ranked"; offset: number; asOf: number };
+  | { kind: "ranked"; offset: number; asOf: number; lastId?: string };
 
 export function encodeCursor(c: FeedCursor): string {
   switch (c.kind) {
@@ -108,7 +109,7 @@ export function encodeCursor(c: FeedCursor): string {
     case "popular":
       return `p:${c.likes}:${c.createdAt.getTime()}:${c.id}`;
     case "ranked":
-      return `r:${c.offset}:${c.asOf}`;
+      return c.lastId ? `r:${c.offset}:${c.asOf}:${c.lastId}` : `r:${c.offset}:${c.asOf}`;
   }
 }
 
@@ -129,10 +130,14 @@ export function decodeCursor(raw: string | null | undefined): FeedCursor | null 
     if (!Number.isFinite(likes) || !Number.isFinite(ms) || !ID_RE.test(parts[3])) return null;
     return { kind: "popular", likes, createdAt: new Date(ms), id: parts[3] };
   }
-  if (parts[0] === "r" && parts.length === 3) {
+  if (parts[0] === "r" && (parts.length === 3 || parts.length === 4)) {
     const offset = num(parts[1]);
     const asOf = num(parts[2]);
     if (!Number.isFinite(offset) || !Number.isFinite(asOf) || offset > 10_000) return null;
+    if (parts.length === 4) {
+      if (!ID_RE.test(parts[3])) return null;
+      return { kind: "ranked", offset, asOf, lastId: parts[3] };
+    }
     return { kind: "ranked", offset, asOf };
   }
   return null;

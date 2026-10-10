@@ -42,13 +42,16 @@ export function IncomingCall({ onAccepted }: IncomingCallProps = {}) {
       setRingingCall(null);
       return;
     }
-    const perCall = new Map<string, { unsubscribe: () => void }>();
+    // Keyed by cid but tracks the object: the SDK may replace the Call
+    // instance for a cid, and the old one stops emitting.
+    const perCall = new Map<string, { call: Call; sub: { unsubscribe: () => void } }>();
     let calls: Call[] = [];
 
     const recompute = () => {
       const next = calls.find((c) => isIncomingRing(c) && !handledRef.current.has(c.cid)) ?? null;
       const prev = ringingRef.current;
-      if (prev && prev !== next && !handledRef.current.has(prev.cid)) {
+      // (same cid with a new object is the SDK replacing the instance, not a miss)
+      if (prev && prev !== next && next?.cid !== prev.cid && !handledRef.current.has(prev.cid)) {
         // Stopped ringing without us answering: caller hung up or it timed out
         const name = prev.state.createdBy?.name || 'Someone';
         const me = client.state.connectedUser?.id;
@@ -72,23 +75,23 @@ export function IncomingCall({ onAccepted }: IncomingCallProps = {}) {
 
     const sub = client.state.calls$.subscribe((list) => {
       calls = list;
-      const live = new Set(list.map((c) => c.cid));
-      for (const [cid, s] of perCall) {
-        if (!live.has(cid)) {
-          s.unsubscribe();
+      const live = new Map(list.map((c) => [c.cid, c] as const));
+      for (const [cid, entry] of perCall) {
+        if (live.get(cid) !== entry.call) {
+          entry.sub.unsubscribe();
           perCall.delete(cid);
         }
       }
       for (const call of list) {
         if (perCall.has(call.cid)) continue;
-        perCall.set(call.cid, call.state.callingState$.subscribe(() => recompute()));
+        perCall.set(call.cid, { call, sub: call.state.callingState$.subscribe(() => recompute()) });
       }
       recompute();
     });
 
     return () => {
       sub.unsubscribe();
-      for (const s of perCall.values()) s.unsubscribe();
+      for (const entry of perCall.values()) entry.sub.unsubscribe();
     };
   }, [client]);
 

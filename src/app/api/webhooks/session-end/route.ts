@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { AIService } from "@/utils/ai-service";
 import { StreamChat } from "stream-chat";
-import { notifyUser } from "@/app/actions/notifications";
+import { notifyUser } from "@/lib/notifications/server";
 
 export async function POST(request: Request) {
   try {

@@ -140,13 +140,19 @@ export default function StudyPage() {
     }
   };
 
-  const stepLabel = matchStep === 1
+  const waitingOnTutor = matchStep === 1 && !!matchCtx.offerExpiresAt;
+
+  const stepLabel = waitingOnTutor
+    ? "A tutor is reviewing your request..."
+    : matchStep === 1
     ? "Finding your expert..."
     : matchStep === 2
       ? "Looking for a study partner..."
       : "Mash AI is ready";
 
-  const stepDescription = matchStep === 1
+  const stepDescription = waitingOnTutor
+    ? `We matched you with the best available ${formData.subject} tutor. If they can't take it, we'll ask the next one.`
+    : matchStep === 1
     ? `Scanning our community for someone who excels at ${formData.subject}.`
     : matchStep === 2
       ? `No tutor available — finding a peer who can help with ${formData.subject}.`

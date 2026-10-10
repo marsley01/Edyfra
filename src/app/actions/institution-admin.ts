@@ -33,19 +33,22 @@ export const getInstitutionOverview = cache(async (institutionId: string): Promi
     prisma.coachingAssignment.count({
       where: { institutionId, status: { in: ["ACTIVE", "SCHEDULED"] } },
     }),
-    prisma.studentResultsAnalysis.findMany({
+    prisma.studentResult.findFirst({
       where: { institutionId },
-      orderBy: { createdAt: "desc" },
-      take: 500,
+      orderBy: [{ year: "desc" }, { term: "desc" }],
+      select: { term: true, year: true },
     }),
   ]);
 
-  const avg =
-    recentResults.length > 0
-      ? Math.round(
-          (recentResults.reduce((s, r) => s + r.marks, 0) / recentResults.length) * 10,
-        ) / 10
-      : 0;
+  // Mean of the latest term with results, aggregated in the database (was a
+  // mean of the 500 most recently inserted rows, mixing terms).
+  const latestAgg = recentResults
+    ? await prisma.studentResult.aggregate({
+        where: { institutionId, term: recentResults.term, year: recentResults.year },
+        _avg: { marks: true },
+      })
+    : null;
+  const avg = latestAgg?._avg.marks != null ? Math.round(latestAgg._avg.marks * 10) / 10 : 0;
 
   const adminRows = await prisma.institutionMember.findMany({
     where: { institutionId, role: { in: ["INSTITUTION_ADMIN", "INSTITUTION_DEPUTY"] }, status: "ACTIVE" },
@@ -243,46 +246,72 @@ export const getInstitutionStudentsList = cache(async (
 
   if (members.length === 0) return [];
 
-  // Pull recent results per student
+  // Aggregate in the database (no per-student queries). Previously every
+  // result row was loaded and averaged with "(avg + marks) / 2", which is not
+  // a mean (it weights the last row 50%).
   const userIds = members.map((m) => m.user.id);
-  const [latestResults, recentAnalyses] = await Promise.all([
-    prisma.studentResult.findMany({
+  const [termAverages, statusGroups, subjectGroups, instStudents] = await Promise.all([
+    prisma.studentResult.groupBy({
+      by: ["studentUserId", "year", "term"],
       where: { institutionId, studentUserId: { in: userIds } },
-      orderBy: [{ year: "desc" }, { term: "desc" }, { createdAt: "desc" }],
+      _avg: { marks: true },
     }),
-    prisma.studentResultsAnalysis.findMany({
+    prisma.studentResultsAnalysis.groupBy({
+      by: ["studentUserId", "year", "term", "overallStatus"],
       where: { institutionId, studentUserId: { in: userIds } },
-      orderBy: { createdAt: "desc" },
+    }),
+    prisma.studentResult.groupBy({
+      by: ["studentUserId", "subject"],
+      where: { institutionId, studentUserId: { in: userIds } },
+    }),
+    prisma.institutionStudent.findMany({
+      where: { institutionId, userId: { in: userIds } },
+      select: { userId: true, studentIdStr: true, classYear: true },
     }),
   ]);
 
-  // Build a per-student performance summary
-  const byStudent = new Map<string, { avg: number; status: "GREEN" | "YELLOW" | "RED" | null; subjects: Set<string> }>();
-  for (const a of recentAnalyses) {
-    const cur = byStudent.get(a.studentUserId) ?? { avg: 0, status: null, subjects: new Set() };
-    cur.avg = (cur.avg + a.marks) / 2; // simple moving avg
-    cur.subjects.add(a.subject);
-    if (a.overallStatus === "RED") cur.status = "RED";
-    else if (a.overallStatus === "YELLOW" && cur.status !== "RED") cur.status = "YELLOW";
-    else if (a.overallStatus === "GREEN" && !cur.status) cur.status = "GREEN";
-    byStudent.set(a.studentUserId, cur);
+  // Latest term with results, per student.
+  const latest = new Map<string, { idx: number; avg: number }>();
+  for (const g of termAverages) {
+    if (!g.studentUserId) continue;
+    const idx = g.year * 3 + g.term;
+    const cur = latest.get(g.studentUserId);
+    if (!cur || idx > cur.idx) latest.set(g.studentUserId, { idx, avg: g._avg.marks ?? 0 });
   }
+  const SEVERITY = { RED: 2, YELLOW: 1, GREEN: 0 } as const;
+  const status = new Map<string, "GREEN" | "YELLOW" | "RED">();
+  for (const g of statusGroups) {
+    if (latest.get(g.studentUserId)?.idx !== g.year * 3 + g.term) continue;
+    const cur = status.get(g.studentUserId);
+    const next = g.overallStatus as "GREEN" | "YELLOW" | "RED";
+    if (!cur || SEVERITY[next] > SEVERITY[cur]) status.set(g.studentUserId, next);
+  }
+  const subjects = new Map<string, Set<string>>();
+  for (const g of subjectGroups) {
+    if (!g.studentUserId) continue;
+    const set = subjects.get(g.studentUserId) ?? new Set<string>();
+    set.add(g.subject);
+    subjects.set(g.studentUserId, set);
+  }
+  const instByUser = new Map(instStudents.map((s) => [s.userId, s]));
 
   const result = members
     .map<StudentRow>((m) => {
       const u = m.user;
-      const sum = byStudent.get(u.id);
+      const inst = instByUser.get(u.id);
+      const lt = latest.get(u.id);
+      const classYear = inst?.classYear ? Number(inst.classYear) : null;
       return {
         id: u.id,
         name: u.name,
         email: u.email,
-        admissionNumber: null,
-        form: formatForm(u.educationLevel, u.formYear),
+        admissionNumber: inst?.studentIdStr ?? null,
+        form: formatForm(u.educationLevel, Number.isFinite(classYear) && classYear ? classYear : u.formYear),
         stream: null,
-        subjects: Array.from(sum?.subjects ?? []).slice(0, 5),
+        subjects: Array.from(subjects.get(u.id) ?? []).slice(0, 5),
         lastActive: u.lastActiveAt,
-        performance: sum?.status ?? null,
-        averageMarks: sum ? Math.round(sum.avg * 10) / 10 : null,
+        performance: status.get(u.id) ?? null,
+        averageMarks: lt ? Math.round(lt.avg * 10) / 10 : null,
       };
     })
     .filter((s) => (opts?.form ? s.form === opts.form : true))
@@ -621,6 +650,18 @@ export async function removeTeacher(teacherUserId: string) {
   return { ok: true as const };
 }
 
+/** Revokes a pending teacher invitation (the invite link stops working). */
+export async function revokeTeacherInvitation(invitationId: string) {
+  const membership = await requireInstitutionAdmin();
+  const res = await prisma.institutionInvitation.updateMany({
+    where: { id: String(invitationId), institutionId: membership.institution.id, status: "PENDING" },
+    data: { status: "REVOKED" },
+  });
+  if (res.count === 0) return { ok: false as const, error: "Invitation not found or already used" };
+  revalidatePath("/institution/dashboard/teachers");
+  return { ok: true as const };
+}
+
 // ─── Settings ────────────────────────────────────────────────────────────
 
 const SettingsSchema = z.object({
@@ -782,7 +823,7 @@ export async function upsertAcademicTerm(input: z.infer<typeof TermSchema>) {
     });
   }
 
-  await prisma.academicTerm.upsert({
+  const saved = await prisma.academicTerm.upsert({
     where: {
       institutionId_term_year: {
         institutionId: membership.institution.id,
@@ -805,8 +846,18 @@ export async function upsertAcademicTerm(input: z.infer<typeof TermSchema>) {
       endDate: data.endDate,
       holidayStart: data.holidayStart ?? null,
       holidayEnd: data.holidayEnd ?? null,
-      isCurrent: data.makeCurrent ?? false,
+      // Saving an existing term without "make current" must not demote it.
+      ...(data.makeCurrent ? { isCurrent: true } : {}),
     },
+  });
+  if (data.makeCurrent) {
+    await prisma.institution.update({ where: { id: membership.institution.id }, data: { currentTermId: saved.id } });
+  }
+  await logActivity(membership.institution.id, {
+    type: "SETTINGS_UPDATED",
+    actorUserId: membership.member.userId,
+    title: "Academic term saved",
+    body: `Term ${data.term} ${data.year}${data.makeCurrent ? " (current)" : ""}.`,
   });
   // The current term drives the overview, results, reports and coaching pages.
   revalidatePath("/institution/dashboard", "layout");

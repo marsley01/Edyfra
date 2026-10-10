@@ -107,7 +107,7 @@ export async function awardReferralBonus(referredUserId: string) {
 
     // Notify referrer
     try {
-      const { notifyUser } = await import("./notifications");
+      const { notifyUser } = await import("@/lib/notifications/server");
       await notifyUser(referred.referredBy, {
         type: "REFERRAL_BONUS",
         title: "🎉 Referral bonus earned!",

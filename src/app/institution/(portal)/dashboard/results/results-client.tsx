@@ -29,9 +29,11 @@ interface Summary {
 export function ResultsClient({
   initialSummary,
   currentTerm,
+  termPicker,
 }: {
   initialSummary: Summary;
   currentTerm: { term: number; year: number } | null;
+  termPicker?: React.ReactNode;
 }) {
   const router = useRouter();
   // Read straight from props: router.refresh() after an import delivers a new
@@ -51,16 +53,19 @@ export function ResultsClient({
             Upload end-of-term results to see school-wide performance, trends, and AI insights.
           </p>
         </div>
-        <Button onClick={() => setShowUpload(true)} className="bg-primary hover:bg-primary">
-          <Upload className="mr-2 h-4 w-4" /> Upload results CSV
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          {termPicker}
+          <Button onClick={() => setShowUpload(true)} className="bg-primary hover:bg-primary">
+            <Upload className="mr-2 h-4 w-4" /> Upload results CSV
+          </Button>
+        </div>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-black">Subject averages</CardTitle>
-            <p className="text-xs text-gray-500">Across all uploaded terms.</p>
+            <p className="text-xs text-gray-500">Across all uploaded terms. Use the term picker for per-term figures below.</p>
           </CardHeader>
           <CardContent>
             <SubjectBarChart
@@ -296,10 +301,12 @@ function UploadDialog({
         });
         return;
       }
-      showSuccess(`Imported ${res.inserted} result rows`, {
+      showSuccess(`Saved ${res.inserted} new and ${res.updated} updated results`, {
         description: res.skipped
-          ? `${res.skipped} rows were skipped because they didn't match an enrolled student.`
-          : "Results are now in the system.",
+          ? `${res.skipped} rows didn't match an enrolled student${
+              res.unmatchedNames.length ? ` (e.g. ${res.unmatchedNames.slice(0, 3).join(", ")})` : ""
+            }. Re-importing the same file is safe: existing marks are updated, never duplicated.`
+          : "Re-importing the same file is safe: existing marks are updated, never duplicated.",
       });
       setStep("done");
       onImported();
@@ -501,7 +508,7 @@ function UploadDialog({
             )}
             {step === "upload" && (
               <Button disabled className="bg-primary hover:bg-primary">
-                <Loader2 className="mr-1 h-4 w-4 animate-spin" /> Choose a CSV first
+                Choose a CSV first
               </Button>
             )}
           </div>

@@ -1,6 +1,5 @@
 "use server";
 
-import { createClient } from "@/utils/supabase/server";
 import {
   getServerStreamClient,
   syncUserToStream,
@@ -10,6 +9,41 @@ import {
 } from "@/lib/user-sync";
 import prisma from "@/lib/prisma";
 import { createHash } from "crypto";
+import { resolveStreamViewer } from "@/lib/video/viewer";
+
+/**
+ * The signed-in user's Stream identity. Stream users are keyed by the PRISMA
+ * id, which differs from the Supabase auth id for some older accounts.
+ * (Not exported: every export of this "use server" file is browser-callable.)
+ */
+async function requireViewer() {
+  const viewer = await resolveStreamViewer();
+  if (!viewer) throw new Error("Unauthorized");
+  return viewer;
+}
+
+/**
+ * Members of `group_<id>` channels, from the database (never from the
+ * caller): a matched study Session (id or roomId) or a StruggleGroup.
+ */
+async function groupChannelMembers(groupId: string): Promise<{ members: string[]; name: string | null } | null> {
+  const session = await prisma.session.findFirst({
+    where: { OR: [{ id: groupId }, { roomId: groupId }] },
+    select: { studentId: true, partnerId: true, subject: true },
+  });
+  if (session) {
+    return {
+      members: [session.studentId, session.partnerId].filter((m): m is string => !!m && m !== MASH_AI_USER_ID),
+      name: session.subject || null,
+    };
+  }
+  const group = await prisma.struggleGroup.findUnique({
+    where: { id: groupId },
+    select: { members: true, name: true },
+  });
+  if (group) return { members: group.members.filter((m) => m !== MASH_AI_USER_ID), name: group.name };
+  return null;
+}
 
 /**
  * The server Stream client uses the API secret and bypasses all channel
@@ -28,6 +62,16 @@ async function isChannelMember(channelId: string, userId: string): Promise<boole
   }
 }
 
+/**
+ * `group_<id>` channel ids: Stream allows at most 64 characters, and the id
+ * part must look like a database id (no separators that could collide with
+ * other channel naming schemes such as `dm_`).
+ */
+const GROUP_ID_RE = /^[A-Za-z0-9-]{1,58}$/;
+function parseGroupId(raw: unknown): string | null {
+  return typeof raw === "string" && GROUP_ID_RE.test(raw) ? raw : null;
+}
+
 async function isAdmin(userId: string): Promise<boolean> {
   const u = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
   return u?.role === "ADMIN" || u?.role === "FOUNDER";
@@ -41,12 +85,11 @@ async function isAdmin(userId: string): Promise<boolean> {
  * freshest name + avatar before the client connects.
  */
 export async function getStreamToken(userId: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user || user.id !== userId) throw new Error("Unauthorized");
+  // The token must be for the Stream (Prisma) id. A caller passing the auth
+  // id of an older account would connectUser() as the wrong user, so reject
+  // it; clients should take `userId` from POST /api/stream/token instead.
+  const viewer = await requireViewer();
+  if (viewer.id !== userId) throw new Error("Unauthorized");
 
   const client = getServerStreamClient();
   if (!client) throw new Error("Stream not configured");
@@ -81,46 +124,58 @@ export async function upsertStreamUser(
   _name?: string,
   _image?: string
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const viewer = await requireViewer();
+  if (userId !== viewer.id && userId !== viewer.authId) throw new Error("Unauthorized");
 
-  if (!user || user.id !== userId) throw new Error("Unauthorized");
-
-  await syncUserToStream(userId);
+  await syncUserToStream(viewer.id);
 }
 
 // ─── Channel Creation ─────────────────────────────────────────────────────────
 /**
- * Creates or connects to an existing Stream channel.
+ * Creates or connects to an existing `group_<id>` Stream channel.
  * Uses watch() so if it already exists, it connects without duplicating it.
+ *
+ * The server client bypasses Stream permissions, so channel ids are limited
+ * to `group_<id>` and the member list comes from the database (the `members`
+ * argument is only checked, never trusted): otherwise any user could pull
+ * arbitrary users into a channel, or squat a legitimate group's channel id.
  */
 export async function createStreamChannel(
   channelId: string,
   members: string[],
   name?: string
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const viewer = await requireViewer();
+  const groupId =
+    typeof channelId === "string" && channelId.startsWith("group_")
+      ? parseGroupId(channelId.slice("group_".length))
+      : null;
+  if (!groupId || !Array.isArray(members)) throw new Error("Unauthorized");
 
-  if (!user) throw new Error("Unauthorized");
-  if (!members.includes(user.id)) throw new Error("Unauthorized");
+  const group = await groupChannelMembers(groupId);
+  if (!group) throw new Error("Unauthorized");
+  const callerId = group.members.includes(viewer.id)
+    ? viewer.id
+    : group.members.includes(viewer.authId)
+      ? viewer.authId
+      : null;
+  if (!callerId) throw new Error("Unauthorized");
+  if (members.some((m) => !group.members.includes(m))) throw new Error("Unauthorized");
   // Don't let a caller "create" (and thereby watch) somebody else's channel
-  if ((await isChannelMember(channelId, user.id)) === false) throw new Error("Unauthorized");
+  if ((await isChannelMember(channelId, callerId)) === false) throw new Error("Unauthorized");
 
-  await syncUsersToStream(members);
+  const dbMembers = group.members;
+  await syncUsersToStream(dbMembers);
 
   const client = getServerStreamClient();
   if (!client) throw new Error("Stream not configured");
 
   try {
+    const channelName = group.name || name;
     const channel = client.channel("messaging", channelId, {
-      members,
-      created_by_id: user.id,
-      ...(name ? { name } : {}),
+      members: dbMembers,
+      created_by_id: callerId,
+      ...(channelName ? { name: channelName } : {}),
     } as any);
 
     await channel.watch();
@@ -137,22 +192,23 @@ export async function addMembersToChannel(
   channelId: string,
   members: string[]
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const viewer = await requireViewer();
+  if (typeof channelId !== "string" || !channelId) throw new Error("Unauthorized");
+  if (!Array.isArray(members) || members.length === 0) throw new Error("Unauthorized");
 
-  if (!user) throw new Error("Unauthorized");
-
-  // Allowed if the caller is already in the channel, or is joining a study
-  // group channel they are a member of in the database (see joinGroup).
-  if ((await isChannelMember(channelId, user.id)) !== true) {
-    const isSelfJoin = members.length === 1 && members[0] === user.id;
-    const groupId = channelId.startsWith("group_") ? channelId.slice("group_".length) : null;
-    const group = isSelfJoin && groupId
-      ? await prisma.struggleGroup.findUnique({ where: { id: groupId }, select: { members: true } })
-      : null;
-    if (!group || !group.members.includes(user.id)) throw new Error("Unauthorized");
+  // Non-admins may only add themselves (see joinGroup), and only to a study
+  // group channel they belong to in the database or a channel they're already
+  // in. Adding other people requires an admin.
+  const isSelf = members.every((m) => m === viewer.id || m === viewer.authId);
+  if (!isSelf) {
+    if (!(await isAdmin(viewer.id))) throw new Error("Unauthorized");
+  } else {
+    const groupId = channelId.startsWith("group_") ? parseGroupId(channelId.slice("group_".length)) : null;
+    const group = groupId ? await groupChannelMembers(groupId) : null;
+    const inGroup = !!group && members.every((m) => group.members.includes(m));
+    if (!inGroup && (await isChannelMember(channelId, members[0])) !== true) {
+      throw new Error("Unauthorized");
+    }
   }
 
   await syncUsersToStream(members);
@@ -168,15 +224,11 @@ export async function removeMembersFromChannel(
   channelId: string,
   members: string[]
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new Error("Unauthorized");
-  // Users may remove themselves; removing others requires an admin
-  const onlySelf = members.length > 0 && members.every((m) => m === user.id);
-  if (!onlySelf && !(await isAdmin(user.id))) throw new Error("Unauthorized");
+  const viewer = await requireViewer();
+  if (!Array.isArray(members) || members.length === 0) throw new Error("Unauthorized");
+  // Users may remove themselves (either id); removing others requires an admin
+  const onlySelf = members.every((m) => m === viewer.id || m === viewer.authId);
+  if (!onlySelf && !(await isAdmin(viewer.id))) throw new Error("Unauthorized");
 
   const client = getServerStreamClient();
   if (!client) throw new Error("Stream not configured");
@@ -206,19 +258,9 @@ export async function getDMChannelId(
 }
 
 export async function createDMChannel(userAId: string, userBId: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new Error("Unauthorized");
   // Stream users are keyed by Prisma id, which differs from the auth id for
-  // some older/OAuth accounts — compare against both.
-  const me = await prisma.user.findFirst({
-    where: { OR: [{ id: user.id }, ...(user.email ? [{ email: user.email }] : [])] },
-    select: { id: true },
-  });
-  const callerId = me?.id ?? user.id;
+  // some older/OAuth accounts.
+  const callerId = (await requireViewer()).id;
   if (callerId !== userAId && callerId !== userBId) throw new Error("Unauthorized");
   if (userAId === userBId) throw new Error("Cannot message yourself");
 
@@ -248,31 +290,42 @@ export async function createDMChannel(userAId: string, userBId: string) {
 /**
  * Creates or connects to a group channel for a study session.
  * Channel ID format: group_<sessionId>
+ *
+ * Members are loaded from the database (Session participants or
+ * StruggleGroup members) and the caller must be one of them; `memberIds` is
+ * kept for call-site compatibility but is not trusted.
  */
 export async function createGroupChannel(
   sessionId: string,
-  memberIds: string[],
+  _memberIds: string[],
   subjectName: string
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const viewer = await requireViewer();
+  if (!parseGroupId(sessionId)) throw new Error("Unauthorized");
 
-  if (!user) throw new Error("Unauthorized");
-  if (!memberIds.includes(user.id)) throw new Error("Unauthorized");
-  if ((await isChannelMember(`group_${sessionId}`, user.id)) === false) throw new Error("Unauthorized");
+  const group = await groupChannelMembers(sessionId);
+  if (!group) throw new Error("Unauthorized");
+  const callerId = group.members.includes(viewer.id)
+    ? viewer.id
+    : group.members.includes(viewer.authId)
+      ? viewer.authId
+      : null;
+  if (!callerId) throw new Error("Unauthorized");
 
-  await syncUsersToStream([...memberIds, user.id, MASH_AI_USER_ID]);
+  const channelId = `group_${sessionId}`;
+  const existing = await isChannelMember(channelId, callerId);
+  if (existing === false) throw new Error("Unauthorized");
+
+  const memberIds = group.members;
+  await syncUsersToStream([...memberIds, MASH_AI_USER_ID]);
 
   const client = getServerStreamClient();
   if (!client) throw new Error("Stream not configured");
-  const channelId = `group_${sessionId}`;
 
   const channel = client.channel("messaging", channelId, {
     members: [...memberIds, MASH_AI_USER_ID],
-    name: subjectName,
-    created_by_id: user.id,
+    name: group.name || subjectName,
+    created_by_id: callerId,
   } as any);
 
   await channel.watch();
@@ -284,13 +337,9 @@ export async function createGroupChannel(
 
 // ─── Channel Deletion ─────────────────────────────────────────────────────────
 export async function deleteStreamChannel(channelId: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new Error("Unauthorized");
-  if (!(await isAdmin(user.id))) throw new Error("Unauthorized");
+  const viewer = await requireViewer();
+  // Roles live on the Prisma row, so check the Prisma id
+  if (!(await isAdmin(viewer.id))) throw new Error("Unauthorized");
 
   const client = getServerStreamClient();
   if (!client) throw new Error("Stream not configured");
@@ -306,13 +355,11 @@ export async function deleteStreamChannel(channelId: string) {
 }
 
 // ─── Recent DM Partners ───────────────────────────────────────────────────────
-export async function getRecentDMPartners(userId: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user || user.id !== userId) throw new Error("Unauthorized");
+export async function getRecentDMPartners(requestedUserId: string) {
+  // Callers may pass either id; channels are always keyed by the Prisma id
+  const viewer = await requireViewer();
+  if (requestedUserId !== viewer.id && requestedUserId !== viewer.authId) throw new Error("Unauthorized");
+  const userId = viewer.id;
 
   const client = getServerStreamClient();
   if (!client) throw new Error("Stream not configured");
@@ -367,12 +414,15 @@ export async function handleMashMention(
   sessionTopic?: string,
   sessionTier?: string
 ) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) throw new Error("Unauthorized");
-  // The reply is posted with server privileges, so the caller must belong to the channel
-  if ((await isChannelMember(channelId, user.id)) === false) throw new Error("Unauthorized");
+  const viewer = await requireViewer();
+  const user = { id: viewer.authId };
+  // The reply is posted with server privileges, so the caller must belong to
+  // the (existing) channel under their Stream id; a channel that doesn't
+  // exist yet would otherwise be created by the server with the caller in it.
+  const member =
+    (await isChannelMember(channelId, viewer.id)) === true ||
+    (viewer.authId !== viewer.id && (await isChannelMember(channelId, viewer.authId)) === true);
+  if (!member) throw new Error("Unauthorized");
 
   const prompt = messageText
     .replace(/@(?:Mash|AI|mash|ai|mash-ai|MASH)\b/gi, "")
@@ -438,12 +488,12 @@ export async function handleMashMention(
 
   // Send response as mash-ai on the channel
   try {
-    await syncSessionParticipants(user.id);
+    await syncSessionParticipants(viewer.id);
 
     const client = getServerStreamClient();
     if (!client) throw new Error("Stream not configured");
     const channel = client.channel("messaging", channelId, {
-      members: [user.id, MASH_AI_USER_ID],
+      members: [viewer.id, MASH_AI_USER_ID],
     } as any);
 
     // Ensure the channel exists server-side before sending.
