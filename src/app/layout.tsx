@@ -23,13 +23,13 @@ const syne = Syne({ subsets: ["latin"], variable: "--font-syne" });
 
 export const metadata: Metadata = {
   title: {
-    default: "Edyfra — Kenya's Institutional Study Platform",
+    default: "Edyfra — Tutors, Study Partners & Past Papers in Kenya",
     template: "%s | Edyfra",
   },
   description:
-    "Connect with verified tutors and elite peers across Kenya. AI-powered matching, live study rooms, and institutional analytics — built for the modern scholar.",
+    "Find verified tutors and study partners, revise with KCSE past papers, and get instant help from Mash AI. Made for Kenyan high school and university students.",
   keywords: [
-    "edyfra", "study platform kenya", "tutors kenya", "AI learning", "university tutors",
+    "edyfra", "study platform kenya", "tutors kenya", "kcse past papers", "kcse revision", "AI learning", "university tutors",
     "high school tutors", "online study", "peer learning", "education kenya",
   ],
   authors: [{ name: "Edyfra", url: CANONICAL_ORIGIN }],
@@ -40,19 +40,19 @@ export const metadata: Metadata = {
   locale: "en_KE",
   url: CANONICAL_ORIGIN,
   siteName: "Edyfra",
-  title: "Edyfra — Kenya's Institutional Study Platform",
-  description: "AI-powered tutor matching, live study rooms, and institutional analytics for Kenyan scholars.",
+  title: "Edyfra — Tutors, Study Partners & Past Papers in Kenya",
+  description: "Find verified tutors and study partners, revise with KCSE past papers, and get instant help from Mash AI. Made for Kenyan high school and university students.",
   images: [{
     url: "/og-image.png",
     width: 1200,
     height: 630,
-    alt: "Edyfra — Kenya's Institutional Study Platform",
+    alt: "Edyfra — study platform for Kenyan students",
   }],
 },
   twitter: {
     card: "summary_large_image",
-    title: "Edyfra — Kenya's Institutional Study Platform",
-    description: "Connect with verified tutors across Kenya. Study smarter.",
+    title: "Edyfra — Tutors, Study Partners & Past Papers in Kenya",
+    description: "Verified tutors, study partners, past papers and Mash AI, built for Kenyan students.",
     images: ["/og-image.png"],
   },
   robots: {

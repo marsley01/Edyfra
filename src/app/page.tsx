@@ -33,13 +33,16 @@ const SubjectCoverage = dynamic(() => import("@/components/home/subject-coverage
 });
 
 export const metadata: Metadata = {
-  title: "Kenya's Institutional Study Platform",
+  // `absolute` because the root layout's "%s | Edyfra" template does not apply
+  // to the page in its own segment; a plain string left the brand name off the
+  // home page title entirely.
+  title: { absolute: "Edyfra — Tutors, Study Partners & Past Papers in Kenya" },
   description:
-    "Connect with verified tutors and elite peers across Kenya. AI-powered matching, live study rooms, and institutional analytics — built for the modern scholar.",
+    "Find verified tutors and study partners, revise with KCSE past papers, and get instant help from Mash AI. Made for Kenyan high school and university students.",
   openGraph: {
-    title: "Edyfra — Kenya's Institutional Study Platform",
+    title: "Edyfra — Tutors, Study Partners & Past Papers in Kenya",
     description:
-      "AI-powered tutor matching, live study rooms, and institutional analytics for Kenyan scholars. Find your study partner today.",
+      "Find verified tutors and study partners, revise with KCSE past papers, and get instant help from Mash AI. Made for Kenyan high school and university students.",
   },
 };
 
