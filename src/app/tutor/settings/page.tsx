@@ -33,11 +33,14 @@ import { showError, showSuccess, showUnknownError } from "@/lib/toast";
 import { Badge } from "@/components/ui/badge";
 import { useTheme } from "next-themes";
 import { TutorAvailabilityCalendar } from "@/components/tutor/TutorAvailabilityCalendar";
+import { BRAND_ACCENT, usesBrandAccent } from "@/lib/accent";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const TIME_SLOTS = ["Morning", "Afternoon", "Evening"];
 
+// "Edyfra Orange" is the brand default and clears any custom colour.
 const ACCENT_COLORS = [
+  { name: "Edyfra Orange", value: BRAND_ACCENT },
   { name: "Campus Navy", value: "#0F4C5C" },
   { name: "Royal Blue", value: "#1A5276" },
   { name: "Edyfra Blue", value: "#1e3a8a" },
@@ -986,8 +989,8 @@ export default function TutorSettingsPage() {
                   <CardContent className="p-6 sm:p-8">
                     <div className="flex flex-wrap gap-3">
                       {ACCENT_COLORS.map((color) => (
-                        <button key={color.value} onClick={() => handleSavePrefs("accentColor", color.value)} className={`h-10 w-10 rounded-full border-4 transition-all hover:scale-110 flex items-center justify-center shadow-sm ${prefs.accentColor === color.value ? "border-primary scale-110" : "border-transparent"}`} style={{ backgroundColor: color.value }}>
-                          {prefs.accentColor === color.value && <Check className="h-5 w-5 text-white" />}
+                        <button key={color.value} onClick={() => handleSavePrefs("accentColor", color.value)} className={`h-10 w-10 rounded-full border-4 transition-all hover:scale-110 flex items-center justify-center shadow-sm ${(color.value === BRAND_ACCENT ? usesBrandAccent(prefs.accentColor) : prefs.accentColor === color.value) ? "border-primary scale-110" : "border-transparent"}`} style={{ backgroundColor: color.value }}>
+                          {(color.value === BRAND_ACCENT ? usesBrandAccent(prefs.accentColor) : prefs.accentColor === color.value) && <Check className="h-5 w-5 text-white" />}
                         </button>
                       ))}
                     </div>

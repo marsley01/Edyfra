@@ -32,9 +32,12 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { UpgradeModal } from "@/components/shared/upgrade-modal";
+import { BRAND_ACCENT, usesBrandAccent } from "@/lib/accent";
 import { AvatarPicker, type AvatarStyle } from "@/components/ui/avatar-picker";
 
+// "Edyfra Orange" is the brand default and clears any custom colour.
 const ACCENT_COLORS = [
+  { name: "Edyfra Orange", value: BRAND_ACCENT },
   { name: "Edyfra Blue", value: "#1e3a8a" },
   { name: "Knowledge Teal", value: "#0d9488" },
   { name: "Success Green", value: "#15803d" },
@@ -153,8 +156,9 @@ export default function SettingsPage() {
   };
 
   const handleSavePrefs = async (key: string, value: any) => {
-    // Plan gating for accent colors
-    if (key === "accentColor" && userData?.plan !== "plus") {
+    // Plan gating for accent colors. Going back to the brand colour is always
+    // allowed, otherwise a lapsed Plus user could be stuck on a custom colour.
+    if (key === "accentColor" && userData?.plan !== "plus" && !usesBrandAccent(value)) {
       setLockedFeature("Custom Accent Colors");
       setShowUpgradeModal(true);
       return;
@@ -607,10 +611,10 @@ export default function SettingsPage() {
                         <button 
                           key={color.value} 
                           onClick={() => handleSavePrefs("accentColor", color.value)} 
-                          className={`h-12 w-12 rounded-full border-4 transition-all transform hover:scale-110 flex items-center justify-center shadow-md relative ${prefs.accentColor === color.value ? "border-primary scale-110" : "border-transparent"}`} 
+                          className={`h-12 w-12 rounded-full border-4 transition-all transform hover:scale-110 flex items-center justify-center shadow-md relative ${(color.value === BRAND_ACCENT ? usesBrandAccent(prefs.accentColor) : prefs.accentColor === color.value) ? "border-primary scale-110" : "border-transparent"}`} 
                           style={{ backgroundColor: color.value }}
                         >
-                          {prefs.accentColor === color.value && <Check className="h-6 w-6 text-white" />}
+                          {(color.value === BRAND_ACCENT ? usesBrandAccent(prefs.accentColor) : prefs.accentColor === color.value) && <Check className="h-6 w-6 text-white" />}
                           {isLocked && (
                             <div className="absolute -top-1 -right-1 bg-background rounded-full p-1 border border-border">
                               <Lock className="h-2 w-2 text-primary" />
