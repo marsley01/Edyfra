@@ -85,22 +85,22 @@ export function Navigation() {
     >
       <div className={cn("container mx-auto px-4 sm:px-6 flex items-center justify-between", scrolled ? "h-14 sm:h-16" : "h-14 sm:h-16")}>
         {/* Logo — icon + text */}
-        <Link href="/" className="flex items-center gap-2.5 group" aria-label="Edyfra Home">
+        <Link href="/" className="flex shrink-0 items-center gap-2.5 group" aria-label="Edyfra Home">
           <Image src="/image.png" alt="Edyfra Logo" width={36} height={36} className="w-9 h-9 rounded-xl shadow-lg group-hover:scale-105 transition-transform object-cover" />
-          <span className="text-[28px] font-bold tracking-tight text-foreground group-hover:text-brand-orange transition-colors">
+          <span className="text-2xl font-bold tracking-tight text-foreground group-hover:text-brand-orange transition-colors">
             Edyfra
           </span>
         </Link>
 
         {/* Desktop Links */}
-        <div className="hidden lg:flex items-center justify-center gap-12 flex-1">
+        <div className="hidden xl:flex min-w-0 flex-1 items-center justify-center gap-6 2xl:gap-10">
           {navLinks.map((link) => (
             <Link
               key={link.name}
               href={link.href}
               aria-current={isLinkActive(link.href) ? "page" : undefined}
               className={cn(
-                "text-label-md font-medium transition-colors relative group",
+                "whitespace-nowrap text-label-md font-medium transition-colors relative group",
                 isLinkActive(link.href) ? "text-brand-orange" : "text-on-surface-variant hover:text-brand-orange"
               )}
             >
@@ -114,7 +114,7 @@ export function Navigation() {
         </div>
 
         {/* Desktop Actions */}
-        <div className="hidden lg:flex items-center gap-3 ml-auto">
+        <div className="hidden xl:flex shrink-0 items-center gap-2 ml-auto">
           {user ? (
             <>
               <ThemeToggle />
@@ -130,7 +130,7 @@ export function Navigation() {
               <Link href="/login">
                 <Button variant="ghost" className="rounded-full px-6 py-3 font-semibold text-on-surface-variant hover:text-brand-orange">Sign In</Button>
               </Link>
-              <Link href="/signup" className="primary-glow-hover transition-smooth inline-flex items-center justify-center rounded-full bg-brand-orange px-6 py-3 text-label-md font-bold text-deep-void hover:bg-brand-orange-dark">
+              <Link href="/signup" className="primary-glow-hover transition-smooth inline-flex items-center justify-center whitespace-nowrap rounded-full bg-brand-orange px-6 py-3 text-label-md font-bold text-deep-void hover:bg-brand-orange-dark">
                 Get Started
               </Link>
             </>
@@ -138,7 +138,7 @@ export function Navigation() {
         </div>
 
         {/* Mobile Toggle */}
-        <div className="flex lg:hidden items-center gap-2 sm:gap-4">
+        <div className="flex xl:hidden items-center gap-2 sm:gap-4">
           {showBackButton && (
             <button
               onClick={() => router.back()}
@@ -165,7 +165,7 @@ export function Navigation() {
     {/* Mobile Menu Sidebar Drawer */}
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] lg:hidden">
+        <div className="fixed inset-0 z-[100] xl:hidden">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

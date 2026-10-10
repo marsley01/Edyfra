@@ -1,25 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import dynamic from "next/dynamic";
 import YouTube from "react-youtube";
-import { Bell, Loader2, Play, Search, X } from "lucide-react";
-import { BlobDecor } from "@/components/ui/blob-decor";
-
-const SubjectGraph = dynamic(
-  () => import("@/components/three/SubjectGraph").then((m) => m.SubjectGraph),
-  { ssr: false }
-);
+import { ArrowRight, Bell, Loader2, Play, Search, X } from "lucide-react";
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
-
-const fadeUp = (delay: number) => ({
-  initial: { opacity: 0, y: 24 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6, delay, ease: EASE },
-});
 
 const scaleIn = (delay: number) => ({
   initial: { opacity: 0, scale: 0.92 },
@@ -34,24 +21,15 @@ type VideoResult = {
   thumbnail: string;
 };
 
+// A short mix of secondary (KCSE and CBC) and campus topics. The old list
+// had 14 pills, which wrapped into three rows and buried the search box.
 const QUICK_TOPICS = [
-  // Secondary / KCSE
   "KCSE Maths",
-  "KCSE Chemistry",
   "Biology revision",
   "Kiswahili Fasihi",
-  "Physics paper 1",
-  // CBC (junior & senior secondary)
-  "CBC Grade 7 Science",
-  "CBC Grade 9 Mathematics",
-  "CBC Grade 10 Chemistry",
-  // University / campus
+  "CBC Grade 9 Maths",
   "Calculus",
-  "Computer Networking",
   "Financial Accounting",
-  "Human Anatomy",
-  "Contract Law",
-  "Data Science",
 ];
 
 export function HomeHero() {
@@ -62,6 +40,7 @@ export function HomeHero() {
   const [activeVideo, setActiveVideo] = useState<VideoResult | null>(null);
   const [playerError, setPlayerError] = useState<string | null>(null);
   const [showBanner, setShowBanner] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   const watchStartedAt = useRef<number | null>(null);
   const watchedMs = useRef(0);
@@ -98,7 +77,7 @@ export function HomeHero() {
     const fallback = next ?? (first.id !== activeVideo.id ? first : null);
     if (fallback) {
       setPlayerError(
-        `"${activeVideo.title.slice(0, 60)}${activeVideo.title.length > 60 ? "…" : ""}" can't be embedded — playing the next video instead.`
+        `"${activeVideo.title.slice(0, 60)}${activeVideo.title.length > 60 ? "…" : ""}" can't be embedded. Playing the next video instead.`
       );
       setTimeout(() => openVideo(fallback), 1200);
     } else {
@@ -172,106 +151,116 @@ export function HomeHero() {
 
   return (
     <section className="relative overflow-hidden">
-      {/* Solid colorful blobs */}
+      {/* A faint dot grid. The old hero layered four unrelated blobs and a
+          full-bleed 3D graph behind the copy, so shapes floated over the
+          buttons and the search box. The bubbles now live behind the card. */}
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <BlobDecor variant="mixed" />
-        <div className="hero-pattern absolute inset-0 opacity-20" />
+        <div className="hero-pattern absolute inset-0 opacity-[0.12]" />
       </div>
 
-      {/* 3D subject constellation — full-bleed on mobile, right half on desktop */}
-      <SubjectGraph className="pointer-events-none absolute inset-y-0 right-0 z-0 h-full w-full opacity-35 sm:opacity-50 lg:w-[55%] lg:opacity-100" />
-
-      <div className="relative z-10 mx-auto flex w-full max-w-4xl flex-col items-center justify-center px-4 pb-lg pt-16 text-center md:px-16 md:pt-24">
-        {/* CSS-only entrance — LCP text must not wait for JS hydration */}
-        <h1
-          className="hero-rise mb-6 max-w-4xl bg-gradient-to-r from-brand-orange to-[#ffc107] bg-clip-text text-display-lg font-black tracking-tight text-transparent drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] md:text-[72px] md:leading-[80px]"
-          style={{ animationDelay: "0.1s" }}
-        >
-          Study Smarter,
-          <br />
-          Not Harder.
-        </h1>
-
-        <p
-          className="hero-rise mx-auto mb-12 max-w-3xl text-balance font-medium text-body-lg text-on-surface-variant md:text-2xl md:leading-9"
-          style={{ animationDelay: "0.25s" }}
-        >
-          Education, reimagined. Your personal study base for school, revision, mentorship, and
-          momentum. Mash AI, verified tutors, and real students help you move from stuck to ready.
-        </p>
-
-        <motion.div
-          {...scaleIn(0.45)}
-          className="flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row md:gap-6"
-        >
-          <Link
-            href="/signup"
-            className="primary-glow primary-glow-hover transition-smooth inline-flex w-full items-center justify-center rounded-full bg-brand-orange px-12 py-6 text-title-md font-bold text-deep-void hover:bg-brand-orange-dark sm:w-auto"
+      <div className="relative z-10 mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-12 px-4 pb-14 pt-8 sm:px-6 md:pt-14 lg:min-h-[min(calc(100dvh-4rem),720px)] lg:grid-cols-[1.05fr_1fr] lg:gap-14 lg:px-8 lg:pb-8 lg:pt-6">
+        {/* Message. CSS-only entrance so the LCP text never waits for hydration. */}
+        <div className="text-center lg:text-left">
+          <h1
+            className="hero-rise text-[2.75rem] font-black leading-[1.04] tracking-tight text-on-surface sm:text-6xl xl:text-7xl"
+            style={{ animationDelay: "0.05s" }}
           >
-            Create My Study Space
-          </Link>
-          <a
-            href="https://whatsapp.com/channel/0029Vb7GgdmHLHQfoNgSjo1P"
-            target="_blank"
-            rel="noreferrer"
-            className="glass-panel transition-smooth inline-flex w-full items-center justify-center gap-3 rounded-full px-12 py-6 text-title-md font-semibold text-on-surface hover:bg-glass-fill hover:text-brand-orange sm:w-auto"
+            From stuck to <span className="block whitespace-nowrap text-brand-orange">exam-ready.</span>
+          </h1>
+
+          <p
+            className="hero-rise mx-auto mt-6 max-w-[36ch] text-lg leading-relaxed text-on-surface-variant sm:text-xl lg:mx-0"
+            style={{ animationDelay: "0.15s" }}
           >
-            <Bell className="h-5 w-5" />
-            Join Student Updates
-          </a>
-        </motion.div>
+            Verified tutors, study partners, past papers and Mash AI, built for Kenyan students
+            from Form 1 to final year.
+          </p>
 
-        <motion.p {...fadeUp(0.6)} className="mt-12 text-label-md text-outline">
-          Built for Kenyan students, from Form 1 to final year. Access 700+ papers instantly.
-        </motion.p>
-
-        <motion.form
-          {...fadeUp(0.7)}
-          role="search"
-          onSubmit={handleSearch}
-          className="mx-auto mt-10 w-full max-w-2xl"
-        >
-          <div className="glass-panel flex items-center gap-2 rounded-full p-2 pl-6 transition-colors focus-within:border-brand-orange/60">
-            <Search className="h-5 w-5 shrink-0 text-outline" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search study videos e.g. KCSE Math, Biology, Networking..."
-              aria-label="Search study videos"
-              className="w-full bg-transparent text-body-md text-on-surface outline-none placeholder:text-outline-variant"
-            />
-            <button
-              type="submit"
-              disabled={searching || !query.trim()}
-              className="flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-brand-orange px-6 text-sm font-bold text-deep-void transition-all duration-200 hover:bg-brand-orange-dark disabled:cursor-not-allowed disabled:opacity-50"
+          <div
+            className="hero-rise mt-9 flex flex-col items-stretch gap-3 sm:flex-row sm:justify-center lg:justify-start"
+            style={{ animationDelay: "0.25s" }}
+          >
+            <Link
+              href="/signup"
+              className="primary-glow-hover transition-smooth group inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-brand-orange px-8 py-4 text-base font-bold text-deep-void hover:bg-brand-orange-dark active:scale-[0.98]"
             >
-              {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
-            </button>
+              Get started
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+            <a
+              href="https://whatsapp.com/channel/0029Vb7GgdmHLHQfoNgSjo1P"
+              target="_blank"
+              rel="noreferrer"
+              className="transition-smooth inline-flex items-center justify-center gap-2.5 whitespace-nowrap rounded-full border border-glass-stroke bg-background/60 px-7 py-4 text-base font-semibold text-on-surface hover:border-brand-orange/50 hover:text-brand-orange active:scale-[0.98]"
+            >
+              <Bell className="h-4 w-4" />
+              Join student updates
+            </a>
           </div>
+        </div>
 
-          {/* One-tap topics */}
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-            {QUICK_TOPICS.map((topic) => (
-              <button
-                key={topic}
-                type="button"
-                onClick={() => {
-                  setQuery(topic);
-                  void runSearch(topic);
-                }}
-                className="rounded-full border border-glass-stroke bg-secondary/60 px-4 py-1.5 text-xs font-bold text-on-surface-variant transition-all duration-200 hover:border-brand-orange/50 hover:text-brand-orange active:scale-95"
-              >
-                {topic}
-              </button>
-            ))}
+        {/* Try it now: the video search is the hero's one visual element. */}
+        <motion.div {...(reduceMotion ? {} : scaleIn(0.3))} className="relative">
+          {/* Drifting brand bubbles, kept behind the card so they never sit on
+              the headline or buttons. CSS-only, paused for reduced motion. */}
+          <div className="pointer-events-none absolute inset-0 z-0" aria-hidden="true">
+            <div className="hero-bubble hero-bubble-a -left-6 -top-10 h-44 w-44 bg-brand-orange/45 sm:h-56 sm:w-56 dark:bg-brand-orange/35" />
+            <div className="hero-bubble hero-bubble-b -bottom-12 -right-4 h-48 w-48 bg-coral/35 sm:h-64 sm:w-64 dark:bg-coral/30" />
+            <div className="hero-bubble hero-bubble-c right-1/4 -top-14 h-32 w-32 bg-amber-300/50 sm:h-40 sm:w-40 dark:bg-amber-400/25" />
           </div>
-        </motion.form>
+          <form
+            role="search"
+            onSubmit={handleSearch}
+            className="relative z-10 mx-auto w-full max-w-xl rounded-3xl border border-glass-stroke bg-card/90 p-5 shadow-xl shadow-brand-orange/10 backdrop-blur-md sm:p-7"
+          >
+            <label htmlFor="hero-video-search" className="block text-lg font-bold normal-case tracking-tight text-on-surface">
+              Find a study video
+            </label>
+            <p className="mt-1 text-sm text-on-surface-variant">
+              Free lessons on any topic. No account needed.
+            </p>
+
+            <div className="mt-5 flex items-center gap-2 rounded-full border border-glass-stroke bg-background/70 p-1.5 pl-4 transition-colors focus-within:border-brand-orange/60">
+              <Search className="h-5 w-5 shrink-0 text-outline" aria-hidden="true" />
+              <input
+                id="hero-video-search"
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Try KCSE Chemistry or Calculus"
+                className="min-w-0 flex-1 bg-transparent text-body-md text-on-surface outline-none placeholder:text-outline"
+              />
+              <button
+                type="submit"
+                disabled={searching || !query.trim()}
+                className="flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-brand-orange px-5 text-sm font-bold text-deep-void transition-all duration-200 hover:bg-brand-orange-dark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
+              </button>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              {QUICK_TOPICS.map((topic) => (
+                <button
+                  key={topic}
+                  type="button"
+                  onClick={() => {
+                    setQuery(topic);
+                    void runSearch(topic);
+                  }}
+                  className="rounded-full border border-glass-stroke bg-secondary/60 px-3.5 py-1.5 text-xs font-bold text-on-surface-variant transition-colors duration-200 hover:border-brand-orange/50 hover:text-brand-orange active:scale-95"
+                >
+                  {topic}
+                </button>
+              ))}
+            </div>
+          </form>
+        </motion.div>
       </div>
 
       {/* Search results / instant preview */}
       {(results || error) && (
-        <div className="relative z-10 mx-auto w-full max-w-6xl px-4 pb-24 pt-10 md:px-16">
+        <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-24 pt-4 sm:px-6 lg:px-8">
           <div className="flex items-baseline justify-between">
             <h2 className="text-title-md font-bold text-on-surface md:text-2xl">
               {query.trim() ? "Study videos" : "Trending study videos"}
@@ -286,7 +275,7 @@ export function HomeHero() {
           {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
 
           {results && results.length > 0 && (
-            <div className="mt-gutter grid grid-cols-1 gap-gutter sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {results.map((video) => (
                 <button
                   key={video.id}
@@ -394,7 +383,7 @@ export function HomeHero() {
         <div className="fixed inset-x-0 bottom-0 z-[60] flex justify-center p-4">
           <div className="flex w-full max-w-2xl items-center justify-between gap-4 rounded-xl border border-glass-stroke bg-surface-container-low/95 px-6 py-4 shadow-[0_-8px_32px_rgba(0,0,0,0.4)] backdrop-blur">
             <p className="text-[14px] leading-snug text-on-surface">
-              Study smarter — get personalized content on{" "}
+              Get personalised study content on{" "}
               <span className="font-semibold text-brand-orange">Edyfra</span>
             </p>
             <div className="flex shrink-0 items-center gap-2">

@@ -2232,3 +2232,36 @@ button, a, [role='button'], input[type='submit'], select, label[for] {
     padding-right: env(safe-area-inset-right);
   }
 }
+
+/* --- Hero bubbles -----------------------------------------------------------
+   Soft brand-coloured shapes that drift behind the hero search card. Each has
+   a fixed organic border-radius, and only transform animates, so the blur is
+   rasterised once and the motion stays on the compositor. Durations are long
+   and co-prime so the three never fall into a visible repeating rhythm. */
+.hero-bubble {
+  position: absolute;
+  border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%;
+  filter: blur(36px);
+  will-change: transform;
+  pointer-events: none;
+}
+@keyframes hero-bubble-a {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  33%      { transform: translate3d(-28px, 22px, 0) rotate(40deg) scale(1.08); }
+  66%      { transform: translate3d(18px, -16px, 0) rotate(-25deg) scale(0.95); }
+}
+@keyframes hero-bubble-b {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  50%      { transform: translate3d(34px, 26px, 0) rotate(-60deg) scale(1.12); }
+}
+@keyframes hero-bubble-c {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  40%      { transform: translate3d(-20px, -30px, 0) rotate(70deg) scale(0.92); }
+  80%      { transform: translate3d(24px, 10px, 0) rotate(20deg) scale(1.06); }
+}
+.hero-bubble-a { animation: hero-bubble-a 19s ease-in-out infinite; }
+.hero-bubble-b { animation: hero-bubble-b 23s ease-in-out infinite; border-radius: 61% 39% 47% 53% / 52% 61% 39% 48%; }
+.hero-bubble-c { animation: hero-bubble-c 29s ease-in-out infinite; border-radius: 37% 63% 51% 49% / 64% 36% 64% 36%; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-bubble-a, .hero-bubble-b, .hero-bubble-c { animation: none; }
+}
