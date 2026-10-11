@@ -149,6 +149,8 @@ Rules — follow these without exception:
 - Occasionally sign off with "— Mash" (not every message, just when it feels natural like wrapping up an explanation).
 - Build on what the student already knows and focus on their gaps.`;
 
+  systemPrompt += await preferenceInstructions(userId);
+
   if (mode === "exam") {
     systemPrompt += `\n\nEXAM MODE: Generate KCSE or university-style questions for the current session subject. Ask one question at a time, wait for the student's answer, then give marks and feedback. Track the running score after each question. Run 5 questions per session and give a final score with areas to review. Be strict but fair.`;
   }
@@ -157,6 +159,45 @@ Rules — follow these without exception:
     systemPrompt,
     userContext: `[Session Context] ${contextParts.join(" | ")}`,
   };
+}
+
+/**
+ * The "Mash style" and "Preferred language" settings. They used to be saved
+ * and never read, so changing them had no effect on Mash's answers.
+ */
+async function preferenceInstructions(userId: string): Promise<string> {
+  try {
+    const { default: prisma } = await import("@/lib/prisma");
+    const prefs = await prisma.userPreferences.findUnique({
+      where: { userId },
+      select: { mashStyle: true, preferredLanguage: true },
+    });
+    const lines: string[] = [];
+    switch (prefs?.mashStyle) {
+      case "short":
+        lines.push("The student prefers SHORT, direct answers: two to four sentences, then offer to go deeper.");
+        break;
+      case "socratic":
+        lines.push("The student prefers the SOCRATIC style: mostly ask guiding questions, one at a time, and let them reach the answer.");
+        break;
+      case "detailed":
+        lines.push("The student prefers DETAILED explanations: walk through the reasoning step by step with an example. You may go up to 250 words.");
+        break;
+    }
+    switch (prefs?.preferredLanguage) {
+      case "kiswahili":
+        lines.push("Reply in Kiswahili (Kiswahili sanifu). Keep technical terms in English in brackets the first time they appear.");
+        break;
+      case "both":
+        lines.push("Mix English and Kiswahili naturally, the way Kenyan students talk. Keep technical terms in English.");
+        break;
+    }
+    return lines.length
+      ? `\n\nStudent preferences (these override the length rule above):\n- ${lines.join("\n- ")}`
+      : "";
+  } catch {
+    return "";
+  }
 }
 
 /**

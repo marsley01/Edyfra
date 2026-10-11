@@ -115,6 +115,14 @@ const PUSH_PREF_BY_TYPE: Record<string, string> = {
   FORUM_REPLY: "announcements",
   FORUM_MENTION: "announcements",
   FORUM_PICK: "announcements",
+  // Tutor settings toggles. These keys were saved but had no notification
+  // type mapped to them, so switching them off changed nothing.
+  MATCH_OFFER: "newRequest",
+  NEW_BOOKING: "newRequest",
+  STUDENT_JOINED: "studentJoined",
+  BOOKING_CANCELLED: "studentLeft",
+  SESSION_RATED: "newRating",
+  NEW_REVIEW: "newRating",
 };
 
 async function shouldSendPush(userId: string, type: string, preloadedPrefs?: Record<string, boolean>): Promise<boolean> {

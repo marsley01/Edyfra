@@ -130,7 +130,16 @@ const personSelect = {
   studentProfile: { select: { subjects: true, formLevel: true } },
   tutorProfile: { select: { subjects: true, levelsTaught: true, hourlyRate: true, isVerified: true, availability: true } },
   institutionStudent: { select: { institution: { select: { name: true } } } },
+  preferences: { select: { showOnlineStatus: true } },
 } satisfies Prisma.UserSelect;
+
+/**
+ * "Show my profile to other students" (Settings > Privacy). It used to be saved
+ * and ignored; people who turned it off still appeared in every search.
+ */
+const VISIBLE_PROFILE: Prisma.UserWhereInput = {
+  NOT: { preferences: { is: { showProfile: false } } },
+};
 
 type PersonRow = Prisma.UserGetPayload<{ select: typeof personSelect }>;
 
@@ -161,6 +170,7 @@ export async function searchPeople(input: SearchPeopleInput = {}): Promise<Searc
         { id: { not: viewer.id } },
         { banned: false },
         { suspended: false },
+        VISIBLE_PROFILE,
         role === "ALL"
           ? { OR: [{ role: Role.STUDENT }, { role: Role.TUTOR, tutorProfile: { isVerified: true } }] }
           : role === "TUTOR"
@@ -179,6 +189,8 @@ export async function searchPeople(input: SearchPeopleInput = {}): Promise<Searc
         and.push({ county: { contains: countyKey(county), mode: "insensitive" } });
       }
       if (onlineOnly) {
+        // People who hide their online status never show up as "online now".
+        and.push({ NOT: { preferences: { is: { showOnlineStatus: false } } } });
         and.push({
           OR: [
             { lastActiveAt: { gte: new Date(Date.now() - ONLINE_WINDOW_MS) } },
@@ -289,7 +301,13 @@ function toPerson(
     form: r.studentProfile?.formLevel ?? (r.formYear ? `Form ${r.formYear}` : null),
     school: r.institutionStudent?.institution?.name ?? null,
     subjects,
-    isOnline: isTutor ? availability.isOnline === true : recentlyActive,
+    // "Show my online status" off means never reporting them as online.
+    isOnline:
+      r.preferences?.showOnlineStatus === false
+        ? false
+        : isTutor
+          ? availability.isOnline === true
+          : recentlyActive,
     tutor: isTutor
       ? {
           rating: review?._avg.rating ?? null,
@@ -361,6 +379,7 @@ export async function suggestStudyBuddies(
           role: Role.STUDENT,
           banned: false,
           suspended: false,
+          ...VISIBLE_PROFILE,
         },
         select: personSelect,
         take: CANDIDATE_CAP,

@@ -594,7 +594,13 @@ export async function deleteUserAccount() {
       select: { id: true },
     });
     if (dbUser) {
-      await prisma.user.delete({ where: { id: dbUser.id } });
+      // UserPreferences is the one relation whose foreign key is ON DELETE
+      // RESTRICT, so anyone who had ever saved a setting could not delete
+      // their account. Remove it first, in the same transaction.
+      await prisma.$transaction([
+        prisma.userPreferences.deleteMany({ where: { userId: dbUser.id } }),
+        prisma.user.delete({ where: { id: dbUser.id } }),
+      ]);
     }
 
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

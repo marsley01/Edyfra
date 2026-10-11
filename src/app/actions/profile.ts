@@ -257,6 +257,24 @@ export async function connectWithUser(targetUserId: string): Promise<{
   if (!me) return { ok: false, error: "Please sign in to connect." };
   if (me.id === targetUserId) return { ok: false, error: "That's you!" };
 
+  // "Allow tutors to send me requests" (Settings > Privacy). A student who
+  // turned it off cannot be cold-messaged by tutors; they can still message
+  // tutors themselves.
+  try {
+    const [viewer, target] = await Promise.all([
+      prisma.user.findUnique({ where: { id: me.id }, select: { role: true } }),
+      prisma.user.findUnique({
+        where: { id: targetUserId },
+        select: { role: true, preferences: { select: { allowTutorRequests: true } } },
+      }),
+    ]);
+    if (viewer?.role === "TUTOR" && target?.role === "STUDENT" && target.preferences?.allowTutorRequests === false) {
+      return { ok: false, error: "This student isn't accepting messages from tutors right now." };
+    }
+  } catch (error) {
+    console.error("[connectWithUser] privacy check failed:", error);
+  }
+
   let channelId: string;
   try {
     channelId = await createDMChannel(me.id, targetUserId);

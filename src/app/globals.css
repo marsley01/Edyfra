@@ -2265,3 +2265,9 @@ button, a, [role='button'], input[type='submit'], select, label[for] {
 @media (prefers-reduced-motion: reduce) {
   .hero-bubble-a, .hero-bubble-b, .hero-bubble-c { animation: none; }
 }
+
+/* --- Appearance preferences (applied by ThemeColorManager) ---------------- */
+/* Large text: Tailwind sizes are rem-based, so this scales the whole UI. */
+html[data-font-size="large"] { font-size: 112.5%; }
+/* Comfortable layout: Tailwind v4 derives padding, margin and gap utilities from --spacing. */
+html[data-layout="comfortable"] { --spacing: 0.3rem; }

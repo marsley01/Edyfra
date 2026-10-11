@@ -142,7 +142,9 @@ export default function TutorSettingsPage() {
         });
         setSchedule(tp.availability?.schedule || {});
         setAvailableNow(tp.availability?.isOnline || false);
-        setPrefs(user.userPreferences || {});
+        // getUserData() exposes the relation as `preferences`; reading
+        // `userPreferences` meant saved settings never showed on this page.
+        setPrefs(user.preferences || {});
         try {
           const notifSettings = await getNotificationSettings();
           if (Object.keys(notifSettings).length > 0) {
@@ -234,7 +236,9 @@ export default function TutorSettingsPage() {
     try {
       const { updateUserPreferences } = await import("@/app/actions/user");
       await updateUserPreferences({ [key]: value });
-      if (key === "accentColor") window.dispatchEvent(new CustomEvent("accent-color-changed", { detail: value }));
+      if (["accentColor", "fontSize", "layout", "theme"].includes(key)) {
+        window.dispatchEvent(new CustomEvent("preferences-changed", { detail: { [key]: value } }));
+      }
     }     catch { showError({ title: "Couldn't save that", cause: "We couldn't reach our servers.", fix: "Try again, or refresh the page." }); }
   };
 
@@ -968,9 +972,9 @@ export default function TutorSettingsPage() {
                   </CardHeader>
                   <CardContent className="p-6 sm:p-8">
                     <div className="grid grid-cols-3 gap-3">
-                      <Button variant={theme === "light" ? "default" : "outline"} className={`flex-col h-24 gap-2 rounded-xl ${theme === "light" ? "bg-primary text-white shadow-md" : "border-border/50"}`} onClick={() => setTheme("light")}><Sun className="h-5 w-5" /> Light</Button>
-                      <Button variant={theme === "dark" ? "default" : "outline"} className={`flex-col h-24 gap-2 rounded-xl ${theme === "dark" ? "bg-primary text-white shadow-md" : "border-border/50"}`} onClick={() => setTheme("dark")}><Moon className="h-5 w-5" /> Dark</Button>
-                      <Button variant={theme === "system" ? "default" : "outline"} className={`flex-col h-24 gap-2 rounded-xl ${theme === "system" ? "bg-primary text-white shadow-md" : "border-border/50"}`} onClick={() => setTheme("system")}><Monitor className="h-5 w-5" /> System</Button>
+                      <Button variant={theme === "light" ? "default" : "outline"} className={`flex-col h-24 gap-2 rounded-xl ${theme === "light" ? "bg-primary text-white shadow-md" : "border-border/50"}`} onClick={() => { setTheme("light"); handleSavePrefs("theme", "light"); }}><Sun className="h-5 w-5" /> Light</Button>
+                      <Button variant={theme === "dark" ? "default" : "outline"} className={`flex-col h-24 gap-2 rounded-xl ${theme === "dark" ? "bg-primary text-white shadow-md" : "border-border/50"}`} onClick={() => { setTheme("dark"); handleSavePrefs("theme", "dark"); }}><Moon className="h-5 w-5" /> Dark</Button>
+                      <Button variant={theme === "system" ? "default" : "outline"} className={`flex-col h-24 gap-2 rounded-xl ${theme === "system" ? "bg-primary text-white shadow-md" : "border-border/50"}`} onClick={() => { setTheme("system"); handleSavePrefs("theme", "system"); }}><Monitor className="h-5 w-5" /> System</Button>
                     </div>
                   </CardContent>
                 </Card>

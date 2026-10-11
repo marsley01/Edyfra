@@ -45,6 +45,9 @@ const ACCENT_COLORS = [
   { name: "Warm Amber", value: "#b45309" },
 ];
 
+// Saving one of these applies it app-wide straight away (ThemeColorManager).
+const APPEARANCE_KEYS = ["accentColor", "fontSize", "layout", "theme"];
+
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const [loading, setLoading] = useState(true);
@@ -156,20 +159,15 @@ export default function SettingsPage() {
   };
 
   const handleSavePrefs = async (key: string, value: any) => {
-    // Plan gating for accent colors. Going back to the brand colour is always
-    // allowed, otherwise a lapsed Plus user could be stuck on a custom colour.
-    if (key === "accentColor" && userData?.plan !== "plus" && !usesBrandAccent(value)) {
-      setLockedFeature("Custom Accent Colors");
-      setShowUpgradeModal(true);
-      return;
-    }
-
+    // Accent colours used to be gated on the Plus plan, but there is no way to
+    // buy Plus yet and the upgrade dialog never rendered, so clicks silently
+    // did nothing. All appearance settings are open to everyone.
     const updated = { ...prefs, [key]: value };
     setPrefs(updated);
     try {
       await updateUserPreferences({ [key]: value });
-      if (key === "accentColor") {
-        window.dispatchEvent(new CustomEvent("accent-color-changed", { detail: value }));
+      if (APPEARANCE_KEYS.includes(key)) {
+        window.dispatchEvent(new CustomEvent("preferences-changed", { detail: { [key]: value } }));
       }
     } catch { toast.error("Failed to save"); }
   };
@@ -593,9 +591,9 @@ export default function SettingsPage() {
                   <CardDescription>Pick your preferred look</CardDescription>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <Button variant={theme === "light" ? "default" : "outline"} className={`flex-col h-28 gap-2 rounded-2xl ${theme === "light" ? "bg-primary text-white" : "border-primary/10"}`} onClick={() => setTheme("light")}><Sun className="h-6 w-6" /> Light</Button>
-                  <Button variant={theme === "dark" ? "default" : "outline"} className={`flex-col h-28 gap-2 rounded-2xl ${theme === "dark" ? "bg-primary text-white" : "border-primary/10"}`} onClick={() => setTheme("dark")}><Moon className="h-6 w-6" /> Dark</Button>
-                  <Button variant={theme === "system" ? "default" : "outline"} className={`flex-col h-28 gap-2 rounded-2xl ${theme === "system" ? "bg-primary text-white" : "border-primary/10"}`} onClick={() => setTheme("system")}><Monitor className="h-6 w-6" /> System</Button>
+                  <Button variant={theme === "light" ? "default" : "outline"} className={`flex-col h-28 gap-2 rounded-2xl ${theme === "light" ? "bg-primary text-white" : "border-primary/10"}`} onClick={() => { setTheme("light"); handleSavePrefs("theme", "light"); }}><Sun className="h-6 w-6" /> Light</Button>
+                  <Button variant={theme === "dark" ? "default" : "outline"} className={`flex-col h-28 gap-2 rounded-2xl ${theme === "dark" ? "bg-primary text-white" : "border-primary/10"}`} onClick={() => { setTheme("dark"); handleSavePrefs("theme", "dark"); }}><Moon className="h-6 w-6" /> Dark</Button>
+                  <Button variant={theme === "system" ? "default" : "outline"} className={`flex-col h-28 gap-2 rounded-2xl ${theme === "system" ? "bg-primary text-white" : "border-primary/10"}`} onClick={() => { setTheme("system"); handleSavePrefs("theme", "system"); }}><Monitor className="h-6 w-6" /> System</Button>
                 </CardContent>
               </Card>
               <Card className="border-2 border-primary/5 shadow-sm rounded-2xl">
@@ -606,7 +604,6 @@ export default function SettingsPage() {
                 <CardContent>
                   <div className="flex flex-wrap gap-4">
                     {ACCENT_COLORS.map((color) => {
-                      const isLocked = userData?.plan !== "plus";
                       return (
                         <button 
                           key={color.value} 
@@ -615,11 +612,6 @@ export default function SettingsPage() {
                           style={{ backgroundColor: color.value }}
                         >
                           {(color.value === BRAND_ACCENT ? usesBrandAccent(prefs.accentColor) : prefs.accentColor === color.value) && <Check className="h-6 w-6 text-white" />}
-                          {isLocked && (
-                            <div className="absolute -top-1 -right-1 bg-background rounded-full p-1 border border-border">
-                              <Lock className="h-2 w-2 text-primary" />
-                            </div>
-                          )}
                         </button>
                       );
                     })}
