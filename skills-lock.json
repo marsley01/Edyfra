@@ -37,6 +37,18 @@
       "skillPath": "skills/stream/SKILL.md",
       "computedHash": "fa375cec02f67229bb14d37a841825d2455eea62bf81f0a1b913bcdfbc78482e"
     },
+    "supabase": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/supabase/SKILL.md",
+      "computedHash": "af1844ade632808fc0c15cf2db87daf3b2431c5262dc8a0c3ea7d70880fadf91"
+    },
+    "supabase-postgres-best-practices": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/supabase-postgres-best-practices/SKILL.md",
+      "computedHash": "128fac78002d916c8ca908245d398e634f540d8bcf20915b2b2359aeb18eba59"
+    },
     "systematic-debugging": {
       "source": "obra/superpowers",
       "sourceType": "github",
