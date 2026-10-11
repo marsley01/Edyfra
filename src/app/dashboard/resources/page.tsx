@@ -123,7 +123,8 @@ export default function MarketplacePage() {
 
       const { data, error } = await supabase
         .from("resource_purchases")
-        .select("*, resource:resources(*)")
+        // Explicit columns: file_path is not readable by browser sessions.
+        .select("id, paid_at, resource:resources(id, title, subject, price)")
         .eq("user_id", user.id)
         .order("paid_at", { ascending: false });
 

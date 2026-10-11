@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { z } from "zod";
 
 const resourceSchema = z.object({
@@ -15,7 +16,10 @@ const resourceSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    // Server-side read of public listing data (approved rows, fixed columns).
+    // Using the privileged client here means the User table never has to be
+    // readable by browser sessions just to show a seller's name.
+    const supabase = createAdminClient();
 
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || "";
@@ -28,11 +32,16 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "12") || 12));
     const skip = (page - 1) * limit;
 
+    // Public listing: only what the marketplace shows. This used to select
+    // `*` plus the seller's id, which handed anyone the internal storage path
+    // (file_path), seller UUIDs and every other column. Files are served only
+    // through getResourceDownloadUrl (login + purchase check + 5-min signed URL).
     let query = supabase
       .from("resources")
       .select(`
-        *,
-        seller:User!seller_id ( id, name )
+        id, title, subject, education_level, resource_type, topic, description,
+        price, downloads, rating, created_at,
+        seller:User!seller_id ( name )
       `, { count: "exact" })
       .eq("status", "approved")
       .order("created_at", { ascending: false })
@@ -128,7 +137,7 @@ export async function POST(request: NextRequest) {
         file_path,
         status: "pending",
       })
-      .select()
+      .select("id, title, subject, education_level, resource_type, topic, description, price, status, created_at")
       .single();
 
     if (error) throw error;
