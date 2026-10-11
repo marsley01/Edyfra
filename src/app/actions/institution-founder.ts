@@ -6,6 +6,7 @@ import prisma from "@/lib/prisma";
 import { checkAdminStatus } from "./admin";
 import { getAdminCaller } from "./_admin-guard";
 import { createAdminClient } from "@/utils/supabase/admin";
+import { sendInstitutionRejectedEmail } from "@/lib/lifecycle-emails";
 
 /**
  * Founder-only: list all institution applications (typically PENDING).
@@ -103,6 +104,8 @@ export async function decideInstitutionApplication(input: z.infer<typeof Decisio
       where: { institutionId, status: "PENDING" },
       data: { status: "REJECTED" },
     });
+    // Rejected schools used to hear nothing at all.
+    await sendInstitutionRejectedEmail(inst.email, inst.name);
   }
 
   revalidatePath("/admin/institutions");

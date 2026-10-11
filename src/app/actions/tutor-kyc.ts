@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import prisma from "@/lib/prisma";
 import { VerifPath } from "@/generated/client";
 import { STORAGE_BUCKETS, createSignedUrl, isHttpUrl, uploadFileToBucket, validateUploadFile, sanitizeFileExtension, sanitizeFileName } from "@/lib/supabase-storage";
+import { onTutorApplicationSubmitted } from "@/lib/lifecycle-emails";
 
 const KYC_VALIDATION_OPTIONS = {
   maxSizeBytes: 10 * 1024 * 1024, // 10MB
@@ -111,6 +112,13 @@ export async function submitTutorApplication(formData: FormData) {
       // metadata sync is best-effort
     }
 
+    await onTutorApplicationSubmitted({
+      userId: user.id,
+      email: user.email,
+      name: user.user_metadata?.name || user.user_metadata?.full_name,
+      subjects,
+    });
+
     return { success: true, application };
   } catch (error: any) {
     console.error("Tutor KYC error:", error);
@@ -217,6 +225,13 @@ export async function saveTutorVerification(formData: FormData) {
     } catch {
       // metadata sync is best-effort
     }
+
+    await onTutorApplicationSubmitted({
+      userId: user.id,
+      email: user.email,
+      name: user.user_metadata?.name || user.user_metadata?.full_name,
+      subjects,
+    });
 
     return { success: true as const };
   } catch (error: any) {

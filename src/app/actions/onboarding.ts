@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { sendWelcomeEmail } from "@/lib/email";
 import { TUTOR_CONFIG } from "@/lib/config";
 import { getAdminGlobalSettings } from "@/app/actions/admin";
+import { onTutorApplicationSubmitted } from "@/lib/lifecycle-emails";
 
 interface OnboardingData {
   role: string;
@@ -223,11 +224,21 @@ export async function completeOnboarding(data: OnboardingData) {
   revalidatePath("/dashboard");
   revalidatePath("/tutor");
 
-  // 5. Send Welcome Email
-  try {
-    await sendWelcomeEmail(user.email!, user.user_metadata?.name || "Scholar");
-  } catch (e) {
-    console.error("Welcome email failed:", e);
+  // 5. Emails. Tutors get the application receipt (and admins are alerted);
+  // students get the welcome email. Both helpers never throw.
+  if (isTutor) {
+    await onTutorApplicationSubmitted({
+      userId: finalUserId,
+      email: user.email,
+      name: baseData.name,
+      subjects,
+    });
+  } else {
+    try {
+      await sendWelcomeEmail(user.email!, baseData.name || "Scholar");
+    } catch (e) {
+      console.error("Welcome email failed:", e);
+    }
   }
 
   return { success: true };

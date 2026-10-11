@@ -9,6 +9,7 @@ import { requireAdminCaller } from "@/app/actions/_admin-guard";
 import { notifyUser } from "@/lib/notifications/server";
 import { TUTOR_CONFIG } from "@/lib/config";
 import { resolveKycUrl } from "@/app/actions/tutor-kyc";
+import { sendTutorApprovedEmail, sendTutorRejectedEmail } from "@/lib/lifecycle-emails";
 
 // Prisma role (ADMIN/FOUNDER) or founder env email — same gate as the rest of /admin.
 async function requireAdminUser() {
@@ -143,6 +144,24 @@ export async function approveTutorApplicationEnhanced(applicationId: string) {
       }
     });
 
+    // Keep the auth record's role in sync. The proxy and some client pages
+    // route on user_metadata.role, so an approved tutor still looked like a
+    // student there until they signed out and back in.
+    try {
+      const { createAdminClient } = await import("@/utils/supabase/admin");
+      const authAdmin = createAdminClient().auth.admin;
+      const { data: authUser } = await authAdmin.getUserById(app.userId);
+      if (authUser?.user) {
+        await authAdmin.updateUserById(app.userId, {
+          user_metadata: { ...authUser.user.user_metadata, role: "TUTOR", tutorApplicationStatus: "APPROVED" },
+        });
+      }
+    } catch (e) {
+      console.error("Failed to sync auth role after approval:", e);
+    }
+
+    await sendTutorApprovedEmail(app.user?.email, app.user?.name);
+
     // Add notification to tutor
     try {
       await notifyUser(app.userId, {
@@ -173,7 +192,8 @@ export async function rejectTutorApplication(applicationId: string, reason?: str
 
     // Get the application
     const app = await prisma.tutorApplication.findUnique({
-      where: { id: applicationId }
+      where: { id: applicationId },
+      include: { user: { select: { email: true, name: true } } },
     });
 
     if (!app) {
@@ -202,6 +222,8 @@ export async function rejectTutorApplication(applicationId: string, reason?: str
     } catch (e) {
       console.error("Failed to send notification:", e);
     }
+
+    await sendTutorRejectedEmail(app.user?.email, app.user?.name, reason);
 
     revalidatePath("/admin/tutors");
     return { success: true, message: "Application rejected" };
