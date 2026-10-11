@@ -61,6 +61,30 @@ async function getOpenAIClient(): Promise<OpenAI | null> {
 
 export { invalidateAICache };
 
+const GEMINI_MODEL = "gemini-2.5-flash";
+let geminiClient: OpenAI | null = null;
+
+/**
+ * Google Gemini through its OpenAI-compatible endpoint (GOOGLE_AI_KEY). Used
+ * when OpenRouter is missing, out of credits (402) or rejects the key, which
+ * otherwise took Mash, Eddy and every other AI feature down at once.
+ */
+function getGeminiClient(): OpenAI | null {
+  const key = process.env.GOOGLE_AI_KEY?.trim();
+  if (!key) return null;
+  if (!geminiClient) {
+    geminiClient = new OpenAI({ baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/", apiKey: key });
+  }
+  return geminiClient;
+}
+
+/** Billing or auth failures that retrying OpenRouter will not fix. */
+function isProviderUnusable(err: unknown): boolean {
+  const message = err instanceof Error ? err.message : String(err);
+  const status = (err as { status?: number })?.status;
+  return status === 401 || status === 402 || status === 403 || /\b40[123]\b|credits|insufficient|unauthori[sz]ed|invalid api key/i.test(message);
+}
+
 /** In-memory sliding window keyed by user id. Serverless-safe; multiple
  *  instances share the DB-backed daily counter for the global budget. */
 const perUserWindow = new Map<string, number[]>();
@@ -146,7 +170,10 @@ function withConcision(systemPrompt?: string): string | undefined {
 }
 
 export async function generateWithAI(options: CallOptions): Promise<string> {
-  const client = await getOpenAIClient();
+  const openRouter = await getOpenAIClient();
+  const gemini = getGeminiClient();
+  let client = openRouter ?? gemini;
+  let onGemini = !openRouter;
   if (!client) {
     throw new AIRateLimitError("AI is not configured yet. Ask an admin to add an OpenRouter key in AI Settings.");
   }
@@ -157,7 +184,7 @@ export async function generateWithAI(options: CallOptions): Promise<string> {
   await assertDailyLimit();
 
   const systemInstruction = withConcision(options.systemPrompt);
-  let usedModel = options.model ?? config.model;
+  let usedModel = onGemini ? GEMINI_MODEL : options.model ?? config.model;
   let triedFallback = false;
 
   for (let attempt = 0; ; attempt++) {
@@ -187,11 +214,19 @@ export async function generateWithAI(options: CallOptions): Promise<string> {
 
       return text;
     } catch (err) {
+      if (!onGemini && gemini && isProviderUnusable(err)) {
+        console.warn("[AI] OpenRouter unusable, switching to Gemini:", err instanceof Error ? err.message : err);
+        client = gemini;
+        onGemini = true;
+        usedModel = GEMINI_MODEL;
+        continue;
+      }
+
       const rateLimited = err instanceof Error && /429|rate ?limit|resource exhausted/i.test(err.message);
 
       if (!rateLimited) throw err;
 
-      if (!triedFallback && usedModel !== AI_FALLBACK_MODEL) {
+      if (!onGemini && !triedFallback && usedModel !== AI_FALLBACK_MODEL) {
         triedFallback = true;
         usedModel = AI_FALLBACK_MODEL;
         await sleep(BACKOFF_MS[0]);
@@ -210,7 +245,10 @@ export async function generateWithAI(options: CallOptions): Promise<string> {
 }
 
 export async function* streamWithAI(options: CallOptions): AsyncGenerator<string> {
-  const client = await getOpenAIClient();
+  const openRouter = await getOpenAIClient();
+  const gemini = getGeminiClient();
+  let client = openRouter ?? gemini;
+  let onGemini = !openRouter;
   if (!client) {
     throw new AIRateLimitError("AI is not configured yet. Ask an admin to add an OpenRouter key in AI Settings.");
   }
@@ -221,7 +259,7 @@ export async function* streamWithAI(options: CallOptions): AsyncGenerator<string
   await assertDailyLimit();
 
   const systemInstruction = withConcision(options.systemPrompt);
-  let usedModel = options.model ?? config.model;
+  let usedModel = onGemini ? GEMINI_MODEL : options.model ?? config.model;
   let triedFallback = false;
 
   for (let attempt = 0; ; attempt++) {
@@ -258,9 +296,17 @@ export async function* streamWithAI(options: CallOptions): AsyncGenerator<string
 
       return;
     } catch (err) {
+      if (!onGemini && gemini && isProviderUnusable(err)) {
+        console.warn("[AI] OpenRouter unusable, switching to Gemini:", err instanceof Error ? err.message : err);
+        client = gemini;
+        onGemini = true;
+        usedModel = GEMINI_MODEL;
+        continue;
+      }
+
       const rateLimited = err instanceof Error && /429|rate ?limit|resource exhausted/i.test(err.message);
 
-      if (rateLimited && !triedFallback && usedModel !== AI_FALLBACK_MODEL) {
+      if (rateLimited && !onGemini && !triedFallback && usedModel !== AI_FALLBACK_MODEL) {
         triedFallback = true;
         usedModel = AI_FALLBACK_MODEL;
         await sleep(BACKOFF_MS[0]);

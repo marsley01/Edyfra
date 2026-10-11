@@ -9,12 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   evaluateChallengeAnswer,
-  saveChallengeAttempt,
   generatePersonalizedChallenge,
 } from "@/app/actions/challenge-ai";
 import { showError, showSuccess } from "@/lib/toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { getUserData } from "@/app/actions/user";
 
 interface DailyChallengeCardProps {
   userId: string;
@@ -40,32 +38,42 @@ export default function DailyChallengeCard({ userId, educationLevel }: DailyChal
   const [result, setResult] = useState<{ correct: boolean; explanation: string; correctAnswer: string } | null>(null);
   const [completed, setCompleted] = useState(false);
 
+  type ServerChallenge = Awaited<ReturnType<typeof generatePersonalizedChallenge>>;
+
+  // Shows the challenge, and if it was already answered today, its result.
+  const showChallenge = useCallback((c: ServerChallenge) => {
+    if (!c) return;
+    setChallenge({
+      id: c.id,
+      subject: c.subject,
+      level: c.level,
+      question: c.question,
+      options: c.options || [],
+      answer: c.answer,
+      explanation: c.explanation,
+    });
+    setSelectedOption(null);
+    if (c.attempted) {
+      setCompleted(true);
+      setResult({ correct: c.correct === true, explanation: c.explanation, correctAnswer: c.answer });
+    } else {
+      setCompleted(false);
+      setResult(null);
+    }
+  }, []);
+
+  // Today's challenge. The server generates it once per day and returns the
+  // same one after that, so reloading the dashboard no longer calls the AI.
   const loadPersonalizedChallenge = useCallback(async () => {
     setLoading(true);
     try {
-      const existing = await getUserData();
-      if (!existing) return;
-      const newChallenge = await generatePersonalizedChallenge(userId, educationLevel);
-      if (newChallenge) {
-        setChallenge({
-          id: newChallenge.id,
-          subject: newChallenge.subject,
-          level: newChallenge.level,
-          question: newChallenge.question,
-          options: (newChallenge.options as string[]) || [],
-          answer: newChallenge.answer,
-          explanation: newChallenge.explanation,
-        });
-        setCompleted(false);
-        setResult(null);
-        setSelectedOption(null);
-      }
-    } catch {
-      // silent
+      showChallenge(await generatePersonalizedChallenge(userId, educationLevel));
+    } catch (error) {
+      console.warn("[DailyChallengeCard] could not load today's challenge:", error);
     } finally {
       setLoading(false);
     }
-  }, [userId, educationLevel]);
+  }, [userId, educationLevel, showChallenge]);
 
   useEffect(() => { loadPersonalizedChallenge(); }, [loadPersonalizedChallenge]);
 
@@ -73,9 +81,10 @@ export default function DailyChallengeCard({ userId, educationLevel }: DailyChal
     if (!challenge || !selectedOption) return;
     setSubmitting(true);
     try {
+      // Graded and recorded on the server; the answer arrives only now.
       const evaluation = await evaluateChallengeAnswer(challenge.id, selectedOption);
       setResult(evaluation);
-      await saveChallengeAttempt(userId, challenge.id, evaluation.correct);
+      setChallenge((prev) => (prev ? { ...prev, answer: evaluation.correctAnswer, explanation: evaluation.explanation } : prev));
       setCompleted(true);
       if (evaluation.correct) {
         showSuccess("Nice! Points banked.", { description: "Mash AI is learning what you're good at." });
@@ -90,24 +99,15 @@ export default function DailyChallengeCard({ userId, educationLevel }: DailyChal
   const handleGenerateNew = async () => {
     setGenerating(true);
     try {
-      const newChallenge = await generatePersonalizedChallenge(userId, educationLevel);
-      if (newChallenge) {
-        setChallenge({
-          id: newChallenge.id,
-          subject: newChallenge.subject,
-          level: newChallenge.level,
-          question: newChallenge.question,
-          options: (newChallenge.options as string[]) || [],
-          answer: newChallenge.answer,
-          explanation: newChallenge.explanation,
-        });
-        setCompleted(false);
-        setResult(null);
-        setSelectedOption(null);
-        showSuccess("Fresh challenge ready!", { description: "Tailored to your learning profile." });
-      }
-    } catch {
-      showError({ title: "Generation failed", cause: "", fix: "Try again." });
+      showChallenge(await generatePersonalizedChallenge(userId, educationLevel, { fresh: true }));
+      showSuccess("Fresh challenge ready!", { description: "Tailored to your subjects and recent results." });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+      showError({
+        title: "Couldn't make a new challenge",
+        cause: /come back tomorrow/i.test(message) ? message : "",
+        fix: /come back tomorrow/i.test(message) ? "Your streak still counts today." : "Try again.",
+      });
     } finally {
       setGenerating(false);
     }

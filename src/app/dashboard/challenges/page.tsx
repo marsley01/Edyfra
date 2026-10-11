@@ -15,7 +15,6 @@ import { getUserData } from "@/app/actions/user";
 import {
   getChallengeStats,
   evaluateChallengeAnswer,
-  saveChallengeAttempt,
   generatePersonalizedChallenge,
 } from "@/app/actions/challenge-ai";
 import { SESSION_CONFIG } from "@/lib/config";
@@ -86,7 +85,7 @@ export default function ChallengesPage() {
     }
   }, []);
 
-  const generateChallenge = useCallback(async (eduLevel: string) => {
+  const generateChallenge = useCallback(async (eduLevel: string, fresh = false) => {
     setGenerating(true);
     setError(null);
     setSelectedOption(null);
@@ -96,21 +95,31 @@ export default function ChallengesPage() {
     try {
       const userData = await getUserData();
       if (!userData) throw new Error("No user");
-      const result = await generatePersonalizedChallenge(userData.id, eduLevel);
+      // Today's challenge is generated once and reused; `fresh` asks for another.
+      const result = await generatePersonalizedChallenge(userData.id, eduLevel, { fresh });
       if (!result) throw new Error("Generation returned empty");
       setChallenge({
         id: result.id,
         subject: result.subject,
         level: result.level,
         question: result.question,
-        options: (result.options as string[]) || [],
+        options: result.options || [],
         answer: result.answer,
         explanation: result.explanation,
       });
-      setCompletedToday(false);
+      if (result.attempted) {
+        setSubmitted(true);
+        setSelectedOption(null);
+        setIsCorrect(result.correct === true);
+        setResultExplanation(result.explanation);
+        setCompletedToday(true);
+      } else {
+        setCompletedToday(false);
+      }
     } catch (err) {
       console.error("Failed to generate challenge:", err);
-      setError("AI couldn't generate a challenge right now. Try again.");
+      const message = err instanceof Error ? err.message : "";
+      setError(/come back tomorrow/i.test(message) ? message : "AI couldn't generate a challenge right now. Try again.");
     } finally {
       setGenerating(false);
     }
@@ -141,7 +150,8 @@ export default function ChallengesPage() {
       const evaluation = await evaluateChallengeAnswer(challenge.id, selectedOption);
       setIsCorrect(evaluation.correct);
       setResultExplanation(evaluation.explanation);
-      await saveChallengeAttempt(user.id, challenge.id, evaluation.correct);
+      // The answer is only sent after grading, so highlight it from the result.
+      setChallenge((prev) => (prev ? { ...prev, answer: evaluation.correctAnswer } : prev));
       setCompletedToday(true);
 
       if (evaluation.correct) {
@@ -160,7 +170,7 @@ export default function ChallengesPage() {
   };
 
   const handleNewChallenge = () => {
-    if (user?.educationLevel) generateChallenge(user.educationLevel);
+    if (user?.educationLevel) generateChallenge(user.educationLevel, true);
   };
 
   /* â”€â”€â”€ Loading â”€â”€â”€ */

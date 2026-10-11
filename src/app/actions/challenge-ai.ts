@@ -51,6 +51,9 @@ interface GeneratedChallenge {
 
 
 function normalizeOptions(raw: unknown): string[] {
+  if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+    raw = Object.values(raw as Record<string, unknown>);
+  }
   if (!Array.isArray(raw)) return [];
   return raw
     .map((o) => String(o).trim())
@@ -71,14 +74,24 @@ function normalizeChallengeAnswer(options: string[], answer: string): string {
 }
 
 function parseChallengesFromAI(aiResponse: string): GeneratedChallenge[] {
-  const jsonMatch =
-    aiResponse.match(/```json\s*([\s\S]*?)\s*```/) ||
-    aiResponse.match(/\[[\s\S]*\]/) ||
-    aiResponse.match(/\{[\s\S]*\}/);
-
-  let jsonString = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : aiResponse;
-  if (!jsonString.trim().startsWith("[")) jsonString = `[${jsonString}]`;
-  const parsed = JSON.parse(jsonString);
+  // The AI layer returns an apology string instead of throwing when no key is
+  // configured; give that a clear error instead of a JSON syntax error.
+  if (/currently offline|trouble thinking/i.test(aiResponse)) {
+    throw new Error("AI provider unavailable");
+  }
+  // Models often wrap JSON in markdown fences; drop them, then parse from the
+  // first bracket to its last partner. The old "first [ ... last ]" regex ran
+  // first, so for a single question object it grabbed the inner options array.
+  const cleaned = aiResponse.replace(/```(?:json)?/gi, "").trim();
+  const firstObj = cleaned.indexOf("{");
+  const firstArr = cleaned.indexOf("[");
+  const useArray = firstArr !== -1 && (firstObj === -1 || firstArr < firstObj);
+  const open = useArray ? firstArr : firstObj;
+  const close = cleaned.lastIndexOf(useArray ? "]" : "}");
+  if (open === -1 || close <= open) {
+    throw new Error("AI response contained no JSON");
+  }
+  const parsed = JSON.parse(cleaned.slice(open, close + 1));
   const list = Array.isArray(parsed) ? parsed : [parsed];
 
   return list.map((item: GeneratedChallenge) => {
@@ -86,12 +99,24 @@ function parseChallengesFromAI(aiResponse: string): GeneratedChallenge[] {
     if (options.length < 2) {
       throw new Error("AI challenge missing valid options");
     }
+    // Reject malformed questions here rather than saving a row nobody can
+    // answer (a missing answer used to crash normalizeChallengeAnswer).
+    if (typeof item.question !== "string" || item.question.trim().length < 8) {
+      throw new Error("AI challenge missing a question");
+    }
+    if (typeof item.answer !== "string" || !item.answer.trim()) {
+      throw new Error("AI challenge missing an answer");
+    }
+    const answer = normalizeChallengeAnswer(options, item.answer);
+    if (!options.includes(answer)) {
+      throw new Error("AI challenge answer is not one of the options");
+    }
     return {
       subject: item.subject || "General",
       level: item.level || "HIGH_SCHOOL",
       question: item.question,
       options,
-      answer: normalizeChallengeAnswer(options, item.answer),
+      answer,
       explanation: item.explanation || "Review the correct reasoning above.",
     };
   });
@@ -289,8 +314,8 @@ export async function getChallengesForUser(userId: string, level: string) {
           level: c.level,
           question: c.question,
           options,
-          answer: c.answer,
-          explanation: c.explanation,
+          answer: attempt ? c.answer : "",
+          explanation: attempt ? c.explanation : "",
           date: c.date.toISOString(),
           completed: attempt?.correct === true,
           hasAttempt: !!attempt,
@@ -327,8 +352,8 @@ export async function getChallengesForUser(userId: string, level: string) {
         level: c.level,
         question: c.question,
         options,
-        answer: c.answer,
-        explanation: c.explanation,
+        answer: attempt ? c.answer : "",
+        explanation: attempt ? c.explanation : "",
         date: c.date.toISOString(),
         completed: attempt?.correct === true,
         hasAttempt: !!attempt,
@@ -348,40 +373,16 @@ export async function evaluateChallengeAnswer(challengeId: string, userAnswer: s
     const challenge = await prisma.dailyChallenge.findUnique({ where: { id: challengeId } });
     if (!challenge) throw new Error("Challenge not found");
 
-    const levelText = challenge.level === "UNIVERSITY" ? "university" : "high school";
-    const prompt = `You are evaluating a student's answer to a ${levelText} level challenge.
-
-Question: "${challenge.question}"
-Correct Answer: "${challenge.answer}"
-Student's Answer: "${userAnswer}"
-
-Evaluate the student's answer. Determine if it is correct or incorrect. Be flexible — accept paraphrased answers, synonyms, and partially correct answers if they demonstrate understanding.
-
-Respond with a JSON object:
-{
-  "correct": true/false,
-  "explanation": "Brief explanation of why the answer is right or wrong",
-  "correctAnswer": "${challenge.answer}"
-}`;
-
-    const aiResponse = await generateAIResponse(prompt, challenge.subject);
-    if (!aiResponse) throw new Error("AI evaluation failed");
-
-    let result;
-    try {
-      const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
-      const jsonString = jsonMatch ? jsonMatch[0] : aiResponse;
-      result = JSON.parse(jsonString);
-    } catch {
-      const options = (challenge.options as string[]) || [];
-      const normalizedUser = normalizeChallengeAnswer(options, userAnswer);
-      const normalizedCorrect = normalizeChallengeAnswer(options, challenge.answer);
-      result = {
-        correct: normalizedUser.toLowerCase().trim() === normalizedCorrect.toLowerCase().trim(),
-        explanation: challenge.explanation,
-        correctAnswer: normalizedCorrect,
-      };
-    }
+    // Every challenge is multiple choice, so grade exactly. The old AI
+    // "flexible" grading could mark a wrong option as correct.
+    const options = (challenge.options as string[]) || [];
+    const chosen = normalizeChallengeAnswer(options, String(userAnswer ?? ""));
+    const correctAnswer = normalizeChallengeAnswer(options, challenge.answer);
+    const result = {
+      correct: chosen.trim().toLowerCase() === correctAnswer.trim().toLowerCase(),
+      explanation: challenge.explanation,
+      correctAnswer,
+    };
 
     const correct = result.correct === true;
 
@@ -566,14 +567,88 @@ export async function getChallengeStats() {
   }
 }
 
-export async function generatePersonalizedChallenge(userId: string, level: string) {
+/** Calendar day in Kenya (UTC+3), so "today" flips at local midnight. */
+function kenyaDayKey(now = new Date()): string {
+  return new Date(now.getTime() + 3 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
+const MAX_FRESH_PER_DAY = 5;
+
+type TodayRecord = { ids: string[] };
+
+async function readToday(userId: string, day: string): Promise<TodayRecord> {
+  const row = await prisma.platformSettings.findUnique({ where: { key: `daily-challenge:${userId}:${day}` } });
+  const ids = (row?.value as TodayRecord | null)?.ids;
+  return { ids: Array.isArray(ids) ? ids : [] };
+}
+
+async function writeToday(userId: string, day: string, record: TodayRecord) {
+  const key = `daily-challenge:${userId}:${day}`;
+  await prisma.platformSettings.upsert({
+    where: { key },
+    create: { key, value: record },
+    update: { value: record },
+  });
+}
+
+/** What the browser gets: never the answer until the student has attempted it. */
+async function toClientChallenge(challengeId: string, userId: string) {
+  const c = await prisma.dailyChallenge.findUnique({
+    where: { id: challengeId },
+    include: { attempts: { where: { userId }, select: { correct: true } } },
+  });
+  if (!c) return null;
+  const attempt = c.attempts[0];
+  return {
+    id: c.id,
+    subject: c.subject,
+    level: c.level,
+    question: c.question,
+    options: (c.options as string[]) || [],
+    answer: attempt ? c.answer : "",
+    explanation: attempt ? c.explanation : "",
+    attempted: !!attempt,
+    correct: attempt?.correct ?? null,
+  };
+}
+
+/**
+ * Today's personal challenge for the signed-in student.
+ *
+ * It used to call the AI on every dashboard load, creating a new challenge row
+ * (and an AI bill) each time, and it returned the correct answer to the
+ * browser. Now the first call each day generates one challenge from the
+ * student's subjects, weak topics and recent results; later calls return the
+ * same one. `fresh: true` (the "New challenge" button) generates another, up
+ * to MAX_FRESH_PER_DAY per day.
+ */
+export async function generatePersonalizedChallenge(
+  _userId: string,
+  level: string,
+  opts: { fresh?: boolean } = {},
+) {
+  // Always personalise for the caller, never for a client-supplied id.
+  const me = await getAuthedUserId();
+  if (!me) throw new Error("Unauthorized");
+
+  const day = kenyaDayKey();
+  const today = await readToday(me, day);
+
+  if (!opts.fresh && today.ids.length > 0) {
+    const existing = await toClientChallenge(today.ids[today.ids.length - 1], me);
+    if (existing) return existing;
+  }
+  if (opts.fresh && today.ids.length >= MAX_FRESH_PER_DAY) {
+    throw new Error(`You've had ${MAX_FRESH_PER_DAY} challenges today. Come back tomorrow for more.`);
+  }
+
+  const created = await createPersonalizedChallenge(me, level);
+  await writeToday(me, day, { ids: [...today.ids, created.id] });
+  return toClientChallenge(created.id, me);
+}
+
+async function createPersonalizedChallenge(userId: string, level: string) {
   try {
-    // Always personalise for the caller, never for a client-supplied id (that
-    // leaked another user's weak topics into the prompt and spent AI credits
-    // anonymously).
-    const me = await getAuthedUserId();
-    if (!me) throw new Error("Unauthorized");
-    userId = me;
 
     // ── 1. Onboarding profile: the subjects the student picked + weak topics ──
     const profile = await prisma.studentProfile.findUnique({
@@ -657,9 +732,7 @@ Format: {"question": "...", "options": ["A", "B", "C", "D"], "answer": "A", "exp
       throw new Error("AI generation failed");
     }
 
-    const [parsed] = parseChallengesFromAI(
-      aiResponse.trim().startsWith("[") ? aiResponse : `[${aiResponse.match(/\{[\s\S]*\}/)?.[0] || aiResponse}]`
-    );
+    const [parsed] = parseChallengesFromAI(aiResponse);
 
     return await prisma.dailyChallenge.create({
       data: {

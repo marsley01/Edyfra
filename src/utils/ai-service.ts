@@ -44,6 +44,57 @@ async function getOpenAI() {
   return openaiInstance;
 }
 
+function isFailureText(text: string): boolean {
+  return /having a bit of trouble thinking|currently offline/i.test(text);
+}
+
+let geminiInstance: OpenAI | null = null;
+
+/** Gemini through its OpenAI-compatible endpoint, if GOOGLE_AI_KEY is set. */
+function getGeminiClient(): OpenAI | null {
+  const key = process.env.GOOGLE_AI_KEY?.trim();
+  if (!key) return null;
+  if (!geminiInstance) {
+    geminiInstance = new OpenAI({
+      baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
+      apiKey: key,
+    });
+  }
+  return geminiInstance;
+}
+
+async function chatOnce(
+  client: OpenAI,
+  model: string,
+  prompt: string,
+  systemPrompt: string,
+  timeoutMs: number,
+  maxTokens?: number,
+): Promise<string> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const completion = await client.chat.completions.create(
+      {
+        model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: prompt },
+        ],
+        temperature: 0.7,
+        // OpenRouter rejects requests whose max_tokens exceeds the remaining
+        // credit, so OpenRouter calls pass a modest cap. Gemini passes none:
+        // its "thinking" tokens count against the cap and truncated answers.
+        ...(maxTokens ? { max_tokens: maxTokens } : {}),
+      },
+      { signal: controller.signal },
+    );
+    return completion.choices[0]?.message?.content || "";
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export class AIService {
   static async generateCompletion(
     prompt: string,
@@ -52,54 +103,48 @@ export class AIService {
   ): Promise<string> {
     const defaultModel = (await getAIConfig()).model;
     const chosenModel = model ?? defaultModel;
+    // 1. The routed provider layer. It reports failure by returning an apology
+    //    string rather than throwing, so check for that explicitly; returning
+    //    it as-is is what made every AI feature fail when OpenRouter ran out of
+    //    credits.
     try {
       const ai = await getAI();
-      return await ai.generateCompletion(prompt, systemPrompt, { model: chosenModel });
+      const text = await ai.generateCompletion(prompt, systemPrompt, { model: chosenModel });
+      if (text && !isFailureText(text)) return text;
     } catch {
-      const openai = await getOpenAI();
-      if (!openai) {
-        console.warn("[AIService] API Key is missing. Returning offline message.");
-        return "AI services are currently offline. Please ensure your API key is configured.";
-      }
+      // fall through
+    }
 
-      const doCall = async (m: string, timeoutMs: number): Promise<string> => {
-        if (currentProvider === "gemini") {
-          m = "gemini-2.5-flash";
-        }
-
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), timeoutMs);
-        try {
-          const completion = await openai.chat.completions.create(
-            {
-              model: m,
-              messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: prompt },
-              ],
-              temperature: 0.7,
-            },
-            { signal: controller.signal },
-          );
-          return completion.choices[0]?.message?.content || "";
-        } finally {
-          clearTimeout(timer);
-        }
-      };
-
+    // 2. OpenRouter directly (or a Gemini key saved as the main key).
+    const openai = await getOpenAI();
+    if (openai) {
       try {
-        return await doCall(chosenModel, 15000);
-      } catch (firstErr) {
-        const firstMessage = firstErr instanceof Error ? firstErr.message : String(firstErr);
-        console.warn("[AIService] First attempt failed, retrying:", firstMessage);
-        try {
-          return await doCall(chosenModel, 20000);
-        } catch {
-          console.error("[AIService] Retry also failed");
-          return `I'm having a bit of trouble thinking right now. Let's try again in a moment.`;
-        }
+        const m = currentProvider === "gemini" ? "gemini-2.5-flash" : chosenModel;
+        const text = await chatOnce(openai, m, prompt, systemPrompt, 20000, currentProvider === "gemini" ? undefined : 1500);
+        if (text) return text;
+      } catch (error) {
+        console.warn("[AIService] OpenRouter call failed:", error instanceof Error ? error.message : error);
       }
     }
+
+    // 3. Google Gemini with GOOGLE_AI_KEY. Keeps AI features working when the
+    //    OpenRouter account has no credits or is rate-limited.
+    const gemini = getGeminiClient();
+    if (gemini) {
+      try {
+        const text = await chatOnce(gemini, "gemini-2.5-flash", prompt, systemPrompt, 25000);
+        if (text) return text;
+      } catch (error) {
+        console.warn("[AIService] Gemini fallback failed:", error instanceof Error ? error.message : error);
+      }
+    }
+
+    if (!openai && !gemini) {
+      console.warn("[AIService] No AI key configured. Returning offline message.");
+      return "AI services are currently offline. Please ensure your API key is configured.";
+    }
+    console.error("[AIService] All AI providers failed");
+    return `I'm having a bit of trouble thinking right now. Let's try again in a moment.`;
   }
 
   static async generateJSON(
