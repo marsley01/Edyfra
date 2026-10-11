@@ -7,15 +7,18 @@
  * module, so only server code (server actions, route handlers) can call them
  * after doing its own authorization.
  *
- * Ids: `public.notifications.user_id`, `push_subscriptions.user_id` and the
- * notification preferences are all keyed by the Supabase AUTH id (that is what
- * every reader filters on), while most callers hold PRISMA user ids. For older
- * accounts the two differ, so ids are mapped to the auth id before writing.
+ * Storage: the Prisma "Notification" and "PushSubscription" tables, keyed by
+ * the PRISMA user id (their foreign key). A September rewrite pointed all of
+ * this at snake_case tables (`notifications`, `push_subscriptions`) that do not
+ * exist, so from 2026-09-25 every in-app notification, every push and every
+ * push sign-up failed silently. Notification preferences ("NotificationSettings")
+ * are keyed by the Supabase AUTH id. Callers may pass either id.
  *
  * Deliberately NOT a "use server" module. (The `server-only` package is not
  * installed; never import this from a client component.)
  */
 import webpush from "web-push";
+import { after } from "next/server";
 import prisma from "@/lib/prisma";
 import { createAdminClient } from "@/utils/supabase/admin";
 
@@ -48,6 +51,19 @@ export async function resolveAuthUserId(prismaUserId: string): Promise<string | 
     ) t
     ORDER BY pri
     LIMIT 1
+  `;
+  return rows[0]?.id ?? null;
+}
+
+/** Prisma user id for a Prisma or auth id (same id, else matched by email). */
+export async function resolvePrismaUserId(id: string): Promise<string | null> {
+  const direct = await prisma.user.findUnique({ where: { id }, select: { id: true } });
+  if (direct) return direct.id;
+  const rows = await prisma.$queryRaw<{ id: string }[]>`
+    SELECT u.id FROM public."User" u
+      JOIN auth.users au ON lower(au.email) = lower(u.email)
+     WHERE au.id::text = ${id}
+     LIMIT 1
   `;
   return rows[0]?.id ?? null;
 }
@@ -147,74 +163,63 @@ function getVapidConfig() {
   return false;
 }
 
+/** Time-critical types expire fast: a "student needs you now" push that
+ *  arrives an hour later (phone was offline) is worse than none. */
+const URGENT_TYPES = new Set(["MATCH_OFFER", "MATCH_FOUND", "SESSION_STARTED", "MISSED_CALL", "NEW_BOOKING"]);
+
 /**
- * Sends a web push to every subscription of `userId` (an AUTH id, as stored
- * in `push_subscriptions`). Expired subscriptions are pruned.
+ * Sends a web push to every subscription of a user (Prisma or auth id).
+ * Expired subscriptions are pruned.
+ *
+ * `id` is the notification id and becomes the notification tag, so the same
+ * event shown by the service worker and by an open tab collapses into one.
  */
 export async function sendNotificationPush(
   userId: string,
-  payload: { title: string; body: string; url?: string }
+  payload: { title: string; body: string; url?: string; id?: string; type?: string }
 ) {
   try {
-    let webPushSent = 0;
-    let webPushExpired = 0;
+    if (!getVapidConfig()) return { success: true, sent: 0, expired: 0, errors: 0 };
 
-    const vapidConfigured = getVapidConfig();
-    if (vapidConfigured) {
-      const adminSupabase = createAdminClient();
-      const { data: subscriptions } = await adminSupabase
-        .from("push_subscriptions")
-        .select("*")
-        .eq("user_id", userId);
+    const prismaId = (await resolvePrismaUserId(userId)) ?? userId;
+    const subscriptions = await prisma.pushSubscription.findMany({ where: { userId: prismaId } });
+    if (subscriptions.length === 0) return { success: true, sent: 0, expired: 0, errors: 0 };
 
-      const data = JSON.stringify({
-        title: payload.title,
-        body: payload.body,
-        url: safeActionUrl(payload.url) ?? "/",
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      });
+    const urgent = !!payload.type && URGENT_TYPES.has(payload.type);
+    const data = JSON.stringify({
+      title: payload.title,
+      body: payload.body,
+      url: safeActionUrl(payload.url) ?? "/",
+      id: payload.id ?? `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      sentAt: Date.now(),
+      ttl: urgent ? 120 : 6 * 3600,
+    });
+    // Without these, push services default to a 4-week TTL and normal
+    // urgency: phones batch the push for later and stale ones arrive hours
+    // after the event.
+    const options = { TTL: urgent ? 120 : 6 * 3600, urgency: (urgent ? "high" : "normal") as "high" | "normal" };
 
-      const expiredEndpoints: string[] = [];
-
-      for (const sub of (subscriptions || [])) {
+    const expired: string[] = [];
+    let sent = 0;
+    let errors = 0;
+    await Promise.allSettled(
+      subscriptions.map(async (sub) => {
         try {
-          await webpush.sendNotification(
-            {
-              endpoint: sub.endpoint,
-              keys: { p256dh: sub.p256dh, auth: sub.auth },
-            },
-            data
-          );
-          webPushSent++;
+          await webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, data, options);
+          sent++;
         } catch (err: any) {
-          if (
-            err.statusCode === 410 ||
-            err.statusCode === 404 ||
-            err.message?.includes("unsubscribed") ||
-            err.message?.includes("expired")
-          ) {
-            expiredEndpoints.push(sub.endpoint);
-          } else {
-            console.error("[web-push] send failed:", sub.endpoint, err.message);
+          if (err.statusCode === 410 || err.statusCode === 404) expired.push(sub.endpoint);
+          else {
+            errors++;
+            console.error("[web-push] send failed:", err.statusCode, err.message);
           }
         }
-      }
-
-      if (expiredEndpoints.length > 0) {
-        await adminSupabase
-          .from("push_subscriptions")
-          .delete()
-          .in("endpoint", expiredEndpoints);
-        webPushExpired = expiredEndpoints.length;
-      }
+      }),
+    );
+    if (expired.length) {
+      await prisma.pushSubscription.deleteMany({ where: { endpoint: { in: expired } } }).catch(() => {});
     }
-
-    return {
-      success: true,
-      sent: webPushSent,
-      expired: webPushExpired,
-      errors: 0,
-    };
+    return { success: true, sent, expired: expired.length, errors };
   } catch (error) {
     console.error("Error sending push notification:", error);
     return { success: false, error: "Failed to send push notification" };
@@ -225,35 +230,46 @@ export async function sendNotificationPush(
  * Inserts an in-app notification for one user (Prisma or auth id) and sends a
  * push unless the user opted out of that type.
  */
-export async function notifyUser(userId: string, data: NotificationInput) {
-  const authId = await toAuthId(userId);
-  const actionUrl = safeActionUrl(data.actionUrl);
-  const adminSupabase = createAdminClient();
-  const { data: notification, error } = await adminSupabase
-    .from("notifications")
-    .insert({
-      user_id: authId,
-      type: data.type,
-      title: data.title,
-      body: data.body,
-      action_url: actionUrl,
-    })
-    .select()
-    .single();
-
-  if (error) throw error;
-
+/**
+ * Runs push delivery after the response is sent when inside a request (so the
+ * action that triggered the notification isn't held up by preference lookups
+ * and push-service round trips), or immediately when called from a script.
+ */
+function deliverLater(task: () => Promise<unknown>) {
   try {
+    after(async () => {
+      try {
+        await task();
+      } catch (err) {
+        console.error("[notifications] background push failed:", err);
+      }
+    });
+  } catch {
+    void task().catch((err) => console.error("[notifications] push failed:", err));
+  }
+}
+
+export async function notifyUser(userId: string, data: NotificationInput) {
+  const prismaId = await resolvePrismaUserId(userId);
+  if (!prismaId) throw new Error(`notifyUser: no user for id ${userId}`);
+  const actionUrl = safeActionUrl(data.actionUrl);
+
+  const notification = await prisma.notification.create({
+    data: { userId: prismaId, type: data.type, title: data.title, body: data.body, actionUrl },
+  });
+
+  deliverLater(async () => {
+    const authId = await toAuthId(prismaId);
     if (await shouldSendPush(authId, data.type)) {
-      await sendNotificationPush(authId, {
+      await sendNotificationPush(prismaId, {
         title: data.title,
         body: data.body,
         url: actionUrl || "/dashboard/notifications",
+        id: notification.id,
+        type: data.type,
       });
     }
-  } catch (err) {
-    console.error("[notifyUser] push failed:", err);
-  }
+  });
 
   return notification;
 }
@@ -262,43 +278,53 @@ export async function notifyUser(userId: string, data: NotificationInput) {
 export async function notifyManyUsers(userIds: string[], data: NotificationInput) {
   if (userIds.length === 0) return [];
 
-  const authIds = await toAuthIds(userIds);
+  const resolved = await Promise.all(Array.from(new Set(userIds)).map((id) => resolvePrismaUserId(id).catch(() => null)));
+  const prismaIds = Array.from(new Set(resolved.filter((id): id is string => !!id)));
+  if (prismaIds.length === 0) return 0;
   const actionUrl = safeActionUrl(data.actionUrl);
-  const adminSupabase = createAdminClient();
-  await adminSupabase.from("notifications").insert(
-    authIds.map((userId) => ({
-      user_id: userId,
-      type: data.type,
-      title: data.title,
-      body: data.body,
-      action_url: actionUrl,
-    }))
-  );
 
+  const created = await prisma.notification.createManyAndReturn({
+    data: prismaIds.map((userId) => ({ userId, type: data.type, title: data.title, body: data.body, actionUrl })),
+    select: { id: true, userId: true },
+  });
+
+  deliverLater(() => pushToMany(created, prismaIds, data, actionUrl));
+  return created.length;
+}
+
+async function pushToMany(
+  created: { id: string; userId: string }[],
+  prismaIds: string[],
+  data: NotificationInput,
+  actionUrl: string | undefined,
+) {
+  // Preferences are keyed by auth id.
+  const authByPrisma = new Map(
+    await Promise.all(prismaIds.map(async (id) => [id, await toAuthId(id)] as const)),
+  );
+  const authIds = Array.from(new Set(authByPrisma.values()));
   let allSettings: { userId: string; preferences: unknown }[] = [];
   try {
     allSettings = await prisma.notificationSettings.findMany({
-      where: { userId: { in: authIds } },
+      where: { userId: { in: [...authIds, ...prismaIds] } },
       select: { userId: true, preferences: true },
     });
   } catch (err) {
     console.error("[notifyManyUsers] failed to load preferences:", err);
   }
-
-  const prefsMap = new Map(
-    allSettings.map(s => [s.userId, (s.preferences as Record<string, boolean>) || {}])
-  );
+  const prefsMap = new Map(allSettings.map((s) => [s.userId, (s.preferences as Record<string, boolean>) || {}]));
 
   await Promise.allSettled(
-    authIds.map(async (userId) => {
-      if (!(await shouldSendPush(userId, data.type, prefsMap.get(userId) ?? {}))) return;
-      await sendNotificationPush(userId, {
+    created.map(async (n) => {
+      const prefs = prefsMap.get(authByPrisma.get(n.userId) ?? n.userId) ?? prefsMap.get(n.userId) ?? {};
+      if (!(await shouldSendPush(n.userId, data.type, prefs))) return;
+      await sendNotificationPush(n.userId, {
         title: data.title,
         body: data.body,
         url: actionUrl || "/dashboard/notifications",
+        id: n.id,
+        type: data.type,
       });
-    })
+    }),
   );
-
-  return userIds.length;
 }

@@ -11,7 +11,7 @@
  * Push notifications and notificationclick are unchanged from the original.
  */
 
-const CACHE_VERSION = "v4";
+const CACHE_VERSION = "v5"; // v5: push handler posts to open tabs and drops expired pushes
 const STATIC_CACHE  = `edyfra-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `edyfra-runtime-${CACHE_VERSION}`;
 const IMAGE_CACHE   = `edyfra-images-${CACHE_VERSION}`;
@@ -199,6 +199,14 @@ self.addEventListener("push", (event) => {
       }
 
       const id = data.id || Date.now().toString();
+
+      // Tell open tabs so their bell and list update at the same moment.
+      const windows = await clients.matchAll({ type: "window", includeUncontrolled: true });
+      for (const w of windows) w.postMessage({ type: "edyfra-push", id });
+
+      // Drop pushes that arrive after they stopped mattering (phone was
+      // offline): "a student needs you now" an hour late is just noise.
+      if (data.sentAt && data.ttl && Date.now() - data.sentAt > data.ttl * 1000) return;
 
       await self.registration.showNotification(title, {
         body: data.body || "You have a new update!",

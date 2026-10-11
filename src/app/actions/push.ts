@@ -1,6 +1,8 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import prisma from "@/lib/prisma";
+import { resolvePrismaUserId } from "@/lib/notifications/server";
 
 // sendNotificationPush lives in the non-"use server" module
 // @/lib/notifications/server: exported from here it was browser-callable, so
@@ -11,10 +13,10 @@ export async function getUserPushSubscriptions() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
-  const { data: subscriptions } = await supabase
-    .from("push_subscriptions")
-    .select("endpoint")
-    .eq("user_id", user.id);
-
-  return (subscriptions || []).map(s => s.endpoint);
+  const prismaId = (await resolvePrismaUserId(user.id)) ?? user.id;
+  const subscriptions = await prisma.pushSubscription.findMany({
+    where: { userId: prismaId },
+    select: { endpoint: true },
+  });
+  return subscriptions.map((s) => s.endpoint);
 }

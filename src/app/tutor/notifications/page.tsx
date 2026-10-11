@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { showError, showSuccess, showUnknownError } from "@/lib/toast";
 import { formatDistanceToNow } from "date-fns";
 import { getNotifications, markAllRead, markNotificationRead } from "@/app/actions/notifications";
-import { createClient } from "@/utils/supabase/client";
+import { NOTIFICATIONS_CHANGED_EVENT } from "@/hooks/useUnreadNotifications";
 import { LottieAnimation } from "@/components/lottie-animation";
 
 const TYPE_ICONS: Record<string, any> = {
@@ -62,42 +62,14 @@ export default function TutorNotificationsPage() {
     load();
   }, [load]);
 
+  // Reload when a new notification arrives (push received, or the shared
+  // poll saw one). The old realtime listener watched a `notifications` table
+  // that doesn't exist, so it never fired.
   useEffect(() => {
-    const supabase = createClient();
-    let cancelled = false;
-    let channel: ReturnType<typeof supabase.channel> | null = null;
-
-    supabase.auth.getUser().then(({ data }: { data: { user: any } }) => {
-      if (cancelled || !data.user) return;
-      const userId = data.user.id;
-
-      channel = supabase
-        .channel(`tutor-notifications-${userId}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            // notifyUser() writes to public.notifications (snake_case); the
-            // Prisma "Notification" table is never written.
-            table: "notifications",
-            filter: `user_id=eq.${userId}`,
-          },
-          () => {
-            load();
-          }
-        )
-        .subscribe((status: string) => {
-          if (!cancelled) setConnected(status === "SUBSCRIBED");
-        });
-    }).catch((err: unknown) => {
-      if (!cancelled) console.error("[TutorNotifications] realtime setup failed", err);
-    });
-
-    return () => {
-      cancelled = true;
-      if (channel) supabase.removeChannel(channel);
-    };
+    const onChange = () => { void load(); };
+    window.addEventListener(NOTIFICATIONS_CHANGED_EVENT, onChange);
+    setConnected(true);
+    return () => window.removeEventListener(NOTIFICATIONS_CHANGED_EVENT, onChange);
   }, [load]);
 
   const handleMarkAllRead = async () => {

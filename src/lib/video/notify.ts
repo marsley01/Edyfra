@@ -10,43 +10,40 @@
  * Deliberately NOT a "use server" module. Unlike notifyUser it dedupes per
  * (user, type, actionUrl) so Stream's webhook retries don't duplicate rows.
  */
-import { resolveAuthUserId, sendNotificationPush } from "@/lib/notifications/server";
-import { createAdminClient } from "@/utils/supabase/admin";
+import prisma from "@/lib/prisma";
+import { sendNotificationPush } from "@/lib/notifications/server";
 
 /**
  * Inserts a notification (once per user + type + actionUrl, so Stream's
  * webhook retries don't duplicate it) and sends a push.
- * Returns false when the user has no auth account or it was already sent.
+ * Returns false when the user doesn't exist or it was already sent.
  */
 export async function notifyStreamUser(
   prismaUserId: string,
   data: { type: string; title: string; body: string; actionUrl: string },
 ): Promise<boolean> {
-  const authId = await resolveAuthUserId(prismaUserId);
-  if (!authId) return false;
+  const user = await prisma.user.findUnique({ where: { id: prismaUserId }, select: { id: true } });
+  if (!user) return false;
 
-  const admin = createAdminClient();
-  const { data: existing } = await admin
-    .from("notifications")
-    .select("id")
-    .eq("user_id", authId)
-    .eq("type", data.type)
-    .eq("action_url", data.actionUrl)
-    .limit(1);
-  if (existing && existing.length > 0) return false;
-
-  const { error } = await admin.from("notifications").insert({
-    user_id: authId,
-    type: data.type,
-    title: data.title,
-    body: data.body,
-    action_url: data.actionUrl,
+  const existing = await prisma.notification.findFirst({
+    where: { userId: user.id, type: data.type, actionUrl: data.actionUrl },
+    select: { id: true },
   });
-  if (error) throw error;
+  if (existing) return false;
+
+  const notification = await prisma.notification.create({
+    data: { userId: user.id, type: data.type, title: data.title, body: data.body, actionUrl: data.actionUrl },
+  });
 
   try {
     // Missed calls have no opt-out key in the notification preferences
-    await sendNotificationPush(authId, { title: data.title, body: data.body, url: data.actionUrl });
+    await sendNotificationPush(user.id, {
+      title: data.title,
+      body: data.body,
+      url: data.actionUrl,
+      id: notification.id,
+      type: data.type,
+    });
   } catch (err) {
     console.error("[notifyStreamUser] push failed:", err);
   }

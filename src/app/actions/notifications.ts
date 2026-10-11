@@ -2,75 +2,53 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
-import { readNotificationPrefs } from "@/lib/notifications/server";
+import prisma from "@/lib/prisma";
+import { readNotificationPrefs, resolvePrismaUserId } from "@/lib/notifications/server";
 
 // Only the caller's own notifications are read/updated here. The senders
 // (notifyUser, notifyManyUsers, sendNotificationPush) live in the non-"use
 // server" module @/lib/notifications/server so browsers can't call them.
 
-export async function getNotifications() {
+/** The signed-in user's Prisma id (notifications are keyed by it). */
+async function currentPrismaUserId(): Promise<string | null> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
+  if (!user) return null;
+  return (await resolvePrismaUserId(user.id)) ?? null;
+}
 
+// Reads the Prisma "Notification" table. These used to query a `notifications`
+// table that does not exist, so the bell, list and unread count were always
+// empty after 2026-09-25.
+export async function getNotifications() {
+  const userId = await currentPrismaUserId();
+  if (!userId) return [];
   try {
-    const { data: notifications } = await supabase
-      .from("notifications")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(50);
-
-    return (notifications || []).map(n => ({
-      ...n,
-      createdAt: n.created_at,
-      userId: n.user_id,
-      actionUrl: n.action_url,
-    }));
+    return await prisma.notification.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    });
   } catch {
     return [];
   }
 }
 
 export async function getLatestNotification() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-
+  const userId = await currentPrismaUserId();
+  if (!userId) return null;
   try {
-    const { data: notification } = await supabase
-      .from("notifications")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (!notification) return null;
-    return {
-      ...notification,
-      createdAt: notification.created_at,
-      userId: notification.user_id,
-      actionUrl: notification.action_url,
-    };
+    return await prisma.notification.findFirst({ where: { userId }, orderBy: { createdAt: "desc" } });
   } catch {
     return null;
   }
 }
 
 export async function getUnreadCount() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return 0;
-
+  const userId = await currentPrismaUserId();
+  if (!userId) return 0;
   try {
-    const { count } = await supabase
-      .from("notifications")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .eq("read", false);
-
-    return count || 0;
+    return await prisma.notification.count({ where: { userId, read: false } });
   } catch {
     return 0;
   }
@@ -89,31 +67,17 @@ export async function getNotificationSettings(): Promise<Record<string, boolean>
 }
 
 export async function markAllRead() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
-
-  await supabase
-    .from("notifications")
-    .update({ read: true })
-    .eq("user_id", user.id)
-    .eq("read", false);
-
+  const userId = await currentPrismaUserId();
+  if (!userId) return;
+  await prisma.notification.updateMany({ where: { userId, read: false }, data: { read: true } });
   revalidatePath("/dashboard/notifications");
   revalidatePath("/tutor/notifications");
 }
 
 export async function markNotificationRead(id: string) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
-
-  await supabase
-    .from("notifications")
-    .update({ read: true })
-    .eq("id", id)
-    .eq("user_id", user.id);
-
+  const userId = await currentPrismaUserId();
+  if (!userId) return;
+  await prisma.notification.updateMany({ where: { id, userId }, data: { read: true } });
   revalidatePath("/dashboard/notifications");
   revalidatePath("/tutor/notifications");
 }

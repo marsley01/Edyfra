@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
-import { createAdminClient } from "@/utils/supabase/admin";
+import { resolvePrismaUserId } from "@/lib/notifications/server";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,44 +18,31 @@ export async function POST(req: NextRequest) {
     const endpoint = body.endpoint;
     const keys = body.keys;
 
-    // Ensure the user exists in Prisma before updating
-    const existingUser = await prisma.user.findUnique({
-      where: { id: user.id },
-      select: { id: true, fcmTokens: true },
-    });
-
-    if (!existingUser) {
+    // Older accounts can have a Prisma id that differs from the auth id.
+    const prismaId = await resolvePrismaUserId(user.id);
+    if (!prismaId) {
       return NextResponse.json({ error: "User profile not found in database" }, { status: 404 });
     }
 
     // Store FCM token
     if (fcmToken && typeof fcmToken === "string") {
-      if (!existingUser.fcmTokens.includes(fcmToken)) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { fcmTokens: { push: fcmToken } },
-        });
+      const existingUser = await prisma.user.findUnique({ where: { id: prismaId }, select: { fcmTokens: true } });
+      if (existingUser && !existingUser.fcmTokens.includes(fcmToken)) {
+        await prisma.user.update({ where: { id: prismaId }, data: { fcmTokens: { push: fcmToken } } });
       }
     }
 
-    // Store Web Push subscription (endpoint + p256dh + auth).
-    // Senders (src/lib/sendNotification.ts, actions/push.ts) read the
-    // Supabase `push_subscriptions` table, so the subscription must be stored
-    // there — writing only to the Prisma "PushSubscription" table meant web
-    // push was never delivered. Upserting by endpoint also re-binds a shared
-    // browser's endpoint to the account that is currently signed in.
+    // Store the Web Push subscription in the Prisma "PushSubscription" table,
+    // which is what the sender reads. It used to go to a `push_subscriptions`
+    // table that does not exist, so every sign-up failed (the "Push subscribe
+    // upsert error" in the logs) and no push could ever be delivered.
+    // Upserting by endpoint re-binds a shared browser to whoever is signed in.
     if (endpoint && keys?.p256dh && keys?.auth) {
-      const adminSupabase = createAdminClient();
-      const { error: upsertError } = await adminSupabase
-        .from("push_subscriptions")
-        .upsert(
-          { user_id: user.id, endpoint, p256dh: keys.p256dh, auth: keys.auth },
-          { onConflict: "endpoint" }
-        );
-      if (upsertError) {
-        console.error("Push subscribe upsert error:", upsertError);
-        return NextResponse.json({ success: false, error: "Could not save subscription" }, { status: 500 });
-      }
+      await prisma.pushSubscription.upsert({
+        where: { endpoint },
+        create: { userId: prismaId, endpoint, p256dh: keys.p256dh, auth: keys.auth },
+        update: { userId: prismaId, p256dh: keys.p256dh, auth: keys.auth },
+      });
     }
 
     return NextResponse.json({ success: true });
