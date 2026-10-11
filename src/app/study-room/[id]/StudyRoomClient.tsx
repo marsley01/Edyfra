@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { AvatarPremium } from "@/components/ui/avatar-premium";
-import { Loader2, ChevronLeft, Clock, GraduationCap, ShieldCheck, LogOut } from "lucide-react";
+import { Loader2, ChevronLeft, Clock, GraduationCap, ShieldCheck, LogOut, Sparkles } from "lucide-react";
 import { showError, showSuccess } from "@/lib/toast";
 import dynamic from "next/dynamic";
 import SessionReviewModal from "@/components/sessions/SessionReviewModal";
@@ -45,6 +45,45 @@ export interface StudyRoomInitialData {
   currentUser: { id: string; name?: string; avatar?: string };
 }
 
+/**
+ * Whether the other participant is connected to chat right now, from Stream
+ * presence. The room used to draw a green dot for everyone, so a partner who
+ * had never opened the room still looked online. Returns null while unknown.
+ */
+function usePartnerOnline(partnerId: string | null | undefined): boolean | null {
+  const [online, setOnline] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!partnerId || partnerId === "mash-ai") return;
+    let active = true;
+    let unsub: { unsubscribe: () => void } | null = null;
+    const check = async () => {
+      try {
+        const { StreamChat } = await import("stream-chat");
+        const { STREAM_KEY } = await import("@/components/stream/styles/constants");
+        const client = StreamChat.getInstance(STREAM_KEY);
+        if (!client.userID) return; // chat not connected yet; try next tick
+        if (!unsub) {
+          unsub = client.on("user.presence.changed", (e: any) => {
+            if (active && e.user?.id === partnerId) setOnline(!!e.user.online);
+          });
+        }
+        const { users } = await client.queryUsers({ id: { $eq: partnerId } }, {}, { presence: true });
+        if (active) setOnline(!!users[0]?.online);
+      } catch {
+        /* presence is best-effort */
+      }
+    };
+    void check();
+    const t = setInterval(check, 15_000);
+    return () => {
+      active = false;
+      clearInterval(t);
+      unsub?.unsubscribe();
+    };
+  }, [partnerId]);
+  return online;
+}
+
 function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) {
   const router = useRouter();
   const [session, setSession] = useState<StudyRoomSession>(initialData.session);
@@ -54,8 +93,12 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
   const [sessionDuration, setSessionDuration] = useState(0);
+  const [partnerEnded, setPartnerEnded] = useState(false);
   const currentUser = initialData.currentUser;
   const sessionId = initialData.sessionId;
+  const isMashSession = session.tier === "MASH" || session.partnerId === "mash-ai";
+  const otherUserId = session.studentId === currentUser.id ? session.partnerId : session.studentId;
+  const partnerOnline = usePartnerOnline(isMashSession ? null : otherUserId);
 
   useEffect(() => {
     const start = Date.now();
@@ -126,23 +169,29 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Tutor no-show: after 5 minutes, if the tutor still isn't connected, offer
+  // the student a way forward. The prompt state existed but was never shown.
   useEffect(() => {
-    if (session && session.tier === "TUTOR" && session.studentId === currentUser?.id) {
-      const timer = setTimeout(() => {
-        setShowNoShowPrompt(true);
-      }, 5 * 60 * 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [session, currentUser]);
+    if (session.tier !== "TUTOR" || session.studentId !== currentUser?.id) return;
+    const timer = setTimeout(() => setShowNoShowPrompt(true), 5 * 60 * 1000);
+    return () => clearTimeout(timer);
+  }, [session.tier, session.studentId, currentUser?.id]);
+  useEffect(() => {
+    if (partnerOnline) setShowNoShowPrompt(false);
+  }, [partnerOnline]);
+
+  // Keep the room in sync: a partner arriving, or the other person ending the
+  // session. Mash sessions have no human partner to wait for, so they used to
+  // poll forever while showing "Waiting for someone".
+  useEffect(() => {
+    if (isMashSession) return;
+    const interval = setInterval(fetchSession, session?.partnerId ? 15000 : 10000);
+    return () => clearInterval(interval);
+  }, [session?.partnerId, fetchSession, isMashSession]);
 
   useEffect(() => {
-    if (!session?.partnerId) {
-      const interval = setInterval(() => {
-        fetchSession();
-      }, 10000);
-      return () => clearInterval(interval);
-    }
-  }, [session?.partnerId, fetchSession]);
+    if (session.status === "COMPLETED" && !isEnding) setPartnerEnded(true);
+  }, [session.status, isEnding]);
 
   const handleEndSession = async () => {
     if (!session || isEnding) return;
@@ -182,6 +231,14 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
     } finally {
       setIsEnding(false);
     }
+  };
+
+  // Stepping out leaves the session open, so the other person can carry on and
+  // you can come back. "Leave" used to complete the session for both people,
+  // which also blocked any further video call between them.
+  const handleStepOut = () => {
+    setShowLeaveConfirm(false);
+    router.push("/dashboard");
   };
 
   const handleReviewClose = () => {
@@ -276,17 +333,36 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
                 >
                   <div className="relative shrink-0">
                     <AvatarPremium seed={p.name} size="sm" />
-                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-background" />
+                    <div
+                      className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-background ${
+                        p.isCurrentUser || partnerOnline ? "bg-emerald-500" : partnerOnline === false ? "bg-muted-foreground/40" : "bg-amber-400"
+                      }`}
+                      title={p.isCurrentUser ? "You" : partnerOnline ? "In the room" : partnerOnline === false ? "Not in the room right now" : "Checking..."}
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[13px] font-medium truncate">
                       {p.name}{p.isCurrentUser ? " (you)" : ""}
                     </p>
-                    <p className="text-[11px] text-muted-foreground">{p.role}</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {p.role}
+                      {!p.isCurrentUser && partnerOnline === false ? " · not here yet" : ""}
+                    </p>
                   </div>
                 </motion.div>
               ))}
-              {!session.partner && (
+              {isMashSession && (
+                <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary/5">
+                  <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+                    <Sparkles className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-[13px] font-medium">Mash AI</p>
+                    <p className="text-[11px] text-muted-foreground">Replies to every message here</p>
+                  </div>
+                </div>
+              )}
+              {!session.partner && !isMashSession && (
                 <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-dashed border-border/30">
                   <div className="w-8 h-8 rounded-full bg-secondary/50 flex items-center justify-center shrink-0">
                     <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground/40" />
@@ -376,7 +452,9 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
               <div className="text-center space-y-2">
                 <h2 className="text-xl font-semibold">Leave this room?</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Your progress will be saved. You can start a new session anytime.
+                  {isMashSession
+                    ? "Your chat with Mash is saved."
+                    : "Step out to keep the session open for your partner, or end it for both of you."}
                 </p>
               </div>
               <div className="flex flex-col gap-2.5">
@@ -393,10 +471,20 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
                   ) : (
                     <span className="flex items-center gap-2">
                       <LogOut className="h-4 w-4" />
-                      End session
+                      {isMashSession ? "End session" : "End session for both"}
                     </span>
                   )}
                 </Button>
+                {!isMashSession && (
+                  <Button
+                    variant="outline"
+                    onClick={handleStepOut}
+                    disabled={isEnding}
+                    className="w-full h-12 rounded-xl text-[15px] font-medium disabled:opacity-40"
+                  >
+                    Step out (keep it open)
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   onClick={() => setShowLeaveConfirm(false)}
@@ -407,6 +495,40 @@ function StudyRoomInner({ initialData }: { initialData: StudyRoomInitialData }) 
                 </Button>
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {(partnerEnded || (showNoShowPrompt && !partnerOnline)) && (
+          <motion.div
+            initial={{ y: 40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 40, opacity: 0 }}
+            className="fixed inset-x-0 bottom-0 flex justify-center p-4"
+            style={{ zIndex: Z.STICKY + 5 }}
+            role="status"
+          >
+            <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-5 shadow-2xl space-y-3">
+              <p className="text-[15px] font-semibold">
+                {partnerEnded ? "This session has ended" : "Your tutor hasn't joined yet"}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {partnerEnded
+                  ? "The other person ended the session. Your chat is saved."
+                  : "Ask @Mash in the chat while you wait, or end the session and start a new search."}
+              </p>
+              <div className="flex gap-2">
+                {partnerEnded ? (
+                  <Button onClick={() => router.push("/dashboard")} className="rounded-xl">Back to dashboard</Button>
+                ) : (
+                  <>
+                    <Button variant="outline" onClick={() => setShowNoShowPrompt(false)} className="rounded-xl">Keep waiting</Button>
+                    <Button onClick={handleEndSession} className="rounded-xl">End session</Button>
+                  </>
+                )}
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

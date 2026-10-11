@@ -154,11 +154,21 @@ export function useStreamChatInit({
       mentionSubRef.current?.unsubscribe();
       mentionSubRef.current = c.on("message.new", async (event: any) => {
         const msg = event.message;
-        if (!msg || msg.user?.id === MASH_AI_USER_ID) return;
-        if (msg.user_id !== me) return; // idempotency — only sender triggers AI
+        const senderId: string | undefined = msg?.user?.id ?? msg?.user_id;
+        if (!msg || senderId === MASH_AI_USER_ID) return;
+        // Only the sender's tab triggers the AI, so a reply is never doubled.
+        // Messages in websocket events carry `user`, not `user_id`; reading
+        // only `user_id` meant typed mentions never reached Mash at all.
+        if (senderId !== me) return;
 
-        const text = msg.text || "";
-        if (!MENTION_REGEX.test(text)) return;
+        const text: string = msg.text || "";
+        const mentionedMash =
+          MENTION_REGEX.test(text) ||
+          (Array.isArray(msg.mentioned_users) &&
+            msg.mentioned_users.some((u: any) => (u?.id ?? u) === MASH_AI_USER_ID));
+        // In a one-to-one Mash session every message is for Mash.
+        const isMashSession = mashAI?.tier === "MASH";
+        if (!mentionedMash && !isMashSession) return;
 
         const { handleMashMention } = await import("@/app/actions/stream");
         handleMashMention(
@@ -167,8 +177,14 @@ export function useStreamChatInit({
           mashAI?.subject || "General",
           mashAI?.topic,
           mashAI?.tier,
-        ).catch((err) => {
+        ).catch(async (err) => {
           console.warn("[useStreamChatInit] handleMashMention error:", err);
+          const { showError } = await import("@/lib/toast");
+          showError({
+            title: "Mash couldn't reply",
+            cause: /too many/i.test(String(err?.message)) ? "You're asking very quickly." : "",
+            fix: "Wait a moment and ask again.",
+          });
         });
       });
     } catch (err: any) {

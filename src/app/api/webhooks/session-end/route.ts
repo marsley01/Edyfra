@@ -38,7 +38,10 @@ export async function POST(request: Request) {
     const STREAM_SECRET = process.env.STREAM_SECRET!;
     const client = StreamChat.getInstance(STREAM_KEY, STREAM_SECRET);
 
-    const channel = client.channel("messaging", roomId);
+    // Session chat channels are keyed by the session id (see match-engine and
+    // StudyRoomClient), not roomId; querying roomId found nothing, so session
+    // summaries were never generated.
+    const channel = client.channel("messaging", sessionId);
     const messages = await channel.query({ messages: { limit: 100 } });
 
     if (!messages.messages || messages.messages.length === 0) {

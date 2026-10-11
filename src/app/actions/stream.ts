@@ -415,7 +415,9 @@ export async function handleMashMention(
   sessionTier?: string
 ) {
   const viewer = await requireViewer();
-  const user = { id: viewer.authId };
+  // Prisma id: the Mash context and preferences are keyed by it. The auth id
+  // differs for older accounts, which silently dropped their learning history.
+  const user = { id: viewer.id };
   // The reply is posted with server privileges, so the caller must belong to
   // the (existing) channel under their Stream id; a channel that doesn't
   // exist yet would otherwise be created by the server with the caller in it.
@@ -424,9 +426,14 @@ export async function handleMashMention(
     (viewer.authId !== viewer.id && (await isChannelMember(channelId, viewer.authId)) === true);
   if (!member) throw new Error("Unauthorized");
 
-  const prompt = messageText
-    .replace(/@(?:Mash|AI|mash|ai|mash-ai|MASH)\b/gi, "")
-    .trim();
+  // "@Mash AI" from the mention picker used to leave "AI" at the start of the
+  // prompt, because only "@Mash" was stripped.
+  const prompt = messageText.replace(/@(?:mash(?:[\s-]?ai)?|ai)\b/gi, "").trim();
+
+  // Each reply is a paid AI call; cap it per student.
+  const { rateLimit } = await import("@/lib/rate-limit");
+  const limit = await rateLimit(`action:${viewer.id}:mash-mention`, { interval: 60_000, maxRequests: 12 });
+  if (!limit.success) throw new Error("Too many questions to Mash. Wait a moment and try again.");
 
   // Import AIService dynamically to avoid circular deps
   const { AIService } = await import("@/utils/ai-service");
@@ -474,16 +481,19 @@ export async function handleMashMention(
   try {
     aiResponse = await AIService.generateCompletion(actualPrompt, systemPrompt);
 
-    if (!aiResponse || typeof aiResponse !== "string" || aiResponse.trim().length === 0) {
-      aiResponse = `Hey! 👋 I'm here to help with ${sessionSubject}. Could you tell me what specific topic or question you're working on?`;
-    }
-
-    if (aiResponse.includes("having a bit of trouble thinking") || aiResponse.includes("offline") || aiResponse.includes("API Key is missing")) {
-      aiResponse = `Hey! 👋 I'm here to help with ${sessionSubject}. Could you tell me what specific topic or question you're working on? I can explain concepts, give practice questions, or help you work through problems step by step.`;
+    // Say so honestly when the AI is down. Replacing the failure with a
+    // cheerful greeting made it look like Mash was ignoring the question.
+    if (
+      !aiResponse ||
+      typeof aiResponse !== "string" ||
+      aiResponse.trim().length === 0 ||
+      /having a bit of trouble thinking|currently offline|API Key is missing/i.test(aiResponse)
+    ) {
+      aiResponse = "Sorry, I couldn't think that one through just now. Ask me again in a moment. - Mash";
     }
   } catch (err) {
     console.error("[handleMashMention] AI generation failed:", err);
-    aiResponse = `Hey! 👋 I'm here to help with ${sessionSubject}. What would you like to work on today? You can ask me about any topic or question.`;
+    aiResponse = "Sorry, I couldn't think that one through just now. Ask me again in a moment. - Mash";
   }
 
   // Send response as mash-ai on the channel

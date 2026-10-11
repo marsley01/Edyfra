@@ -30,7 +30,9 @@ import { showInfo } from '@/lib/toast';
 import { mediaErrorMessage } from '@/lib/video/call-utils';
 
 /** Grace period before a 1:1 call ends after the other person drops. */
-const PEER_LEFT_GRACE_MS = 10_000;
+// How long the other person may be missing before a 1:1 call is closed.
+// 10s ended calls during ordinary mobile reconnects (switching Wi-Fi/data).
+const PEER_LEFT_GRACE_MS = 30_000;
 
 /**
  * Pending leave() per call. React StrictMode (dev) runs effect cleanups once
@@ -326,7 +328,7 @@ function CallStatusBanner() {
 }
 
 /** Ends a 1:1 call when the other person has been gone for a while. */
-function PeerLeftWatcher({ onPeerGone }: { onPeerGone: () => void }) {
+function PeerLeftWatcher({ call, onPeerGone }: { call: Call; onPeerGone: () => void }) {
   const { useRemoteParticipants, useCallMembers } = useCallStateHooks();
   const remote = useRemoteParticipants();
   const members = useCallMembers();
@@ -340,6 +342,9 @@ function PeerLeftWatcher({ onPeerGone }: { onPeerGone: () => void }) {
       return;
     }
     if (!hadPeer.current || members.length > 2) return;
+    // Our own connection dropping also empties the remote list; never end the
+    // call for that, the SDK reconnects on its own.
+    if (call.state.callingState === CallingState.RECONNECTING || call.state.callingState === CallingState.OFFLINE) return;
     const t = setTimeout(() => cbRef.current(), PEER_LEFT_GRACE_MS);
     return () => clearTimeout(t);
   }, [remote.length, members.length]);
@@ -366,6 +371,7 @@ function CallBody({ call, subject, onLeave }: { call: Call; subject?: string; on
       </div>
       <CallControls onLeave={onLeave} />
       <PeerLeftWatcher
+        call={call}
         onPeerGone={() => {
           showInfo('The other person left the call');
           void call.leave().catch(() => {});

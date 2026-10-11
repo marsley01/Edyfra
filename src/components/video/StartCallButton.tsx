@@ -122,6 +122,32 @@ export function StartCallButton({ roomId, otherUserName }: StartCallButtonProps)
     }
     setStep('preparing');
 
+    // If the other person is already calling (or a call is running) in this
+    // room, join it. Both pressing "call" at once used to create two calls
+    // that rang each other, and one side then got "didn't answer".
+    try {
+      const { calls } = await client.queryCalls({
+        filter_conditions: { 'custom.roomId': roomId, ongoing: true },
+        sort: [{ field: 'created_at', direction: -1 }],
+        limit: 1,
+      });
+      const existing = calls[0];
+      if (existing && !existing.state.endedAt) {
+        const created = existing.state.createdAt ? new Date(existing.state.createdAt).getTime() : 0;
+        const fresh = Date.now() - created < 60_000;
+        if (existing.state.participantCount > 0 || fresh) {
+          const call = client.call(existing.type, existing.id, { reuseInstance: true });
+          if (!video) await call.camera.disable().catch(() => {});
+          setStep('joining');
+          await call.join();
+          if (mountedRef.current) setStep('idle');
+          return;
+        }
+      }
+    } catch {
+      // fall through and start a new call
+    }
+
     const prep = await prepareRoomCall(roomId).catch(() => null);
     if (!prep || !prep.ok) {
       fail(prep && !prep.ok ? prep.error : "Couldn't start the call. Please try again.");
@@ -155,15 +181,29 @@ export function StartCallButton({ roomId, otherUserName }: StartCallButtonProps)
     };
     cleanupRef.current = cleanup;
 
+    let joining = false;
     stateSub = call.state.callingState$.subscribe((state) => {
       if (state === CallingState.RINGING) rang = true;
-      if (state === CallingState.JOINING || state === CallingState.JOINED) {
+      if (state === CallingState.JOINING && !joining) {
+        // The callee accepted; stop ringing but keep watching until we are
+        // actually connected. Treating JOINING as success hid failed joins:
+        // the callee sat alone and the caller saw nothing.
+        joining = true;
+        clearTimeout(timer);
+        stopTone();
+        if (mountedRef.current) setStep('joining');
+      }
+      if (state === CallingState.JOINED) {
         if (!joined) {
           joined = true;
           cleanup();
           if (outgoingRef.current === call) outgoingRef.current = null;
           if (mountedRef.current) setStep('idle');
         }
+      } else if ((state === CallingState.LEFT || state === CallingState.IDLE) && joining && !joined) {
+        cleanup();
+        if (outgoingRef.current === call) outgoingRef.current = null;
+        fail("Couldn't connect the call. Check your connection and try again.");
       } else if ((state === CallingState.LEFT || state === CallingState.IDLE) && rang && !joined) {
         // Ring ended without a join: declined, busy, cancelled or timed out
         cleanup();
