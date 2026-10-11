@@ -61,9 +61,14 @@ function verifySignature(headers: Headers, rawBody: string): boolean {
     return false;
   }
 
-  const id = headers.get("svix-id");
-  const timestamp = headers.get("svix-timestamp");
-  const signature = headers.get("svix-signature");
+  // Supabase signs hooks with the Standard Webhooks headers (webhook-id,
+  // webhook-timestamp, webhook-signature). This route only read the svix-*
+  // names, so every real Supabase call failed with 401 "Invalid signature"
+  // and no auth email (password reset, email change) was ever sent. Both
+  // header sets use the identical signing scheme, so accept either.
+  const id = headers.get("webhook-id") ?? headers.get("svix-id");
+  const timestamp = headers.get("webhook-timestamp") ?? headers.get("svix-timestamp");
+  const signature = headers.get("webhook-signature") ?? headers.get("svix-signature");
   if (!id || !timestamp || !signature) return false;
 
   const age = Math.abs(Date.now() / 1000 - Number(timestamp));
