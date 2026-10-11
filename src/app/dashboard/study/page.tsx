@@ -120,6 +120,9 @@ export default function StudyPage() {
 
       // After the matching window (60s), fall back to AI if still unmatched
       aiFallbackTimer.current = setTimeout(async () => {
+        // A hidden tab means the student isn't looking; don't open a session
+        // for them. MatchProvider's poll resumes when they come back.
+        if (document.hidden) return;
         try {
           const { initiateAutoMatch } = await import("@/app/actions/match");
           const matchResult = await initiateAutoMatch(requestId);

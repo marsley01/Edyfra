@@ -71,10 +71,10 @@ export async function toggleTutorStatus(isOnline: boolean) {
         levelsTaught: [],
         verificationPath: VerifPath.POINTS,
         hourlyRate: TUTOR_CONFIG.DEFAULT_HOURLY_RATE_KSH,
-        availability: { isOnline }
+        availability: { isOnline, lastSeenAt: new Date().toISOString() }
       },
       update: {
-        availability: { ...prev, isOnline } as any,
+        availability: { ...prev, isOnline, lastSeenAt: new Date().toISOString() } as any,
       }
     });
 
@@ -83,6 +83,35 @@ export async function toggleTutorStatus(isOnline: boolean) {
   } catch (error) {
     console.error("Error in toggleTutorStatus:", error);
     throw error;
+  }
+}
+
+/**
+ * Presence ping from an open tutor dashboard (every minute while visible).
+ * Matching treats a tutor as online only if this ran recently, so a tutor who
+ * flipped the switch and walked away stops receiving instant offers within a
+ * few minutes. Cheap: one read and one JSON merge, and only for tutors.
+ */
+export async function tutorHeartbeat(): Promise<{ ok: boolean }> {
+  try {
+    const user = await getUserData();
+    if (!user || user.role !== Role.TUTOR) return { ok: false };
+    const existing = await prisma.tutorProfile.findUnique({
+      where: { userId: user.id },
+      select: { availability: true },
+    });
+    if (!existing) return { ok: false };
+    const prev =
+      existing.availability && typeof existing.availability === "object" && !Array.isArray(existing.availability)
+        ? (existing.availability as Record<string, unknown>)
+        : {};
+    await prisma.tutorProfile.update({
+      where: { userId: user.id },
+      data: { availability: { ...prev, lastSeenAt: new Date().toISOString() } as any },
+    });
+    return { ok: true };
+  } catch {
+    return { ok: false };
   }
 }
 

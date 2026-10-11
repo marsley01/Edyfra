@@ -1,6 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import { subjectKey } from "@/lib/matching/normalize";
 import { revalidatePath } from "next/cache";
 import { SESSION_CONFIG } from "@/lib/config";
 import { recalibrateTier } from "./user";
@@ -99,22 +100,27 @@ export async function createMatchRequest(data: { subject: string; topic: string 
           select: { id: true, subject: true, createdAt: true },
         });
 
-        // Reuse the newest one if it's still live and for the same subject.
+        // Reuse the newest one only for a quick double-submit (same subject,
+        // a few seconds old). Reusing anything older made the UI's fresh 60s
+        // countdown lie: a request already 50s in jumped to Mash AI at once.
         const newest = unresolved[0];
         const reuse =
           !!newest &&
-          newest.subject === subject &&
-          Date.now() - newest.createdAt.getTime() < MATCH_TIMINGS.AI_FALLBACK_MS;
+          subjectKey(newest.subject) === subjectKey(subject) &&
+          Date.now() - newest.createdAt.getTime() < 10_000;
 
         // Remove everything else (their match_offers rows cascade).
         const drop = (reuse ? unresolved.slice(1) : unresolved).map((r) => r.id);
         if (drop.length) {
           await tx.matchRequest.deleteMany({ where: { id: { in: drop }, sessionId: null } });
         }
-        if (reuse) return newest.id;
+        if (reuse) {
+          await tx.matchRequest.update({ where: { id: newest.id }, data: { lastSeenAt: new Date() } });
+          return newest.id;
+        }
 
         const created = await tx.matchRequest.create({
-          data: { studentId, subject, topic: topic || null },
+          data: { studentId, subject, topic: topic || null, lastSeenAt: new Date() },
           select: { id: true },
         });
         return created.id;
@@ -181,12 +187,20 @@ export async function initiateAutoMatch(requestId: string, options?: { skipAI?: 
     if (!me) return { success: false, error: "Please sign in to start matching." };
     const owned = await prisma.matchRequest.findUnique({
       where: { id: requestId },
-      select: { studentId: true },
+      select: { studentId: true, sessionId: true },
     });
     if (!owned || owned.studentId !== me) {
       // Swept, replaced from another tab, cancelled, or belongs to another
       // account (state restored from localStorage): tell the UI to stop.
       return { success: false, gone: true, error: "This match request is no longer active." };
+    }
+
+    // Heartbeat: this poll proves the student is still here and searching.
+    // Matching only considers requests seen in the last few seconds.
+    if (!owned.sessionId) {
+      await prisma.matchRequest
+        .update({ where: { id: requestId }, data: { lastSeenAt: new Date() } })
+        .catch(() => {});
     }
 
     const result = await executeSmartMatching(requestId, options);

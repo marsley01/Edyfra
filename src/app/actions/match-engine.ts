@@ -16,18 +16,21 @@
 // capacity) inside a transaction, so a request can never be double-assigned.
 
 import prisma from "@/lib/prisma";
+import { subjectKey } from "@/lib/matching/normalize";
 import { MatchTier, Prisma } from "@/generated/client";
 import { randomBytes } from "crypto";
 import { syncUsersToStream, getServerStreamClient, MASH_AI_USER_ID } from "@/lib/user-sync";
 import { notifyUser } from "@/lib/notifications/server";
 import { createAdminClient } from "@/utils/supabase/admin";
-import { LIVE_PEER_SEARCH_MS } from "@/lib/matching/peers";
 import {
   MATCH_TIMINGS,
   canAccept,
   decideNextOffer,
   isOfferActive,
   isOpenForTutors,
+  isRequestLive,
+  isTutorPresent,
+  LIVE_HEARTBEAT_MS,
   matchPhase,
   TUTOR_GRACE_MS,
   offerStats,
@@ -354,7 +357,8 @@ export async function loadTutorCandidates(opts: {
   const ids = filtered.map((u) => u.id);
   if (ids.length === 0) return [];
 
-  const [reviews, completed, offers] = await Promise.all([
+  const now = new Date();
+  const [reviews, completed, offers, live] = await Promise.all([
     prisma.review.groupBy({
       by: ["revieweeId"],
       where: { revieweeId: { in: ids } },
@@ -367,7 +371,17 @@ export async function loadTutorCandidates(opts: {
       _count: { _all: true },
     }),
     loadOfferHistory(ids),
+    // Real load: sessions still ACTIVE from the last few hours. The stored
+    // currentActiveSessions counter only went down when a session was
+    // explicitly completed, so abandoned rooms left tutors "at capacity"
+    // forever.
+    prisma.session.groupBy({
+      by: ["partnerId"],
+      where: { partnerId: { in: ids }, status: "ACTIVE", startedAt: { gte: new Date(now.getTime() - 3 * 3_600_000) } },
+      _count: { _all: true },
+    }),
   ]);
+  const liveMap = new Map(live.map((l) => [l.partnerId as string, (l._count as { _all: number })._all]));
   const reviewMap = new Map(reviews.map((r) => [r.revieweeId, r]));
   const completedMap = new Map(completed.map((c) => [c.partnerId as string, c._count._all]));
 
@@ -391,10 +405,11 @@ export async function loadTutorCandidates(opts: {
       completedSessions: completedMap.get(u.id) ?? 0,
       offersAccepted: o?.accepted ?? null,
       offersMade: o?.made ?? null,
-      isOnline: availability.isOnline === true,
+      // Online = switch on AND the dashboard checked in recently.
+      isOnline: isTutorPresent(availability, now),
       slots: u.tutorAvailabilities.filter((s) => s.isRecurring),
       slotsRaw: u.tutorAvailabilities,
-      activeSessions: tp.currentActiveSessions,
+      activeSessions: liveMap.get(u.id) ?? 0,
       maxConcurrentSessions: tp.maxConcurrentSessions,
       county: u.county,
       hourlyRate: tp.hourlyRate,
@@ -447,6 +462,8 @@ export async function getFilteredMatchRequests(
       where: {
         sessionId: null,
         createdAt: { gte: new Date(now.getTime() - MATCH_TIMINGS.AI_FALLBACK_MS - TUTOR_GRACE_MS) },
+        // Only students who are still on the page (see isRequestLive).
+        lastSeenAt: { gte: new Date(now.getTime() - LIVE_HEARTBEAT_MS) },
         ...(viewerId ? { studentId: { not: viewerId } } : {}),
       },
       orderBy: { createdAt: "desc" },
@@ -546,8 +563,8 @@ export async function acceptRequestAs(requestId: string, acceptorId: string): Pr
   if (!teachesSubject(acceptor.tutorProfile.subjects, request.subject)) {
     return { success: false, error: "This request is for a subject you don't teach." };
   }
-  if (!isOpenForTutors(request.createdAt, now)) {
-    // The student stopped waiting (they'd have moved to Mash AI by now).
+  if (!isOpenForTutors(request.createdAt, now) || !isRequestLive(request, now)) {
+    // The student stopped waiting: moved to Mash AI, or left the page.
     return { success: false, error: "This student is no longer waiting. Pick a newer request." };
   }
 
@@ -794,9 +811,12 @@ async function tryPairWithLivePeer(
       id: { not: request.id },
       studentId: { not: request.studentId },
       createdAt: {
-        gte: new Date(now.getTime() - LIVE_PEER_SEARCH_MS),
+        gte: new Date(now.getTime() - MATCH_TIMINGS.REQUEST_TTL_MS),
         lte: new Date(now.getTime() - MATCH_TIMINGS.TUTOR_PHASE_MS),
       },
+      // Still on the page right now. Age alone (up to 90s) used to admit
+      // students who had closed the tab long before.
+      lastSeenAt: { gte: new Date(now.getTime() - LIVE_HEARTBEAT_MS) },
     },
     orderBy: { createdAt: "asc" },
     take: 50,
@@ -818,7 +838,19 @@ async function tryPairWithLivePeer(
       },
     },
   });
-  const usable = pending.filter((p) => !p.student.banned && !p.student.suspended && p.student.role === "STUDENT");
+  const wantedSubject = subjectKey(request.subject);
+  const usable = pending.filter(
+    (p) =>
+      !p.student.banned &&
+      !p.student.suspended &&
+      p.student.role === "STUDENT" &&
+      // Same subject as what THEY asked for, not just a subject on their
+      // profile: the old "related" pass dropped Chemistry students into
+      // Maths rooms.
+      subjectKey(p.subject) === wantedSubject &&
+      // Same level: no pairing a university student with a Form 1 student.
+      (!student.educationLevel || !p.student.educationLevel || p.student.educationLevel === student.educationLevel),
+  );
   if (usable.length === 0) return null;
 
   const viewer: StudentLike = {
@@ -840,16 +872,10 @@ async function tryPairWithLivePeer(
     lastActiveAt: now,
   });
 
-  // Same subject first; then peers who list this subject among theirs.
-  const exact = rankPeers(viewer, usable.map((p) => toLike(p, [p.subject])), now, { requiredSubject: request.subject });
-  const related = rankPeers(
-    viewer,
-    usable.map((p) => toLike(p, [p.subject, ...(p.student.studentProfile?.subjects ?? [])])),
-    now,
-    { requiredSubject: request.subject },
-  );
+  // Everyone left asked for this exact subject; rank by level/form/county fit.
+  const ranked = rankPeers(viewer, usable.map((p) => toLike(p, [p.subject])), now, { requiredSubject: request.subject });
   const order: string[] = [];
-  for (const r of [...exact, ...related]) if (!order.includes(r.id)) order.push(r.id);
+  for (const r of ranked) if (!order.includes(r.id)) order.push(r.id);
 
   for (const peerStudentId of order.slice(0, 5)) {
     const peerReq = usable.find((p) => p.studentId === peerStudentId)!;

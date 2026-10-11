@@ -47,6 +47,38 @@ export function isOpenForTutors(createdAt: Date, now: Date): boolean {
 }
 
 /**
+ * The searching client polls every 3s and each poll refreshes lastSeenAt. A
+ * request not seen for this long belongs to someone who closed the tab,
+ * switched apps (polling pauses while hidden) or left the page, so nobody may
+ * be paired with them. Age alone used to decide this, which is how students
+ * got matched with people who had already gone.
+ */
+export const LIVE_HEARTBEAT_MS = 12_000;
+
+export function isRequestLive(
+  request: { createdAt: Date; lastSeenAt?: Date | null },
+  now: Date,
+): boolean {
+  const seen = request.lastSeenAt ?? request.createdAt;
+  return now.getTime() - seen.getTime() <= LIVE_HEARTBEAT_MS;
+}
+
+/**
+ * Tutors count as online only if their dashboard checked in recently (it
+ * pings every minute while open). The manual "online" switch used to be the
+ * only signal and never turned itself off, so tutors who left days ago kept
+ * receiving offers and burned the tutor phase.
+ */
+export const TUTOR_PRESENCE_MS = 3 * 60_000;
+
+export function isTutorPresent(availability: unknown, now: Date): boolean {
+  const a = (availability ?? {}) as { isOnline?: unknown; lastSeenAt?: unknown };
+  if (a.isOnline !== true) return false;
+  const seen = typeof a.lastSeenAt === "string" ? Date.parse(a.lastSeenAt) : NaN;
+  return Number.isFinite(seen) && now.getTime() - seen <= TUTOR_PRESENCE_MS;
+}
+
+/**
  * PENDING   waiting on the tutor
  * ACCEPTED  tutor took it
  * DECLINED  tutor said no

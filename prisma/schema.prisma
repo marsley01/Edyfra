@@ -169,11 +169,14 @@ model MatchRequest {
   sessionId  String?
   createdAt  DateTime   @default(now())
   resolvedAt DateTime?
+  /// Refreshed on every poll by the searching client; see supabase/migrations/20261011090000.
+  lastSeenAt DateTime?
   student    User       @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([subject])
   @@index([sessionId])
   @@index([createdAt])
+  @@index([lastSeenAt])
 }
 
 model Session {

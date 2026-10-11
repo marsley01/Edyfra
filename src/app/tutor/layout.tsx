@@ -8,6 +8,7 @@ import TourGuide from "@/components/tour/TourGuide";
 import TourTrigger from "@/components/tour/TourTrigger";
 import prisma from "@/lib/prisma";
 import { AgentWidget } from "@/components/ai/AgentWidget";
+import { TutorPresence } from "@/components/tutor/TutorPresence";
 
 const TUTOR_DASHBOARD_STEPS = [
   {
@@ -99,6 +100,8 @@ export default async function TutorLayout({
           <div className="p-2 lg:p-6 max-w-6xl mx-auto w-full">{children}</div>
         </main>
 
+        {/* Marks this tutor as present for instant matching while the dashboard is open. */}
+        <TutorPresence />
         <TourGuide tourId="tutor-dashboard" steps={TUTOR_DASHBOARD_STEPS} />
         <TourTrigger tourId="tutor-dashboard" homePath="/tutor" />
         <AgentWidget agentId="mash" />
