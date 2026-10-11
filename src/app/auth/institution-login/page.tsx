@@ -57,8 +57,12 @@ export default function InstitutionLoginPage() {
       if (data.found && data.institution) {
         setTenantInfo({ name: data.institution.name, location: data.institution.location })
         setStep(1)
+      } else if (data.status === 'pending') {
+        setTenantError(`${data.name} is still being reviewed. We'll email you the moment it's approved. You can still sign in with your email below.`)
+      } else if (data.status === 'rejected') {
+        setTenantError(`${data.name}'s application wasn't approved. Reply to our email if you think this is a mistake.`)
       } else {
-        setTenantError(`No institution found with code "${code}". Check with your school admin.`)
+        setTenantError(`No school found with code "${code}". Check the code in your Edyfra emails, or sign in with your email instead.`)
       }
     } catch {
       setTenantError('Could not verify the institution code right now.')
@@ -222,8 +226,24 @@ export default function InstitutionLoginPage() {
                 )}
               </button>
 
-              <p className="pt-1 text-center text-xs text-white/20">
-                Ask your school admin for your institution code
+              {/* The code is only a shortcut that shows the school's name.
+                  Admins can always sign in with email: their school is found
+                  from their account, so nobody is locked out for not knowing it. */}
+              <button
+                type="button"
+                onClick={() => { setTenantInfo(null); setTenantError(null); setStep(1) }}
+                className="flex h-10 w-full items-center justify-center rounded-lg border border-white/[0.1] text-sm font-medium text-white/80 transition-colors hover:bg-white/[0.06]"
+              >
+                Sign in with email instead
+              </button>
+
+              <p className="pt-1 text-center text-xs leading-relaxed text-white/40">
+                Your school code is in the email we sent when you applied.
+                <br />
+                New to Edyfra?{' '}
+                <Link href="/institution/apply" className="font-medium text-emerald-400 hover:text-emerald-300">
+                  Apply for your school
+                </Link>
               </p>
             </form>
           )}

@@ -29,7 +29,7 @@ export default async function InstitutionPendingPage() {
     include: { institution: true },
     orderBy: { createdAt: "desc" },
   });
-  if (!member) redirect("/institution/dashboard");
+  if (!member) redirect("/institution/no-access");
 
   // A rejected application previously showed "under review" forever.
   const rejected = member.status === "REJECTED" || member.institution.status === "REJECTED";

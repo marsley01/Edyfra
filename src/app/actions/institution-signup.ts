@@ -265,7 +265,10 @@ export async function submitInstitutionSignup(
 
   // ─── 3. Notify founders + confirm to applicant (best-effort) ────────────
   await notifyFoundersOfApplication(institution.id, data.schoolName, data.adminName, data.plan ?? "STARTER");
-  await emailApplicantConfirmation(email, data.adminName, data.schoolName).catch((e) =>
+  const schoolCode = (
+    await prisma.institution.findUnique({ where: { id: institution.id }, select: { code: true } }).catch(() => null)
+  )?.code ?? undefined;
+  await emailApplicantConfirmation(email, data.adminName, data.schoolName, schoolCode).catch((e) =>
     console.warn("[institution-signup] applicant email failed:", e),
   );
 
@@ -385,6 +388,7 @@ async function emailApplicantConfirmation(
   email: string,
   name: string,
   schoolName: string,
+  schoolCode?: string,
 ) {
   const resend = getResend();
   await resend.emails.send({
@@ -395,6 +399,7 @@ async function emailApplicantConfirmation(
       <h2>Hi ${escapeHtml(name)},</h2>
       <p>We've received your application for <strong>${escapeHtml(schoolName)}</strong> to join the Edyfra Institutions program.</p>
       <p>Our team will review your details and contact you within 24 hours. If you don't hear from us, reply to this email.</p>
+      ${schoolCode ? `<p>Your school code is <strong style="font-size:18px;letter-spacing:2px">${escapeHtml(schoolCode)}</strong>. Teachers and staff use it on the institution sign-in page. You can also sign in with just your email.</p>` : ""}
       <p>— The Edyfra team</p>
     `,
   });

@@ -93,14 +93,16 @@ export async function requireInstitutionAdmin() {
     if (pending) {
       redirect("/institution/pending");
     }
-    redirect("/institution/login");
+    // Not "/institution/login": signed-in users are bounced from there back to
+    // the dashboard by the proxy, which looped forever.
+    redirect("/institution/no-access");
   }
 
   if (
     membership.role !== "INSTITUTION_ADMIN" &&
     membership.role !== "INSTITUTION_DEPUTY"
   ) {
-    redirect("/institution/login");
+    redirect("/institution/no-access?reason=role");
   }
 
   return membership;

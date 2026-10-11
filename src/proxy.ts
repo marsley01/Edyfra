@@ -228,7 +228,7 @@ export async function proxy(request: NextRequest) {
     const redirectUrl = request.nextUrl.clone()
     if (role === 'TUTOR') redirectUrl.pathname = '/tutor'
     else if (role === 'ADMIN' || role === 'FOUNDER') redirectUrl.pathname = '/admin'
-    else if (path.startsWith('/institution/')) redirectUrl.pathname = '/institution/dashboard'
+    else if (path.startsWith('/institution/') || path === '/auth/institution-login') redirectUrl.pathname = '/institution/dashboard'
     else redirectUrl.pathname = '/dashboard'
     const redirect = NextResponse.redirect(redirectUrl)
     supabaseResponse.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie))

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
+import { getAppUrl } from "@/lib/app-url";
 import { checkAdminStatus } from "./admin";
 import { getAdminCaller } from "./_admin-guard";
 import { createAdminClient } from "@/utils/supabase/admin";
@@ -88,7 +89,8 @@ export async function decideInstitutionApplication(input: z.infer<typeof Decisio
             <h2>Welcome, Admin</h2>
             <p>Your school <strong>${inst.name}</strong> is now active on Edyfra Institutions.</p>
             <p>Sign in to your dashboard to start adding teachers and students.</p>
-            <p><a href="${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/institution/login">Open the dashboard</a></p>
+            ${inst.code ? `<p>Your school code is <strong style="font-size:18px;letter-spacing:2px">${inst.code}</strong>. Share it with your teachers so they can find your school on the sign-in page. You can always sign in with just your email.</p>` : ""}
+            <p><a href="${getAppUrl()}/auth/institution-login">Open the dashboard</a></p>
           `,
         });
       }
